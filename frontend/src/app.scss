@@ -1,0 +1,163 @@
+$left-padding: 1em;
+$black: #333366;
+$bottom-bar-height: 3em;
+$font-family: Roboto, sans-serif;
+$link-color: #35b2dc;
+$heading-color: $link-color;
+$heading-height: 2.5em;
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: min(4vw, 3vh);
+    font-family: $font-family;
+    color: $black;
+}
+
+h2 {
+    font-size: 1.3em;
+}
+
+input {
+    font-size: 1.1rem;
+}
+
+textarea {
+    font-size: 1rem;
+    font-family: $font-family;
+}
+
+button {
+    @extend .dropshadow;
+    cursor: pointer;
+    font-size: 1rem;
+
+    border: none;
+    margin: 0;
+    padding: 0;
+    width: auto;
+    overflow: visible;
+    outline: none;
+
+    background: transparent;
+
+    /* inherit font & color from ancestor */
+    color: inherit;
+    font: inherit;
+
+    /* Normalize `line-height`. Cannot be changed from `normal` in Firefox 4+. */
+    line-height: normal;
+
+    /* Corrects font smoothing for webkit */
+    -webkit-font-smoothing: inherit;
+    -moz-osx-font-smoothing: inherit;
+
+    /* Corrects inability to style clickable `input` types in iOS */
+    -webkit-appearance: none;    
+
+    background-color: $heading-color;
+    color: white;
+
+    padding: 0.3em 2em;
+    max-height: 2em;
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    &:disabled {
+        color: #ffffff88;
+    }
+
+    &.delete:not(:disabled) {
+        background: red;
+    }
+
+    &.complete:not(:disabled) {
+        background: green;
+    }
+
+    &.share:not(:disabled) {
+        background: $link-color;
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#root {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    header {
+        @extend .dropshadow;
+        width: 100%;
+        display: flex;
+        padding: 0 $left-padding;
+        background: $heading-color;
+        color: white;
+        height: $heading-height;
+        > * {
+           margin-top: 0.2rem; 
+        }
+        h1 {
+            flex-grow: 1;
+            margin: 0.3em 0;
+            font-size: 1.4em;
+            margin-bottom: 0.4em;
+        }
+        .sync-status {
+            .symbol {
+                margin-left: 0.5em;
+                transition: all 0.5s;
+                cursor: pointer;
+                font-size: 2.5em
+            }
+            &.up-to-date .symbol {
+                color: #4aea4a;
+                font-size: 1em;
+            }
+            &.offline .symbol, &.sync-pending .symbol {
+                @extend .textshadow;
+                color: #ed4444;
+            }
+        }      
+    }    
+}
+
+.dropshadow {
+    box-shadow: 3px 3px 15px 0px rgba(0,0,0,0.16);
+}
+.dropshadow-shallow {
+    box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.16);
+}
+
+.textshadow {
+    text-shadow: -1px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+a {
+    color: $link-color;
+    cursor: pointer;
+}
+
+.board {
+    touch-action: manipulation;
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+
+    .postit {
+        box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.26);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        cursor: pointer;
+    }    
+}

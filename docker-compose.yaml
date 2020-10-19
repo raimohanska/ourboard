@@ -1,0 +1,11 @@
+version: "3.1"
+
+services:
+    db:
+        image: postgres:12
+        restart: always
+        ports:
+            - 13338:5432
+        environment:
+            POSTGRES_USER: r-board
+            POSTGRES_PASSWORD: secret
