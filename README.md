@@ -11,6 +11,13 @@ Next steps
 - Create new stickers
 - Edit sticker text
 
-
 Feel free to try at https://r-board.herokuapp.com/
+
+## Dev
+
+```
+yarn install
+yarn start:dev
+```
+
 
