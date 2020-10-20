@@ -66,8 +66,14 @@ export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string,
     }
     function onDragEnd(dragEnd: JSX.DragEvent) {
       const current = postIt.get();
-      const xDiff = pxToEm(dragEnd.clientX - dragStart!.clientX, element.get()!);
-      const yDiff = pxToEm(dragEnd.clientY - dragStart!.clientY, element.get()!);
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=505521
+      /*
+        "We don't support coordinates on the drag and dragend events as they are not triggered by mouse events and don't occur at a specific point.
+        As an special exception, the screen coordinates where the drop occurred are available during the dragend event."
+        - 11 years old comment that still seems to apply
+      */
+      const xDiff = pxToEm(dragEnd.screenX - dragStart!.screenX, element.get()!);
+      const yDiff = pxToEm(dragEnd.screenY - dragStart!.screenY, element.get()!);
       const x = current.x + xDiff;
       const y = current.y + yDiff;
       dispatch({ action: "item.update", boardId, item: { ...current, x, y } });
