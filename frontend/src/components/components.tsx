@@ -30,7 +30,7 @@ export const Checkbox = (props: { checked: B.Atom<boolean> }) => {
     />    
 };  
 
-export const EditableSpan = ( props : { value: B.Atom<string>, editingThis: B.Atom<boolean>, commit: () => void, cancel: () => void } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>) => {
+export const EditableSpan = ( props : { value: B.Atom<string>, editingThis: B.Atom<boolean>, commit?: () => void, cancel?: () => void } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>) => {
     let { value, editingThis, commit, cancel, ...rest } = props
     const nameElement = B.atom<HTMLSpanElement | null>(null)
     let settingLocally = false
@@ -41,10 +41,10 @@ export const EditableSpan = ( props : { value: B.Atom<string>, editingThis: B.A
     const onKeyPress = (e: JSX.KeyboardEvent) => {
         if (e.keyCode === 13){ 
             e.preventDefault(); 
-            commit()
+            commit && commit()
         } else if (e.keyCode === 27) { // esc
            editingThis.set(false)
-           cancel()
+           cancel && cancel()
            nameElement.get()!.textContent = value.get()
         }
     }

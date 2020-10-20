@@ -1,8 +1,10 @@
 import * as H from "harmaja";
 import { h, ListView } from "harmaja";
 import * as L from "lonna";
+import { item } from "lonna/dist/lens";
 
 import { AppEvent, Board, Color, PostIt, newPostIt } from "../../../common/domain";
+import { EditableSpan } from "../components/components"
 
 export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board: L.Property<Board>, dispatch: (e: AppEvent) => void}) => {
     const zoom = L.atom(1);
@@ -70,7 +72,10 @@ export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string,
       const y = current.y + yDiff;
       dispatch({ action: "item.update", boardId, item: { ...current, x, y } });
     }
-  
+
+    const textAtom = L.atom(L.view(postIt, "text"), text => dispatch( { action: "item.update", boardId, item: { ...postIt.get(), text } } ))
+    const editingThis = L.atom(false)
+
     return (
       <span
         ref={element.set}
@@ -89,7 +94,11 @@ export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string,
         })))}
         color={L.view(postIt, "color")}
       >
-        <span className="text">{L.view(postIt, "text")}</span>
+        <span className="text">
+          <EditableSpan {...{
+            value: textAtom, editingThis
+          }}/> 
+        </span>
       </span>
     );
   };
