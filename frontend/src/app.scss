@@ -151,13 +151,25 @@ a {
     height: 100%;
     position: relative;
 
+    .controls {
+        .template {
+            margin-left: 0.5em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            .postit {
+                margin-left: 0.5em;
+                height: 1em;
+                width: 1em;
+            }
+        }
+    }
 
     .postit {
         box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.26);
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        position: absolute;
         cursor: pointer;
     }    
 }

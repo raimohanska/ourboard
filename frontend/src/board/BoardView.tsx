@@ -1,8 +1,8 @@
 import * as H from "harmaja";
 import { h, ListView } from "harmaja";
 import * as L from "lonna";
-import io from "socket.io-client";
-import { AppEvent, Board, PostIt } from "../../../common/domain";
+
+import { AppEvent, Board, Color, PostIt, newPostIt } from "../../../common/domain";
 
 export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board: L.Property<Board>, dispatch: (e: AppEvent) => void}) => {
     const zoom = L.atom(1);
@@ -13,6 +13,14 @@ export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board
         <div className="controls">
           <button onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
           <button onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
+          <span className="template">
+            <span>Drag to add</span>
+            {
+              ["yellow", "pink", "cyan"].map(color =>
+                <NewPostIt {...{ boardId, dispatch, color }}/>
+              )
+            }            
+          </span>
         </div>
         <div className="board" style={style}>
           <ListView
@@ -24,6 +32,29 @@ export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board
       </div>
     );
 }
+
+export const NewPostIt = ({ boardId, color, dispatch }: { boardId: string, color: Color, dispatch: (e: AppEvent) => void }) => {
+  const style = {    
+    background: color
+  }
+  let dragStart: JSX.DragEvent | null = null;
+    const element = L.atom<HTMLElement | null>(null);
+    function onDragStart(e: JSX.DragEvent) {
+      dragStart = e;
+    }
+  function onDragEnd(dragEnd: JSX.DragEvent) {
+    // TODO: coordinates are mumbo jumbo
+    const x = pxToEm(dragEnd.clientX, element.get()!);
+    const y = pxToEm(dragEnd.clientY, element.get()!);
+    const item = newPostIt("HELLO", color, x, y)
+
+    dispatch({ action: "item.add", boardId, item });
+  }
+  return <span ref={element.set} onDragStart={onDragStart} onDragEnd={onDragEnd} className="postit" draggable={true} style={style}>
+    <span className="text"></span>
+  </span>
+}
+
 
 export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string, id: string; postIt: L.Property<PostIt>, dispatch: (e: AppEvent) => void }) => {
     let dragStart: JSX.DragEvent | null = null;
@@ -53,7 +84,8 @@ export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string,
           height: "5em",
           width: "5em",
           background: p.color,
-          padding: "1em"
+          padding: "1em",
+          position: "absolute"
         })))}
         color={L.view(postIt, "color")}
       >
