@@ -1,5 +1,5 @@
 import * as H from "harmaja";
-import * as B from "lonna";
+import * as L from "lonna";
 import { h } from "harmaja";
 import io from "socket.io-client";
 import './app.scss';
@@ -25,8 +25,8 @@ const App = () => {
         store.dispatch({ action: "board.join", boardId: exampleBoard.id })
     }
 
-    B.fromEvent<MouseEvent>(window, "mousemove")
-        .pipe(B.map(({ clientX: x, clientY: y }: MouseEvent) => ({ x, y })))
+    L.fromEvent<MouseEvent>(window, "mousemove")
+        .pipe(L.map(({ clientX: x, clientY: y }: MouseEvent) => ({ x, y })))
         .forEach(position => {
             const bid = boardId.get();
             if (typeof bid === "string") {

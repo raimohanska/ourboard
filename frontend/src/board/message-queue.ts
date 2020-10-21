@@ -1,9 +1,9 @@
-import * as B from "lonna";
+import * as L from "lonna";
 import io from 'socket.io-client';
 import { AppEvent } from "../../../common/domain";
 
 export default function(socket: typeof io.Socket) {
-    const queue = B.atom<AppEvent[]>(localStorage.messageQueue ? JSON.parse(localStorage.messageQueue) : [])
+    const queue = L.atom<AppEvent[]>(localStorage.messageQueue ? JSON.parse(localStorage.messageQueue) : [])
     let waitingForAck = false
 
     function sendHead() {
@@ -30,8 +30,8 @@ export default function(socket: typeof io.Socket) {
     }
 
 
-    queue.pipe(B.throttle(2000)).forEach(q => localStorage.messageQueue = JSON.stringify(q))
-    const queueSize = B.view(queue, "length")
+    queue.pipe(L.throttle(2000)).forEach(q => localStorage.messageQueue = JSON.stringify(q))
+    const queueSize = L.view(queue, "length")
 
     queueSize.log("Queue size")
 

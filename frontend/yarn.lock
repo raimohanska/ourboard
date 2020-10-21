@@ -2869,10 +2869,10 @@ har-validator@~5.1.3:
     ajv "^6.12.3"
     har-schema "^2.0.0"
 
-harmaja@^0.11.0:
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.11.0.tgz#3f2644165c6cf83eed6756750cfefdda3aaac591"
-  integrity sha512-PHlrmiQf1iEr2bbh5+6eYf9hyllAncnCjo+XF6W8rEk0caFNaz3EkStU9M1euFQXsI46umoJ6GcL5lYW3v1YWg==
+harmaja@^0.11.1:
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.11.1.tgz#d2fc8adff60844f002f6c57413da58c1f13d2b54"
+  integrity sha512-ASxbX4QF953mJeQDuV4vGzYC2tmHX8r9Reo5skICRfVQQABqg98gJ+uE+As/aeeZjdWRMKbiEvP9uS3cEDR8YQ==
 
 has-ansi@^2.0.0:
   version "2.0.0"
@@ -3719,10 +3719,10 @@ log-symbols@^2.2.0:
   dependencies:
     chalk "^2.0.1"
 
-lonna@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.2.0.tgz#d5ff4b66dd7cc3a7b969005fd9dcb24c6040b502"
-  integrity sha512-UxHHVnNGARWiLo5lVQBdlTTho1gTNkdbcO7QT2oZuzhn2uPEoiy6HchOgq52nuKNJ24VeJkwj7k/FrRJpvkCPg==
+lonna@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.2.1.tgz#ab58bdf930d0c4d4d6002eec88098e20446dc3a4"
+  integrity sha512-zeOTdJY+tgAwWxBAIIVjyXlOlgRMaYf1PjI1FkwGEbNyPE/q4Pw1qNJ/zUO6A7qOvdTi4qdgKzabdBTUTmfBzQ==
 
 loose-envify@^1.0.0:
   version "1.4.0"

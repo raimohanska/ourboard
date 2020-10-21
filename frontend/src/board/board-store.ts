@@ -1,4 +1,4 @@
-import * as B from "lonna";
+import * as L from "lonna";
 import { globalScope } from "lonna";
 import { AppEvent, Board, CursorPosition, Id } from "../../../common/domain";
 import { boardReducer } from "../../../common/state";
@@ -12,17 +12,17 @@ export type BoardAppState = {
 }
 
 export type BoardStore = {
-    state: B.Property<BoardAppState>,
+    state: L.Property<BoardAppState>,
     dispatch: Dispatch,
-    events: B.EventStream<AppEvent>,
-    queueSize: B.Property<number>
+    events: L.EventStream<AppEvent>,
+    queueSize: L.Property<number>
 }
 
 export type Dispatch = (e: AppEvent) => void
 
 export function boardStore(socket: typeof io.Socket): BoardStore {
-    const uiEvents = B.bus<AppEvent>()
-    const serverEvents = B.bus<AppEvent>()    
+    const uiEvents = L.bus<AppEvent>()
+    const serverEvents = L.bus<AppEvent>()    
     const messageQueue = MessageQueue(socket)
     socket.on("connect", () => { console.log("Socket connected")})
     socket.on("message", function(kind: string, event: AppEvent) { 
@@ -35,7 +35,7 @@ export function boardStore(socket: typeof io.Socket): BoardStore {
     // uiEvents.log("UI")
     // serverEvents.log("Server")
     
-    const events = B.merge(uiEvents, serverEvents)
+    const events = L.merge(uiEvents, serverEvents)
 
     const eventsReducer = (state: BoardAppState, event: AppEvent) => {
         if (event.action.startsWith("item.")) {
@@ -54,8 +54,8 @@ export function boardStore(socket: typeof io.Socket): BoardStore {
         }
     }
     
-    const state = events.pipe(B.scan({ board: undefined, userId: null, users: new Set<Id>(), cursors: {} }, eventsReducer, globalScope))
-    state.pipe(B.changes, B.map((s: BoardAppState) => s.board), B.debounce(500)).forEach(LocalBoardStorage.saveBoard)
+    const state = events.pipe(L.scan({ board: undefined, userId: null, users: new Set<Id>(), cursors: {} }, eventsReducer, globalScope))
+    state.pipe(L.changes, L.map((s: BoardAppState) => s.board), L.debounce(500)).forEach(LocalBoardStorage.saveBoard)
     
     return {
         state,

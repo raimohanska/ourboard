@@ -1,8 +1,8 @@
 import * as H from "harmaja";
-import * as B from "lonna";
+import * as L from "lonna";
 import { componentScope, h, HarmajaOutput } from "harmaja";
 
-export const TextInput = (props: { value: B.Atom<string> } & any) => {
+export const TextInput = (props: { value: L.Atom<string> } & any) => {
     return <input {...{
         type: props.type || "text" ,
         onInput: e => {
@@ -13,7 +13,7 @@ export const TextInput = (props: { value: B.Atom<string> } & any) => {
     }} />
 };
 
-export const TextArea = (props: { value: B.Atom<string> } & any) => {
+export const TextArea = (props: { value: L.Atom<string> } & any) => {
     return <textarea {...{
         onInput: e => {
             props.value.set(e.currentTarget.value)
@@ -23,16 +23,16 @@ export const TextArea = (props: { value: B.Atom<string> } & any) => {
     }} />
 };
 
-export const Checkbox = (props: { checked: B.Atom<boolean> }) => {
+export const Checkbox = (props: { checked: L.Atom<boolean> }) => {
     return <a 
-        className={props.checked.pipe(B.map((c: boolean) => c ? "checkbox checked" : "checkbox"))} 
+        className={props.checked.pipe(L.map((c: boolean) => c ? "checkbox checked" : "checkbox"))} 
         onClick={ () => props.checked.modify((c: boolean) => !c)}
     />    
 };  
 
-export const EditableSpan = ( props : { value: B.Atom<string>, editingThis: B.Atom<boolean>, commit?: () => void, cancel?: () => void } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>) => {
+export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.Atom<boolean>, commit?: () => void, cancel?: () => void } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>) => {
     let { value, editingThis, commit, cancel, ...rest } = props
-    const nameElement = B.atom<HTMLSpanElement | null>(null)
+    const nameElement = L.atom<HTMLSpanElement | null>(null)
     let settingLocally = false
     const startEditing = () => {
         editingThis.set(true)
@@ -62,13 +62,13 @@ export const EditableSpan = ( props : { value: B.Atom<string>, editingThis: B.A
         onKeyUp={onKeyPress}
         onInput={onInput}
         {...rest }
-    >{props.value.pipe(B.filter(() => !settingLocally, componentScope()))}</span>
+    >{props.value.pipe(L.filter(() => !settingLocally, componentScope()))}</span>
 }
 
-export const If = ({ condition, component }: { condition: B.Property<boolean>, component: () => H.HarmajaOutput}): HarmajaOutput => {
-    return condition.pipe(B.map(c => c ? component() : []))
+export const If = ({ condition, component }: { condition: L.Property<boolean>, component: () => H.HarmajaOutput}): HarmajaOutput => {
+    return condition.pipe(L.map(c => c ? component() : []))
 }
 
-export const IfElse = ({ condition, ifTrue, ifFalse }: { condition: B.Property<boolean>, ifTrue: () => H.HarmajaOutput, ifFalse: () => H.HarmajaOutput}) => {
-    return condition.pipe(B.map(c => c ? ifTrue() : ifFalse()))
+export const IfElse = ({ condition, ifTrue, ifFalse }: { condition: L.Property<boolean>, ifTrue: () => H.HarmajaOutput, ifFalse: () => H.HarmajaOutput}) => {
+    return condition.pipe(L.map(c => c ? ifTrue() : ifFalse()))
 }
