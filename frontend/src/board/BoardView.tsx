@@ -3,10 +3,10 @@ import { h, ListView } from "harmaja";
 import * as L from "lonna";
 import { item } from "lonna/dist/lens";
 
-import { AppEvent, Board, Color, PostIt, newPostIt } from "../../../common/domain";
+import { AppEvent, Board, Color, PostIt, newPostIt, CursorPosition } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 
-export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board: L.Property<Board>, dispatch: (e: AppEvent) => void }) => {
+export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: string, cursors: L.Property<CursorPosition[]>, board: L.Property<Board>, dispatch: (e: AppEvent) => void }) => {
   const zoom = L.atom(1);
   const style = zoom.pipe(L.map((z) => ({ fontSize: z + "em" })));
   const element = L.atom<HTMLElement | null>(null);
@@ -40,6 +40,11 @@ export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board
           observable={L.view(board, "items")}
           renderObservable={(id: string, postIt) => <PostItView {...{ boardId, id, postIt, dispatch }} />}
           getKey={(postIt) => postIt.id}
+        />
+        <ListView
+          observable={cursors}
+          renderObservable={({ x, y }: CursorPosition) => <span style={{ transform: "rotate(-35deg)", display: "block", width: "0px", height:"0px", borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderBottom: "10px solid tomato", position: "fixed", left: x + "px", top: y + "px" }}></span> }
+          getKey={(c: CursorPosition) => c}
         />
       </div>
     </div>

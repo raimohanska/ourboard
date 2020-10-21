@@ -12,15 +12,26 @@ export type Board = BoardInfo & {
     items: PostIt[]
 }
 
+export interface CursorPosition {
+    x: number;
+    y: number;
+}
+
+export type BoardCursorPositions = Record<Id, CursorPosition>;
+
 export type Color = string;
 export type PostIt = { id: string; text: string; color: Color; x: number; y: number };
 
-export type AppEvent = AddBoard | AddPostIt | UpdatePostIt | JoinBoard | InitBoard;
+export type AppEvent = AddBoard | AddPostIt | UpdatePostIt | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions;
 export type AddPostIt = { action: "item.add", boardId: Id, item: PostIt };
 export type UpdatePostIt = { action: "item.update", boardId: Id, item: PostIt };
 export type AddBoard = { action: "board.add", boardId: Id, name: string }
 export type JoinBoard = { action: "board.join", boardId: Id }
+export type AckJoinBoard = { action: "board.join.ack", boardId: Id, userId: Id }
+export type JoinedBoard = { action: "board.joined", boardId: Id, userId: Id }
 export type InitBoard = { action: "board.init", board: Board }
+export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
+export type CursorPositions = { action: "cursor.positions", positions: Record<Id, CursorPosition>, boardId: Id }
 
 
 export const exampleBoard: Board = {

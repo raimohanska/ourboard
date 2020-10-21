@@ -1,11 +1,14 @@
 import * as B from "lonna";
 import { globalScope } from "lonna";
-import { AppEvent, Board } from "../../../common/domain";
+import { AppEvent, Board, CursorPosition, Id } from "../../../common/domain";
 import { boardReducer } from "../../../common/state";
 import MessageQueue from "./message-queue";
 
 export type BoardAppState = {
     board: Board | undefined
+    userId: Id | null
+    users: Set<Id>
+    cursors: Record<Id, CursorPosition>
 }
 
 export type BoardStore = {
@@ -29,8 +32,8 @@ export function boardStore(socket: typeof io.Socket): BoardStore {
     })
     uiEvents.forEach(messageQueue.enqueue)
 
-    uiEvents.log("UI")
-    serverEvents.log("Server")
+    // uiEvents.log("UI")
+    // serverEvents.log("Server")
     
     const events = B.merge(uiEvents, serverEvents)
 
@@ -39,13 +42,19 @@ export function boardStore(socket: typeof io.Socket): BoardStore {
             return { ...state, board: boardReducer(state.board!, event) }
         } else if (event.action === "board.init") {
             return { ...state, board: event.board }
+        } else if (event.action === "board.join.ack") {
+            return { ...state, userId: event.userId }
+        } else if (event.action === "board.joined") {
+            return { ...state, users: state.users.add(event.userId) }
+        } else if (event.action === "cursor.positions") {
+            return { ...state, cursors: event.positions }
         } else {
             console.warn("Unhandled event", event)
             return state
         }
     }
     
-    const state = events.pipe(B.scan({ board: undefined }, eventsReducer, globalScope))
+    const state = events.pipe(B.scan({ board: undefined, userId: null, users: new Set<Id>(), cursors: {} }, eventsReducer, globalScope))
     state.pipe(B.changes, B.map((s: BoardAppState) => s.board), B.debounce(500)).forEach(LocalBoardStorage.saveBoard)
     
     return {
