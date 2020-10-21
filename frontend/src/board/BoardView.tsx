@@ -18,7 +18,7 @@ export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board
     event.dataTransfer.dropEffect = "move";
     dragOver = event
   }
-  function translateClientCoords(x: number, y: number) {
+  function translateClientCoords(x: number, y: number): [number, number] {
     const rect = element.get()!.getBoundingClientRect()
     return [x - rect.x, y - rect.y]
   }
