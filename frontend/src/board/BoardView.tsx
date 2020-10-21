@@ -10,20 +10,18 @@ export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board
   const zoom = L.atom(1);
   const style = zoom.pipe(L.map((z) => ({ fontSize: z + "em" })));
   const element = L.atom<HTMLElement | null>(null);
-  function onDrop(dragEnd: JSX.DragEvent) {
-    console.log("Drop over board")
-  }
+
   function onDrag(event: JSX.DragEvent) {
     //console.log("Drag over board")
-    event.dataTransfer.dropEffect = "move";
     dragOver = event
+    event.preventDefault() // To disable Safari slow animation
   }
   function translateClientCoords(x: number, y: number): [number, number] {
     const rect = element.get()!.getBoundingClientRect()
     return [x - rect.x, y - rect.y]
   }
   return (
-    <div className="board" onDragOver={onDrag} onDrop={onDrop} ref={element.set}>
+    <div className="board" onDragOver={onDrag} ref={element.set}>
       <h1>{L.view(board, "name")}</h1>
       <div className="controls">
         <button onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
@@ -59,7 +57,6 @@ export const NewPostIt = (
   const element = L.atom<HTMLElement | null>(null);
   
   function onDragEnd(dragEnd: JSX.DragEvent) {
-    // TODO: coordinates are mumbo jumbo
     const coords = translateClientCoords(dragOver!.clientX, dragOver!.clientY)
     const x = pxToEm(coords[0], element.get()!);
     const y = pxToEm(coords[1], element.get()!);
@@ -82,12 +79,8 @@ export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string,
     dragStart = e;
     dragged = postIt.get()
   }
-  function onDrag(event: JSX.DragEvent) {
-    //console.log("Drag start")
-    dragStart = event;
-  }
   function onDragEnd(event: JSX.DragEvent) {
-    //console.log("Drag end")
+    console.log("Drag end")
     if (!element.get() || !dragStart) return
     const xDiff = pxToEm(dragOver!.pageX - dragStart!.pageX, element.get()!);
     const yDiff = pxToEm(dragOver!.pageY - dragStart!.pageY, element.get()!);
