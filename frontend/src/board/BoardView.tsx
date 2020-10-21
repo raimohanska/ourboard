@@ -14,9 +14,13 @@ export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board
     console.log("Drop over board")
   }
   function onDrag(event: JSX.DragEvent) {
-    console.log("Drag over board")
+    //console.log("Drag over board")
     event.dataTransfer.dropEffect = "move";
     dragOver = event
+  }
+  function translateClientCoords(x: number, y: number) {
+    const rect = element.get()!.getBoundingClientRect()
+    return [x - rect.x, y - rect.y]
   }
   return (
     <div className="board" onDragOver={onDrag} onDrop={onDrop} ref={element.set}>
@@ -28,7 +32,7 @@ export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board
           <span>Drag to add</span>
           {
             ["yellow", "pink", "cyan"].map(color =>
-              <NewPostIt {...{ boardId, dispatch, color }} />
+              <NewPostIt {...{ boardId, dispatch, color, translateClientCoords }} />
             )
           }
         </span>
@@ -44,24 +48,26 @@ export const BoardView = ({ boardId, board, dispatch }: { boardId: string, board
   );
 }
 
-export const NewPostIt = ({ boardId, color, dispatch }: { boardId: string, color: Color, dispatch: (e: AppEvent) => void }) => {
+export const NewPostIt = (
+  { boardId, color, dispatch, translateClientCoords }: 
+  { boardId: string, color: Color, translateClientCoords: (x: number, y: number) => [number, number], dispatch: (e: AppEvent) => void }
+) => {
   const style = {
     background: color
   }
-  let dragStart: JSX.DragEvent | null = null;
+  
   const element = L.atom<HTMLElement | null>(null);
-  function onDragStart(e: JSX.DragEvent) {
-    dragStart = e;
-  }
+  
   function onDragEnd(dragEnd: JSX.DragEvent) {
     // TODO: coordinates are mumbo jumbo
-    const x = pxToEm(dragEnd.clientX, element.get()!);
-    const y = pxToEm(dragEnd.clientY, element.get()!);
+    const coords = translateClientCoords(dragOver!.clientX, dragOver!.clientY)
+    const x = pxToEm(coords[0], element.get()!);
+    const y = pxToEm(coords[1], element.get()!);
     const item = newPostIt("HELLO", color, x, y)
 
     dispatch({ action: "item.add", boardId, item });
   }
-  return <span ref={element.set} onDragStart={onDragStart} onDragEnd={onDragEnd} className="postit" draggable={true} style={style}>
+  return <span ref={element.set} onDragEnd={onDragEnd} className="postit" draggable={true} style={style}>
     <span className="text"></span>
   </span>
 }
@@ -77,17 +83,19 @@ export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string,
     dragged = postIt.get()
   }
   function onDrag(event: JSX.DragEvent) {
-    console.log("Drag start")
+    //console.log("Drag start")
     dragStart = event;
   }
   function onDragEnd(event: JSX.DragEvent) {
-    console.log("Drag end")
+    //console.log("Drag end")
     if (!element.get() || !dragStart) return
     const xDiff = pxToEm(dragOver!.pageX - dragStart!.pageX, element.get()!);
     const yDiff = pxToEm(dragOver!.pageY - dragStart!.pageY, element.get()!);
+    /*
     console.log("from", dragStart?.pageX, dragStart?.pageY)
     console.log("to", dragOver!.pageX, dragOver!.pageY)
     console.log("diff", xDiff, yDiff)
+    */
     const current = postIt.get();
     const x = current.x + xDiff;
     const y = current.y + yDiff;
@@ -103,7 +111,6 @@ export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string,
       draggable={true}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      onMouseMove={onDrag}
       className="postit"
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
@@ -133,7 +140,6 @@ function pxToEm(px: number, element: HTMLElement) {
   temporaryElement.style.setProperty("font-size", "1em", "important");
   element.appendChild(temporaryElement);
   var baseFontSize = parseFloat(getComputedStyle(temporaryElement).fontSize);
-  console.log("Font", baseFontSize)
   temporaryElement.parentNode!.removeChild(temporaryElement);
   return px / baseFontSize;
 }
