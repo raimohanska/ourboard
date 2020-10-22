@@ -33,7 +33,9 @@ export type AckJoinBoard = { action: "board.join.ack", boardId: Id, userId: Id }
 export type JoinedBoard = { action: "board.joined", boardId: Id, userId: Id }
 export type InitBoard = { action: "board.init", board: Board }
 export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
-export type CursorPositions = { action: "cursor.positions", positions: Record<Id, CursorPosition>, boardId: Id }
+
+export const CURSOR_POSITIONS_ACTION_TYPE = "c" as const;
+export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE, p: Record<Id, CursorPosition> }
 
 
 export const exampleBoard: Board = {

@@ -23,7 +23,7 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
   })
   const coordinateHelper = boardCoordinateHelper(element, fontSize)
 
-  coordinateHelper.currentBoardCoordinates.forEach(position => {
+  coordinateHelper.currentBoardCoordinates.pipe(L.throttle(30)).forEach(position => {
     dispatch({ action: "cursor.move", position, boardId })
   })
 

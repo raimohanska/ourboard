@@ -43,8 +43,8 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>, fon
       const baseFontSize = baseFontSizeAtom.get();
       const rect = boardElem.get()!.getBoundingClientRect()
       return { 
-        x: pxToEm(clientCoords.x - rect.x, baseFontSize), 
-        y: pxToEm(clientCoords.y - rect.y, baseFontSize)
+        x: pxToEm(clientCoords.x - rect.x, baseFontSize) | 0, 
+        y: pxToEm(clientCoords.y - rect.y, baseFontSize) | 0
       }
     }
   

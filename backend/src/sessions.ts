@@ -1,6 +1,5 @@
 import IO from "socket.io"
-import { idText } from "typescript"
-import { AppEvent, Board, BoardItemEvent, CursorPosition, Id, InitBoard, } from "../../common/domain"
+import { Board, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE } from "../../common/domain"
 
 type UserSession = {
     socket: IO.Socket,
@@ -45,7 +44,7 @@ export function broadcastJoinEvent(boardId: Id, user: IO.Socket) {
 
 export function broadcastCursorPositions(boardId: Id, positions: Record<Id, CursorPosition>) {
     everyoneOnTheBoard(boardId).forEach(s => {
-        s.socket.send("app-event", { action: "cursor.positions", boardId, positions })
+        s.socket.send("app-event", { action: CURSOR_POSITIONS_ACTION_TYPE, p: positions })
     })
 }
 

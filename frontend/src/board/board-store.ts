@@ -1,6 +1,6 @@
 import * as L from "lonna";
 import { globalScope } from "lonna";
-import { AppEvent, Board, CursorPosition, Id } from "../../../common/domain";
+import { AppEvent, Board, CursorPosition, CURSOR_POSITIONS_ACTION_TYPE, Id } from "../../../common/domain";
 import { boardReducer } from "../../../common/state";
 import MessageQueue from "./message-queue";
 
@@ -41,8 +41,8 @@ export function boardStore(socket: typeof io.Socket) {
             return { ...state, userId: event.userId }
         } else if (event.action === "board.joined") {
             return { ...state, users: state.users.add(event.userId) }
-        } else if (event.action === "cursor.positions") {
-            return { ...state, cursors: event.positions }
+        } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
+            return { ...state, cursors: event.p }
         } else if (event.action === "cursor.move") {
             return state
         } else {

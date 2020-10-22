@@ -56,11 +56,11 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
                 return
             }
             case "cursor.move": {
-                const { boardId, position } = appEvent;
-                const { x, y } = position;
-                cursorPositions[boardId] = cursorPositions[boardId] || {};
-                cursorPositions[boardId][socket.id] = { x, y };
-                positionShouldBeFlushedToClients.add(boardId);
+                const { boardId, position } = appEvent
+                const { x, y } = position
+                cursorPositions[boardId] = cursorPositions[boardId] || {}
+                cursorPositions[boardId][socket.id] = { x, y }
+                positionShouldBeFlushedToClients.add(boardId)
                 return;
             }
             default: {
