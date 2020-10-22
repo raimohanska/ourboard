@@ -18,7 +18,11 @@ export const connectionHandler = (socket: IO.Socket) => {
     socket.on("disconnect", () => {
         const boards = endSession(socket)
         boards.forEach(b => {
-            cursorPositions[b] && (delete cursorPositions[b][socket.id])
+            if (!cursorPositions[b]) {
+                return
+            }
+            delete cursorPositions[b][socket.id]
+            positionShouldBeFlushedToClients.add(b)
         })
     })
 }
