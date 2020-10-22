@@ -1,6 +1,7 @@
 import IO from "socket.io"
 import { AppEvent, Board, BoardCursorPositions, exampleBoard, Id } from "../../common/domain"
 import { boardReducer } from "../../common/state"
+import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
 import { addSessionToBoard, broadcastListEvent, endSession, ackJoinBoard, startSession, broadcastCursorPositions } from "./sessions"
 
 export const connectionHandler = (socket: IO.Socket) => {        
@@ -23,43 +24,33 @@ export const connectionHandler = (socket: IO.Socket) => {
     })
 }
 
-let boards: Board[] = [
-    exampleBoard
-]
+
 
 const cursorPositions: Record<Id, BoardCursorPositions> = {
     [exampleBoard.id]: {}
 }
 
 setInterval(() => {
-    boards.forEach(b => {
+    getActiveBoards().forEach(b => {
         cursorPositions[b.id] && broadcastCursorPositions(b.id, cursorPositions[b.id] )
     })
 }, 30);
 
-function getBoard(id: Id): Board {
-    const board = boards.find(b => b.id === id)
-    if (!board) {
-        throw Error(`Board ${id} not found`)
-    }
-    return board
-}
-
 async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
     switch (appEvent.action) {
         case "board.join": 
-            addSessionToBoard(getBoard(appEvent.boardId), socket)
+            addSessionToBoard(await getBoard(appEvent.boardId), socket)
             ackJoinBoard(appEvent.boardId, socket)
             return;
         case "board.add": {
             const board = { id: appEvent.boardId, name: appEvent.name, items: [] }
-            boards.push(board)
+            addBoard(board)
             addSessionToBoard(board, socket)
             return
         }
         case "item.add":
         case "item.update": {
-            boards = boards.map(board => board.id === appEvent.boardId ? boardReducer(board, appEvent) : board)
+            await updateBoards(appEvent)
             broadcastListEvent(appEvent, socket)
             return
         }

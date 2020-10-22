@@ -14,7 +14,8 @@ const connectionPool = new pg.Pool(pgConfig)
 export async function initDB() {
     await withDBClient(async client => {
         await client.query(`
-            CREATE TABLE IF NOT EXISTS boards (id SERIAL PRIMARY KEY, name text NOT NULL);
+            CREATE TABLE IF NOT EXISTS board (id text PRIMARY KEY, name text NOT NULL);
+            ALTER TABLE board ADD COLUMN IF NOT EXISTS content JSONB NOT NULL;
         `);
     })    
 }
