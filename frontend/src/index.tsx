@@ -24,15 +24,6 @@ const App = () => {
         store.dispatch({ action: "board.join", boardId: exampleBoard.id })
     }
 
-    L.fromEvent<MouseEvent>(window, "mousemove")
-        .pipe(L.map(({ clientX: x, clientY: y }: MouseEvent) => ({ x, y })))
-        .forEach(position => {
-            const bid = boardId.get();
-            if (typeof bid === "string") {
-                store.dispatch({ action: "cursor.move", position, boardId: bid })
-            }}
-        )
-
     return <div id="root">        
         <Header syncStatus={syncStatus}/>
         {

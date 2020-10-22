@@ -145,11 +145,9 @@ a {
     cursor: pointer;
 }
 
-.board {
+.board-container {
     width: 100%;
     height: 100%;
-    position: relative;
-
     .controls {
         .template {
             margin-left: 0.5em;
@@ -164,11 +162,23 @@ a {
         }
     }
 
-    .postit {
-        box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.26);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-    }    
+
+    .board {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    
+        .postit {
+            box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.26);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            small {
+                display: block;
+                font-size: 0.3em;
+            }
+        }    
+    }
+    
 }
