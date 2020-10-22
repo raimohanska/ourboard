@@ -24,14 +24,18 @@ export const connectionHandler = (socket: IO.Socket) => {
 }
 
 
-
+const positionShouldBeFlushedToClients = new Set();
 const cursorPositions: Record<Id, BoardCursorPositions> = {
     [exampleBoard.id]: {}
 }
 
 setInterval(() => {
     getActiveBoards().forEach(b => {
-        cursorPositions[b.id] && broadcastCursorPositions(b.id, cursorPositions[b.id] )
+        if (!cursorPositions[b.id] || !positionShouldBeFlushedToClients.has(b.id)) {
+            return
+        }
+        broadcastCursorPositions(b.id, cursorPositions[b.id] )
+        positionShouldBeFlushedToClients.delete(b.id)
     })
 }, 30);
 
@@ -56,6 +60,7 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
                 const { x, y } = position;
                 cursorPositions[boardId] = cursorPositions[boardId] || {};
                 cursorPositions[boardId][socket.id] = { x, y };
+                positionShouldBeFlushedToClients.add(boardId);
                 return;
             }
             default: {
