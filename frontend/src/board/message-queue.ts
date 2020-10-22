@@ -33,7 +33,7 @@ export default function(socket: typeof io.Socket) {
     queue.pipe(L.throttle(2000)).forEach(q => localStorage.messageQueue = JSON.stringify(q))
     const queueSize = L.view(queue, "length")
 
-    queueSize.log("Queue size")
+    //queueSize.log("Queue size")
 
     return { 
         enqueue,

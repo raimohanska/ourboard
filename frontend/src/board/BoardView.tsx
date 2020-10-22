@@ -6,22 +6,19 @@ import { item } from "lonna/dist/lens";
 import { AppEvent, Board, Color, PostIt, newPostIt, CursorPosition } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 
+type Coordinates = { x: number, y: number }
+type ClientCoordinates = Coordinates
+type BoardCoordinates = Coordinates
+
 export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: string, cursors: L.Property<CursorPosition[]>, board: L.Property<Board>, dispatch: (e: AppEvent) => void }) => {
   const zoom = L.atom(1);
   const style = zoom.pipe(L.map((z) => ({ fontSize: z + "em" })));
   const element = L.atom<HTMLElement | null>(null);
 
-  function onDrag(event: JSX.DragEvent) {
-    //console.log("Drag over board")
-    dragOver = event
-    event.preventDefault() // To disable Safari slow animation
-  }
-  function translateClientCoords(x: number, y: number): [number, number] {
-    const rect = element.get()!.getBoundingClientRect()
-    return [x - rect.x, y - rect.y]
-  }
+  const coordinateHelper = boardCoordinateHelper(element)
+
   return (
-    <div className="board" onDragOver={onDrag} ref={element.set}>
+    <div className="board" ref={element.set}>
       <h1>{L.view(board, "name")}</h1>
       <div className="controls">
         <button onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
@@ -30,7 +27,7 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
           <span>Drag to add</span>
           {
             ["yellow", "pink", "cyan"].map(color =>
-              <NewPostIt {...{ boardId, dispatch, color, translateClientCoords }} />
+              <NewPostIt {...{ boardId, dispatch, color, coordinateHelper }} />
             )
           }
         </span>
@@ -38,7 +35,7 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
       <div className="board-inner" style={style} >
         <ListView
           observable={L.view(board, "items")}
-          renderObservable={(id: string, postIt) => <PostItView {...{ boardId, id, postIt, dispatch }} />}
+          renderObservable={(id: string, postIt) => <PostItView {...{ boardId, id, postIt, coordinateHelper, dispatch }} />}
           getKey={(postIt) => postIt.id}
         />
         <ListView
@@ -52,8 +49,8 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
 }
 
 export const NewPostIt = (
-  { boardId, color, dispatch, translateClientCoords }: 
-  { boardId: string, color: Color, translateClientCoords: (x: number, y: number) => [number, number], dispatch: (e: AppEvent) => void }
+  { boardId, color, dispatch, coordinateHelper }: 
+  { boardId: string, color: Color, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }
 ) => {
   const style = {
     background: color
@@ -62,9 +59,8 @@ export const NewPostIt = (
   const element = L.atom<HTMLElement | null>(null);
   
   function onDragEnd(dragEnd: JSX.DragEvent) {
-    const coords = translateClientCoords(dragOver!.clientX, dragOver!.clientY)
-    const x = pxToEm(coords[0], element.get()!);
-    const y = pxToEm(coords[1], element.get()!);
+    const {x, y} = coordinateHelper.currentBoardCoordinates()
+
     const item = newPostIt("HELLO", color, x, y)
 
     dispatch({ action: "item.add", boardId, item });
@@ -74,26 +70,16 @@ export const NewPostIt = (
   </span>
 }
 
-let dragStart: JSX.DragEvent | null = null;
-let dragOver: JSX.DragEvent | null = null;
-let dragged: PostIt | null = null
 
-export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string, id: string; postIt: L.Property<PostIt>, dispatch: (e: AppEvent) => void }) => {
-  const element = L.atom<HTMLElement | null>(null);
+export const PostItView = ({ boardId, id, postIt, coordinateHelper, dispatch }: { boardId: string, id: string; postIt: L.Property<PostIt>, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }) => {
+  let dragStart: JSX.DragEvent | null = null;
   function onDragStart(e: JSX.DragEvent) {
     dragStart = e;
-    dragged = postIt.get()
   }
   function onDragEnd(event: JSX.DragEvent) {
     console.log("Drag end")
-    if (!element.get() || !dragStart) return
-    const xDiff = pxToEm(dragOver!.pageX - dragStart!.pageX, element.get()!);
-    const yDiff = pxToEm(dragOver!.pageY - dragStart!.pageY, element.get()!);
-    /*
-    console.log("from", dragStart?.pageX, dragStart?.pageY)
-    console.log("to", dragOver!.pageX, dragOver!.pageY)
-    console.log("diff", xDiff, yDiff)
-    */
+
+    const { x: xDiff, y: yDiff } = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
     const current = postIt.get();
     const x = current.x + xDiff;
     const y = current.y + yDiff;
@@ -105,7 +91,6 @@ export const PostItView = ({ boardId, id, postIt, dispatch }: { boardId: string,
 
   return (
     <span
-      ref={element.set}
       draggable={true}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
@@ -141,3 +126,44 @@ function pxToEm(px: number, element: HTMLElement) {
   temporaryElement.parentNode!.removeChild(temporaryElement);
   return px / baseFontSize;
 }
+
+
+function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
+  let currentClientPos = { x: 0, y: 0 }
+  function coordDiff(a: Coordinates, b: Coordinates) {
+    return { x: a.x - b.x, y: a.y - b.y }
+  }
+
+  function clientToBoardCoordinates(clientCoords: ClientCoordinates): Coordinates {
+    const rect = boardElem.get()!.getBoundingClientRect()
+    return { 
+      x: pxToEm(clientCoords.x - rect.x, boardElem.get()!), 
+      y: pxToEm(clientCoords.y - rect.y, boardElem.get()!)
+    }
+  }
+
+  function clientCoordDiffToThisPoint(coords: ClientCoordinates) {
+    return coordDiff(currentClientPos, coords)
+  }
+
+  boardElem.forEach(elem => {
+    if (!elem) return
+    elem.addEventListener("dragover", e => {
+       //console.log("Drag over board")
+    currentClientPos = { x: e.clientX, y: e.clientY }
+    e.preventDefault() // To disable Safari slow animation
+    })
+  })
+
+  const currentBoardCoordinates = () => clientToBoardCoordinates(currentClientPos)
+
+  return {
+    clientToBoardCoordinates,
+    clientCoordDiffToThisPoint,
+    currentClientCoordinates: () => currentClientPos,
+    currentBoardCoordinates,
+    boardCoordDiffFromThisClientPoint: (coords: ClientCoordinates) => coordDiff(currentBoardCoordinates(), clientToBoardCoordinates(coords))
+  }
+}
+
+type BoardCoordinateHelper = ReturnType<typeof boardCoordinateHelper>

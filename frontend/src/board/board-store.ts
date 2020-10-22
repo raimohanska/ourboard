@@ -48,6 +48,8 @@ export function boardStore(socket: typeof io.Socket): BoardStore {
             return { ...state, users: state.users.add(event.userId) }
         } else if (event.action === "cursor.positions") {
             return { ...state, cursors: event.positions }
+        } else if (event.action === "cursor.move") {
+            return state
         } else {
             console.warn("Unhandled event", event)
             return state
