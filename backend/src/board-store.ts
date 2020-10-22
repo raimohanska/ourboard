@@ -33,9 +33,11 @@ export async function updateBoards(appEvent: AppEvent & { boardId: Id }) {
         : board)
 }
 
-export function addBoard(board: Board) {
+export async function addBoard(board: Board) {
+    const result = await withDBClient(client => client.query("SELECT id FROM board WHERE id=$1", [board.id]))
+    if (result.rows.length > 0) throw Error("Board already exists: " + board.id)
     boards.push(board)
-
+    markForSave(board)
 }
 
 export function getActiveBoards() {

@@ -93,11 +93,13 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    > * {
+        padding: 0 $left-padding;
+    }
     header {
         @extend .dropshadow;
         width: 100%;
-        display: flex;
-        padding: 0 $left-padding;
+        display: flex;        
         background: $heading-color;
         color: white;
         height: $heading-height;
@@ -109,6 +111,10 @@ body {
             margin: 0.3em 0;
             font-size: 1.4em;
             margin-bottom: 0.4em;
+            a {
+                color: white;
+                text-decoration: none;
+            }
         }
         .sync-status {
             .symbol {
@@ -181,4 +187,13 @@ a {
         }    
     }
     
+}
+
+.dashboard {
+    .create-board {
+        padding: 2em;
+        * {
+             margin-right: 1em;
+        }
+    }
 }

@@ -11,16 +11,11 @@ export type BoardAppState = {
     cursors: Record<Id, CursorPosition>
 }
 
-export type BoardStore = {
-    state: L.Property<BoardAppState>,
-    dispatch: Dispatch,
-    events: L.EventStream<AppEvent>,
-    queueSize: L.Property<number>
-}
+export type BoardStore = ReturnType<typeof boardStore>
 
 export type Dispatch = (e: AppEvent) => void
 
-export function boardStore(socket: typeof io.Socket): BoardStore {
+export function boardStore(socket: typeof io.Socket) {
     const uiEvents = L.bus<AppEvent>()
     const serverEvents = L.bus<AppEvent>()    
     const messageQueue = MessageQueue(socket)
@@ -63,15 +58,22 @@ export function boardStore(socket: typeof io.Socket): BoardStore {
         state,
         dispatch: uiEvents.push,
         events,    
-        queueSize: messageQueue.queueSize
+        queueSize: messageQueue.queueSize,
+        boardId: L.constant(boardIdFromPath())
     }
 }
 
+function boardIdFromPath() {
+    const match = document.location.pathname.match(/b\/(.*)/)
+    return (match && match[1]) || undefined
+}
+
 const LocalBoardStorage = (() => {
-    const initialBoard: Board = localStorage.board ? JSON.parse(localStorage.board) : [] // TODO: the localStorage approach is not very scalable here.
+    const storedBoard: Board = localStorage.board ? JSON.parse(localStorage.board) : []
+    const initialBoard = storedBoard && storedBoard.id === boardIdFromPath() ? storedBoard : null
 
     return {
         initialBoard,
-        saveBoard: (board: Board | undefined) => { if (board) { localStorage.board = JSON.stringify(board) }},
+        saveBoard: (board: Board | undefined) => { if (board) { localStorage.board = JSON.stringify(board) }}        
     }
 })()
