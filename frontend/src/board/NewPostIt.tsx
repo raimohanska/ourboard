@@ -15,7 +15,7 @@ export const NewPostIt = (
   const element = L.atom<HTMLElement | null>(null);
   
   function onDragEnd(dragEnd: JSX.DragEvent) {
-    const {x, y} = coordinateHelper.currentBoardCoordinates()
+    const {x, y} = coordinateHelper.currentBoardCoordinates.get()
 
     const item = newPostIt("HELLO", color, x, y)
 

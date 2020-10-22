@@ -10,9 +10,7 @@ export const PostItView = ({ boardId, id, postIt, coordinateHelper, dispatch }: 
   function onDragStart(e: JSX.DragEvent) {
     dragStart = e;
   }
-  function onDragEnd(event: JSX.DragEvent) {
-    console.log("Drag end")
-
+  function onDragEnd() {
     const { x: xDiff, y: yDiff } = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
     const current = postIt.get();
     const x = current.x + xDiff;

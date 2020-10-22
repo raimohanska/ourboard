@@ -9,7 +9,7 @@ export type BoardCoordinates = Coordinates
 export type BoardCoordinateHelper = ReturnType<typeof boardCoordinateHelper>
 
 export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
-    let currentClientPos = { x: 0, y: 0 }
+    let currentClientPos = L.atom({ x: 0, y: 0 })
     
     function pxToEm(px: number, element: HTMLElement) {
       element = element === null || element === undefined ? document.documentElement : element;
@@ -28,6 +28,7 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
     }
   
     function clientToBoardCoordinates(clientCoords: ClientCoordinates): Coordinates {
+      if (!boardElem.get()) return { x: 0, y: 0 } // Not the smartest move
       const rect = boardElem.get()!.getBoundingClientRect()
       return { 
         x: pxToEm(clientCoords.x - rect.x, boardElem.get()!), 
@@ -36,25 +37,28 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
     }
   
     function clientCoordDiffToThisPoint(coords: ClientCoordinates) {
-      return coordDiff(currentClientPos, coords)
+      return coordDiff(currentClientPos.get(), coords)
     }
   
     boardElem.forEach(elem => {
       if (!elem) return
       elem.addEventListener("dragover", e => {
          //console.log("Drag over board")
-      currentClientPos = { x: e.clientX, y: e.clientY }
-      e.preventDefault() // To disable Safari slow animation
+        currentClientPos.set({ x: e.clientX, y: e.clientY })
+        e.preventDefault() // To disable Safari slow animation
+      })
+      elem.addEventListener("mousemove", e => {
+        currentClientPos.set({ x: e.clientX, y: e.clientY })
       })
     })
   
-    const currentBoardCoordinates = () => clientToBoardCoordinates(currentClientPos)
+    const currentBoardCoordinates = L.view(currentClientPos, pos => clientToBoardCoordinates(pos))
   
     return {
       clientToBoardCoordinates,
       clientCoordDiffToThisPoint,
-      currentClientCoordinates: () => currentClientPos,
+      currentClientCoordinates: currentClientPos,
       currentBoardCoordinates,
-      boardCoordDiffFromThisClientPoint: (coords: ClientCoordinates) => coordDiff(currentBoardCoordinates(), clientToBoardCoordinates(coords))
+      boardCoordDiffFromThisClientPoint: (coords: ClientCoordinates) => coordDiff(currentBoardCoordinates.get(), clientToBoardCoordinates(coords))
     }
   }

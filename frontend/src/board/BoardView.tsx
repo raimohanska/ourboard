@@ -13,12 +13,10 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
 
   const coordinateHelper = boardCoordinateHelper(element)
 
-  L.fromEvent<MouseEvent>(window, "mousemove")
-    .pipe(L.map(({ clientX: x, clientY: y }: MouseEvent) => coordinateHelper.clientToBoardCoordinates({ x, y })))
-    .forEach(position => {
-      dispatch({ action: "cursor.move", position, boardId })
-    })
-
+  coordinateHelper.currentBoardCoordinates.forEach(position => {
+    dispatch({ action: "cursor.move", position, boardId })
+  })
+  
   return (
     <div className="board-container">
       <h1>{L.view(board, "name")}</h1>
