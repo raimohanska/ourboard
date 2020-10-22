@@ -3,7 +3,6 @@ import * as L from "lonna";
 import { h } from "harmaja";
 import io from "socket.io-client";
 import './app.scss';
-import * as L from "lonna"
 import { BoardAppState, boardStore } from "./board/board-store";
 import { BoardView } from "./board/BoardView";
 import { Header } from "./components/Header";
