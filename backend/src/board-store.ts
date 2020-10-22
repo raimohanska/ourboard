@@ -46,7 +46,6 @@ export function getActiveBoards() {
 
 function markForSave(board: Board): Board {
     updateQueue = updateQueue.filter(b => b.id !== board.id).concat(board)
-    console.log(updateQueue.length)
     return board
 }
 
