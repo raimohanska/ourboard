@@ -8,19 +8,25 @@ export type BoardCoordinates = Coordinates
 
 export type BoardCoordinateHelper = ReturnType<typeof boardCoordinateHelper>
 
-export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
+export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>, fontSize: L.Property<string>) {
     let currentClientPos = L.atom({ x: 0, y: 0 })
-    
-    function getBaseFontSize(element: HTMLElement) {
-        element = element === null || element === undefined ? document.documentElement : element;
-        var temporaryElement: HTMLDivElement = document.createElement("div");
-        temporaryElement.style.setProperty("position", "absolute", "important");
-        temporaryElement.style.setProperty("visibility", "hidden", "important");
-        temporaryElement.style.setProperty("font-size", "1em", "important");
+
+    const temporaryElement: HTMLDivElement = document.createElement("div");
+    temporaryElement.style.setProperty("position", "absolute", "important");
+    temporaryElement.style.setProperty("visibility", "hidden", "important");
+    temporaryElement.style.setProperty("font-size", "1em", "important");
+
+    const baseFontSizeAtom = L.atom(0);
+
+    boardElem.forEach(element => {
+      element = element === null || element === undefined ? document.documentElement : element;
+      if (temporaryElement.parentNode !== element) {
+        temporaryElement.parentNode && temporaryElement.parentNode.removeChild(temporaryElement);
         element.appendChild(temporaryElement);
-        var baseFontSize = parseFloat(getComputedStyle(temporaryElement).fontSize);
-        return baseFontSize
       }
+    })
+
+    fontSize.forEach((_) => baseFontSizeAtom.set(parseFloat(getComputedStyle(temporaryElement).fontSize)))
 
     function pxToEm(px: number, baseFontSize: number) {
       return px / baseFontSize;
@@ -34,7 +40,7 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
       const elem = boardElem.get()
       if (!elem) return { x: 0, y: 0 } // Not the smartest move
       
-      const baseFontSize = getBaseFontSize(elem)
+      const baseFontSize = baseFontSizeAtom.get();
       const rect = boardElem.get()!.getBoundingClientRect()
       return { 
         x: pxToEm(clientCoords.x - rect.x, baseFontSize), 

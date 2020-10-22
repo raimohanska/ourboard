@@ -10,8 +10,9 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
   const zoom = L.atom(1);
   const style = zoom.pipe(L.map((z) => ({ fontSize: z + "em" })));
   const element = L.atom<HTMLElement | null>(null);
+  const fontSize = style.pipe(L.map(((s: { fontSize: string; }) => s.fontSize)))
 
-  const coordinateHelper = boardCoordinateHelper(element)
+  const coordinateHelper = boardCoordinateHelper(element, fontSize)
 
   coordinateHelper.currentBoardCoordinates.forEach(position => {
     dispatch({ action: "cursor.move", position, boardId })
