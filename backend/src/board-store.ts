@@ -1,4 +1,4 @@
-import { AppEvent, Board, exampleBoard, Id } from "../../common/domain"
+import { AppEvent, Board, BoardItemEvent, exampleBoard, Id } from "../../common/domain"
 import { boardReducer } from "../../common/state"
 import { withDBClient } from "./db"
 import * as L from "lonna"
@@ -26,7 +26,7 @@ export async function getBoard(id: Id): Promise<Board> {
     return board
 }
 
-export async function updateBoards(appEvent: AppEvent & { boardId: Id }) {
+export async function updateBoards(appEvent: BoardItemEvent) {
     await getBoard(appEvent.boardId)
     boards = boards.map(board => board.id === appEvent.boardId 
         ? markForSave(boardReducer(board, appEvent))

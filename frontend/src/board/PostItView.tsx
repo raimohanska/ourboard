@@ -5,7 +5,10 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { AppEvent, PostIt } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 
-export const PostItView = ({ boardId, id, postIt, coordinateHelper, dispatch }: { boardId: string, id: string; postIt: L.Property<PostIt>, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }) => {
+export const PostItView = (
+    { boardId, id, postIt, selected, coordinateHelper, dispatch }: 
+    { boardId: string, id: string; postIt: L.Property<PostIt>, selected: L.Atom<boolean>, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }
+) => {
   let dragStart: JSX.DragEvent | null = null;
   function onDragStart(e: JSX.DragEvent) {
     dragStart = e;
@@ -18,6 +21,10 @@ export const PostItView = ({ boardId, id, postIt, coordinateHelper, dispatch }: 
     dispatch({ action: "item.update", boardId, item: { ...current, x, y } });
   }
 
+  function onClick() {
+      selected.set(true)
+  }
+
   const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId, item: { ...postIt.get(), text } }))
   const editingThis = L.atom(false)
   const showCoords = false
@@ -25,9 +32,10 @@ export const PostItView = ({ boardId, id, postIt, coordinateHelper, dispatch }: 
   return (
     <span
       draggable={true}
+      onClick={onClick}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className="postit"
+      className={L.view(selected, s => s ? "postit selected" : "postit")}
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
         left: p.x + "em",

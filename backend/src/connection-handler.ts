@@ -1,6 +1,5 @@
 import IO from "socket.io"
-import { AppEvent, Board, BoardCursorPositions, exampleBoard, Id } from "../../common/domain"
-import { boardReducer } from "../../common/state"
+import { AppEvent, BoardItemEvent, BoardCursorPositions, exampleBoard, Id } from "../../common/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
 import { addSessionToBoard, broadcastListEvent, endSession, ackJoinBoard, startSession, broadcastCursorPositions } from "./sessions"
 
@@ -37,32 +36,31 @@ setInterval(() => {
 }, 30);
 
 async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
-    switch (appEvent.action) {
-        case "board.join": 
-            addSessionToBoard(await getBoard(appEvent.boardId), socket)
-            ackJoinBoard(appEvent.boardId, socket)
-            return;
-        case "board.add": {
-            const board = { id: appEvent.boardId, name: appEvent.name, items: [] }
-            addBoard(board)
-            addSessionToBoard(board, socket)
-            return
-        }
-        case "item.add":
-        case "item.update": {
-            await updateBoards(appEvent)
-            broadcastListEvent(appEvent, socket)
-            return
-        }
-        case "cursor.move": {
-            const { boardId, position } = appEvent;
-            const { x, y } = position;
-            cursorPositions[boardId] = cursorPositions[boardId] || {};
-            cursorPositions[boardId][socket.id] = { x, y };
-            return;
-        }
-        default: {
-            console.warn("Unhandled app-event message", appEvent)
-        }
+    if (appEvent.action.startsWith("item.")) {
+        await updateBoards(appEvent as BoardItemEvent)
+        broadcastListEvent(appEvent as BoardItemEvent, socket)
+    } else {
+        switch (appEvent.action) {
+            case "board.join": 
+                addSessionToBoard(await getBoard(appEvent.boardId), socket)
+                ackJoinBoard(appEvent.boardId, socket)
+                return;
+            case "board.add": {
+                const board = { id: appEvent.boardId, name: appEvent.name, items: [] }
+                addBoard(board)
+                addSessionToBoard(board, socket)
+                return
+            }
+            case "cursor.move": {
+                const { boardId, position } = appEvent;
+                const { x, y } = position;
+                cursorPositions[boardId] = cursorPositions[boardId] || {};
+                cursorPositions[boardId][socket.id] = { x, y };
+                return;
+            }
+            default: {
+                console.warn("Unhandled app-event message", appEvent)
+            }
+        }    
     }
 }

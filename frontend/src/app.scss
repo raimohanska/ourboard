@@ -185,6 +185,9 @@ a {
                 display: block;
                 font-size: 0.3em;
             }
+            &.selected {
+                border: 3px solid white;
+            }
         }    
     }
     

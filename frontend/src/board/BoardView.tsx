@@ -1,8 +1,8 @@
 import * as H from "harmaja";
-import { h, ListView } from "harmaja";
+import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, CursorPosition } from "../../../common/domain";
+import { AppEvent, Board, CursorPosition, Id, PostIt } from "../../../common/domain";
 import { NewPostIt } from "./NewPostIt"
 import { PostItView } from "./PostItView"
 
@@ -12,12 +12,21 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
   const element = L.atom<HTMLElement | null>(null);
   const fontSize = style.pipe(L.map(((s: { fontSize: string; }) => s.fontSize)))
 
+  const selected = L.atom<Id | null>(null);
+  L.fromEvent<JSX.KeyboardEvent>(document, "keyup").pipe(L.applyScope(componentScope())).forEach(e => {
+    if (e.keyCode === 8 || e.keyCode === 46) { // del or backspace
+      const s = selected.get()
+      if (s) {
+        dispatch({ action: "item.delete", boardId, itemId: s})
+      }      
+    }
+  })
   const coordinateHelper = boardCoordinateHelper(element, fontSize)
 
   coordinateHelper.currentBoardCoordinates.forEach(position => {
     dispatch({ action: "cursor.move", position, boardId })
   })
-  
+
   return (
     <div className="board-container">
       <h1>{L.view(board, "name")}</h1>
@@ -36,7 +45,11 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
       <div className="board" style={style} ref={element.set}>
         <ListView
           observable={L.view(board, "items")}
-          renderObservable={(id: string, postIt) => <PostItView {...{ boardId, id, postIt, coordinateHelper, dispatch }} />}
+          renderObservable={(id: string, postIt) => <PostItView {...{ 
+              boardId, id, postIt, 
+              selected: L.atom(L.view(selected, s => s ? s === id : false), s => selected.set(s ? id : null)), 
+              coordinateHelper, dispatch 
+          }} />}
           getKey={(postIt) => postIt.id}
         />
         <ListView

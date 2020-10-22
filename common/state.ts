@@ -9,6 +9,11 @@ export function boardReducer(board: Board, event: AppEvent): Board {
           ...board,
           items: board.items.map((p) => (p.id === event.item.id ? event.item : p))
         };
+      case "item.delete":
+        return {
+          ...board,
+          items: board.items.filter((p) => p.id !== event.itemId)
+        }
       default:
         console.warn("Unknown event", event);
         return board

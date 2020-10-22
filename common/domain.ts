@@ -22,9 +22,11 @@ export type BoardCursorPositions = Record<Id, CursorPosition>;
 export type Color = string;
 export type PostIt = { id: string; text: string; color: Color; x: number; y: number };
 
-export type AppEvent = AddBoard | AddPostIt | UpdatePostIt | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions;
+export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions;
+export type BoardItemEvent = AddPostIt | UpdatePostIt | DeletePostIt
 export type AddPostIt = { action: "item.add", boardId: Id, item: PostIt };
 export type UpdatePostIt = { action: "item.update", boardId: Id, item: PostIt };
+export type DeletePostIt = { action: "item.delete", boardId: Id, itemId: Id };
 export type AddBoard = { action: "board.add", boardId: Id, name: string }
 export type JoinBoard = { action: "board.join", boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack", boardId: Id, userId: Id }

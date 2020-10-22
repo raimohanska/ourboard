@@ -1,6 +1,6 @@
 import IO from "socket.io"
 import { idText } from "typescript"
-import { AppEvent, Board, CursorPosition, Id, InitBoard, } from "../../common/domain"
+import { AppEvent, Board, BoardItemEvent, CursorPosition, Id, InitBoard, } from "../../common/domain"
 
 type UserSession = {
     socket: IO.Socket,
@@ -29,7 +29,7 @@ export function addSessionToBoard(board: Board, origin: IO.Socket) {
             }    
         })
 }
-export function broadcastListEvent(appEvent: AppEvent & { boardId: string }, origin?: IO.Socket) {
+export function broadcastListEvent(appEvent: BoardItemEvent, origin?: IO.Socket) {
     //console.log("Broadcast", appEvent)
     everyoneElseOnTheSameBoard(appEvent.boardId, origin).forEach(s => {
         //console.log("   Sending to", s.socket.id)
