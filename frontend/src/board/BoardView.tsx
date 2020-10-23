@@ -33,6 +33,12 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
     dispatch({ action: "cursor.move", position, boardId })
   })
 
+  const onClick = (e: JSX.MouseEvent) => {
+    if (e.target === element.get()) {
+      focus.set({ status: "none" })
+    }
+  }
+
   return (
     <div className="board-container">
       <h1>{L.view(board, "name")}</h1>
@@ -48,11 +54,11 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
           }
         </span>
       </div>
-      <div className="board" style={style} ref={element.set}>
+      <div className="board" style={style} ref={element.set} onClick={onClick}>
         <ListView
           observable={L.view(board, "items")}
           renderObservable={(id: string, postIt) => <PostItView {...{ 
-              boardId, id, postIt, 
+              board, id, postIt, 
               focus,
               coordinateHelper, dispatch 
           }} />}

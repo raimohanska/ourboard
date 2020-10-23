@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { h, ListView } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, PostIt } from "../../../common/domain";
+import { AppEvent, Board, PostIt } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./BoardView";
 import { atom } from "lonna";
@@ -10,9 +10,9 @@ import { atom } from "lonna";
 export type ItemFocus = "none" | "selected" | "editing"
 
 export const PostItView = (
-    { boardId, id, postIt, focus, coordinateHelper, dispatch }: 
+    { board, id, postIt, focus, coordinateHelper, dispatch }: 
     {  
-        boardId: string, id: string; postIt: L.Property<PostIt>, 
+        board: L.Property<Board>, id: string; postIt: L.Property<PostIt>, 
         focus: L.Atom<BoardFocus>,
         coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }
 ) => {
@@ -23,16 +23,27 @@ export const PostItView = (
   })
   let dragStart: JSX.DragEvent | null = null;
   function onDragStart(e: JSX.DragEvent) {
+    const f = focus.get()
+    if (f.status !== "selected" || !f.ids.includes(id)) {
+        focus.set({ status: "selected", ids: [id]})
+    }
     dragStart = e;
   }
   function onDragEnd() {
     const { x: xDiff, y: yDiff } = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
-    const current = postIt.get();
-    const x = current.x + xDiff;
-    const y = current.y + yDiff;    
-    dispatch({ action: "item.update", boardId, item: { ...current, x, y } });
+
+    const f = focus.get()
+    if (f.status !== "selected") throw Error("Assertion fail")
+    const b = board.get()
+    f.ids.forEach(id => {
+        const current = b.items.find(i => i.id === id)
+        if (!current) throw Error("Item not found: " + id)
+        const x = current.x + xDiff
+        const y = current.y + yDiff
+        dispatch({ action: "item.update", boardId: b.id, item: { ...current, x, y } });
+    })    
   }
-  function onMouseDown(e: JSX.MouseEvent) {
+  function onClick(e: JSX.MouseEvent) {
       const f = focus.get()
       if (e.shiftKey && f.status === "selected") {
         if (f.ids.includes(id)) {
@@ -44,7 +55,7 @@ export const PostItView = (
         focus.set({ status: "selected", ids: [id]})
       }      
   }
-  const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId, item: { ...postIt.get(), text } }))
+  const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...postIt.get(), text } }))
   const showCoords = false
 
   return (
@@ -52,7 +63,7 @@ export const PostItView = (
       draggable={true}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      onMouseDown={onMouseDown}
+      onClick={onClick}
       className={L.view(itemFocus, s => s !== "none" ? "postit selected" : "postit")}
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
