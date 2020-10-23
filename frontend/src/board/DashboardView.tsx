@@ -1,7 +1,7 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import * as uuid from "uuid";
-import { AppEvent } from "../../../common/domain";
+import { AppEvent, exampleBoard } from "../../../common/domain";
 import { TextInput } from "../components/components";
 
 export const DashboardView = ({ dispatch }: {dispatch: (e: AppEvent) => void }) => {
@@ -17,5 +17,8 @@ export const DashboardView = ({ dispatch }: {dispatch: (e: AppEvent) => void }) 
       <TextInput value={boardName} placeholder="Enter board name" />
       <button onClick={createBoard} disabled={ disabled }>Create</button>
     </form>
+    <p>
+      Or try the <a href={`/b/${exampleBoard.id}`}>Example Board</a>!
+    </p>
   </div>
 }

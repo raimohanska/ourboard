@@ -39,7 +39,7 @@ export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE, p: 
 
 
 export const exampleBoard: Board = {
-    id: "83uqofejvöij",
+    id: "default",
     name: "Test Board",
     items: [
         { id: "1", text: "Hello", color: "pink", x: 10, y: 5 },
