@@ -17,7 +17,11 @@ export interface CursorPosition {
     y: number;
 }
 
-export type BoardCursorPositions = Record<Id, CursorPosition>;
+export type UserCursorPosition = CursorPosition & {
+    userId: Id,
+}
+
+export type BoardCursorPositions = Record<Id, UserCursorPosition>;
 
 export type Color = string;
 export type PostIt = { id: string; text: string; color: Color; x: number; y: number };
@@ -29,13 +33,15 @@ export type UpdatePostIt = { action: "item.update", boardId: Id, item: PostIt };
 export type DeletePostIt = { action: "item.delete", boardId: Id, itemId: Id };
 export type AddBoard = { action: "board.add", boardId: Id, name: string }
 export type JoinBoard = { action: "board.join", boardId: Id }
-export type AckJoinBoard = { action: "board.join.ack", boardId: Id, userId: Id }
-export type JoinedBoard = { action: "board.joined", boardId: Id, userId: Id }
+export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessionInfo
+export type JoinedBoard = { action: "board.joined", boardId: Id } & UserSessionInfo
 export type InitBoard = { action: "board.init", board: Board }
 export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
 
+export type UserSessionInfo = { userId: string, nickname: string }
+
 export const CURSOR_POSITIONS_ACTION_TYPE = "c" as const;
-export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE, p: Record<Id, CursorPosition> }
+export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE, p: Record<Id, UserCursorPosition> }
 
 
 export const exampleBoard: Board = {

@@ -1,7 +1,7 @@
 import IO from "socket.io"
 import { AppEvent, BoardItemEvent, BoardCursorPositions, exampleBoard, Id } from "../../common/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
-import { addSessionToBoard, broadcastListEvent, endSession, ackJoinBoard, startSession, broadcastCursorPositions } from "./sessions"
+import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions } from "./sessions"
 
 export const connectionHandler = (socket: IO.Socket) => {        
     socket.on("message", async (kind: string, event: any, ackFn) => {
@@ -50,8 +50,7 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
     } else {
         switch (appEvent.action) {
             case "board.join": 
-                addSessionToBoard(await getBoard(appEvent.boardId), socket)
-                ackJoinBoard(appEvent.boardId, socket)
+                addSessionToBoard(await getBoard(appEvent.boardId), socket)                
                 return;
             case "board.add": {
                 const board = { id: appEvent.boardId, name: appEvent.name, items: [] }
@@ -63,7 +62,7 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
                 const { boardId, position } = appEvent
                 const { x, y } = position
                 cursorPositions[boardId] = cursorPositions[boardId] || {}
-                cursorPositions[boardId][socket.id] = { x, y }
+                cursorPositions[boardId][socket.id] = { x, y, userId: socket.id }
                 positionShouldBeFlushedToClients.add(boardId)
                 return;
             }

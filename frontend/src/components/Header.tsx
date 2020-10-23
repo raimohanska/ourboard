@@ -2,7 +2,7 @@ import { h } from "harmaja";
 import * as L from "lonna";
 import { SyncStatus } from "../sync-status/sync-status-store";
 
-export const Header = ({ syncStatus }: { syncStatus: L.Property<SyncStatus> }) => {
+export const Header = ({ syncStatus, nickname }: { syncStatus: L.Property<SyncStatus>, nickname: L.Property<string> }) => {
     const logout = () => {
         localStorage.clear();
         document.location.reload()
@@ -16,6 +16,7 @@ export const Header = ({ syncStatus }: { syncStatus: L.Property<SyncStatus> }) =
     }
     return <header>
         <h1><a href="/">R-Board</a></h1> 
+        <span className="nickname">{nickname}</span>
         <span className={ L.view(syncStatus, s => "sync-status " + s) }>
             <span title={ L.view(syncStatus, showStatus) } className="symbol">⬤</span>
         </span>                  

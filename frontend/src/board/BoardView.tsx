@@ -2,16 +2,19 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, CursorPosition, Id, PostIt } from "../../../common/domain";
+import { AppEvent, Board, CursorPosition, Id, PostIt, UserCursorPosition } from "../../../common/domain";
 import { NewPostIt } from "./NewPostIt"
 import { PostItView } from "./PostItView"
+import { BoardAppState } from "./board-store";
 
 export type BoardFocus = 
   { status: "none" } | 
   { status: "selected", ids: Id[] } | 
   { status: "editing", id: Id }
 
-export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: string, cursors: L.Property<CursorPosition[]>, board: L.Property<Board>, dispatch: (e: AppEvent) => void }) => {
+export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: string, cursors: L.Property<UserCursorPosition[]>, state: L.Property<BoardAppState>, dispatch: (e: AppEvent) => void }) => {
+  const board = L.view(state, s => s.board!)
+  const sessions = L.view(state, s => s.users)
   const zoom = L.atom(1);
   const style = zoom.pipe(L.map((z) => ({ fontSize: z + "em" })));
   const element = L.atom<HTMLElement | null>(null);
@@ -66,17 +69,25 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
         />
         <ListView
           observable={cursors}
-          renderObservable={({ x, y }: CursorPosition) => <span style={{ 
-            transform: "rotate(-35deg)", 
-            display: "block", 
-            width: "0px", height:"0px", 
-            borderLeft: "5px solid transparent", 
-            borderRight: "5px solid transparent", 
-            borderBottom: "10px solid tomato", 
-            position: "absolute", 
-            left: x + "em", top: y + "em" 
-          }}></span> }
-          getKey={(c: CursorPosition) => c}
+          renderObservable={({ x, y, userId }: UserCursorPosition) => <span
+            className="cursor"
+            style={{
+              position: "absolute", 
+              display: "block", 
+              left: x + "em", top: y + "em" 
+            }}
+          >
+            <span className="arrow" style={{ 
+              transform: "rotate(-35deg)", 
+              display: "block", 
+              width: "0px", height:"0px", 
+              borderLeft: "5px solid transparent", 
+              borderRight: "5px solid transparent", 
+              borderBottom: "10px solid tomato", 
+            }}/>
+            <span className="text">{sessions.get().find(s => s.userId === userId)?.nickname || null}</span>
+          </span> }
+          getKey={(c: UserCursorPosition) => c}
         />
       </div>
     </div>

@@ -20,6 +20,7 @@ const App = () => {
         s.userId && delete otherCursors[s.userId];
         return Object.values(otherCursors);
     }))
+    const nickname = L.view(store.state, s => s.nickname)
 
     store.boardId.forEach(boardId => {
         if (!boardId) {
@@ -39,14 +40,14 @@ const App = () => {
     })
 
     return <div id="root">        
-        <Header syncStatus={syncStatus}/>
+        <Header syncStatus={syncStatus} nickname={nickname}/>
         {
             L.view(store.boardId, boardId => 
                 boardId ? L.view(showingBoardId, boardId => boardId 
                     ? <BoardView {...{
                         boardId,
                         cursors,
-                        board: L.view(store.state, "board") as L.Property<Board>,
+                        state: store.state,
                         dispatch: store.dispatch
                         }}/> 
                     : null
