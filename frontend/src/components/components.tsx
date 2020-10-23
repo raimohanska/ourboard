@@ -34,7 +34,8 @@ export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.A
     let { value, editingThis, commit, cancel, ...rest } = props
     const nameElement = L.atom<HTMLSpanElement | null>(null)
     let settingLocally = false
-    const startEditing = () => {
+    const onClick = (e: JSX.MouseEvent) => {
+        if (e.shiftKey) return
         editingThis.set(true)
         nameElement.get()!.focus()
     }  
@@ -58,7 +59,7 @@ export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.A
     }
 
     return <span 
-        onClick={startEditing} 
+        onClick={onClick} 
         onBlur={endEditing}
         contentEditable={editingThis} 
         ref={ nameElement.set } 

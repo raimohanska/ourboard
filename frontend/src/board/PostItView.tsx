@@ -4,16 +4,23 @@ import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { AppEvent, PostIt } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
-import { ItemFocus } from "./BoardView";
+import { BoardFocus } from "./BoardView";
 import { atom } from "lonna";
+
+export type ItemFocus = "none" | "selected" | "editing"
 
 export const PostItView = (
     { boardId, id, postIt, focus, coordinateHelper, dispatch }: 
     {  
         boardId: string, id: string; postIt: L.Property<PostIt>, 
-        focus: L.Atom<ItemFocus>,
+        focus: L.Atom<BoardFocus>,
         coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }
 ) => {
+  const itemFocus = L.view(focus, f => {
+      if (f.status === "none") return "none"
+      if (f.status === "selected") return f.ids.includes(id) ? "selected" : "none"
+      return f.id === id ? "editing" : "none"
+  })
   let dragStart: JSX.DragEvent | null = null;
   function onDragStart(e: JSX.DragEvent) {
     dragStart = e;
@@ -25,8 +32,17 @@ export const PostItView = (
     const y = current.y + yDiff;    
     dispatch({ action: "item.update", boardId, item: { ...current, x, y } });
   }
-  function onMouseDown() {
-      focus.set("selected")
+  function onMouseDown(e: JSX.MouseEvent) {
+      const f = focus.get()
+      if (e.shiftKey && f.status === "selected") {
+        if (f.ids.includes(id)) {
+            focus.set({ status: "selected", ids: f.ids.filter(i => i !== id)})    
+        } else {
+            focus.set({ status: "selected", ids: f.ids.concat(id)})    
+        }
+      } else {
+        focus.set({ status: "selected", ids: [id]})
+      }      
   }
   const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId, item: { ...postIt.get(), text } }))
   const showCoords = false
@@ -37,7 +53,7 @@ export const PostItView = (
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onMouseDown={onMouseDown}
-      className={L.view(focus, s => s !== "none" ? "postit selected" : "postit")}
+      className={L.view(itemFocus, s => s !== "none" ? "postit selected" : "postit")}
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
         left: p.x + "em",
@@ -52,8 +68,8 @@ export const PostItView = (
       <span className="text">
         <EditableSpan {...{
           value: textAtom, editingThis: L.atom(
-              L.view(focus, f => f === "editing"),
-              e => focus.set(e ? "editing" : "selected")
+              L.view(itemFocus, f => f === "editing"),
+              e => focus.set(e ? { status: "editing", id } : { status: "selected", ids: [id] })
           )
         }} />
         { showCoords ? <small>{L.view(postIt, p => Math.floor(p.x) + ", " + Math.floor(p.y))}</small> : null}
