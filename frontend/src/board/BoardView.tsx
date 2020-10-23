@@ -6,18 +6,22 @@ import { AppEvent, Board, CursorPosition, Id, PostIt } from "../../../common/dom
 import { NewPostIt } from "./NewPostIt"
 import { PostItView } from "./PostItView"
 
+export type BoardFocus = { status: "none" } | { status: "selected", id: Id } | { status: "editing", id: Id }
+export type ItemFocus = "none" | "selected" | "editing"
+
 export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: string, cursors: L.Property<CursorPosition[]>, board: L.Property<Board>, dispatch: (e: AppEvent) => void }) => {
   const zoom = L.atom(1);
   const style = zoom.pipe(L.map((z) => ({ fontSize: z + "em" })));
   const element = L.atom<HTMLElement | null>(null);
   const fontSize = style.pipe(L.map(((s: { fontSize: string; }) => s.fontSize)))
 
-  const selected = L.atom<Id | null>(null);
+  const focus = L.atom<BoardFocus>({status: "none" })
+  
   L.fromEvent<JSX.KeyboardEvent>(document, "keyup").pipe(L.applyScope(componentScope())).forEach(e => {
     if (e.keyCode === 8 || e.keyCode === 46) { // del or backspace
-      const s = selected.get()
-      if (s) {
-        dispatch({ action: "item.delete", boardId, itemId: s})
+      const s = focus.get()
+      if (s.status === "selected") {
+        dispatch({ action: "item.delete", boardId, itemId: s.id})
       }      
     }
   })
@@ -47,7 +51,10 @@ export const BoardView = ({ boardId, cursors, board, dispatch }: { boardId: stri
           observable={L.view(board, "items")}
           renderObservable={(id: string, postIt) => <PostItView {...{ 
               boardId, id, postIt, 
-              selected: L.atom(L.view(selected, s => s ? s === id : false), s => selected.set(s ? id : null)), 
+              focus: L.atom<ItemFocus>(
+                L.view(focus, (s: BoardFocus) => (s.status !== "none" && s.id === id) ? s.status : "none"), 
+                s => focus.set(s === "none" ? { status: "none" } : { status: s, id })
+              ),
               coordinateHelper, dispatch 
           }} />}
           getKey={(postIt) => postIt.id}

@@ -38,6 +38,9 @@ export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.A
         editingThis.set(true)
         nameElement.get()!.focus()
     }  
+    const endEditing = () => {
+        editingThis.set(false)
+    }
     const onKeyPress = (e: JSX.KeyboardEvent) => {
         if (e.keyCode === 13){ 
             e.preventDefault(); 
@@ -56,6 +59,7 @@ export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.A
 
     return <span 
         onClick={startEditing} 
+        onBlur={endEditing}
         contentEditable={editingThis} 
         ref={ nameElement.set } 
         onKeyPress={onKeyPress}

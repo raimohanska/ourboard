@@ -4,10 +4,15 @@ import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { AppEvent, PostIt } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
+import { ItemFocus } from "./BoardView";
+import { atom } from "lonna";
 
 export const PostItView = (
-    { boardId, id, postIt, selected, coordinateHelper, dispatch }: 
-    { boardId: string, id: string; postIt: L.Property<PostIt>, selected: L.Atom<boolean>, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }
+    { boardId, id, postIt, focus, coordinateHelper, dispatch }: 
+    {  
+        boardId: string, id: string; postIt: L.Property<PostIt>, 
+        focus: L.Atom<ItemFocus>,
+        coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }
 ) => {
   let dragStart: JSX.DragEvent | null = null;
   function onDragStart(e: JSX.DragEvent) {
@@ -17,16 +22,18 @@ export const PostItView = (
     const { x: xDiff, y: yDiff } = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
     const current = postIt.get();
     const x = current.x + xDiff;
-    const y = current.y + yDiff;
+    const y = current.y + yDiff;    
     dispatch({ action: "item.update", boardId, item: { ...current, x, y } });
+  }
+  function onMouseDown() {
+    focus.set("selected")
   }
 
   function onClick() {
-      selected.set(true)
+    focus.modify(c => c === "none" ? "selected" : c)
   }
 
   const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId, item: { ...postIt.get(), text } }))
-  const editingThis = L.atom(false)
   const showCoords = false
 
   return (
@@ -35,7 +42,8 @@ export const PostItView = (
       onClick={onClick}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className={L.view(selected, s => s ? "postit selected" : "postit")}
+      onMouseDown={onMouseDown}
+      className={L.view(focus, s => s !== "none" ? "postit selected" : "postit")}
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
         left: p.x + "em",
@@ -49,7 +57,10 @@ export const PostItView = (
     >
       <span className="text">
         <EditableSpan {...{
-          value: textAtom, editingThis
+          value: textAtom, editingThis: L.atom(
+              L.view(focus, f => f === "editing"),
+              e => focus.set(e ? "editing" : "selected")
+          )
         }} />
         { showCoords ? <small>{L.view(postIt, p => Math.floor(p.x) + ", " + Math.floor(p.y))}</small> : null}
       </span>
