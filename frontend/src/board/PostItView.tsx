@@ -26,20 +26,14 @@ export const PostItView = (
     dispatch({ action: "item.update", boardId, item: { ...current, x, y } });
   }
   function onMouseDown() {
-    focus.set("selected")
+      focus.set("selected")
   }
-
-  function onClick() {
-    focus.modify(c => c === "none" ? "selected" : c)
-  }
-
   const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId, item: { ...postIt.get(), text } }))
   const showCoords = false
 
   return (
     <span
       draggable={true}
-      onClick={onClick}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onMouseDown={onMouseDown}
