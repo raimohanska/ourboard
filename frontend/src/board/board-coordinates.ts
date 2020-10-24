@@ -42,8 +42,8 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>, fon
       
       const baseFontSize = baseFontSizeAtom.get();
       const rect = boardElem.get()!.getBoundingClientRect()
-      return { 
-        x: pxToEm(clientCoords.x - rect.x, baseFontSize) | 0, 
+      return {
+        x: pxToEm(clientCoords.x - rect.x, baseFontSize) | 0,
         y: pxToEm(clientCoords.y - rect.y, baseFontSize) | 0
       }
     }
@@ -51,7 +51,18 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>, fon
     function clientCoordDiffToThisPoint(coords: ClientCoordinates) {
       return coordDiff(currentClientPos.get(), coords)
     }
-  
+
+    function getClippedCoordinate(coordinate: number, direction: 'clientWidth' | 'clientHeight', maxMargin: number) {
+      const elem = boardElem.get()
+      if (!elem) {
+        return coordinate
+      }
+      const clientSize = elem[direction]
+      const baseFontSize = baseFontSizeAtom.get();
+      const maxCoordinate = pxToEm(clientSize, baseFontSize) - maxMargin
+      return Math.max(0, Math.min(coordinate, maxCoordinate))
+    }
+
     boardElem.forEach(elem => {
       if (!elem) return
       elem.addEventListener("dragover", e => {
@@ -71,6 +82,7 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>, fon
       clientCoordDiffToThisPoint,
       currentClientCoordinates: currentClientPos,
       currentBoardCoordinates,
-      boardCoordDiffFromThisClientPoint: (coords: ClientCoordinates) => coordDiff(currentBoardCoordinates.get(), clientToBoardCoordinates(coords))
+      boardCoordDiffFromThisClientPoint: (coords: ClientCoordinates) => coordDiff(currentBoardCoordinates.get(), clientToBoardCoordinates(coords)),
+      getClippedCoordinate
     }
   }

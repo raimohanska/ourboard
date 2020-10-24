@@ -9,6 +9,9 @@ import { atom } from "lonna";
 
 export type ItemFocus = "none" | "selected" | "editing"
 
+const POSTIT_WIDTH = 5
+const POSTIT_HEIGHT = 5
+
 export const PostItView = (
     { board, id, postIt, focus, coordinateHelper, dispatch }: 
     {  
@@ -38,8 +41,8 @@ export const PostItView = (
     f.ids.forEach(id => {
         const current = b.items.find(i => i.id === id)
         if (!current) throw Error("Item not found: " + id)
-        const x = current.x + xDiff
-        const y = current.y + yDiff
+        const x = coordinateHelper.getClippedCoordinate(current.x + xDiff, 'clientWidth', POSTIT_WIDTH-1)
+        const y = coordinateHelper.getClippedCoordinate(current.y + yDiff, 'clientHeight', POSTIT_HEIGHT)
         dispatch({ action: "item.update", boardId: b.id, item: { ...current, x, y } });
     })    
   }
@@ -68,8 +71,8 @@ export const PostItView = (
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
         left: p.x + "em",
-        height: "5em",
-        width: "5em",
+        height: POSTIT_WIDTH + "em",
+        width: POSTIT_HEIGHT + "em",
         background: p.color,
         padding: "1em",
         position: "absolute"
