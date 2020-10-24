@@ -1,5 +1,20 @@
 import * as L from "lonna"
 
+const COORDINATES_PROTOTYPE = {
+  x: 0,
+  y: 0,
+  // serialize to 2 decimal points precision
+  toJSON() {
+    return { x: this.x.toFixed(2), y: this.y.toFixed(2) }
+  }
+};
+const newCoordinates = (x: number, y : number): Coordinates => {
+  const coords = Object.create(COORDINATES_PROTOTYPE);
+  coords.x = x;
+  coords.y = y;
+  return coords;
+}
+
 export type Coordinates = { x: number, y: number }
 // HTML client coordinates: relative to viewport
 export type ClientCoordinates = Coordinates
@@ -33,7 +48,7 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>, fon
     }
   
     function coordDiff(a: Coordinates, b: Coordinates) {
-      return { x: a.x - b.x, y: a.y - b.y }
+      return newCoordinates(a.x - b.x, a.y - b.y)
     }
   
     function clientToBoardCoordinates(clientCoords: ClientCoordinates): Coordinates {
@@ -42,10 +57,7 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>, fon
       
       const baseFontSize = baseFontSizeAtom.get();
       const rect = boardElem.get()!.getBoundingClientRect()
-      return {
-        x: pxToEm(clientCoords.x - rect.x, baseFontSize) | 0,
-        y: pxToEm(clientCoords.y - rect.y, baseFontSize) | 0
-      }
+      return newCoordinates(pxToEm(clientCoords.x - rect.x, baseFontSize), pxToEm(clientCoords.y - rect.y, baseFontSize))
     }
   
     function clientCoordDiffToThisPoint(coords: ClientCoordinates) {
