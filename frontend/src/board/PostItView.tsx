@@ -25,26 +25,29 @@ export const PostItView = (
       return f.id === id ? "editing" : "none"
   })
   let dragStart: JSX.DragEvent | null = null;
+  let dragStartPositions: { id: string, x: number, y: number }[]
   function onDragStart(e: JSX.DragEvent) {
     const f = focus.get()
     if (f.status !== "selected" || !f.ids.includes(id)) {
         focus.set({ status: "selected", ids: [id]})
     }
     dragStart = e;
+    dragStartPositions = board.get().items.map(postIt => { return { id: postIt.id, x: postIt.x, y: postIt.y }})
   }
-  function onDragEnd() {
+  function onDrag() {
     const { x: xDiff, y: yDiff } = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
 
     const f = focus.get()
     if (f.status !== "selected") throw Error("Assertion fail")
     const b = board.get()
     f.ids.forEach(id => {
-        const current = b.items.find(i => i.id === id)
-        if (!current) throw Error("Item not found: " + id)
-        const x = coordinateHelper.getClippedCoordinate(current.x + xDiff, 'clientWidth', POSTIT_WIDTH-1)
-        const y = coordinateHelper.getClippedCoordinate(current.y + yDiff, 'clientHeight', POSTIT_HEIGHT)
-        dispatch({ action: "item.update", boardId: b.id, item: { ...current, x, y } });
-    })    
+      const current = b.items.find(i => i.id === id)
+      const dragStartPosition = dragStartPositions.find(i => i.id === id)
+      if (!current || !dragStartPosition) throw Error("Item not found: " + id)
+      const x = coordinateHelper.getClippedCoordinate(dragStartPosition.x + xDiff, 'clientWidth', POSTIT_WIDTH-1)
+      const y = coordinateHelper.getClippedCoordinate(dragStartPosition.y + yDiff, 'clientHeight', POSTIT_HEIGHT)
+      dispatch({ action: "item.update", boardId: b.id, item: { ...current, x, y } });
+    })
   }
   function onClick(e: JSX.MouseEvent) {
       const f = focus.get()
@@ -65,7 +68,7 @@ export const PostItView = (
     <span
       draggable={true}
       onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
+      onDrag={onDrag}
       onClick={onClick}
       className={L.view(itemFocus, s => s !== "none" ? "postit selected" : "postit")}
       style={postIt.pipe(L.map((p: PostIt) => ({
