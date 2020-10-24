@@ -3,3 +3,6 @@ node_modules
 dist
 yarn-error.log
 .env
+*.mp4
+cypress/screenshots
+cypress/videos

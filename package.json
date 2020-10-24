@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@types/uuid": "^8.3.0",
+    "cypress": "^5.4.0",
     "npm-run-all": "^4.1.5",
     "typescript": "^4.0.2"
   },
@@ -29,6 +30,7 @@
     "build": "yarn build:frontend && yarn build:backend",
     "build:frontend": "cd frontend && yarn build",
     "build:backend": "cd backend && yarn build",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "test-e2e:dev": "cypress run"
   }
 }

@@ -1,0 +1,33 @@
+name: e2e-cypress
+on: [push]
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: r-board
+          POSTGRES_PASSWORD: secret
+        ports:
+            - 13338:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    strategy:
+      matrix:
+        node-version: [13.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Run cypress tests
+      uses: cypress-io/github-action@v2
+      with:
+        start: yarn start:dev:no-db
+        wait-on: 'http://localhost:1337'
