@@ -12,6 +12,10 @@ export type ItemFocus = "none" | "selected" | "editing"
 const POSTIT_WIDTH = 5
 const POSTIT_HEIGHT = 5
 
+const DND_GHOST_HIDING_IMAGE = new Image();
+// https://png-pixel.com/
+DND_GHOST_HIDING_IMAGE.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+
 export const PostItView = (
     { board, id, postIt, focus, coordinateHelper, dispatch }: 
     {  
@@ -32,6 +36,7 @@ export const PostItView = (
         focus.set({ status: "selected", ids: [id]})
     }
     dragStart = e;
+    dragStart.dataTransfer.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
     dragStartPositions = board.get().items.map(postIt => { return { id: postIt.id, x: postIt.x, y: postIt.y }})
   }
   function onDrag() {
