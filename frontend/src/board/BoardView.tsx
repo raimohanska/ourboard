@@ -74,7 +74,8 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
             style={{
               position: "absolute", 
               display: "block", 
-              left: x + "em", top: y + "em" 
+              left: coordinateHelper.getClippedCoordinate(x, 'clientWidth', 0) + "em",
+              top: coordinateHelper.getClippedCoordinate(y, 'clientHeight', 2) + "em"
             }}
           >
             <span className="arrow" style={{ 
