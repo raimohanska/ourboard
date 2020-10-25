@@ -79,6 +79,7 @@ export const PostItView = (
 
   const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...postIt.get(), text } }))
   const showCoords = false
+  const selected = L.view(itemFocus, s => s !== "none")
 
   return (
     <span
@@ -87,7 +88,7 @@ export const PostItView = (
       onDrag={onDrag}
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={L.view(itemFocus, s => s !== "none" ? "postit selected" : "postit")}
+      className={L.view(selected, s => s ? "postit selected" : "postit")}
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
         left: p.x + "em",
@@ -108,6 +109,16 @@ export const PostItView = (
         }} />
         { showCoords ? <small>{L.view(postIt, p => Math.floor(p.x) + ", " + Math.floor(p.y))}</small> : null}
       </span>
+      { L.view(selected, s => s ? <SelectionBorder/> : null) }
     </span>
   );
 };
+
+const SelectionBorder = () => {
+  return <span className="selection-control">
+    <span className="corner-drag top left"></span>
+    <span className="corner-drag top right"></span>
+    <span className="corner-drag bottom right"></span>
+    <span className="corner-drag bottom left"></span>
+  </span>
+}

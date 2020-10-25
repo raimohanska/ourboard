@@ -185,10 +185,38 @@ a {
                 display: block;
                 font-size: 0.3em;
             }
-            &.selected {
-                border: 3px solid white;
-            }
         }    
+
+        .selection-control {
+            display: block;
+            border: 2px solid $link-color;
+            width: calc(100% + 0.5em);
+            height: calc(100% + 0.5em);
+            position: absolute;
+            .corner-drag {
+                @extend .dropshadow-shallow;
+                position: absolute;
+                display: block;
+                width: 10px;
+                height: 10px;
+                background: white;
+                border-radius: 2px;
+                border: 1px solid #cccccc;
+                $offset: -7px;
+                &.left {
+                    left: $offset;
+                }
+                &.right {
+                    right: $offset;
+                }
+                &.top {
+                    top: $offset;
+                }
+                &.bottom {
+                    bottom: $offset;
+                }
+            }
+        }
 
         .cursor {
             .text {
