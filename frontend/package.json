@@ -10,7 +10,7 @@
     "@types/socket.io-client": "^1.4.33",
     "cookie": "^0.4.1",
     "email-validator": "^2.0.4",
-    "harmaja": "^0.11.2",
+    "harmaja": "^0.11.3",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "lonna": "^0.2.5",

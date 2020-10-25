@@ -81,7 +81,7 @@ export const BoardView = (
         <button onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
         <PaletteView {...{ coordinateHelper, onAdd }}/>
       </div>
-      <div className="board" style={style} ref={ref as any /* TODO: harmaja ref type is not right! */} onClick={onClick}>
+      <div className="board" style={style} ref={ref} onClick={onClick}>
         <ListView
           observable={L.view(board, "items")}
           renderObservable={renderItem}
