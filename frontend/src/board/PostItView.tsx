@@ -68,7 +68,7 @@ export const PostItView = (
       onDragStart={onDragStart}
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={L.view(selected, s => s ? "postit selected" : "postit")}
+      className={L.view(selected, s => s ? "postit postit-existing selected" : "postit postit-existing")}
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
         left: p.x + "em",

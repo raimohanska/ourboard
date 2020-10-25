@@ -1,7 +1,4 @@
 // Cypress doesn't use a DragEvent but just an Event, so it doesn't have dataTransfer property...
-
-const { isExportDeclaration } = require("typescript")
-
 // https://github.com/cypress-io/cypress/issues/649
 const mockDataTransfer = {
     setDragImage: () => null
@@ -53,27 +50,51 @@ describe("Example board - basic functionality", () => {
 
     it("Can drag post it", () => {
         cy.visit("http://localhost:1337/b/default")
-        let originalX, originalY;
-        cy.get(".postit").contains("Monoids").then(elements => {
-            const source = elements[0];
-            const { x, y } = source.getBoundingClientRect();
-            originalX = x;
-            originalY = y;
+        let originalX, originalY
+        const monoidsPostit = () => cy.get('.postit-existing[draggable=true]').contains("Monoids").parents('.postit-existing[draggable=true]')
+        monoidsPostit().then(elements => {
+            const source = elements[0]
+            const { x, y } = source.getBoundingClientRect()
+            originalX = x
+            originalY = y
 
             // Since our app logic calculates the new position for a post-it based on dragstart position and current client mouse position,
             // This test requires the following: 1. dragstart on source element 2. dragover on board to trigger clientCoordinates change 3. drag on source element
-            cy.get(".postit").contains("Monoids")
+            monoidsPostit()
                 .trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
             
             cy.get(".board").trigger("dragover", { force: true, clientX: x + 100, clientY: y - 100 })
-            cy.get(".postit").contains("Monoids").trigger("drag", { force: true })
+            monoidsPostit().trigger("drag", { force: true })
         })
 
-        cy.get(".postit").contains("Monoids").then(elements => {
-            const source = elements[0];
-            const { x, y } = source.getBoundingClientRect();
+        monoidsPostit().then(elements => {
+            const source = elements[0]
+            const { x, y } = source.getBoundingClientRect()
             expect(x).to.be.greaterThan(originalX)
             expect(y).to.be.lessThan(originalY)
+        })
+    })
+
+    it("Can drag-to-resize post-it", () => {
+        cy.visit("http://localhost:1337/b/default")
+        let originalWidth, originalHeight
+        const monoidsPostit = () => cy.get('.postit-existing[draggable=true]').contains("Monoids").parents('.postit-existing[draggable=true]')
+        monoidsPostit().then(elements => {
+            const source = elements[0]
+            const { x, y, width, height } = source.getBoundingClientRect()    
+            originalWidth = width
+            originalHeight = height       
+            monoidsPostit().click({ force: true })
+            monoidsPostit().get(".corner-drag.bottom.right").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+            cy.get(".board").trigger("dragover", { force: true, clientX: x + 200, clientY: y + 200 })
+            monoidsPostit().get(".corner-drag.bottom.right").trigger("drag", { force: true })
+        })
+        
+        monoidsPostit().then(elements => {
+            const source = elements[0]
+            const { width, height } = source.getBoundingClientRect()
+            expect(width).to.be.greaterThan(originalWidth)
+            expect(height).to.be.greaterThan(originalHeight)
         })
     })
 })
