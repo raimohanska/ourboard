@@ -2,10 +2,11 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, CursorPosition, Id, PostIt, UserCursorPosition } from "../../../common/domain";
+import {AppEvent, Color, Id, UserCursorPosition} from "../../../common/domain";
 import { NewPostIt } from "./NewPostIt"
 import { PostItView } from "./PostItView"
 import { BoardAppState } from "./board-store";
+import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -19,6 +20,7 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
   const style = zoom.pipe(L.map((z) => ({ fontSize: z + "em" })));
   const element = L.atom<HTMLElement | null>(null);
   const fontSize = style.pipe(L.map(((s: { fontSize: string; }) => s.fontSize)))
+  const contextMenu = L.atom<ContextMenu>(HIDDEN_CONTEXT_MENU)
 
   const focus = L.atom<BoardFocus>({status: "none" })
 
@@ -39,6 +41,19 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
   const onClick = (e: JSX.MouseEvent) => {
     if (e.target === element.get()) {
       focus.set({ status: "none" })
+      contextMenu.set(HIDDEN_CONTEXT_MENU)
+    }
+  }
+
+  const setColor = (color: Color) => {
+    const f = focus.get()
+    const b = board.get()
+    if (f.status === "selected") {
+      f.ids.forEach(id => {
+        const current = b.items.find(i => i.id === id)
+        if (!current) throw Error("Item not found: " + id)
+        dispatch({ action: "item.update", boardId: b.id, item: { ...current, color } });
+      })
     }
   }
 
@@ -68,7 +83,8 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
           renderObservable={(id: string, postIt) => <PostItView {...{ 
               board, id, postIt, 
               focus,
-              coordinateHelper, dispatch 
+              coordinateHelper, dispatch,
+              contextMenu
           }} />}
           getKey={(postIt) => postIt.id}
         />
@@ -96,6 +112,7 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
           getKey={(c: UserCursorPosition) => c}
         />
       </div>
+      <ContextMenuView {...{contextMenu, setColor } } />
     </div>
   );
 }

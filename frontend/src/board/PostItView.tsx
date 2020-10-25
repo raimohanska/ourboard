@@ -6,6 +6,7 @@ import { AppEvent, Board, PostIt } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./BoardView";
 import { atom } from "lonna";
+import { ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 
 export type ItemFocus = "none" | "selected" | "editing"
 
@@ -17,11 +18,12 @@ const DND_GHOST_HIDING_IMAGE = new Image();
 DND_GHOST_HIDING_IMAGE.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 
 export const PostItView = (
-    { board, id, postIt, focus, coordinateHelper, dispatch }: 
+    { board, id, postIt, focus, coordinateHelper, dispatch, contextMenu }:
     {  
         board: L.Property<Board>, id: string; postIt: L.Property<PostIt>, 
         focus: L.Atom<BoardFocus>,
-        coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }
+        coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void,
+        contextMenu: L.Atom<ContextMenu>}
 ) => {
   const itemFocus = L.view(focus, f => {
       if (f.status === "none") return "none"
@@ -55,7 +57,8 @@ export const PostItView = (
     })
   }
   function onClick(e: JSX.MouseEvent) {
-      const f = focus.get()
+    contextMenu.set(HIDDEN_CONTEXT_MENU)
+    const f = focus.get()
       if (e.shiftKey && f.status === "selected") {
         if (f.ids.includes(id)) {
             focus.set({ status: "selected", ids: f.ids.filter(i => i !== id)})    
@@ -66,6 +69,14 @@ export const PostItView = (
         focus.set({ status: "selected", ids: [id]})
       }      
   }
+
+  function onContextMenu(e: JSX.MouseEvent) {
+    onClick(e)
+    const { x, y } = coordinateHelper.currentClientCoordinates.get()
+    contextMenu.set({ hidden: false, x: x, y: y})
+    e.preventDefault()
+  }
+
   const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...postIt.get(), text } }))
   const showCoords = false
 
@@ -75,6 +86,7 @@ export const PostItView = (
       onDragStart={onDragStart}
       onDrag={onDrag}
       onClick={onClick}
+      onContextMenu={onContextMenu}
       className={L.view(itemFocus, s => s !== "none" ? "postit selected" : "postit")}
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",

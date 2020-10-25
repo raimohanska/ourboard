@@ -198,7 +198,18 @@ a {
         }
 
     }
-    
+
+    .context-menu {
+        position: fixed;
+        padding: 1em;
+        border: 1px solid black;
+        background: white;
+        cursor: pointer;
+        &.hidden {
+            display: none;
+        }
+    }
+
 }
 
 .dashboard {
