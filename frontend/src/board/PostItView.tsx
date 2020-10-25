@@ -46,7 +46,7 @@ export const PostItView = (
             focus.set({ status: "selected", ids: f.ids.concat(id)})    
         }
       } else {
-        focus.set({ status: "editing", id })
+        focus.set({ status: "selected", ids: [id] })
       }      
   }
 
