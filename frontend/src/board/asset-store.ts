@@ -14,6 +14,9 @@ export function assetStore(socket: typeof io.Socket) {
                 }
                 const assetId = uuid.v4()
                 localStorage[localKey(assetId)] = reader.result
+
+                // TODO: upload assert to server, send a notification event to others that this assetId is now available.
+
                 resolve(assetId)    
             })
             reader.addEventListener("error", x => {
