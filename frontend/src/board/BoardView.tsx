@@ -65,7 +65,7 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
 
   return (
     <div className="board-container">
-      <h1>{L.view(board, "name")}</h1>
+      <h1 id="board-name">{L.view(board, "name")}</h1>
       <div className="controls">
         <button onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
         <button onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
