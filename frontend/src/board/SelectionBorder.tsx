@@ -4,7 +4,7 @@ import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { AppEvent, Board, Item, PostIt } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
-import { onBoardItemDrag } from "./board-drag"
+import { onBoardItemDrag } from "./item-drag"
 export type ItemFocus = "none" | "selected" | "editing"
 
 type Horizontal = "left" | "right"

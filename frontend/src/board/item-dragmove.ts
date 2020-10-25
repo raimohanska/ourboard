@@ -6,7 +6,7 @@ import { AppEvent, Board, PostIt } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./BoardView";
 import { ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
-import { onBoardItemDrag } from "./board-drag"
+import { onBoardItemDrag } from "./item-drag"
 import { SelectionBorder } from "./SelectionBorder"
 export type ItemFocus = "none" | "selected" | "editing"
 
