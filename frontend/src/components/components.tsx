@@ -38,6 +38,7 @@ export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.A
         if (e.shiftKey) return
         editingThis.set(true)
         nameElement.get()!.focus()
+        e.stopPropagation()
     }  
     const endEditing = () => {
         editingThis.set(false)
