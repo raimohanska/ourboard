@@ -8,6 +8,7 @@ import { BoardFocus } from "./BoardView";
 import { ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 import { onBoardItemDrag } from "./board-drag"
 import { SelectionBorder } from "./SelectionBorder"
+import { itemDragToMove } from "./item-dragmove"
 export type ItemFocus = "none" | "selected" | "editing"
 
 export const PostItView = (
@@ -16,26 +17,17 @@ export const PostItView = (
         board: L.Property<Board>, id: string; postIt: L.Property<PostIt>, 
         focus: L.Atom<BoardFocus>,
         coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void,
-        contextMenu: L.Atom<ContextMenu>}
+        contextMenu: L.Atom<ContextMenu>
+    }
 ) => {
   const itemFocus = L.view(focus, f => {
       if (f.status === "none") return "none"
       if (f.status === "selected") return f.ids.includes(id) ? "selected" : "none"
       return f.id === id ? "editing" : "none"
   })
-  const ref = (elem: HTMLElement) => onBoardItemDrag(elem, board, focus, coordinateHelper, (b, current, dragStartPosition, xDiff, yDiff) => {
-    const f = focus.get()
-    if (f.status !== "selected") throw Error("Assertion fail")
-    const x = coordinateHelper.getClippedCoordinate(dragStartPosition.x + xDiff, 'clientWidth', current.width-1)
-    const y = coordinateHelper.getClippedCoordinate(dragStartPosition.y + yDiff, 'clientHeight', current.height)
-    dispatch({ action: "item.update", boardId: b.id, item: { ...current, x, y } });
-  })
-  function onDragStart(e: JSX.DragEvent) {
-    const f = focus.get()
-    if (f.status !== "selected" || !f.ids.includes(id)) {
-        focus.set({ status: "selected", ids: [id]})
-    }
-  }
+
+  const ref = itemDragToMove(id, board, focus, coordinateHelper, dispatch)
+
   function onClick(e: JSX.MouseEvent) {
     contextMenu.set(HIDDEN_CONTEXT_MENU)
     const f = focus.get()
@@ -65,9 +57,8 @@ export const PostItView = (
     <span
       ref={ref}
       draggable={true}
-      onDragStart={onDragStart}
       onClick={onClick}
-      onContextMenu={onContextMenu}
+      
       className={L.view(selected, s => s ? "postit postit-existing selected" : "postit postit-existing")}
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",

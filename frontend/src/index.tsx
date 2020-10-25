@@ -9,10 +9,12 @@ import { Header } from "./components/Header";
 import { syncStatusStore } from "./sync-status/sync-status-store";
 import { Board, exampleBoard } from "../../common/domain";
 import { DashboardView } from "./board/DashboardView"
+import { assetStore } from "./board/asset-store";
 
 const App = () => {
     const socket = io();    
     const store = boardStore(socket)    
+    const assets = assetStore(socket)
     const syncStatus = syncStatusStore(socket, store.queueSize)
     const showingBoardId = store.state.pipe(L.map((s: BoardAppState) => s.board ? s.board.id : undefined))
     const cursors = store.state.pipe(L.map((s: BoardAppState) => {
@@ -47,6 +49,7 @@ const App = () => {
                     ? <BoardView {...{
                         boardId,
                         cursors,
+                        assets,
                         state: store.state,
                         dispatch: store.dispatch
                         }}/> 

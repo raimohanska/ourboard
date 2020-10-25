@@ -174,18 +174,30 @@ a {
         width: 100%;
         height: 100%;
         position: relative;
-    
-        .postit {
+
+        .item {
             box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.26);
             display: inline-flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center;            
             cursor: pointer;
+        }
+    
+        .postit {
+            @extend .item;            
             small {
                 display: block;
                 font-size: 0.3em;
             }
-        }    
+        } 
+        
+        .image {
+            @extend .item;
+            img {
+                width: 100%;
+                height: 100%;
+            }
+        }
 
         .selection-control {
             display: block;

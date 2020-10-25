@@ -7,16 +7,20 @@ const DND_GHOST_HIDING_IMAGE = new Image();
 // https://png-pixel.com/
 DND_GHOST_HIDING_IMAGE.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 
-export function onBoardItemDrag(elem: HTMLElement, board: L.Property<Board>, focus: L.Atom<BoardFocus>, 
+export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property<Board>, focus: L.Atom<BoardFocus>, 
     coordinateHelper: BoardCoordinateHelper, doStuff: (b: Board, current: Item, dragStartPosition: Item, xDiff: number, yDiff: number) => void) {
     let dragStart: DragEvent | null = null;
     let dragStartPositions: Item[]
   
     elem.addEventListener("dragstart", e => {
       e.stopPropagation()
-        dragStart = e;
-        dragStart.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
-        dragStartPositions = board.get().items
+      const f = focus.get()
+      if (f.status !== "selected" || !f.ids.includes(id)) {
+          focus.set({ status: "selected", ids: [id]})
+      }
+      dragStart = e;
+      dragStart.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
+      dragStartPositions = board.get().items
     })
     elem.addEventListener("drag", e => {
       e.stopPropagation()

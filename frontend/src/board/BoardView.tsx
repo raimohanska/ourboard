@@ -2,19 +2,25 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import {AppEvent, Color, Id, Item, PostIt, UserCursorPosition} from "../../../common/domain";
+import {AppEvent, Color, Id, Image, Item, PostIt, UserCursorPosition} from "../../../common/domain";
 import { PostItView } from "./PostItView"
 import { BoardAppState } from "./board-store";
 import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView";
 import { CursorsView } from "./CursorsView";
+import { ImageView } from "./ImageView";
+import { imageUploadHandler } from "./image-upload"
+import { AssetStore } from "./asset-store";
 
 export type BoardFocus = 
   { status: "none" } | 
   { status: "selected", ids: Id[] } | 
   { status: "editing", id: Id }
 
-export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: string, cursors: L.Property<UserCursorPosition[]>, state: L.Property<BoardAppState>, dispatch: (e: AppEvent) => void }) => {
+export const BoardView = (
+  { boardId, cursors, state, assets, dispatch }: 
+  { boardId: string, cursors: L.Property<UserCursorPosition[]>, state: L.Property<BoardAppState>, assets: AssetStore, dispatch: (e: AppEvent) => void }
+) => {
   const board = L.view(state, s => s.board!)
   const sessions = L.view(state, s => s.users)
   const zoom = L.atom(1);
@@ -22,8 +28,12 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
   const element = L.atom<HTMLElement | null>(null);
   const fontSize = style.pipe(L.map(((s: { fontSize: string; }) => s.fontSize)))
   const contextMenu = L.atom<ContextMenu>(HIDDEN_CONTEXT_MENU)
-
   const focus = L.atom<BoardFocus>({status: "none" })
+
+  const ref = (el: HTMLElement) => {
+    element.set(el)
+    imageUploadHandler(el, assets, coordinateHelper, onAdd)
+  }
 
   L.fromEvent<JSX.KeyboardEvent>(document, "keyup").pipe(L.applyScope(componentScope())).forEach(e => {
     if (e.keyCode === 8 || e.keyCode === 46) { // del or backspace
@@ -39,14 +49,14 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
     dispatch({ action: "cursor.move", position, boardId })
   })
 
-  const onClick = (e: JSX.MouseEvent) => {
+  function onClick(e: JSX.MouseEvent) {
     if (e.target === element.get()) {
       focus.set({ status: "none" })
       contextMenu.set(HIDDEN_CONTEXT_MENU)
     }
   }
 
-  const setColor = (color: Color) => {
+  function setColor(color: Color) {
     const f = focus.get()
     const b = board.get()
     if (f.status === "selected") {
@@ -58,7 +68,7 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
     }
   }
 
-  const onAdd = (item: Item) => {
+  function onAdd(item: Item) {
     dispatch({ action: "item.add", boardId, item })
     focus.set({ status: "editing", id: item.id })
   }
@@ -71,7 +81,7 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
         <button onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
         <PaletteView {...{ coordinateHelper, onAdd }}/>
       </div>
-      <div className="board" style={style} ref={element.set} onClick={onClick}>
+      <div className="board" style={style} ref={ref as any /* TODO: harmaja ref type is not right! */} onClick={onClick}>
         <ListView
           observable={L.view(board, "items")}
           renderObservable={renderItem}
@@ -92,9 +102,12 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
             coordinateHelper, dispatch,
             contextMenu
         }} />
+        case "image": return <ImageView {...{
+          id, image: item as L.Property<Image>, assets,
+          board, focus, coordinateHelper, dispatch
+        }}/>
         default: throw Error("Unsupported item: " + t)
       }
-    })
-    
+    })    
   }
 }
