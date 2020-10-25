@@ -2,11 +2,12 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import {AppEvent, Color, Id, UserCursorPosition} from "../../../common/domain";
+import {AppEvent, Color, Id, PostIt, UserCursorPosition} from "../../../common/domain";
 import { NewPostIt } from "./NewPostIt"
 import { PostItView } from "./PostItView"
 import { BoardAppState } from "./board-store";
 import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
+import { PaletteView } from "./PaletteView";
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -68,14 +69,7 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
       <div className="controls">
         <button onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
         <button onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
-        <span className="template">
-          <span>Drag to add</span>
-          {
-            ["yellow", "pink", "cyan"].map(color =>
-              <NewPostIt {...{ onAdd, color, coordinateHelper }} />
-            )
-          }
-        </span>
+        <PaletteView {...{ coordinateHelper, onAdd }}/>
       </div>
       <div className="board" style={style} ref={element.set} onClick={onClick}>
         <ListView
