@@ -9,6 +9,7 @@ import { ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 import { onBoardItemDrag } from "./board-drag"
 import { SelectionBorder } from "./SelectionBorder"
 import { itemDragToMove } from "./item-dragmove"
+import { itemSelectionHandler } from "./item-selection";
 export type ItemFocus = "none" | "selected" | "editing"
 
 export const PostItView = (
@@ -20,27 +21,10 @@ export const PostItView = (
         contextMenu: L.Atom<ContextMenu>
     }
 ) => {
-  const itemFocus = L.view(focus, f => {
-      if (f.status === "none") return "none"
-      if (f.status === "selected") return f.ids.includes(id) ? "selected" : "none"
-      return f.id === id ? "editing" : "none"
-  })
 
   const ref = itemDragToMove(id, board, focus, coordinateHelper, dispatch)
 
-  function onClick(e: JSX.MouseEvent) {
-    contextMenu.set(HIDDEN_CONTEXT_MENU)
-    const f = focus.get()
-      if (e.shiftKey && f.status === "selected") {
-        if (f.ids.includes(id)) {
-            focus.set({ status: "selected", ids: f.ids.filter(i => i !== id)})    
-        } else {
-            focus.set({ status: "selected", ids: f.ids.concat(id)})    
-        }
-      } else {
-        focus.set({ status: "selected", ids: [id] })
-      }      
-  }
+  const { itemFocus, selected, onClick } = itemSelectionHandler(id, focus, contextMenu)
 
   function onContextMenu(e: JSX.MouseEvent) {
     onClick(e)
@@ -51,8 +35,7 @@ export const PostItView = (
 
   const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...postIt.get(), text } }))
   const showCoords = false
-  const selected = L.view(itemFocus, s => s !== "none")
-
+  
   return (
     <span
       ref={ref}

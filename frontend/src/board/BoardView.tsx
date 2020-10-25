@@ -104,7 +104,7 @@ export const BoardView = (
         }} />
         case "image": return <ImageView {...{
           id, image: item as L.Property<Image>, assets,
-          board, focus, coordinateHelper, dispatch
+          board, focus, coordinateHelper, dispatch, contextMenu
         }}/>
         default: throw Error("Unsupported item: " + t)
       }
