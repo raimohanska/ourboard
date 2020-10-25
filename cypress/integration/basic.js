@@ -6,7 +6,7 @@ const mockDataTransfer = {
 
 const BACKSPACE = 8;
 
-const PostitWithText = text => cy.get('.postit-existing[draggable=true]').contains(text).parents('.postit-existing[draggable=true]')
+const PostitWithText = text => cy.get('.postit-existing[draggable=true]').contains(text).parents('.postit-existing[draggable=true]').first()
 
 describe("Initial screen", () => {
     it('Opens correctly', () => {
@@ -150,6 +150,28 @@ describe("Example board - basic functionality", () => {
             cy.get(".palette-item").first().trigger("dragend", { force: true })
 
             PostitWithText("HELLO").should("exist")
+        })
+    })
+
+    it("Can change color of existing post-it from right click context menu", () => {
+        let originalColor;
+        PostitWithText("HELLO").then(els => {
+            originalColor = els[0].style.background
+            expect(originalColor).not.to.equal(undefined)
+        })
+
+        PostitWithText("HELLO").rightclick({ force: true })
+        cy.get(".context-menu").should("be.visible")
+        cy.get(".context-menu").find(".template").then(elements => {
+            const templateWithNewColor = [...elements].find(el => el.style.background && el.style.background !== originalColor)
+            const newColor = templateWithNewColor.style.background
+
+            templateWithNewColor.click()
+            PostitWithText("HELLO").then(els => {
+                expect(els[0].style.background, `Postit 'HELLO' should have turned ${newColor}`).to.equal(newColor)
+            })
+
+            cy.get(".context-menu").should("not.be.visible")
         })
     })
 

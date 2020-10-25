@@ -65,6 +65,7 @@ export const BoardView = (
         if (!current) throw Error("Item not found: " + id)
         dispatch({ action: "item.update", boardId: b.id, item: { ...current, color } as Item  }); // TODO: this is post-it specific, not for all Items
       })
+      contextMenu.set(HIDDEN_CONTEXT_MENU)
     }
   }
 
