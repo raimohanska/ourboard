@@ -195,6 +195,7 @@ a {
             height: calc(100% + 0.5em);
             position: absolute;
             .corner-drag {
+                pointer-events: all;
                 @extend .dropshadow-shallow;
                 position: absolute;
                 display: block;
