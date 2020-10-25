@@ -42,6 +42,11 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
     }
   }
 
+  const onAdd = (item: PostIt) => {
+    dispatch({ action: "item.add", boardId, item })
+    focus.set({ status: "editing", id: item.id })
+  }
+
   return (
     <div className="board-container">
       <h1>{L.view(board, "name")}</h1>
@@ -52,7 +57,7 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
           <span>Drag to add</span>
           {
             ["yellow", "pink", "cyan"].map(color =>
-              <NewPostIt {...{ boardId, dispatch, color, coordinateHelper }} />
+              <NewPostIt {...{ onAdd, color, coordinateHelper }} />
             )
           }
         </span>

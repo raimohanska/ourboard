@@ -1,12 +1,11 @@
-import * as H from "harmaja";
-import { h, ListView } from "harmaja";
+import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, Color, newPostIt } from "../../../common/domain";
+import { Color, newPostIt, PostIt } from "../../../common/domain";
 
 export const NewPostIt = (
-  { boardId, color, dispatch, coordinateHelper }: 
-  { boardId: string, color: Color, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void }
+  { color, onAdd, coordinateHelper }: 
+  { color: Color, coordinateHelper: BoardCoordinateHelper, onAdd: (i: PostIt) => void }
 ) => {
   const style = {
     background: color
@@ -16,10 +15,8 @@ export const NewPostIt = (
   
   function onDragEnd(dragEnd: JSX.DragEvent) {
     const {x, y} = coordinateHelper.currentBoardCoordinates.get()
-
     const item = newPostIt("HELLO", color, x, y)
-
-    dispatch({ action: "item.add", boardId, item });
+    onAdd(item);
   }
   return <span ref={element.set} onDragEnd={onDragEnd} className="postit" draggable={true} style={style}>
     <span className="text"></span>

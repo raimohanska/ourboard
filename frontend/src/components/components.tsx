@@ -37,9 +37,13 @@ export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.A
     const onClick = (e: JSX.MouseEvent) => {
         if (e.shiftKey) return
         editingThis.set(true)
-        nameElement.get()!.focus()
         e.stopPropagation()
     }  
+    editingThis.pipe(L.changes, L.filter(e => !!e), L.applyScope(componentScope())).forEach(() =>  { 
+        nameElement.get()!.focus() 
+        document.execCommand('selectAll',false)
+    })
+
     const endEditing = () => {
         editingThis.set(false)
     }
