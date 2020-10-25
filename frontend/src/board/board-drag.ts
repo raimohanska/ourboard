@@ -14,8 +14,6 @@ export function onBoardItemDrag(elem: HTMLElement, board: L.Property<Board>, foc
   
     elem.addEventListener("dragstart", e => {
       e.stopPropagation()
-        console.log("Start drag")
-        
         dragStart = e;
         dragStart.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
         dragStartPositions = board.get().items
