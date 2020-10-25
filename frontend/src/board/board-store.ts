@@ -53,7 +53,6 @@ export function boardStore(socket: typeof io.Socket) {
     }
     
     const state = events.pipe(L.scan({ board: undefined, userId: null, nickname: "", users: [], cursors: {} }, eventsReducer, globalScope))
-    state.pipe(L.changes, L.map((s: BoardAppState) => s.board), L.debounce(500)).forEach(LocalBoardStorage.saveBoard)
     
     return {
         state,
@@ -68,13 +67,3 @@ function boardIdFromPath() {
     const match = document.location.pathname.match(/b\/(.*)/)
     return (match && match[1]) || undefined
 }
-
-const LocalBoardStorage = (() => {
-    const storedBoard: Board = localStorage.board ? JSON.parse(localStorage.board) : []
-    const initialBoard = storedBoard && storedBoard.id === boardIdFromPath() ? storedBoard : null
-
-    return {
-        initialBoard,
-        saveBoard: (board: Board | undefined) => { if (board) { localStorage.board = JSON.stringify(board) }}        
-    }
-})()

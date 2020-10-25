@@ -24,7 +24,7 @@ export type UserCursorPosition = CursorPosition & {
 export type BoardCursorPositions = Record<Id, UserCursorPosition>;
 
 export type Color = string;
-export type PostIt = { id: string; text: string; color: Color; x: number; y: number };
+export type PostIt = { id: string; text: string; color: Color; x: number; y: number, width: number, height: number };
 
 export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions;
 export type BoardItemEvent = AddPostIt | UpdatePostIt | DeletePostIt
@@ -48,9 +48,9 @@ export const exampleBoard: Board = {
     id: "default",
     name: "Test Board",
     items: [
-        { id: "1", text: "Hello", color: "pink", x: 10, y: 5 },
-        { id: "2", text: "World", color: "cyan", x: 20, y: 10 },
-        { id: "3", text: "Welcome", color: "cyan", x: 5, y: 14 }
+        newPostIt("Hello", "pink", 10, 5),
+        newPostIt("World", "cyan", 20, 10),
+        newPostIt("Welcome", "cyan", 5, 14)
     ]
 }
 
@@ -59,8 +59,8 @@ export function createBoard(name: string): Board {
     return { id: uuid.v4(), name, items: [] } 
 }
 
-export function newPostIt(text: string, color: Color = "yellow", x: number = 20, y: number = 20): PostIt {
-    return { id: uuid.v4(), text, color, x, y }    
+export function newPostIt(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5): PostIt {
+    return { id: uuid.v4(), text, color, x, y, width, height }    
 }
 
 export function getCurrentTime(): ISOTimeStamp {

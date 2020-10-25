@@ -1,4 +1,4 @@
-import { AppEvent, Board, BoardItemEvent, exampleBoard, Id } from "../../common/domain"
+import { AppEvent, Board, BoardItemEvent, exampleBoard, Id, PostIt } from "../../common/domain"
 import { boardReducer } from "../../common/state"
 import { withDBClient } from "./db"
 import * as L from "lonna"
@@ -19,11 +19,19 @@ export async function getBoard(id: Id): Promise<Board> {
                 throw Error(`Board ${id} not found`)
             }
         } else {
-            board = result.rows[0].content as Board            
+            board = migrateBoard(result.rows[0].content as Board)
         }
         boards.push(board)
     }
     return board
+}
+
+function migrateBoard(board: Board) {
+    return { ... board, items: board.items.map(migrateItem) }
+    function migrateItem(item: PostIt) {
+        const { width, height, ...rest } = item
+        return { width: width || 5, height: height || 5, ...rest }
+    }
 }
 
 export async function updateBoards(appEvent: BoardItemEvent) {

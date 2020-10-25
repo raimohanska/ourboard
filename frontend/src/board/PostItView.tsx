@@ -10,9 +10,6 @@ import { ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 
 export type ItemFocus = "none" | "selected" | "editing"
 
-const POSTIT_WIDTH = 5
-const POSTIT_HEIGHT = 5
-
 const DND_GHOST_HIDING_IMAGE = new Image();
 // https://png-pixel.com/
 DND_GHOST_HIDING_IMAGE.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
@@ -51,8 +48,8 @@ export const PostItView = (
       const current = b.items.find(i => i.id === id)
       const dragStartPosition = dragStartPositions.find(i => i.id === id)
       if (!current || !dragStartPosition) throw Error("Item not found: " + id)
-      const x = coordinateHelper.getClippedCoordinate(dragStartPosition.x + xDiff, 'clientWidth', POSTIT_WIDTH-1)
-      const y = coordinateHelper.getClippedCoordinate(dragStartPosition.y + yDiff, 'clientHeight', POSTIT_HEIGHT)
+      const x = coordinateHelper.getClippedCoordinate(dragStartPosition.x + xDiff, 'clientWidth', current.width-1)
+      const y = coordinateHelper.getClippedCoordinate(dragStartPosition.y + yDiff, 'clientHeight', current.height)
       dispatch({ action: "item.update", boardId: b.id, item: { ...current, x, y } });
     })
   }
@@ -92,8 +89,8 @@ export const PostItView = (
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
         left: p.x + "em",
-        height: POSTIT_WIDTH + "em",
-        width: POSTIT_HEIGHT + "em",
+        height: p.height + "em",
+        width: p.width + "em",
         background: p.color,
         padding: "1em",
         position: "absolute"
@@ -109,16 +106,76 @@ export const PostItView = (
         }} />
         { showCoords ? <small>{L.view(postIt, p => Math.floor(p.x) + ", " + Math.floor(p.y))}</small> : null}
       </span>
-      { L.view(selected, s => s ? <SelectionBorder/> : null) }
+      { L.view(selected, s => s ? <SelectionBorder {...{ id, item: postIt, coordinateHelper, board, focus, dispatch}}/> : null) }
     </span>
   );
 };
 
-const SelectionBorder = () => {
+type Horizontal = "left" | "right"
+type Vertical = "top" | "bottom"
+
+const SelectionBorder = (
+  { id, item, board, coordinateHelper, focus, dispatch }: 
+  { id: string, item: L.Property<PostIt>, coordinateHelper: BoardCoordinateHelper, focus: L.Atom<BoardFocus>, board: L.Property<Board>, dispatch: (e: AppEvent) => void }
+) => {
   return <span className="selection-control">
     <span className="corner-drag top left"></span>
-    <span className="corner-drag top right"></span>
-    <span className="corner-drag bottom right"></span>
-    <span className="corner-drag bottom left"></span>
+    <DragCorner {...{ horizontal: "left", vertical: "top" }}/>
+    <DragCorner {...{ horizontal: "left", vertical: "bottom" }}/>
+    <DragCorner {...{ horizontal: "right", vertical: "top" }}/>
+    <DragCorner {...{ horizontal: "right", vertical: "bottom" }}/>    
   </span>
+
+  function DragCorner({ vertical, horizontal}: { vertical: Vertical, horizontal: Horizontal } ) {
+    
+    let dragStart: JSX.DragEvent | null = null;
+    let dragStartPositions: PostIt[]
+
+    const onDragStart = (e: JSX.DragEvent) => {
+      e.stopPropagation()
+      console.log("Start drag")
+      
+      dragStart = e;
+      dragStart.dataTransfer.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
+      dragStartPositions = board.get().items
+    }
+
+    function onDrag(e: JSX.DragEvent) {
+      e.stopPropagation()
+      const { x: xDiff, y: yDiff } = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
+  
+      const f = focus.get()
+      if (f.status !== "selected") throw Error("Assertion fail")
+      const b = board.get()
+      f.ids.forEach(id => {
+        const current = b.items.find(i => i.id === id)
+        const dragStartPosition = dragStartPositions.find(i => i.id === id)
+        if (!current || !dragStartPosition) throw Error("Item not found: " + id)
+        const x = horizontal === "left" 
+          ? coordinateHelper.getClippedCoordinate(dragStartPosition.x + xDiff, 'clientWidth', current.width-1)
+          : dragStartPosition.x
+        const y = vertical === "top" 
+          ? coordinateHelper.getClippedCoordinate(dragStartPosition.y + yDiff, 'clientHeight', current.height)
+          : dragStartPosition.y
+        const width = Math.max(2, horizontal === "left"
+          ? dragStartPosition.width - xDiff
+          : dragStartPosition.width + xDiff)
+
+        const height = Math.max(2, vertical === "top"
+          ? dragStartPosition.height - yDiff
+          : dragStartPosition.height + yDiff)
+
+        dispatch({ action: "item.update", boardId: b.id, item: { 
+          ...current, x, y, width, height
+        } });
+      })
+    }
+    
+    return <span 
+      draggable={true}
+      className={`corner-drag ${horizontal} ${vertical}`}
+      onDragStart={onDragStart}
+      onDrag={onDrag}
+    />
+  }
 }
