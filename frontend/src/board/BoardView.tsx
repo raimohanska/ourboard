@@ -2,12 +2,12 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import {AppEvent, Color, Id, PostIt, UserCursorPosition} from "../../../common/domain";
-import { NewPostIt } from "./NewPostIt"
+import {AppEvent, Color, Id, Item, PostIt, UserCursorPosition} from "../../../common/domain";
 import { PostItView } from "./PostItView"
 import { BoardAppState } from "./board-store";
 import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView";
+import { CursorsView } from "./CursorsView";
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -53,12 +53,12 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
       f.ids.forEach(id => {
         const current = b.items.find(i => i.id === id)
         if (!current) throw Error("Item not found: " + id)
-        dispatch({ action: "item.update", boardId: b.id, item: { ...current, color } });
+        dispatch({ action: "item.update", boardId: b.id, item: { ...current, color } as Item  }); // TODO: this is post-it specific, not for all Items
       })
     }
   }
 
-  const onAdd = (item: PostIt) => {
+  const onAdd = (item: Item) => {
     dispatch({ action: "item.add", boardId, item })
     focus.set({ status: "editing", id: item.id })
   }
@@ -74,39 +74,27 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
       <div className="board" style={style} ref={element.set} onClick={onClick}>
         <ListView
           observable={L.view(board, "items")}
-          renderObservable={(id: string, postIt) => <PostItView {...{ 
-              board, id, postIt, 
-              focus,
-              coordinateHelper, dispatch,
-              contextMenu
-          }} />}
+          renderObservable={renderItem}
           getKey={(postIt) => postIt.id}
         />
-        <ListView
-          observable={cursors}
-          renderObservable={({ x, y, userId }: UserCursorPosition) => <span
-            className="cursor"
-            style={{
-              position: "absolute", 
-              display: "block", 
-              left: coordinateHelper.getClippedCoordinate(x, 'clientWidth', 0) + "em",
-              top: coordinateHelper.getClippedCoordinate(y, 'clientHeight', 2) + "em"
-            }}
-          >
-            <span className="arrow" style={{ 
-              transform: "rotate(-35deg)", 
-              display: "block", 
-              width: "0px", height:"0px", 
-              borderLeft: "5px solid transparent", 
-              borderRight: "5px solid transparent", 
-              borderBottom: "10px solid tomato", 
-            }}/>
-            <span className="text">{sessions.get().find(s => s.userId === userId)?.nickname || null}</span>
-          </span> }
-          getKey={(c: UserCursorPosition) => c}
-        />
+        <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
       </div>
       <ContextMenuView {...{contextMenu, setColor } } />
     </div>
   );
+
+  function renderItem(id: string, item: L.Property<Item>) {
+    return L.view(L.view(item, "type"), t => {
+      switch (t) {
+        case "note" : return <PostItView {...{ 
+            board, id, postIt: item as L.Property<PostIt>, 
+            focus,
+            coordinateHelper, dispatch,
+            contextMenu
+        }} />
+        default: throw Error("Unsupported item", t)
+      }
+    })
+    
+  }
 }

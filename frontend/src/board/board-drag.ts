@@ -1,5 +1,5 @@
 import * as L from "lonna";
-import { Board, PostIt } from "../../../common/domain";
+import { Board, Item } from "../../../common/domain";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus } from "./BoardView";
 
@@ -8,9 +8,9 @@ const DND_GHOST_HIDING_IMAGE = new Image();
 DND_GHOST_HIDING_IMAGE.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 
 export function onBoardItemDrag(elem: HTMLElement, board: L.Property<Board>, focus: L.Atom<BoardFocus>, 
-    coordinateHelper: BoardCoordinateHelper, doStuff: (b: Board, current: PostIt, dragStartPosition: PostIt, xDiff: number, yDiff: number) => void) {
+    coordinateHelper: BoardCoordinateHelper, doStuff: (b: Board, current: Item, dragStartPosition: Item, xDiff: number, yDiff: number) => void) {
     let dragStart: DragEvent | null = null;
-    let dragStartPositions: PostIt[]
+    let dragStartPositions: Item[]
   
     elem.addEventListener("dragstart", e => {
       e.stopPropagation()

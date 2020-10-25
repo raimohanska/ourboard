@@ -1,4 +1,4 @@
-import { AppEvent, Board, BoardItemEvent, exampleBoard, Id, PostIt } from "../../common/domain"
+import { AppEvent, Board, BoardItemEvent, exampleBoard, Id, Item } from "../../common/domain"
 import { boardReducer } from "../../common/state"
 import { withDBClient } from "./db"
 import * as L from "lonna"
@@ -27,7 +27,7 @@ export async function getBoard(id: Id): Promise<Board> {
 }
 
 function migrateBoard(board: Board) {
-    const items: PostIt[] = []
+    const items: Item[] = []
     for (const item of board.items) {
         if (items.find(i => i.id === item.id)) {
             console.warn("Duplicate item", item, "found on table", board.name)
@@ -37,9 +37,9 @@ function migrateBoard(board: Board) {
     }
     return { ... board, items }
     
-    function migrateItem(item: PostIt) {
-        const { width, height, ...rest } = item
-        return { width: width || 5, height: height || 5, ...rest }
+    function migrateItem(item: Item): Item {
+        const { width, height, type, ...rest } = item
+        return { type: type || "note", width: width || 5, height: height || 5, ...rest } as Item
     }
 }
 

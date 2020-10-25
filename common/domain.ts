@@ -9,7 +9,7 @@ export type BoardInfo = {
 }
 
 export type Board = BoardInfo & {
-    items: PostIt[]
+    items: Item[]
 }
 
 export interface CursorPosition {
@@ -24,12 +24,17 @@ export type UserCursorPosition = CursorPosition & {
 export type BoardCursorPositions = Record<Id, UserCursorPosition>;
 
 export type Color = string;
-export type PostIt = { id: string; text: string; color: Color; x: number; y: number, width: number, height: number };
+
+export type ItemBounds = { x: number; y: number, width: number, height: number }
+
+export type PostIt = { id: string; type: "note"; text: string; color: Color } & ItemBounds;
+export type Image = { id: string; type: "image"; src: string } & ItemBounds;
+export type Item = PostIt | Image
 
 export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions;
 export type BoardItemEvent = AddPostIt | UpdatePostIt | DeletePostIt
-export type AddPostIt = { action: "item.add", boardId: Id, item: PostIt };
-export type UpdatePostIt = { action: "item.update", boardId: Id, item: PostIt };
+export type AddPostIt = { action: "item.add", boardId: Id, item: Item };
+export type UpdatePostIt = { action: "item.update", boardId: Id, item: Item };
 export type DeletePostIt = { action: "item.delete", boardId: Id, itemId: Id };
 export type AddBoard = { action: "board.add", boardId: Id, name: string }
 export type JoinBoard = { action: "board.join", boardId: Id }
@@ -60,7 +65,7 @@ export function createBoard(name: string): Board {
 }
 
 export function newPostIt(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5): PostIt {
-    return { id: uuid.v4(), text, color, x, y, width, height }    
+    return { id: uuid.v4(), type: "note", text, color, x, y, width, height }    
 }
 
 export function getCurrentTime(): ISOTimeStamp {
