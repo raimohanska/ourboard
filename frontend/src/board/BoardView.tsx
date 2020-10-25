@@ -92,7 +92,7 @@ export const BoardView = ({ boardId, cursors, state, dispatch }: { boardId: stri
             coordinateHelper, dispatch,
             contextMenu
         }} />
-        default: throw Error("Unsupported item", t)
+        default: throw Error("Unsupported item: " + t)
       }
     })
     
