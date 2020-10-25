@@ -5,6 +5,7 @@ import IO from "socket.io"
 import { connectionHandler } from "./connection-handler"
 import { initDB } from "./db"
 import path from "path"
+import { cleanActiveBoards } from "./board-store"
 
 const app = express();
 let http = new Http.Server(app);
@@ -22,11 +23,17 @@ io.on("connection", connectionHandler)
 const port = process.env.PORT || 1337
 
 initDB()
-    .then(() => {
+    .then(async ({ onEvent }) => {
         http.listen(port, () => {
             console.log("Listening on port " + port)
-        })        
+        })
+
+        onEvent(["clean_boards"], e => {
+            if (e.channel === "clean_boards") {
+                cleanActiveBoards();
+            }
+        })
     })
     .catch(e => {
-        throw e;
+        console.error(e)
     })

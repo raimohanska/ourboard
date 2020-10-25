@@ -50,7 +50,8 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
     } else {
         switch (appEvent.action) {
             case "board.join": 
-                addSessionToBoard(await getBoard(appEvent.boardId), socket)                
+                const board = await getBoard(appEvent.boardId)
+                addSessionToBoard(board, socket)                
                 return;
             case "board.add": {
                 const board = { id: appEvent.boardId, name: appEvent.name, items: [] }
