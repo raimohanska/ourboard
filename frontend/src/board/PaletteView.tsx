@@ -9,7 +9,7 @@ export const PaletteView = (
   { coordinateHelper, onAdd }: 
   { coordinateHelper: BoardCoordinateHelper, onAdd: (item: PostIt) => void }
 ) => {
-  return <span className="template">
+  return <span className="palette">
     <span>Drag to add</span>
     {
       ["yellow", "pink", "cyan"].map(color =>
