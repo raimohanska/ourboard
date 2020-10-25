@@ -4,6 +4,10 @@ const mockDataTransfer = {
     setDragImage: () => null
 }
 
+const BACKSPACE = 8;
+
+const PostitWithText = text => cy.get('.postit-existing[draggable=true]').contains(text).parents('.postit-existing[draggable=true]')
+
 describe("Initial screen", () => {
     it('Opens correctly', () => {
         cy.visit("http://localhost:1337")
@@ -52,7 +56,7 @@ describe("Example board - basic functionality", () => {
         cy.visit("http://localhost:1337/b/default")
         let originalX, originalY
         const monoidsPostit = () => cy.get('.postit-existing[draggable=true]').contains("Monoids").parents('.postit-existing[draggable=true]')
-        monoidsPostit().then(elements => {
+        PostitWithText("Monoids").then(elements => {
             const source = elements[0]
             const { x, y } = source.getBoundingClientRect()
             originalX = x
@@ -60,42 +64,102 @@ describe("Example board - basic functionality", () => {
 
             // Since our app logic calculates the new position for a post-it based on dragstart position and current client mouse position,
             // This test requires the following: 1. dragstart on source element 2. dragover on board to trigger clientCoordinates change 3. drag on source element
-            monoidsPostit()
+            PostitWithText("Monoids")
                 .trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
             
             cy.get(".board").trigger("dragover", { force: true, clientX: x + 100, clientY: y - 100 })
-            monoidsPostit().trigger("drag", { force: true })
+            PostitWithText("Monoids").trigger("drag", { force: true })
         })
 
-        monoidsPostit().then(elements => {
+        PostitWithText("Monoids").then(elements => {
             const source = elements[0]
             const { x, y } = source.getBoundingClientRect()
-            expect(x).to.be.greaterThan(originalX)
-            expect(y).to.be.lessThan(originalY)
+            expect(x, "Postit 'Monoids' should have moved to the right").to.be.greaterThan(originalX)
+            expect(y, "Postit 'Monoids' should have moved upward").to.be.lessThan(originalY)
+        })
+    })
+
+    it("Can drag multiple post its", () => {
+        cy.visit("http://localhost:1337/b/default")
+        let originalX, originalY, originalX2, originalY2;
+        PostitWithText("World").then(elements => {
+            const source = elements[0]
+            const { x, y } = source.getBoundingClientRect()
+            originalX2 = x
+            originalY2 = y
+        })
+        PostitWithText("Monoids").then(elements => {
+            const source = elements[0]
+            const { x, y } = source.getBoundingClientRect()
+            originalX = x
+            originalY = y
+
+            PostitWithText("Monoids").click({ force: true, shiftKey: true })
+            PostitWithText("World").click({ force: true, shiftKey: true })
+
+            PostitWithText("Monoids")
+                .trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+
+            cy.get(".board").trigger("dragover", { force: true, clientX: x - 100, clientY: y + 100 })
+            PostitWithText("Monoids").trigger("drag", { force: true })
+        })
+
+        PostitWithText("Monoids").then(elements => {
+            const source = elements[0]
+            const { x, y } = source.getBoundingClientRect()
+            expect(x, "Postit 'Monoids' should have moved to the left").to.be.lessThan(originalX)
+            expect(y, "Postit 'Monoids' should have moved downward").to.be.greaterThan(originalY)
+        })
+
+        PostitWithText("World").then(elements => {
+            const source = elements[0]
+            const { x, y } = source.getBoundingClientRect()
+            expect(x, "Postit 'World' should have moved to the left").to.be.lessThan(originalX2)
+            expect(y, "Postit 'World' should have moved downward").to.be.greaterThan(originalY2)
         })
     })
 
     it("Can drag-to-resize post-it", () => {
         cy.visit("http://localhost:1337/b/default")
         let originalWidth, originalHeight
-        const monoidsPostit = () => cy.get('.postit-existing[draggable=true]').contains("Monoids").parents('.postit-existing[draggable=true]')
-        monoidsPostit().then(elements => {
+        PostitWithText("Monoids").then(elements => {
             const source = elements[0]
-            const { x, y, width, height } = source.getBoundingClientRect()    
+            const { x, y, width, height } = source.getBoundingClientRect()
             originalWidth = width
-            originalHeight = height       
-            monoidsPostit().click({ force: true })
-            monoidsPostit().get(".corner-drag.bottom.right").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+            originalHeight = height
+            PostitWithText("Monoids").click({ force: true })
+            PostitWithText("Monoids").get(".corner-drag.bottom.right").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
             cy.get(".board").trigger("dragover", { force: true, clientX: x + 200, clientY: y + 200 })
-            monoidsPostit().get(".corner-drag.bottom.right").trigger("drag", { force: true })
+            PostitWithText("Monoids").get(".corner-drag.bottom.right").trigger("drag", { force: true })
         })
-        
-        monoidsPostit().then(elements => {
+
+        PostitWithText("Monoids").then(elements => {
             const source = elements[0]
             const { width, height } = source.getBoundingClientRect()
-            expect(width).to.be.greaterThan(originalWidth)
-            expect(height).to.be.greaterThan(originalHeight)
+            expect(width, "Postit 'Monoids' width should have increased").to.be.greaterThan(originalWidth)
+            expect(height, "Postit 'Monoids' height should have increased").to.be.greaterThan(originalHeight)
         })
+    })
+
+    it("Can create post-it by dragging from palette", () => {
+        cy.get(".palette-item").then(elements => {
+            const { x, y } = elements[0].getBoundingClientRect()
+            cy.get(".palette-item").first().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+            cy.get(".board").trigger("dragover", { force: true, clientX: x + 300, clientY: y + 300 })
+            // Dragging from palette is not shown in realtime, so the event is different here.
+            cy.get(".palette-item").first().trigger("dragend", { force: true })
+
+            PostitWithText("HELLO").should("exist")
+        })
+    })
+
+    it("Can delete post-its", () => {
+        cy.visit("http://localhost:1337/b/default")
+        PostitWithText("Monoids").click({ force: true, shiftKey: true })
+        PostitWithText("World").click({ force: true, shiftKey: true }).trigger("keyup", { keyCode: BACKSPACE, which: BACKSPACE })
+
+        cy.get('.postit-existing[draggable=true]').contains("Monoids").should("not.exist")
+        cy.get('.postit-existing[draggable=true]').contains("World").should("not.exist")
     })
 })
 
