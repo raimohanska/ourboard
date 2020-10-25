@@ -27,7 +27,16 @@ export async function getBoard(id: Id): Promise<Board> {
 }
 
 function migrateBoard(board: Board) {
-    return { ... board, items: board.items.map(migrateItem) }
+    const items: PostIt[] = []
+    for (const item of board.items) {
+        if (items.find(i => i.id === item.id)) {
+            console.warn("Duplicate item", item, "found on table", board.name)
+        } else {
+            items.push(migrateItem(item))
+        }
+    }
+    return { ... board, items }
+    
     function migrateItem(item: PostIt) {
         const { width, height, ...rest } = item
         return { width: width || 5, height: height || 5, ...rest }
