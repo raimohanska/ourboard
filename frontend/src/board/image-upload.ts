@@ -24,10 +24,33 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
         }
         const file = files[0]
         const assetId = await assets.uploadAsset(file)
+        const { width, height } = await imageDimensions(file)
+        const maxWidth = 10
+        const w = Math.min(width, maxWidth)
+        const h = height * w / width
         console.log("Asset id", assetId)
         const url = assets.getAsset(assetId)
         console.log("Asset URL", url)
-        const {x, y} = coordinateHelper.currentBoardCoordinates.get()
-        onAdd(newImage(assetId, x, y))
+        const { x, y } = coordinateHelper.currentBoardCoordinates.get()
+        onAdd(newImage(assetId, x, y, w, h))
     }
+}
+
+function imageDimensions(file: File): Promise<{ width: number, height: number }> {
+    return new Promise((resolve, reject) => {
+        const img = new Image()
+
+        // the following handler will fire after the successful loading of the image
+        img.onload = () => {
+            const { naturalWidth: width, naturalHeight: height } = img
+            resolve({ width, height })
+        }
+
+        // and this handler will fire if there was an error with the image (like if it's not really an image or a corrupted one)
+        img.onerror = () => {
+            reject('There was some problem with the image.')
+        }
+
+        img.src = URL.createObjectURL(file)
+    })
 }
