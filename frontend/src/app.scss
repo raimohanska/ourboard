@@ -2,6 +2,7 @@ $left-padding: 1em;
 $black: #333366;
 $bottom-bar-height: 3em;
 $font-family: Roboto, sans-serif;
+$font-family-postit: Montserrat, sans-serif;
 $link-color: #35b2dc;
 $heading-color: $link-color;
 $heading-height: 2.5em;
@@ -185,6 +186,7 @@ a {
     
         .postit {
             @extend .item;            
+            font-family: $font-family-postit;
             small {
                 display: block;
                 font-size: 0.3em;
