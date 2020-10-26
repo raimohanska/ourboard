@@ -6,12 +6,17 @@ const s3Config = {
     signatureVersion: 'v4'
 }
 
-export const s3 = new AWS.S3(s3Config);
+let s3Instance: AWS.S3 | null = null
+
+export const s3 = () => {
+    s3Instance = s3Instance || new AWS.S3(s3Config)
+    return s3Instance
+}
 
 export function getSignedPutUrl(Key: string) {
     const signedUrlExpireSeconds = 60 * 5
 
-    const url = s3.getSignedUrl('putObject', {
+    const url = s3().getSignedUrl('putObject', {
         Bucket: "r-board-assets",
         Key,
         Expires: signedUrlExpireSeconds

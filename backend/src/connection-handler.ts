@@ -2,7 +2,7 @@ import IO from "socket.io"
 import { AppEvent, BoardItemEvent, BoardCursorPositions, exampleBoard, Id } from "../../common/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
 import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions } from "./sessions"
-import { getSignedPutUrl } from "./s3"
+import { getSignedPutUrl } from "./storage"
 
 export const connectionHandler = (socket: IO.Socket) => {        
     socket.on("message", async (kind: string, event: any, ackFn) => {
