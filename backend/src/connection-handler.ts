@@ -46,6 +46,7 @@ setInterval(() => {
 
 async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
     if (appEvent.action.startsWith("item.")) {
+        console.log(appEvent)
         await updateBoards(appEvent as BoardItemEvent)
         broadcastListEvent(appEvent as BoardItemEvent, socket)
     } else {

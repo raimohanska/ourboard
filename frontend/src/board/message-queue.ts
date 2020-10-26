@@ -9,6 +9,7 @@ export default function(socket: typeof io.Socket) {
     function sendHead() {
         const q = queue.get()
         if (q.length) {
+            // TODO: causes double sending of the same item - maybe not send while waiting for ack?
             waitingForAck = true
             socket.send("app-event", q[0], ack)
         }

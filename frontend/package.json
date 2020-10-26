@@ -7,6 +7,7 @@
     "@types/cookie": "^0.4.0",
     "@types/email-validator": "^1.0.6",
     "@types/lodash": "^4.14.161",
+    "@types/md5": "^2.2.1",
     "@types/socket.io-client": "^1.4.33",
     "cookie": "^0.4.1",
     "email-validator": "^2.0.4",
@@ -14,6 +15,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "lonna": "^0.2.5",
+    "md5": "^2.3.0",
     "socket.io-client": "^2.3.0",
     "uuid": "^8.3.0"
   },

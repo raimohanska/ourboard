@@ -19,7 +19,8 @@ export type BoardFocus =
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch }: 
-  { boardId: string, cursors: L.Property<UserCursorPosition[]>, state: L.Property<BoardAppState>, assets: AssetStore, dispatch: (e: AppEvent) => void }
+  { boardId: string, cursors: L.Property<UserCursorPosition[]>, state: L.Property<BoardAppState>, 
+    assets: AssetStore, dispatch: (e: AppEvent) => void }
 ) => {
   const board = L.view(state, s => s.board!)
   const sessions = L.view(state, s => s.users)
@@ -32,7 +33,14 @@ export const BoardView = (
 
   const ref = (el: HTMLElement) => {
     element.set(el)
-    imageUploadHandler(el, assets, coordinateHelper, onAdd)
+    function onURL(assetId: string, url: string) {
+      board.get().items.forEach(i => {
+        if (i.type === "image" && i.assetId === assetId && i.src != url) {
+          dispatch({ action: "item.update", boardId, item: { ...i, src: url }  })
+        }
+      })      
+    }
+    imageUploadHandler(el, assets, coordinateHelper, onAdd, onURL)
   }
 
   L.fromEvent<JSX.KeyboardEvent>(document, "keyup").pipe(L.applyScope(componentScope())).forEach(e => {

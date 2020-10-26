@@ -1,8 +1,8 @@
 import { Item, newImage } from "../../../common/domain"
-import { AssetStore } from "./asset-store"
+import { AssetStore, AssetURL } from "./asset-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 
-export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore, coordinateHelper: BoardCoordinateHelper, onAdd: (item: Item) => void) {
+export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore, coordinateHelper: BoardCoordinateHelper, onAdd: (item: Item) => void, onURL: (id: string, url: AssetURL) => void) {    
     function preventDefaults(e: any) {
         e.preventDefault()
         e.stopPropagation()
@@ -24,15 +24,15 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
         }
         const file = files[0]
         const { width, height } = await imageDimensions(file)
-        const assetId = await assets.uploadAsset(file)
+        const [assetId, urlPromise] = await assets.uploadAsset(file)
         const maxWidth = 10
         const w = Math.min(width, maxWidth)
         const h = height * w / width
-        console.log("Asset id", assetId)
-        const url = assets.getAsset(assetId)
-        console.log("Asset URL", url)
         const { x, y } = coordinateHelper.currentBoardCoordinates.get()
-        onAdd(newImage(assetId, x, y, w, h))
+        const image = newImage(assetId, x, y, w, h)
+        onAdd(image)
+        const finalUrl = await urlPromise
+        onURL(assetId, finalUrl)
     }
 }
 
