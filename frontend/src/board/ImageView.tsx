@@ -1,4 +1,3 @@
-import * as H from "harmaja";
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
@@ -35,7 +34,7 @@ export const ImageView = (
     })))}
   >
     <img 
-      src={ L.view(image, i => assets.getAsset(i.assetId))}
+      src={ L.view(image, i => assets.getAsset(i.assetId, i.src))}
     />
     { L.view(selected, s => s ? <SelectionBorder {...{ id, item: image, coordinateHelper, board, focus, dispatch}}/> : null) }
   </span>

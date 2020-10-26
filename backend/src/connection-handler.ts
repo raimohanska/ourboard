@@ -2,6 +2,7 @@ import IO from "socket.io"
 import { AppEvent, BoardItemEvent, BoardCursorPositions, exampleBoard, Id } from "../../common/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
 import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions } from "./sessions"
+import { getSignedPutUrl } from "./s3"
 
 export const connectionHandler = (socket: IO.Socket) => {        
     socket.on("message", async (kind: string, event: any, ackFn) => {
@@ -65,6 +66,12 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
                 cursorPositions[boardId] = cursorPositions[boardId] || {}
                 cursorPositions[boardId][socket.id] = { x, y, userId: socket.id }
                 positionShouldBeFlushedToClients.add(boardId)
+                return;
+            }
+            case "asset.put.request": {
+                const { assetId } = appEvent;
+                const signedUrl = getSignedPutUrl(assetId);
+                socket.send("app-event", { "action": "asset.put.response", assetId, signedUrl } as AppEvent)
                 return;
             }
             default: {

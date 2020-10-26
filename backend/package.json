@@ -9,6 +9,7 @@
     "@types/pg": "^7.14.4",
     "@types/ramda": "^0.27.29",
     "@types/socket.io": "^2.1.11",
+    "aws-sdk": "^2.778.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",

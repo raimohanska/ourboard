@@ -14,7 +14,7 @@ import { assetStore } from "./board/asset-store";
 const App = () => {
     const socket = io();    
     const store = boardStore(socket)    
-    const assets = assetStore(socket)
+    const assets = assetStore(socket, store)
     const syncStatus = syncStatusStore(socket, store.queueSize)
     const showingBoardId = store.state.pipe(L.map((s: BoardAppState) => s.board ? s.board.id : undefined))
     const cursors = store.state.pipe(L.map((s: BoardAppState) => {

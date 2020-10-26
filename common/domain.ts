@@ -28,13 +28,13 @@ export type Color = string;
 export type ItemBounds = { x: number; y: number, width: number, height: number }
 
 export type PostIt = { id: string; type: "note"; text: string; color: Color } & ItemBounds;
-export type Image = { id: string; type: "image"; assetId: string } & ItemBounds;
+export type Image = { id: string; type: "image"; assetId: string; src?: string } & ItemBounds;
 export type Item = PostIt | Image
 
-export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions;
-export type BoardItemEvent = AddPostIt | UpdatePostIt | DeletePostIt
+export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse;
+export type BoardItemEvent = AddPostIt | UpdateItem | DeletePostIt
 export type AddPostIt = { action: "item.add", boardId: Id, item: Item };
-export type UpdatePostIt = { action: "item.update", boardId: Id, item: Item };
+export type UpdateItem = { action: "item.update", boardId: Id, item: Item };
 export type DeletePostIt = { action: "item.delete", boardId: Id, itemId: Id };
 export type AddBoard = { action: "board.add", boardId: Id, name: string }
 export type JoinBoard = { action: "board.join", boardId: Id }
@@ -42,6 +42,8 @@ export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessi
 export type JoinedBoard = { action: "board.joined", boardId: Id } & UserSessionInfo
 export type InitBoard = { action: "board.init", board: Board }
 export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
+export type AssetPutUrlRequest = { "action": "asset.put.request", assetId: string }
+export type AssetPutUrlResponse = { "action": "asset.put.response", assetId: string, signedUrl: string }
 
 export type UserSessionInfo = { userId: string, nickname: string }
 
