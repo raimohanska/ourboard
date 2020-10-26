@@ -11,6 +11,19 @@ export function assetStore(socket: typeof io.Socket, store: BoardStore) {
     let dataURLs: Record<AssetId, AssetURL> = {}
 
 
+    function assetExists(assetId: string): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            if (store.state.get().board!.items.find(i => i.type === "image" && i.assetId === assetId && i.src)) {
+                resolve(true)
+            }
+            const img = new Image()
+            img.onload = () => resolve(true)
+            img.onerror = () => resolve(false)        
+            img.src = assetURL(assetId)
+        })
+    }
+
+
     function uploadAsset(file: File): Promise<[AssetId, Promise<AssetURL>]> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader()
@@ -75,15 +88,6 @@ function getAssetPutResponse(assetId: string, events: L.EventStream<AppEvent>): 
 }
 
 export type AssetStore = ReturnType<typeof assetStore>
-
-function assetExists(assetId: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => resolve(true)
-        img.onerror = () => resolve(false)        
-        img.src = assetURL(assetId)
-    })
-}
 
 function assetURL(assetId: string) {
     // TODO: hardcoded URL
