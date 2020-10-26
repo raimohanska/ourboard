@@ -8,7 +8,6 @@ export type AssetId = string
 export type AssetURL = string
 
 export function assetStore(socket: typeof io.Socket, store: BoardStore) {
-    // TODO: detect duplicate assets somehow (checksums?)
     let dataURLs: Record<AssetId, AssetURL> = {}
 
 
@@ -81,12 +80,12 @@ function assetExists(assetId: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
         const img = new Image()
         img.onload = () => resolve(true)
-        img.onerror = () => resolve(false)
-        // TODO: hardcoded URL
+        img.onerror = () => resolve(false)        
         img.src = assetURL(assetId)
     })
 }
 
 function assetURL(assetId: string) {
+    // TODO: hardcoded URL
     return `https://r-board-assets.s3.eu-north-1.amazonaws.com/${assetId}`
 }
