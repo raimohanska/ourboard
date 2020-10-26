@@ -23,8 +23,8 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
             throw Error("Unexpected number of files: " + files.length)
         }
         const file = files[0]
-        const assetId = await assets.uploadAsset(file)
         const { width, height } = await imageDimensions(file)
+        const assetId = await assets.uploadAsset(file)
         const maxWidth = 10
         const w = Math.min(width, maxWidth)
         const h = height * w / width
