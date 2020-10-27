@@ -15,7 +15,10 @@ import { AssetStore } from "./asset-store";
 export type BoardFocus = 
   { status: "none" } | 
   { status: "selected", ids: Id[] } | 
+  { status: "dragging", ids: Id[] } | 
   { status: "editing", id: Id }
+
+export type ItemFocus = "none" | "selected" | "editing" | "dragging"
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch }: 
@@ -40,7 +43,7 @@ export const BoardView = (
         }
       })      
     }
-    imageUploadHandler(el, assets, coordinateHelper, onAdd, onURL)
+    imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL)
   }
 
   L.fromEvent<JSX.KeyboardEvent>(document, "keyup").pipe(L.applyScope(componentScope())).forEach(e => {

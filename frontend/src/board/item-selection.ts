@@ -4,11 +4,11 @@ import * as L from "lonna";
 import { BoardFocus } from "./BoardView";
 import { ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 
-export type ItemFocus = "none" | "selected" | "editing"
 export function itemSelectionHandler(id: string, focus: L.Atom<BoardFocus>, contextMenu: L.Atom<ContextMenu>) {
     const itemFocus = L.view(focus, f => {
         if (f.status === "none") return "none"
         if (f.status === "selected") return f.ids.includes(id) ? "selected" : "none"
+        if (f.status === "dragging") return f.ids.includes(id) ? "dragging" : "none"
         return f.id === id ? "editing" : "none"
     })
     const selected = L.view(itemFocus, s => s !== "none")

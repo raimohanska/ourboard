@@ -1,8 +1,10 @@
 import { Item, newImage } from "../../../common/domain"
 import { AssetStore, AssetURL } from "./asset-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
+import { BoardFocus } from "./BoardView"
+import * as L from "lonna"
 
-export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore, coordinateHelper: BoardCoordinateHelper, onAdd: (item: Item) => void, onURL: (id: string, url: AssetURL) => void) {    
+export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore, coordinateHelper: BoardCoordinateHelper, focus: L.Atom<BoardFocus>, onAdd: (item: Item) => void, onURL: (id: string, url: AssetURL) => void) {    
     function preventDefaults(e: any) {
         e.preventDefault()
         e.stopPropagation()
@@ -14,15 +16,35 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
     boardElement.addEventListener('drop', handleDrop, false)
 
     async function handleDrop(e: DragEvent) {
-        let dt = e.dataTransfer
-        let files = dt!.files
-        if (files.length === 0) {
-            return
+        if (focus.get().status === "dragging") {
+            return // was dragging an item
         }
-        if (files.length != 1) {
-            throw Error("Unexpected number of files: " + files.length)
+        const url = e.dataTransfer?.getData('URL')
+        console.log("DROP", url)
+        if (url) {
+            // TODO: only in case we're not actually dragging a board item here - it'll also have an URL!
+
+            // TODO: this relies on CORS to work
+            const response = await fetch(url)
+            const blob = await response.blob()
+            
+            await uploadImageFile(blob as any)    
+        } else {
+            let dt = e.dataTransfer
+            let files = dt!.files
+            debugger
+            if (files.length === 0) {
+                return
+            }
+            if (files.length != 1) {
+                throw Error("Unexpected number of files: " + files.length)
+            }
+            const file = files[0]
+            await uploadImageFile(file)    
         }
-        const file = files[0]
+    }
+
+    async function uploadImageFile(file: File) {
         const { width, height } = await imageDimensions(file)
         const [assetId, urlPromise] = await assets.uploadAsset(file)
         const maxWidth = 10

@@ -5,7 +5,6 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { AppEvent, Board, Item, PostIt } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
 import { onBoardItemDrag } from "./item-drag"
-export type ItemFocus = "none" | "selected" | "editing"
 
 type Horizontal = "left" | "right"
 type Vertical = "top" | "bottom"

@@ -10,7 +10,6 @@ import { onBoardItemDrag } from "./item-drag"
 import { SelectionBorder } from "./SelectionBorder"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection";
-export type ItemFocus = "none" | "selected" | "editing"
 
 export const PostItView = (
     { board, id, postIt, focus, coordinateHelper, dispatch, contextMenu }:
