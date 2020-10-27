@@ -64,6 +64,10 @@ export function assetStore(socket: typeof io.Socket, store: BoardStore) {
         })
     }
 
+    function getExternalAssetAsBytes(url: string) {
+        return fetch(`/assets/external?src=${encodeURI(url)}`)
+    }
+
     function getAsset(assetId: string, src?: string): AssetURL {
         if (src) return src
         const local = dataURLs[assetId]
@@ -73,7 +77,8 @@ export function assetStore(socket: typeof io.Socket, store: BoardStore) {
 
     return {
         getAsset,
-        uploadAsset
+        uploadAsset,
+        getExternalAssetAsBytes
     }
 }
 
@@ -89,7 +94,9 @@ function getAssetPutResponse(assetId: string, events: L.EventStream<AppEvent>): 
 
 export type AssetStore = ReturnType<typeof assetStore>
 
+const STORAGE_URL = process.env.STORAGE_URL || "https://r-board-assets.s3.eu-north-1.amazonaws.com"
 function assetURL(assetId: string) {
     // TODO: hardcoded URL
-    return `https://r-board-assets.s3.eu-north-1.amazonaws.com/${assetId}`
+    // Parcel supports dotenv variables => process.env in browser context, let's put bucket there eventually
+    return `${STORAGE_URL}/${assetId}`
 }

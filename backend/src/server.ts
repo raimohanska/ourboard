@@ -1,6 +1,7 @@
 require("dotenv").config()
 import express from "express"
 import * as Http from "http"
+import * as Https from "https"
 import IO from "socket.io"
 import { connectionHandler } from "./connection-handler"
 import { initDB } from "./db"
@@ -17,8 +18,7 @@ app.use("/", express.static("../frontend/dist"))
 app.use("/", express.static("../frontend/public"))
 
 if (config.STORAGE_BACKEND === "LOCAL") {
-    app.use("/images", express.static(config.LOCAL_FILES_DIR))
-    app.put("/images/:id", (req, res) => {
+    app.put("/assets/:id", (req, res) => {
         if (!req.params.id) {
             return res.sendStatus(400)
         }
@@ -35,7 +35,25 @@ if (config.STORAGE_BACKEND === "LOCAL") {
             res.sendStatus(500)
         })
     })
+    app.use("/assets", express.static(config.LOCAL_FILES_DIR))
 }
+app.get("/assets/external", (req, res) => {
+    const src = req.query.src
+    if (typeof src !== "string" || ["http://", "https://"].every(prefix => !src.startsWith(prefix))) return res.send(400)
+    const protocol = src.startsWith("https://") ? Https : Http 
+
+    protocol.request(src, upstreamResponse => {
+        res.writeHead(upstreamResponse.statusCode!, upstreamResponse.headers);
+        upstreamResponse
+          .pipe(
+            res,
+            {
+              end: true
+            }
+          )
+          .on("error", err => res.status(500).send(err.message));
+      }).end();
+})
 
 app.get("/b/:boardId", async (req, res) => {    
     res.sendFile(path.resolve("../frontend/dist/index.html"))

@@ -22,12 +22,8 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
         const url = e.dataTransfer?.getData('URL')
         console.log("DROP", url)
         if (url) {
-            // TODO: only in case we're not actually dragging a board item here - it'll also have an URL!
-
-            // TODO: this relies on CORS to work
-            const response = await fetch(url)
-            const blob = await response.blob()
-            
+            const res = await assets.getExternalAssetAsBytes(url)
+            const blob = await res.blob()
             await uploadImageFile(blob as any)    
         } else {
             let dt = e.dataTransfer
