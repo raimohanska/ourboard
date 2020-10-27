@@ -94,9 +94,7 @@ function getAssetPutResponse(assetId: string, events: L.EventStream<AppEvent>): 
 
 export type AssetStore = ReturnType<typeof assetStore>
 
-const STORAGE_URL = process.env.STORAGE_URL || "https://r-board-assets.s3.eu-north-1.amazonaws.com"
+const STORAGE_URL = process.env.AWS_ASSETS_BUCKET_URL || "/assets"
 function assetURL(assetId: string) {
-    // TODO: hardcoded URL
-    // Parcel supports dotenv variables => process.env in browser context, let's put bucket there eventually
     return `${STORAGE_URL}/${assetId}`
 }
