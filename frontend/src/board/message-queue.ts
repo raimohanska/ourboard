@@ -2,28 +2,79 @@ import * as L from "lonna";
 import io from 'socket.io-client';
 import { AppEvent } from "../../../common/domain";
 
+const noop = () => {}
 export default function(socket: typeof io.Socket) {
     const queue = L.atom<AppEvent[]>(localStorage.messageQueue ? JSON.parse(localStorage.messageQueue) : [])
-    let waitingForAck = false
 
-    function sendHead() {
-        const q = queue.get()
-        if (q.length) {
-            // TODO: causes double sending of the same item - maybe not send while waiting for ack?
-            waitingForAck = true
-            socket.send("app-event", q[0], ack)
+    async function* eventGenerator() {
+        // Wait for ack
+        let releaseServerAckSemaphore = noop
+        let serverAckSemaphore = Promise.resolve()
+        
+        // Wait for non-empty queue
+        let releaseEmptyQueueSemaphore = noop
+        let emptyQueueSemaphore = newEmptyQueueSemaphore()
+        
+        function newEmptyQueueSemaphore() {
+            return new Promise(resolve => {
+                releaseEmptyQueueSemaphore = resolve
+            })
+        }
+
+        function newServerAckSemaphore() {
+            return new Promise(resolve => {
+                releaseServerAckSemaphore = resolve
+            })
+        }
+
+        let buffer: AppEvent[] = []
+
+        queue.forEach(q => {
+            if (!buffer.length && q.length) {
+                releaseEmptyQueueSemaphore()
+            } else if (buffer.length && !q.length) {
+                emptyQueueSemaphore = newEmptyQueueSemaphore()
+            }
+
+            if (q.length < buffer.length) releaseServerAckSemaphore()
+            buffer = q
+        })
+
+        while (true) {
+            await emptyQueueSemaphore
+            yield buffer[0]
+            serverAckSemaphore = newServerAckSemaphore() as Promise<void>
+            await serverAckSemaphore
         }
     }
 
-    function ack() {
-        waitingForAck = false
+    (async function sendLoop(g: AsyncGenerator<AppEvent, void, unknown>) {
+        for await (const evt of g) {
+            socket.send("app-event", evt, dequeue)
+        }
+    })(eventGenerator())
+
+    function dequeue() {
         queue.modify(q => q.slice(1))
-        sendHead()
     }
 
     function enqueue(event: AppEvent) {
-        queue.modify(q => q.concat(event))
-        sendHead()
+        // Compact queue when possible (cursor movements and item drags are quite frequent)
+        queue.modify(q => {
+            if (event.action === "cursor.move") {
+                const idx = q.findIndex(evt => evt.action === "cursor.move")
+                if (idx === -1) {
+                    return q.concat(event)
+                } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]
+            }
+            else if (event.action === "item.update") {
+                const idx = q.findIndex(evt => evt.action === "item.update" && evt.boardId === event.boardId && evt.item.id === event.item.id)
+                if (idx === -1) {
+                    return q.concat(event)
+                } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]                
+            }
+            return q.concat(event)
+        })
     }
 
     function replayBuffer(fn: (e: AppEvent) => void) {
@@ -34,12 +85,9 @@ export default function(socket: typeof io.Socket) {
     queue.pipe(L.throttle(2000)).forEach(q => localStorage.messageQueue = JSON.stringify(q))
     const queueSize = L.view(queue, "length")
 
-    //queueSize.log("Queue size")
-
     return { 
         enqueue,
         replayBuffer,
-        flush: sendHead,
         queueSize: queueSize
     }
 }
