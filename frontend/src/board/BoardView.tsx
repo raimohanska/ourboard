@@ -11,6 +11,7 @@ import { CursorsView } from "./CursorsView";
 import { ImageView } from "./ImageView";
 import { imageUploadHandler } from "./image-upload"
 import { AssetStore } from "./asset-store";
+import { cutCopyPasteHandler } from "./cut-copy-paste"
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -33,6 +34,8 @@ export const BoardView = (
   const fontSize = style.pipe(L.map(((s: { fontSize: string; }) => s.fontSize)))
   const contextMenu = L.atom<ContextMenu>(HIDDEN_CONTEXT_MENU)
   const focus = L.atom<BoardFocus>({status: "none" })
+
+  cutCopyPasteHandler(board, focus, dispatch)
 
   const ref = (el: HTMLElement) => {
     element.set(el)
