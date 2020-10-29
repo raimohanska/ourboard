@@ -7,6 +7,9 @@ const mockDataTransfer = {
 const BACKSPACE = 8;
 
 const PostitWithText = text => cy.get('.postit-existing[draggable=true]').contains(text).parents('.postit-existing[draggable=true]').first()
+const PostitsWithText = text => cy.get('.postit-existing[draggable=true]').contains(text).parents('.postit-existing[draggable=true]')
+const Postits = () => cy.get('.postit-existing[draggable=true]')
+const SelectedPostits = () => cy.get('.postit-existing[draggable=true].selected')
 
 describe("Initial screen", () => {
     it('Opens correctly', () => {
@@ -172,6 +175,31 @@ describe("Example board - basic functionality", () => {
             })
 
             cy.get(".context-menu").should("not.be.visible")
+        })
+    })
+
+    it("Can cut, copy and paste post-it", () => {
+        PostitWithText("HELLO").click({ force: true }).trigger("copy", { force: true }).trigger("paste", { force: true })
+
+        PostitWithText("HELLO").should("be.visible")
+        PostitWithText("HELLO (copy)").should("be.visible")
+
+        SelectedPostits().then(els => {
+            expect(els.length, "One postit should be selected after copy").to.equal(1)
+            expect(els[0].innerText, "Postit 'HELLO (copy)' should be selected after copy").to.equal("HELLO (copy)")
+        })
+
+        PostitWithText("HELLO (copy)").click({ force: true }).trigger("cut", { force: true })
+        cy.get(".board").trigger("paste", { force: true })
+        
+        PostitsWithText("HELLO (copy)").then(els => {
+            expect(els.length, "One postit matching substring 'HELLO (copy)' should exist").to.equal(1)
+            expect(els[0].innerText, "Postit 'HELLO (copy) (copy)' should exist").to.equal("HELLO (copy) (copy)")
+        })
+        
+        SelectedPostits().then(els => {
+            expect(els.length, "One postit should be selected after cut").to.equal(1)
+            expect(els[0].innerText, "Postit 'HELLO (copy) (copy)' should be selected after cut").to.equal("HELLO (copy) (copy)")
         })
     })
 
