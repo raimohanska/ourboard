@@ -48,8 +48,8 @@ export const RectangularDragSelection = (
     
         el.addEventListener("drag", e => {
             const coords = coordinateHelper.clientToBoardCoordinates({ x: e.clientX, y: e.clientY })
-            if (coords.x < 0) {
-                end() // for some reason, for negative drag direction there's no drop event, but a drag with negative coordinates
+            if (coords.x <= 0) {
+                end() // for some reason, for negative drag direction there's no drop event, but a drag with zero coordinates
             } else {
                 current.set(coords)
                 const bounds = rect.get()!
