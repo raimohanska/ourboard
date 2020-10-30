@@ -36,7 +36,7 @@ export const RectangularDragSelection = (
     boardElem.forEach(el => {
         if (!el) return
 
-        el.addEventListener("dragstart", e => {
+        el.addEventListener("dragstart", e => {            
             e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
             const pos = coordinateHelper.clientToBoardCoordinates({ x: e.clientX, y: e.clientY })
             start.set(pos)
@@ -46,21 +46,18 @@ export const RectangularDragSelection = (
             focus.set(selectedAtStart.length > 0 ? { status: "selected", ids: selectedAtStart } : { status: "none" })
         })
     
-        el.addEventListener("drag", e => {
-            if (e.clientX <= 0) {
-                end() // for some reason, for negative drag direction there's no drop event, but a drag with zero coordinates
-            } else {
-                const coords = coordinateHelper.clientToBoardCoordinates({ x: e.clientX, y: e.clientY })
-                current.set(coords)
-                const bounds = rect.get()!
-                const overlapping = board.get().items.filter(i => overlaps(i, bounds)).map(i => i.id)
-                focus.set(overlapping.length > 0 ? { status: "selected", ids: overlapping } : { status: "none" })
-            }
+        el.addEventListener("drag", e => {            
+            const coords = coordinateHelper.currentBoardCoordinates.get()
+            current.set(coords)
+            const bounds = rect.get()!
+            const overlapping = board.get().items.filter(i => overlaps(i, bounds)).map(i => i.id)
+            focus.set(overlapping.length > 0 ? { status: "selected", ids: overlapping } : { status: "none" })
         })
     
         el.addEventListener("drop", end)    
          
         function end() {    
+            console.log("drop")
             if (start.get()) {
                 start.set(null)
                 current.set(null)

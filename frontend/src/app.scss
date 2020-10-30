@@ -248,6 +248,7 @@ a {
         }
 
         .rectangular-selection {
+            pointer-events: none;
             position: absolute;
             border: 1px solid $link-color;
             background: #35b2dc33;
