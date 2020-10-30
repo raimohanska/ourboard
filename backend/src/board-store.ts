@@ -1,4 +1,4 @@
-import { AppEvent, Board, BoardItemEvent, exampleBoard, Id, Item } from "../../common/domain"
+import { AppEvent, Board, BoardItemEvent, defaultBoardSize, exampleBoard, Id, Item } from "../../common/domain"
 import { boardReducer } from "../../common/state"
 import { withDBClient } from "./db"
 import * as L from "lonna"
@@ -35,7 +35,7 @@ function migrateBoard(board: Board) {
             items.push(migrateItem(item))
         }
     }
-    return { ... board, items }
+    return { ...defaultBoardSize, ...board, items }
     
     function migrateItem(item: Item): Item {
         const { width, height, type, ...rest } = item

@@ -11,8 +11,11 @@ export function itemDragToMove(id: string, board: L.Property<Board>, focus: L.At
     return (elem: HTMLElement) => onBoardItemDrag(elem, id, board, focus, coordinateHelper, (b, current, dragStartPosition, xDiff, yDiff) => {
         const f = focus.get()
         if (f.status !== "dragging") throw Error("Assertion fail")
-        const x = coordinateHelper.getClippedCoordinate(dragStartPosition.x + xDiff, 'clientWidth', current.width - 1)
-        const y = coordinateHelper.getClippedCoordinate(dragStartPosition.y + yDiff, 'clientHeight', current.height)
+        const margin = 0.5
+        const x = Math.min(Math.max(dragStartPosition.x + xDiff, margin), b.width - current.width - margin)
+        
+        const y = Math.min(Math.max(dragStartPosition.y + yDiff, margin), b.height - current.height - margin)
+        
         dispatch({ action: "item.update", boardId: b.id, item: { ...current, x, y } });
     })
 }

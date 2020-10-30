@@ -9,8 +9,12 @@ export type BoardInfo = {
 }
 
 export type Board = BoardInfo & {
+    width: number;
+    height: number;
     items: Item[]
 }
+
+export const defaultBoardSize = { width: 50, height: 50 }
 
 export interface CursorPosition {
     x: number;
@@ -58,12 +62,13 @@ export const exampleBoard: Board = {
         newPostIt("Hello", "pink", 10, 5),
         newPostIt("World", "cyan", 20, 10),
         newPostIt("Welcome", "cyan", 5, 14)
-    ]
+    ],
+    ...defaultBoardSize
 }
 
 export function createBoard(name: string): Board {
     const id = uuid.v4()
-    return { id: uuid.v4(), name, items: [] } 
+    return { id: uuid.v4(), name, items: [], ...defaultBoardSize } 
 }
 
 export function newPostIt(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5): PostIt {

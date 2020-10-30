@@ -30,7 +30,11 @@ export const BoardView = (
   const board = L.view(state, s => s.board!)
   const sessions = L.view(state, s => s.users)
   const zoom = L.atom(1);
-  const style = zoom.pipe(L.map((z) => ({ fontSize: z + "em" })));
+  const style = L.combineTemplate({
+    fontSize: L.view(zoom, z => z + "em"),
+    width: L.view(board, b => b.width + "em"),
+    height: L.view(board, b => b.height + "em")
+  })
   const element = L.atom<HTMLElement | null>(null);
   const fontSize = style.pipe(L.map(((s: { fontSize: string; }) => s.fontSize)))
   const contextMenu = L.atom<ContextMenu>(HIDDEN_CONTEXT_MENU)
@@ -91,22 +95,25 @@ export const BoardView = (
 
   return (
     <div className="board-container">
-      <h1 id="board-name">{L.view(board, "name")}</h1>
+      
       <div className="controls">
+        <span id="board-name">{L.view(board, "name")}</span>
         <button onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
         <button onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
         <PaletteView {...{ coordinateHelper, onAdd }}/>
       </div>
-      <div className="board" draggable={true} style={style} ref={ref} onClick={onClick}>
-        <ListView
-          observable={L.view(board, "items")}
-          renderObservable={renderItem}
-          getKey={(postIt) => postIt.id}
-        />
-        <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus }}/>
-        <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
+      <div className="scroll-container">
+        <div className="board" draggable={true} style={style} ref={ref} onClick={onClick}>
+          <ListView
+            observable={L.view(board, "items")}
+            renderObservable={renderItem}
+            getKey={(postIt) => postIt.id}
+          />
+          <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus }}/>
+          <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
+        </div>
+        <ContextMenuView {...{contextMenu, setColor } } />
       </div>
-      <ContextMenuView {...{contextMenu, setColor } } />
     </div>
   );
 

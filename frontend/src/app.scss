@@ -1,5 +1,6 @@
 $left-padding: 1em;
 $black: #333366;
+$off-board-color: gray;
 $bottom-bar-height: 3em;
 $font-family: Roboto, sans-serif;
 $font-family-postit: Montserrat, sans-serif;
@@ -61,27 +62,12 @@ button {
     background-color: $heading-color;
     color: white;
 
-    padding: 0.3em 2em;
-    max-height: 2em;
+    width: 1.5em;
+    margin: 0.3em;
+
 
     &:hover {
         text-decoration: none;
-    }
-
-    &:disabled {
-        color: #ffffff88;
-    }
-
-    &.delete:not(:disabled) {
-        background: red;
-    }
-
-    &.complete:not(:disabled) {
-        background: green;
-    }
-
-    &.share:not(:disabled) {
-        background: $link-color;
     }
 }
 
@@ -94,11 +80,10 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    > * {
-        padding: 0 $left-padding;
-    }
+    
     header {
         @extend .dropshadow;
+        padding-left: $left-padding;
         width: 100%;
         display: flex;        
         background: $heading-color;
@@ -155,7 +140,13 @@ a {
 .board-container {
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    
     .controls {
+        background: #3178ab;
+        color: white;
+        padding-left: $left-padding;
         .palette {
             margin-left: 0.5em;
             display: inline-flex;
@@ -170,8 +161,16 @@ a {
         }
     }
 
+    .scroll-container {
+        overflow: auto;
+        flex-grow: 1;
+        background: $off-board-color;
+    }
 
     .board {
+        border: 2em solid $off-board-color;
+        box-sizing: content-box;
+        background: white;
         width: 100%;
         height: 100%;
         position: relative;
