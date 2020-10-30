@@ -34,14 +34,20 @@ export const PostItView = (
 
   const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...postIt.get(), text } }))
   const showCoords = false
-  
+
+  const dataTest = L.combineTemplate({
+    text: textAtom,
+    selected
+  }).pipe(L.map(({ text, selected }: { text: string, selected: boolean }) => selected ? `postit-selected-${text}` : `postit-${text}`))
+
   return (
     <span
       ref={ref}
       draggable={true}
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={L.view(selected, s => s ? "postit postit-existing selected" : "postit postit-existing")}
+      data-test={dataTest}
+      className={L.view(selected, s => s ? "postit selected" : "postit")}
       style={postIt.pipe(L.map((p: PostIt) => ({
         top: p.y + "em",
         left: p.x + "em",

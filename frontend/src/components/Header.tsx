@@ -15,7 +15,7 @@ export const Header = ({ syncStatus, nickname }: { syncStatus: L.Property<SyncSt
         }
     }
     return <header>
-        <h1 id="app-title"><a href="/">R-Board</a></h1> 
+        <h1 id="app-title" data-test="app-title"><a href="/">R-Board</a></h1> 
         <span className="nickname">{nickname}</span>
         <span className={ L.view(syncStatus, s => "sync-status " + s) }>
             <span title={ L.view(syncStatus, showStatus) } className="symbol">⬤</span>
