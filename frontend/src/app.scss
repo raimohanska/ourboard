@@ -172,7 +172,8 @@ a {
         background: $off-board-color;
     }
 
-    .board {        
+    .board {
+        border: 2em solid $off-board-color;
         box-sizing: content-box;
         background: white;
         width: 100%;
