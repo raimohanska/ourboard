@@ -18,7 +18,7 @@ $heading-height: 2.5em;
 }
 
 html {
-    font-size: min(4vw, 3vh);
+    font-size: min(4vw, 3vh, 20px);
     font-family: $font-family;
     color: $black;
 }
