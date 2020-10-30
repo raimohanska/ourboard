@@ -15,7 +15,7 @@ const everyoneElseOnTheSameBoard = (boardId: Id, sender?: IO.Socket) => Object.v
 export function startSession(socket: IO.Socket, boards: Id[]) {
     sessions[socket.id] = { socket, boards, nickname: "Anonymous " + randomProfession() }
 }
-export function endSession(socket: IO.Socket): Id[] {
+export function endSession(socket: IO.Socket) {
     const boards = sessions[socket.id].boards
     delete sessions[socket.id]
 }
