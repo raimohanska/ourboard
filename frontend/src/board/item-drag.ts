@@ -3,7 +3,7 @@ import { Board, Item } from "../../../common/domain";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus } from "./BoardView";
 
-const DND_GHOST_HIDING_IMAGE = new Image();
+export const DND_GHOST_HIDING_IMAGE = new Image();
 // https://png-pixel.com/
 DND_GHOST_HIDING_IMAGE.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 

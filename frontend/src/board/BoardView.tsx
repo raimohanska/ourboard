@@ -12,6 +12,7 @@ import { ImageView } from "./ImageView";
 import { imageUploadHandler } from "./image-upload"
 import { AssetStore } from "./asset-store";
 import { cutCopyPasteHandler } from "./cut-copy-paste"
+import { RectangularDragSelection } from "./RectangularDragSelection"
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -96,12 +97,13 @@ export const BoardView = (
         <button onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
         <PaletteView {...{ coordinateHelper, onAdd }}/>
       </div>
-      <div className="board" style={style} ref={ref} onClick={onClick}>
+      <div className="board" draggable={true} style={style} ref={ref} onClick={onClick}>
         <ListView
           observable={L.view(board, "items")}
           renderObservable={renderItem}
           getKey={(postIt) => postIt.id}
         />
+        <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus }}/>
         <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
       </div>
       <ContextMenuView {...{contextMenu, setColor } } />

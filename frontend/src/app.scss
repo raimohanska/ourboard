@@ -242,6 +242,12 @@ a {
             }
         }
 
+        .rectangular-selection {
+            position: absolute;
+            border: 1px solid $link-color;
+            background: #35b2dc33;
+        }
+
     }
 
     .context-menu {

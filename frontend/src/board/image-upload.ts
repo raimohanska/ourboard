@@ -20,7 +20,6 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
             return // was dragging an item
         }
         const url = e.dataTransfer?.getData('URL')
-        console.log("DROP", url)
         if (url) {
             const res = await assets.getExternalAssetAsBytes(url)
             const blob = await res.blob()
