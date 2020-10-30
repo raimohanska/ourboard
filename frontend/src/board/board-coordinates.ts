@@ -57,11 +57,7 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>, fon
       
       const baseFontSize = baseFontSizeAtom.get();
       const rect = elem.getBoundingClientRect()
-      const style = getComputedStyle(elem)
-      const borderLeft = parseFloat(style.borderLeft.split("px")[0])
-      const borderTop = parseFloat(style.borderTop.split("px")[0])
-      
-      return newCoordinates(pxToEm(clientCoords.x - rect.x - borderLeft, baseFontSize), pxToEm(clientCoords.y - rect.y - borderTop, baseFontSize))
+      return newCoordinates(pxToEm(clientCoords.x - rect.x, baseFontSize), pxToEm(clientCoords.y - rect.y, baseFontSize))
     }
   
     function clientCoordDiffToThisPoint(coords: ClientCoordinates) {
