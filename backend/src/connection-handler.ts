@@ -17,14 +17,11 @@ export const connectionHandler = (socket: IO.Socket) => {
     startSession(socket, [])
 
     socket.on("disconnect", () => {
-        const boards = endSession(socket)
-        boards.forEach(b => {
-            if (!cursorPositions[b]) {
-                return
-            }
-            delete cursorPositions[b][socket.id]
-            positionShouldBeFlushedToClients.add(b)
-        })
+        endSession(socket)
+        Object.keys(cursorPositions).forEach(boardId => {
+            delete cursorPositions[boardId][socket.id]
+            positionShouldBeFlushedToClients.add(boardId)
+        })        
     })
 }
 

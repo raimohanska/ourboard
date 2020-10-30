@@ -18,7 +18,6 @@ export function startSession(socket: IO.Socket, boards: Id[]) {
 export function endSession(socket: IO.Socket): Id[] {
     const boards = sessions[socket.id].boards
     delete sessions[socket.id]
-    return boards
 }
 export function addSessionToBoard(board: Board, origin: IO.Socket) {
     Object.values(sessions)
