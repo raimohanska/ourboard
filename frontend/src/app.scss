@@ -170,10 +170,13 @@ a {
         overflow: auto;
         flex-grow: 1;
         background: $off-board-color;
+        .border-container {
+            box-sizing: content-box;
+            padding: 1em;
+        }
     }
 
-    .board {        
-        box-sizing: content-box;
+    .board {                
         background: white;
         width: 100%;
         height: 100%;

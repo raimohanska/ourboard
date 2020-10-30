@@ -36,10 +36,10 @@ export const BoardView = (
     height: L.view(board, b => b.height + "em")
   })
   const element = L.atom<HTMLElement | null>(null);
-  const fontSize = style.pipe(L.map(((s: { fontSize: string; }) => s.fontSize)))
+  
   const contextMenu = L.atom<ContextMenu>(HIDDEN_CONTEXT_MENU)
   const focus = L.atom<BoardFocus>({status: "none" })
-  const coordinateHelper = boardCoordinateHelper(element, fontSize)
+  const coordinateHelper = boardCoordinateHelper(element)
 
   cutCopyPasteHandler(board, focus, coordinateHelper, dispatch)
 
@@ -103,16 +103,18 @@ export const BoardView = (
         <PaletteView {...{ coordinateHelper, onAdd }}/>
       </div>
       <div className="scroll-container">
-        <div className="board" draggable={true} style={style} ref={ref} onClick={onClick}>
-          <ListView
-            observable={L.view(board, "items")}
-            renderObservable={renderItem}
-            getKey={(postIt) => postIt.id}
-          />
-          <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus }}/>
-          <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
-        </div>
-        <ContextMenuView {...{contextMenu, setColor } } />
+        <div className="border-container" style={style}>
+          <div className="board" draggable={true} ref={ref} onClick={onClick}>
+            <ListView
+              observable={L.view(board, "items")}
+              renderObservable={renderItem}
+              getKey={(postIt) => postIt.id}
+            />
+            <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus }}/>
+            <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
+          </div>
+          <ContextMenuView {...{contextMenu, setColor } } />
+        </div>        
       </div>
     </div>
   );
