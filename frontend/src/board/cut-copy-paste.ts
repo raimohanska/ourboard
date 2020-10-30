@@ -16,7 +16,7 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
         switch (i.type) {
             case "image": return { ...i, id: uuid.v4(), x: i.x + xDiff, y: i.y + yDiff }
             case "note": return { ...i, id: uuid.v4(), text: i.text, x: i.x + xDiff, y: i.y + yDiff }
-            default: throw Error("Unsupported item: " + i.type)
+            default: throw Error("Unsupported item")
         }    
     }
 
