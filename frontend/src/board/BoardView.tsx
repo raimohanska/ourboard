@@ -34,8 +34,9 @@ export const BoardView = (
   const fontSize = style.pipe(L.map(((s: { fontSize: string; }) => s.fontSize)))
   const contextMenu = L.atom<ContextMenu>(HIDDEN_CONTEXT_MENU)
   const focus = L.atom<BoardFocus>({status: "none" })
+  const coordinateHelper = boardCoordinateHelper(element, fontSize)
 
-  cutCopyPasteHandler(board, focus, dispatch)
+  cutCopyPasteHandler(board, focus, coordinateHelper, dispatch)
 
   const ref = (el: HTMLElement) => {
     element.set(el)
@@ -57,7 +58,6 @@ export const BoardView = (
       }      
     }
   })
-  const coordinateHelper = boardCoordinateHelper(element, fontSize)
 
   coordinateHelper.currentBoardCoordinates.pipe(L.throttle(30)).forEach(position => {
     dispatch({ action: "cursor.move", position, boardId })
