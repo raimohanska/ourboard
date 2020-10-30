@@ -7,9 +7,11 @@ const mockDataTransfer = {
 const BACKSPACE = 8;
 
 const PostitWithText = text => cy.get('.postit-existing[draggable=true]').contains(text).parents('.postit-existing[draggable=true]').first()
-const PostitsWithText = text => cy.get('.postit-existing[draggable=true]').contains(text).parents('.postit-existing[draggable=true]')
-const Postits = () => cy.get('.postit-existing[draggable=true]')
-const SelectedPostits = () => cy.get('.postit-existing[draggable=true].selected')
+const getPostitsWithTextAndDo = (text, cb) => cy.get('.postit-existing[draggable=true]').then(els => {
+    cb([...els].filter(el => el.innerText.includes(text)))
+})
+const getAllPostitsAndDo = cb => cy.get('.postit-existing[draggable=true]').then(cb)
+const getSelectedPostitsAndDo = cb => cy.get('.postit-existing[draggable=true].selected').then(cb)
 
 describe("Initial screen", () => {
     it('Opens correctly', () => {
@@ -185,29 +187,27 @@ describe("Example board - basic functionality", () => {
 
         cy.get(".board").trigger("paste", { force: true })
         
-        PostitsWithText("HELLO").then(els => {
+        getPostitsWithTextAndDo("HELLO", els => {
             expect(els.length, "One postit matching substring 'HELLO' should exist").to.equal(1)
             expect(els[0].innerText, "Postit 'HELLO' should exist").to.equal("HELLO")
         })
         
-        SelectedPostits().then(els => {
+        getSelectedPostitsAndDo(els => {
             expect(els.length, "One postit should be selected after cut").to.equal(1)
             expect(els[0].innerText, "Postit 'HELLO' should be selected after cut").to.equal("HELLO")
         })
 
-        /*
         PostitWithText("HELLO").click({ force: true }).trigger("copy", { force: true }).trigger("paste", { force: true })
 
-        // TODO: doesn't seem to contain to items
-        PostitsWithText("HELLO").then(els => {
+        getPostitsWithTextAndDo("HELLO", els => {
             expect(els.length, "Two postits matching substring 'HELLO' should exist").to.equal(2)
         })
 
-        SelectedPostits().then(els => {
+        getSelectedPostitsAndDo(els => {
             expect(els.length, "One postit should be selected after copy").to.equal(1)
             expect(els[0].innerText, "Postit 'HELLO' should be selected after copy").to.equal("HELLO")
         })
-        */
+
 
     })
 
