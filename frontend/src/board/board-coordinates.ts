@@ -56,7 +56,7 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>, fon
       if (!elem) return { x: 0, y: 0 } // Not the smartest move
       
       const baseFontSize = baseFontSizeAtom.get();
-      const rect = boardElem.get()!.getBoundingClientRect()
+      const rect = elem.getBoundingClientRect()
       return newCoordinates(pxToEm(clientCoords.x - rect.x, baseFontSize), pxToEm(clientCoords.y - rect.y, baseFontSize))
     }
   
