@@ -1,8 +1,9 @@
 import * as L from "lonna";
 import { globalScope } from "lonna";
-import { AppEvent, Board, CursorPosition, CURSOR_POSITIONS_ACTION_TYPE, Id, UserCursorPosition, UserSessionInfo } from "../../../common/domain";
+import { AppEvent, Board, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, UserCursorPosition, UserSessionInfo } from "../../../common/domain";
 import { boardReducer } from "../../../common/state";
 import MessageQueue from "./message-queue";
+
 
 export type BoardAppState = {
     board: Board | undefined
@@ -10,6 +11,7 @@ export type BoardAppState = {
     nickname: string,
     users: UserSessionInfo[]
     cursors: Record<Id, UserCursorPosition>
+    locks: ItemLocks
 }
 
 export type BoardStore = ReturnType<typeof boardStore>
@@ -42,6 +44,8 @@ export function boardStore(socket: typeof io.Socket) {
             return { ...state, userId: event.userId, nickname: event.nickname }
         } else if (event.action === "board.joined") {
             return { ...state, users: state.users.concat({ userId: event.userId, nickname: event.nickname }) }
+        } else if (event.action === "board.locks") {
+            return { ...state, locks: event.locks }
         } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
             return { ...state, cursors: event.p }
         } else if (event.action === "cursor.move") {
@@ -52,7 +56,7 @@ export function boardStore(socket: typeof io.Socket) {
         }
     }
     
-    const state = events.pipe(L.scan({ board: undefined, userId: null, nickname: "", users: [], cursors: {} }, eventsReducer, globalScope))
+    const state = events.pipe(L.scan({ board: undefined, userId: null, nickname: "", users: [], cursors: {}, locks: {} }, eventsReducer, globalScope))
     
     return {
         state,

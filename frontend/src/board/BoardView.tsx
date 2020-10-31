@@ -28,6 +28,8 @@ export const BoardView = (
     assets: AssetStore, dispatch: (e: AppEvent) => void }
 ) => {
   const board = L.view(state, s => s.board!)
+  const locks = L.view(state, s => s.locks)
+  const userId = L.view(state, s => s.userId)
   const sessions = L.view(state, s => s.users)
   const zoom = L.atom(1);
   const style = L.combineTemplate({
@@ -54,6 +56,37 @@ export const BoardView = (
     }
     imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL)
   }
+
+  locks.forEach(l => {
+    const user = userId.get()
+    if (!user) {
+      focus.set({ status: "none" })
+      return
+    }
+
+    const f = focus.get()
+
+    const hasLockOn = Object.keys(l).filter(itemId => l[itemId] === user)
+
+    if (hasLockOn.length === 0) {
+      focus.set({ status: "none" })
+      return
+    }
+
+    if (f.status === "none") {
+      focus.set({ status: "selected", ids: hasLockOn })
+      return
+    }
+
+    if (f.status === "editing" && !hasLockOn.includes(f.id)) {
+      focus.set({ status: "selected", ids: hasLockOn })
+      return
+    }
+
+    if (f.status === "dragging" || f.status === "selected") {
+      focus.set({ status: f.status, ids: hasLockOn })
+    }    
+  })
 
   L.fromEvent<JSX.KeyboardEvent>(document, "keyup").pipe(L.applyScope(componentScope())).forEach(e => {
     if (e.keyCode === 8 || e.keyCode === 46) { // del or backspace
@@ -88,9 +121,14 @@ export const BoardView = (
     }
   }
 
-  function onAdd(item: Item) {
+  function onAdd(item: Item, editable: boolean = true) {
     dispatch({ action: "item.add", boardId, item })
-    focus.set({ status: "editing", id: item.id })
+    
+    if (editable) {
+      focus.set({ status: "editing", id: item.id })
+    } else {
+      focus.set({ status: "selected", ids: [item.id] })
+    }
   }
 
   return (
@@ -110,7 +148,7 @@ export const BoardView = (
               renderObservable={renderItem}
               getKey={(postIt) => postIt.id}
             />
-            <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus }}/>
+            <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, userId, locks, dispatch }}/>
             <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
           </div>
           <ContextMenuView {...{contextMenu, setColor } } />
@@ -124,13 +162,15 @@ export const BoardView = (
       switch (t) {
         case "note" : return <PostItView {...{ 
             board, id, postIt: item as L.Property<PostIt>, 
+            locks,
+            userId,
             focus,
             coordinateHelper, dispatch,
             contextMenu
         }} />
         case "image": return <ImageView {...{
-          id, image: item as L.Property<Image>, assets,
-          board, focus, coordinateHelper, dispatch, contextMenu
+          id, image: item as L.Property<Image>, assets, locks,
+          userId, board, focus, coordinateHelper, dispatch, contextMenu
         }}/>
         default: throw Error("Unsupported item: " + t)
       }

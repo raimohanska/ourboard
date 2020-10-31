@@ -14,6 +14,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
   
     elem.addEventListener("dragstart", e => {
       e.stopPropagation()
+      e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
       const f = focus.get()
       if (f.status === "dragging") {
         if (!f.ids.includes(id)) {
@@ -22,18 +23,21 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
       } else if (f.status === "selected" && f.ids.includes(id)) {
         focus.set({ status: "dragging", ids: f.ids})
       } else {
-        focus.set({ status: "dragging", ids: [id]})
+        return
+        // focus.set({ status: "dragging", ids: [id]})
       }
       dragStart = e;
-      dragStart.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
       dragStartPositions = board.get().items
     })
     elem.addEventListener("drag", e => {
       e.stopPropagation()
+      const f = focus.get()
+      if (f.status !== "dragging") {
+        e.preventDefault()
+        return
+      }
       const { x: xDiff, y: yDiff } = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
   
-      const f = focus.get()
-      if (f.status !== "dragging") throw Error("Assertion fail")
       const b = board.get()
       f.ids.forEach(id => {
         const current = b.items.find(i => i.id === id)
@@ -48,7 +52,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
       e.stopPropagation()
       focus.modify(f => {
         if (f.status !== "dragging") {
-          throw Error("Assertion fail")
+          return f
         }
         return { status: "selected", ids: f.ids }
       })

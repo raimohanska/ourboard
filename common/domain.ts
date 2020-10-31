@@ -34,11 +34,16 @@ export type ItemBounds = { x: number; y: number, width: number, height: number }
 export type PostIt = { id: string; type: "note"; text: string; color: Color } & ItemBounds;
 export type Image = { id: string; type: "image"; assetId: string; src?: string } & ItemBounds;
 export type Item = PostIt | Image
+export type ItemLocks = Record<Id, Id> 
 
-export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse;
-export type BoardItemEvent = AddPostIt | UpdateItem | DeletePostIt
+export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
+export type PersistableBoardItemEvent = AddPostIt | UpdateItem | DeletePostIt
+export type BoardItemEvent = PersistableBoardItemEvent | LockItem | UnlockItem
 export type AddPostIt = { action: "item.add", boardId: Id, item: Item };
 export type UpdateItem = { action: "item.update", boardId: Id, item: Item };
+export type LockItem = { action: "item.lock", boardId: Id, itemId: Id }
+export type UnlockItem = { action: "item.unlock", boardId: Id, itemId: Id }
+export type GotBoardLocks = { action: "board.locks", boardId: Id, locks: ItemLocks }
 export type DeletePostIt = { action: "item.delete", boardId: Id, itemId: Id };
 export type AddBoard = { action: "board.add", boardId: Id, name: string }
 export type JoinBoard = { action: "board.join", boardId: Id }
@@ -82,3 +87,7 @@ export function newImage(assetId: string, x: number = 20, y: number = 20, width:
 export function getCurrentTime(): ISOTimeStamp {
     return new Date().toISOString()
 }
+
+export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent => a.action.startsWith("item.")
+
+export const isPersistableBoardItemEvent = (bie: BoardItemEvent): bie is PersistableBoardItemEvent => !["item.lock", "item.unlock"].includes(bie.action)

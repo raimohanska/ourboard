@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { Board, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE } from "../../common/domain"
+import { Board, ItemLocks, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE } from "../../common/domain"
 import { randomProfession } from "./professions"
 
 type UserSession = {
@@ -50,4 +50,10 @@ export function broadcastCursorPositions(boardId: Id, positions: Record<Id, Curs
     everyoneOnTheBoard(boardId).forEach(s => {
         s.socket.send("app-event", { action: CURSOR_POSITIONS_ACTION_TYPE, p: positions })
     })
+}
+
+export function broadcastItemLocks(boardId: Id, locks: Record<Id, ItemLocks>) {
+    everyoneOnTheBoard(boardId).forEach(s => {
+        s.socket.send("app-event", { action: "board.locks", boardId, locks: locks[boardId] || {} })
+    })    
 }

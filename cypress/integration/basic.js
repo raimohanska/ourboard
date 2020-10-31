@@ -67,7 +67,7 @@ describe("Example board - basic functionality", () => {
             // Since our app logic calculates the new position for a post-it based on dragstart position and current client mouse position,
             // This test requires the following: 1. dragstart on source element 2. dragover on board to trigger clientCoordinates change 3. drag on source element
             PostitsWithText("Monoids")
-                .trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+                .click({ force: true }).trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
             
             cy.get(".board").trigger("dragover", { force: true, clientX: x + 100, clientY: y - 100 })
             PostitsWithText("Monoids").trigger("drag", { force: true })
@@ -100,7 +100,7 @@ describe("Example board - basic functionality", () => {
             PostitsWithText("World").click({ force: true, shiftKey: true })
 
             PostitsWithText("Monoids")
-                .trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+                .click({ force: true }).trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
 
             cy.get(".board").trigger("dragover", { force: true, clientX: x - 100, clientY: y + 100 })
             PostitsWithText("Monoids").trigger("drag", { force: true })

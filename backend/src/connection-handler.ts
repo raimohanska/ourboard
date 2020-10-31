@@ -1,8 +1,9 @@
 import IO from "socket.io"
-import { AppEvent, BoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize } from "../../common/domain"
+import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize } from "../../common/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
-import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions } from "./sessions"
+import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions, broadcastItemLocks } from "./sessions"
 import { getSignedPutUrl } from "./storage"
+import { obtainLock, releaseLocksFor } from "./locker"
 
 export const connectionHandler = (socket: IO.Socket) => {        
     socket.on("message", async (kind: string, event: any, ackFn) => {
@@ -21,7 +22,8 @@ export const connectionHandler = (socket: IO.Socket) => {
         Object.keys(cursorPositions).forEach(boardId => {
             delete cursorPositions[boardId][socket.id]
             positionShouldBeFlushedToClients.add(boardId)
-        })        
+        })
+        releaseLocksFor(socket)
     })
 }
 
@@ -42,10 +44,13 @@ setInterval(() => {
 }, 30);
 
 async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
-    if (appEvent.action.startsWith("item.")) {
-        // console.log(appEvent)
-        await updateBoards(appEvent as BoardItemEvent)
-        broadcastListEvent(appEvent as BoardItemEvent, socket)
+    if (isBoardItemEvent(appEvent)) {
+        obtainLock(appEvent, socket, async () => {
+            if (isPersistableBoardItemEvent(appEvent)) {
+                await updateBoards(appEvent)
+                broadcastListEvent(appEvent, socket)
+            }            
+        })
     } else {
         switch (appEvent.action) {
             case "board.join": 
