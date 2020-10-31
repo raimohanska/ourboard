@@ -222,6 +222,8 @@ a {
         > .text {
             @extend .item; 
             box-shadow: none;           
+            align-items: flex-start;
+            justify-content: flex-start;            
         } 
 
         .container {
