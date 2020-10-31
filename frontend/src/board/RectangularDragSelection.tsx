@@ -5,15 +5,7 @@ import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { over, xor } from "lodash"
 import { BoardFocus } from "./BoardView"
-
-type Rect = { x: number, y: number, width: number, height: number }
-function overlaps(a: Rect, b: Rect) {
-    if (b.x > a.x + a.width) return false
-    if (b.x + b.width < a.x) return false
-    if (b.y > a.y + a.height) return false
-    if (b.y + b.height < a.y) return false
-    return true
-}
+import { Rect, overlaps, rectFromPoints } from "./geometry"
 
 export const RectangularDragSelection = (
     { boardElem, coordinateHelper, board, focus, userId, locks, dispatch }: 
@@ -26,13 +18,7 @@ export const RectangularDragSelection = (
     let selectedAtStart: Id[] = []
     let rect: L.Property<Rect | null> = L.view(start, current, (s, c) => {
         if (!s || !c) return null
-        const x = Math.min(s.x, c.x)
-        const y = Math.min(s.y, c.y)
-
-        const width = Math.abs(s.x - c.x)
-        const height = Math.abs(s.y - c.y)
-
-        return {x, y, width, height }
+        return rectFromPoints(s, c)
     })
 
     boardElem.forEach(el => {

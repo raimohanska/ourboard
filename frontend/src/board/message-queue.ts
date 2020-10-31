@@ -67,6 +67,12 @@ export default function(socket: typeof io.Socket) {
                     return q.concat(event)
                 } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]
             }
+            else if (event.action === "item.move") {
+                const idx = q.findIndex(evt => evt.action === "item.move" && evt.boardId === event.boardId && evt.itemId === event.itemId)
+                if (idx === -1) {
+                    return q.concat(event)
+                } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]                
+            }
             else if (event.action === "item.update") {
                 const idx = q.findIndex(evt => evt.action === "item.update" && evt.boardId === event.boardId && evt.item.id === event.item.id)
                 if (idx === -1) {

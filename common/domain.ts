@@ -33,16 +33,18 @@ export type ItemBounds = { x: number; y: number, width: number, height: number }
 
 export type PostIt = { id: string; type: "note"; text: string; color: Color } & ItemBounds;
 export type Image = { id: string; type: "image"; assetId: string; src?: string } & ItemBounds;
-export type Container = { id: string; type: "container" } & ItemBounds;
+export type Container = { id: string; type: "container"; items: Id[] } & ItemBounds;
 export type Item = PostIt | Image | Container
 export type ItemLocks = Record<Id, Id> 
 
 export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
-export type PersistableBoardItemEvent = AddItem | UpdateItem | DeleteItem | BringItemToFront
+export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront | SetItemContainer
 export type BoardItemEvent = PersistableBoardItemEvent | LockItem | UnlockItem
 export type AddItem = { action: "item.add", boardId: Id, item: Item };
 export type UpdateItem = { action: "item.update", boardId: Id, item: Item };
+export type MoveItem = { action: "item.move", boardId: Id, itemId: Id, x: number, y: number };
 export type BringItemToFront = { action: "item.front", boardId: Id, itemId: Id };
+export type SetItemContainer = { action: "item.setcontainer", boardId: Id, itemId: Id, containerId: Id | null }
 export type LockItem = { action: "item.lock", boardId: Id, itemId: Id }
 export type UnlockItem = { action: "item.unlock", boardId: Id, itemId: Id }
 export type GotBoardLocks = { action: "board.locks", boardId: Id, locks: ItemLocks }
@@ -83,7 +85,7 @@ export function newPostIt(text: string, color: Color = "yellow", x: number = 20,
 }
 
 export function newContainer(x: number = 20, y: number = 20, width: number = 30, height: number = 20): Container {
-    return { id: uuid.v4(), type: "container", x, y, width, height }    
+    return { id: uuid.v4(), type: "container", items: [], x, y, width, height }    
 }
 
 export function newImage(assetId: string, x: number = 20, y: number = 20, width: number = 5, height: number = 5): Image {

@@ -8,7 +8,10 @@ export const DND_GHOST_HIDING_IMAGE = new Image();
 DND_GHOST_HIDING_IMAGE.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 
 export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property<Board>, focus: L.Atom<BoardFocus>, 
-    coordinateHelper: BoardCoordinateHelper, doStuff: (b: Board, current: Item, dragStartPosition: Item, xDiff: number, yDiff: number) => void) {
+    coordinateHelper: BoardCoordinateHelper, 
+    doWhileDragging: (b: Board, current: Item, dragStartPosition: Item, xDiff: number, yDiff: number) => void,
+    doOnDrop?: (b: Board, current: Item) => void,
+) {
     let dragStart: DragEvent | null = null;
     let dragStartPositions: Item[]
   
@@ -44,7 +47,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
         const dragStartPosition = dragStartPositions.find(i => i.id === id)
         if (!current || !dragStartPosition) throw Error("Item not found: " + id)
   
-        doStuff(b, current, dragStartPosition, xDiff, yDiff)      
+        doWhileDragging(b, current, dragStartPosition, xDiff, yDiff)      
       })
     })
 
@@ -53,6 +56,14 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
       focus.modify(f => {
         if (f.status !== "dragging") {
           return f
+        }
+        if (doOnDrop) {
+          const b = board.get()
+          f.ids.forEach(id => {
+            const current = b.items.find(i => i.id === id)
+            if (!current) throw Error("Item not found: " + id)
+            doOnDrop(b, current)      
+          })
         }
         return { status: "selected", ids: f.ids }
       })

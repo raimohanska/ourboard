@@ -1,4 +1,5 @@
 import * as L from "lonna"
+import { Coordinates } from "./geometry";
 
 const COORDINATES_PROTOTYPE = {
   x: 0,
@@ -15,7 +16,7 @@ const newCoordinates = (x: number, y : number): Coordinates => {
   return coords;
 }
 
-export type Coordinates = { x: number, y: number }
+
 // HTML client coordinates: relative to viewport
 export type ClientCoordinates = Coordinates
 // Board coordinates used in the domain objects: in em unit, from board top left corner.
