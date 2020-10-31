@@ -1,6 +1,6 @@
 import * as uuid from "uuid"
 import * as L from "lonna";
-import * as _ from "lodash";
+import _ from "lodash";
 import { AppEvent, Board, Item } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
 import { BoardCoordinateHelper } from "./board-coordinates";

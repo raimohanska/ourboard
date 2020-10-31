@@ -41,25 +41,30 @@ export function itemSelectionHandler(
         contextMenu.set(HIDDEN_CONTEXT_MENU)
         const f = focus.get()
         
-          if (e.shiftKey && f.status === "selected") {
+        if (e.shiftKey && f.status === "selected") {
             if (f.ids.includes(id) ) {
                 focus.set({ status: "selected", ids: f.ids.filter(i => i !== id)})
             } else {
                 focus.set({ status: "selected", ids: f.ids.concat(id)})
-                dispatch({ action: "item.lock", boardId: board.get().id, itemId: id })        
+                lockAndBringToFront(id)
             }
-          } else if (f.status === "none") {
+        } else if (f.status === "none") {
             focus.set({ status: "selected", ids: [id] })
-            dispatch({ action: "item.lock", boardId: board.get().id, itemId: id }) 
-          } else if (f.status === "selected" && !f.ids.includes(id)) {
+            lockAndBringToFront(id)
+        } else if (f.status === "selected" && !f.ids.includes(id)) {
             focus.set({ status: "selected", ids: [id] })
-            dispatch({ action: "item.lock", boardId: board.get().id, itemId: id })             
-          }      
+            lockAndBringToFront(id)
+        }      
       }    
 
     return {
         itemFocus,
         selected,
         onClick
+    }
+
+    function lockAndBringToFront(id: Id) {
+      dispatch({ action: "item.lock", boardId: board.get().id, itemId: id })             
+      dispatch({ action: "item.front", boardId: board.get().id, itemId: id })
     }
 }
