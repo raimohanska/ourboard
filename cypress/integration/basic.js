@@ -35,28 +35,71 @@ describe("Initial screen", () => {
     })
 })
 
-describe("Example board - basic functionality", () => {
+describe("Example board", () => {
     it("Opens correctly from direct link", () => {
         cy.visit("http://localhost:1337/b/default")
         cy.get('[data-test="board-name"]').contains("Test Board").should("be.visible")
     })
+})
+
+
+function createNote(text, relX, relY) {
+    cy.get(".palette-item").then(elements => {
+        const { x, y } = elements[0].getBoundingClientRect()
+        cy.get(".palette-item").first().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+        cy.get(".board").trigger("dragover", { force: true, clientX: x + relX, clientY: y + relY })
+        // Dragging from palette is not shown in realtime, so the event is different here.
+        cy.get(".palette-item").first().trigger("dragend", { force: true })
+
+        NotesWithText("HELLO").should("exist")
+
+        cy.get(".text").contains("HELLO").type(text)
+
+        NotesWithText(text).should("exist")
+
+        cy.get(".board").click()
+    })
+}
+
+describe("Board functionality", () => {
+    
+    beforeEach(() => {
+        cy.visit("http://localhost:1337")
+        cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
+        cy.get("button").contains("Create").click()
+        
+        cy.url().should("contain", "http://localhost:1337/b/")
+        
+        cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
+
+    })
+    beforeEach(() => {
+        
+    })
+
+
+    it("Can create note by dragging from palette", () => {
+        createNote("HELLO", 350, 200)
+    })    
 
     it("Can edit note text", () => {
-        cy.visit("http://localhost:1337/b/default")
+        createNote("Hello", 350, 200)
         cy.get(".text").contains("Hello").type("Monoids")
         cy.get(".note").contains("Monoids").should("be.visible")
         cy.get(".note").contains("Hello").should("not.be.visible")
     })
 
     it("Persists changes", () => {
-        cy.visit("http://localhost:1337/b/default")
+        createNote("Hello", 350, 200)
+        cy.get(".text").contains("Hello").type("Monoids")
         cy.reload()
         cy.get(".note").contains("Monoids").should("be.visible")
         cy.get(".note").contains("Hello").should("not.be.visible")
     })
 
     it("Can drag note", () => {
-        cy.visit("http://localhost:1337/b/default")
+        createNote("Monoids", 350, 200)        
+
         let originalX, originalY
         NotesWithText("Monoids").then(elements => {
             const source = elements[0]
@@ -82,7 +125,8 @@ describe("Example board - basic functionality", () => {
     })
 
     it("Can drag multiple notes", () => {
-        cy.visit("http://localhost:1337/b/default")
+        createNote("World", 200, 200)    
+        createNote("Monoids", 250, 200)    
         let originalX, originalY, originalX2, originalY2;
         NotesWithText("World").then(elements => {
             const source = elements[0]
@@ -122,7 +166,8 @@ describe("Example board - basic functionality", () => {
     })
 
     it("Can drag-to-resize note", () => {
-        cy.visit("http://localhost:1337/b/default")
+        createNote("Monoids", 250, 200)   
+
         let originalWidth, originalHeight
         NotesWithText("Monoids").then(elements => {
             const source = elements[0]
@@ -143,19 +188,8 @@ describe("Example board - basic functionality", () => {
         })
     })
 
-    it("Can create note by dragging from palette", () => {
-        cy.get(".palette-item").then(elements => {
-            const { x, y } = elements[0].getBoundingClientRect()
-            cy.get(".palette-item").first().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
-            cy.get(".board").trigger("dragover", { force: true, clientX: x + 300, clientY: y + 300 })
-            // Dragging from palette is not shown in realtime, so the event is different here.
-            cy.get(".palette-item").first().trigger("dragend", { force: true })
-
-            NotesWithText("HELLO").should("exist")
-        })
-    })
-
     it("Can change color of existing note from right click context menu", () => {
+        createNote("HELLO", 250, 200)  
         let originalColor;
         NotesWithText("HELLO").then(els => {
             originalColor = els[0].style.background
@@ -178,6 +212,7 @@ describe("Example board - basic functionality", () => {
     })
 
     it("Can cut, copy and paste note", () => {
+        createNote("HELLO", 250, 200)  
         NotesWithText("HELLO").click({ force: true }).trigger("cut", { force: true })
 
         cy.contains("HELLO").should("not.exist")
@@ -208,7 +243,8 @@ describe("Example board - basic functionality", () => {
     })
 
     it("Can delete notes", () => {
-        cy.visit("http://localhost:1337/b/default")
+        createNote("Monoids", 250, 200)  
+        createNote("World", 150, 200)  
         NotesWithText("Monoids").click({ force: true, shiftKey: true })
         NotesWithText("World").click({ force: true, shiftKey: true })
         NotesWithText("World").trigger("keyup", { keyCode: BACKSPACE, which: BACKSPACE })
