@@ -27,7 +27,6 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
         } else {
             let dt = e.dataTransfer
             let files = dt!.files
-            debugger
             if (files.length === 0) {
                 return
             }
