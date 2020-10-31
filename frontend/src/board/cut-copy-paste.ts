@@ -1,7 +1,7 @@
 import * as uuid from "uuid"
 import * as L from "lonna";
 import _ from "lodash";
-import { AppEvent, Board, Item } from "../../../common/domain";
+import { AppEvent, Board, Id, Item } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
 import { BoardCoordinateHelper } from "./board-coordinates";
 
@@ -11,12 +11,9 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
 
     let clipboard: Item[] = [];
 
-    const makeCopy = (items: Item[], board: Board, xDiff: number, yDiff: number): { toCreate: Item[], toSelect: Item[] } => {
-        const containedItemIds = new Set(items.flatMap(i => i.type === "container" ? i.items : []))
-            
+    const makeCopy = (items: Item[], xDiff: number, yDiff: number): { toCreate: Item[], toSelect: Item[] } => {
+        const containedItemIds = new Set(items.flatMap(i => i.type === "container" ? i.items : []))            
         const withoutContainedItems = items.filter(i => !containedItemIds.has(i.id))
-
-        console.log("rootitems", withoutContainedItems)
 
         let toCreate: Item[] = []
         const toSelect = withoutContainedItems.map(makeCopy)
@@ -26,7 +23,7 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
         function makeCopy(i: Item): Item {
             switch (i.type) {
                 case "container": 
-                    const copiesOfContained = i.items.map(id => board.items.find(i => i.id === id)!).flatMap(makeCopy)
+                    const copiesOfContained = i.items.map(id => items.find(i => i.id === id)!).flatMap(makeCopy)
                     toCreate = [...toCreate, ...copiesOfContained]
                     const copyContainer = { ...i, id: uuid.v4(), x: i.x + xDiff, y: i.y + yDiff, items: copiesOfContained.map(i => i.id) }
                     return copyContainer
@@ -37,6 +34,12 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
         }
     }
 
+    function recursiveItems(ids: Id[], board: Board) {
+        return board.items
+            .filter(i => ids.includes(i.id))
+            .flatMap(i => i.type === "container" ? i.items.map(childId => board.items.find(x => x.id === childId)!).concat(i) : i)
+    }
+
     CLIPBOARD_EVENTS.forEach(eventType => {
         document.addEventListener(eventType, e => {
             const currentFocus = focus.get()
@@ -44,14 +47,14 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
             switch(eventType) {
                 case "cut": {
                     if (currentFocus.status !== "selected" || currentFocus.ids.length === 0) return
-                    const itemsToCut = currentBoard.items.filter(i => currentFocus.ids.includes(i.id))
+                    const itemsToCut = recursiveItems(currentFocus.ids, currentBoard)
                     itemsToCut.forEach(it => dispatch({ action: "item.delete", boardId: currentBoard.id, itemId: it.id }))
                     clipboard = itemsToCut
                     break
                 }
                 case "copy": {
                     if (currentFocus.status !== "selected" || currentFocus.ids.length === 0) return
-                    const itemsToCopy = board.get().items.filter(i => currentFocus.ids.includes(i.id))
+                    const itemsToCopy = recursiveItems(currentFocus.ids, currentBoard)
                     clipboard = itemsToCopy
                     break
                 }
@@ -62,7 +65,7 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                     const currentCenter = coordinateHelper.currentBoardCoordinates.get()
                     const xDiff = currentCenter.x - xCenterOld
                     const yDiff = currentCenter.y - yCenterOld
-                    const { toCreate, toSelect } = makeCopy(clipboard, board.get(), xDiff, yDiff)                    
+                    const { toCreate, toSelect } = makeCopy(clipboard, xDiff, yDiff)                    
                     toCreate.forEach(it => dispatch({ action: "item.add", boardId: currentBoard.id, item: it }))
                     focus.set({ status: "selected", ids: toSelect.map(it => it.id) })
                     break
