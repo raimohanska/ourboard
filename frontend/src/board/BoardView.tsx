@@ -14,6 +14,7 @@ import { AssetStore } from "./asset-store";
 import { cutCopyPasteHandler } from "./cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { add, multiply } from "./geometry";
+import { maybeAddToContainer } from "./item-setcontainer";
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -127,6 +128,7 @@ export const BoardView = (
     item = { ...item, x, y }
 
     dispatch({ action: "item.add", boardId, item })
+    maybeAddToContainer(item, board.get(), dispatch)
     
     if (item.type === "note") {
       focus.set({ status: "editing", id: item.id })

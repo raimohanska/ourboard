@@ -6,7 +6,7 @@ import { AppEvent, Board } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
 import { onBoardItemDrag } from "./item-drag"
 import { containedBy, overlaps } from "./geometry";
-
+import { maybeAddToContainer } from "./item-setcontainer"
 
 export function itemDragToMove(id: string, board: L.Property<Board>, focus: L.Atom<BoardFocus>, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void) {
     return (elem: HTMLElement) => onBoardItemDrag(elem, id, board, focus, coordinateHelper, (b, current, dragStartPosition, xDiff, yDiff) => {
@@ -20,16 +20,7 @@ export function itemDragToMove(id: string, board: L.Property<Board>, focus: L.At
         dispatch({ action: "item.move", boardId: b.id, itemId: current.id, x, y });
     },
     (b, current) => {
-        // On drop
-        if (current.type !== "container") {
-            const currentContainer = b.items.find(i => (i.type === "container") && i.items.includes(id))
-            if (currentContainer && containedBy(current, currentContainer)) return
-
-            const newContainer = b.items.find(i => (i.type === "container") && containedBy(current, i))
-            if (newContainer != currentContainer) {
-                dispatch({ action: "item.setcontainer", boardId: b.id, itemId: id, containerId: newContainer ? newContainer.id : null })
-            }
-        }
+        maybeAddToContainer(current, b, dispatch)        
     })
 }
 
