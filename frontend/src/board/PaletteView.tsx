@@ -23,5 +23,5 @@ export const NewNote = ({ color, onAdd, }: { color: Color, onAdd: (i: Note) => v
 }
 
 export const NewContainer = ({ onAdd }: { onAdd: (i: Item) => void }) => {
-  return <span onDragEnd={() => onAdd(newContainer())} className="container palette-item" draggable={true}/>
+  return <span onDragEnd={() => onAdd(newContainer())} className="container palette-item" draggable={true}>Area</span>
 }

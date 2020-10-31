@@ -176,11 +176,17 @@ a {
                 width: 2em;
                 background: white;
                 border: 1px solid black;
+                color: #888;
+                font-size: .8em;
+                line-height: 1em;
+                display: inline-block;
+                box-sizing: content-box;
+                padding: 0.1em 0.2em;                
             }
             .text {
                 @extend .item;
                 background: white;
-                color: #888;
+                color: $black;
                 font-size: .8em;
                 line-height: 1em;
                 display: inline-block;
