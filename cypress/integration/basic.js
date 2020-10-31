@@ -33,6 +33,7 @@ describe("Initial screen", () => {
         cy.url().should("contain", "http://localhost:1337/b/")
         cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
     })
+    
 })
 
 describe("Example board", () => {
@@ -73,8 +74,21 @@ describe("Board functionality", () => {
         cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
 
     })
-    beforeEach(() => {
+
+    it("Can select note by dragging on board", () => {
+        createNote("HELLO", 120, 120)
         
+        cy.get(".board").then(board => {
+            const { x, y } = board[0].getBoundingClientRect()
+            cy.get(".board").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer, clientX: x + 10, clientY: y + 10 })
+            cy.get(".board").trigger("dragover", { force: true, clientX: x + 600, clientY: y + 300 })
+            cy.get(".board").trigger("drag", { force: true, clientX: x + 600, clientY: y + 300 })
+    
+            SelectedNotes().then(els => {
+                expect(els.length, "One note should be selected").to.equal(1)
+                expect(els[0].innerText, "Note 'HELLO' should be selected").to.equal("HELLO")
+            })            
+        })
     })
 
 
