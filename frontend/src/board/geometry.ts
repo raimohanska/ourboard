@@ -2,6 +2,14 @@
 export type Coordinates = { x: number, y: number }
 export type Rect = { x: number, y: number, width: number, height: number }
 
+export function add(a: Coordinates, b: Coordinates) {
+    return { x: a.x + b.x, y: a.y + b.y }
+}
+
+export function multiply(a: Coordinates, factor: number) {
+    return { x: a.x * factor, y: a.y * factor }
+}
+
 export function overlaps(a: Rect, b: Rect) {
     if (b.x > a.x + a.width) return false
     if (b.x + b.width < a.x) return false

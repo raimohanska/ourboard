@@ -1,22 +1,16 @@
-import * as H from "harmaja";
-import { componentScope, h, ListView } from "harmaja";
-import * as L from "lonna";
-import { BoardCoordinateHelper } from "./board-coordinates"
-import { Item, Note } from "../../../common/domain";
+import { h } from "harmaja";
+import { Item } from "../../../common/domain";
 import { NewNote } from "./NewNote"
 import { NewContainer } from "./NewContainer"
 
-export const PaletteView = (
-  { coordinateHelper, onAdd }: 
-  { coordinateHelper: BoardCoordinateHelper, onAdd: (item: Item) => void }
-) => {
+export const PaletteView = ( { onAdd }: { onAdd: (item: Item) => void } ) => {
   return <span className="palette">
     <span>Drag to add</span>
     {
       ["yellow", "pink", "cyan", "#673ab7"].map(color =>
-        <NewNote {...{ onAdd, color, coordinateHelper }} />
+        <NewNote {...{ onAdd, color }} />
       )
     }
-    <NewContainer {...{ onAdd, coordinateHelper }} />
+    <NewContainer {...{ onAdd }} />
   </span>
 }

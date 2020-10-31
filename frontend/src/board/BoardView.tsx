@@ -13,6 +13,7 @@ import { imageUploadHandler } from "./image-upload"
 import { AssetStore } from "./asset-store";
 import { cutCopyPasteHandler } from "./cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
+import { add, multiply } from "./geometry";
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -122,6 +123,9 @@ export const BoardView = (
   }
 
   function onAdd(item: Item) {
+    const { x, y } = add(coordinateHelper.currentBoardCoordinates.get(), { x: -item.width / 2, y: -item.height / 2 })
+    item = { ...item, x, y }
+
     dispatch({ action: "item.add", boardId, item })
     
     if (item.type === "note") {
@@ -132,13 +136,12 @@ export const BoardView = (
   }
 
   return (
-    <div className="board-container">
-      
+    <div className="board-container">      
       <div className="controls">
         <span data-test="board-name" id="board-name">{L.view(board, "name")}</span>
         <button onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
         <button onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
-        <PaletteView {...{ coordinateHelper, onAdd }}/>
+        <PaletteView {...{ onAdd }}/>
       </div>
       <div className="scroll-container">
         <div className="border-container" style={style}>
