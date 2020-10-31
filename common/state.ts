@@ -19,11 +19,20 @@ export function boardReducer(board: Board, event: AppEvent): Board {
           ...board,
           items: moveItems(board.items, event.itemId, event.x, event.y)
         };
-      case "item.delete":
+      case "item.delete": {
+        const item = board.items.find(i => i.id === event.itemId)
+        if (!item) {
+          console.warn("Deleting non-existing item " + event.itemId)
+          return board
+        }
+        const idsToDelete = new Set(item.type === "container" ? item.items.concat(event.itemId) : [event.itemId])
         return {
           ...board,
-          items: board.items.filter((p) => p.id !== event.itemId)
+          items: board.items
+            .filter(i => !idsToDelete.has(i.id))
+            .map(i => i.type === "container" ? { ...i, items: i.items.filter(child => child !== event.itemId) } : i)
         }
+      }
       case "item.front":
         const item = board.items.find(i => i.id === event.itemId)
         if (!item) {

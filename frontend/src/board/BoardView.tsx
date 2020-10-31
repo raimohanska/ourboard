@@ -94,11 +94,7 @@ export const BoardView = (
     if (e.keyCode === 8 || e.keyCode === 46) { // del or backspace
       const s = focus.get()
       if (s.status === "selected") {
-        const b = board.get()
-        s.ids
-          .map(id => b.items.find(i => i.id === id)!)
-          .flatMap(i => i.type === "container" ? i.items.map(childId => b.items.find(x => x.id === childId)!).concat(i) : i)
-          .forEach(i => dispatch({ action: "item.delete", boardId, itemId: i.id}))
+        s.ids.forEach(id => dispatch({ action: "item.delete", boardId, itemId: id}))
       }      
     }
   })
