@@ -47,7 +47,7 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
         const h = height * w / width
         const { x, y } = coordinateHelper.currentBoardCoordinates.get()
         const image = newImage(assetId, x, y, w, h)
-        onAdd(image, true)
+        onAdd(image)
         const finalUrl = await urlPromise
         onURL(assetId, finalUrl)
     }

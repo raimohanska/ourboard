@@ -121,10 +121,10 @@ export const BoardView = (
     }
   }
 
-  function onAdd(item: Item, editable: boolean = true) {
+  function onAdd(item: Item) {
     dispatch({ action: "item.add", boardId, item })
     
-    if (editable) {
+    if (item.type === "note") {
       focus.set({ status: "editing", id: item.id })
     } else {
       focus.set({ status: "selected", ids: [item.id] })
