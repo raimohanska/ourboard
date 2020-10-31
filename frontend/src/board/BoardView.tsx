@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import {AppEvent, Color, Container, Id, Image, Item, PostIt, UserCursorPosition} from "../../../common/domain";
+import {AppEvent, Color, Container, Id, Image, Item, Note, UserCursorPosition} from "../../../common/domain";
 import { ItemView } from "./ItemView"
 import { BoardAppState } from "./board-store";
 import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
@@ -146,7 +146,7 @@ export const BoardView = (
             <ListView
               observable={L.view(board, "items")}
               renderObservable={renderItem}
-              getKey={(postIt) => postIt.id}
+              getKey={(i) => i.id}
             />
             <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, userId, locks, dispatch }}/>
             <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
@@ -162,7 +162,7 @@ export const BoardView = (
       switch (t) {
         case "container":
         case "note" : return <ItemView {...{ 
-            board, id, type: t, item: item as L.Property<PostIt>, 
+            board, id, type: t, item: item as L.Property<Note>, 
             locks,
             userId,
             focus,

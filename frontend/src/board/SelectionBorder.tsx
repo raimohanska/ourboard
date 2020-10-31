@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, Item, PostIt } from "../../../common/domain";
+import { AppEvent, Board, Item, Note } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
 import { onBoardItemDrag } from "./item-drag"
 

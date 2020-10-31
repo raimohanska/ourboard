@@ -31,10 +31,10 @@ export type Color = string;
 
 export type ItemBounds = { x: number; y: number, width: number, height: number }
 
-export type PostIt = { id: string; type: "note"; text: string; color: Color } & ItemBounds;
+export type Note = { id: string; type: "note"; text: string; color: Color } & ItemBounds;
 export type Image = { id: string; type: "image"; assetId: string; src?: string } & ItemBounds;
 export type Container = { id: string; type: "container"; items: Id[] } & ItemBounds;
-export type Item = PostIt | Image | Container
+export type Item = Note | Image | Container
 export type ItemLocks = Record<Id, Id> 
 
 export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
@@ -68,9 +68,9 @@ export const exampleBoard: Board = {
     id: "default",
     name: "Test Board",
     items: [
-        newPostIt("Hello", "pink", 10, 5),
-        newPostIt("World", "cyan", 20, 10),
-        newPostIt("Welcome", "cyan", 5, 14)
+        newNote("Hello", "pink", 10, 5),
+        newNote("World", "cyan", 20, 10),
+        newNote("Welcome", "cyan", 5, 14)
     ],
     ...defaultBoardSize
 }
@@ -80,7 +80,7 @@ export function createBoard(name: string): Board {
     return { id: uuid.v4(), name, items: [], ...defaultBoardSize } 
 }
 
-export function newPostIt(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5): PostIt {
+export function newNote(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5): Note {
     return { id: uuid.v4(), type: "note", text, color, x, y, width, height }    
 }
 

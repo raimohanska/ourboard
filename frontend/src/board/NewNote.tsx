@@ -1,11 +1,11 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Color, newPostIt, PostIt } from "../../../common/domain";
+import { Color, newNote, Note } from "../../../common/domain";
 
-export const NewPostIt = (
+export const NewNote = (
   { color, onAdd, coordinateHelper }: 
-  { color: Color, coordinateHelper: BoardCoordinateHelper, onAdd: (i: PostIt) => void }
+  { color: Color, coordinateHelper: BoardCoordinateHelper, onAdd: (i: Note) => void }
 ) => {
   const style = {
     background: color
@@ -15,7 +15,7 @@ export const NewPostIt = (
   
   function onDragEnd(dragEnd: JSX.DragEvent) {
     const {x, y} = coordinateHelper.currentBoardCoordinates.get()
-    const item = newPostIt("HELLO", color, x, y)
+    const item = newNote("HELLO", color, x, y)
     onAdd(item);
   }
   return <span ref={element.set} onDragEnd={onDragEnd} className="note palette-item" draggable={true} style={style}>

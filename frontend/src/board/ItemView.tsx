@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, Id, PostIt, ItemLocks, Item } from "../../../common/domain";
+import { AppEvent, Board, Id, Note, ItemLocks, Item } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./BoardView";
 import { ContextMenu } from "./ContextMenuView"
@@ -36,7 +36,7 @@ export const ItemView = (
   const dataTest = L.combineTemplate({
     text: L.view(item, i => i.type === "note" ? i.text : ""),
     selected
-  }).pipe(L.map(({ text, selected }: { text: string, selected: boolean }) => selected ? `postit-selected-${text}` : `postit-${text}`))
+  }).pipe(L.map(({ text, selected }: { text: string, selected: boolean }) => selected ? `note-selected-${text}` : `note-${text}`))
 
 
   return (
@@ -56,14 +56,14 @@ export const ItemView = (
         position: "absolute"
       })))}      
     >
-      { type === "note" ? <TextView postIt={item as L.Property<PostIt>}/> : null }
+      { type === "note" ? <TextView item={item as L.Property<Note>}/> : null }
       { L.view(locks, l => l[id] && l[id] !== userId.get() ? <span className="lock">🔒</span> : null )}
       { L.view(selected, s => s ? <SelectionBorder {...{ id, item: item, coordinateHelper, board, focus, dispatch}}/> : null) }
     </span>
   );
 
-  function TextView({ postIt } : { postIt: L.Property<PostIt>} ) {
-    const textAtom = L.atom(L.view(postIt, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...postIt.get(), text } }))
+  function TextView({ item } : { item: L.Property<Note>} ) {
+    const textAtom = L.atom(L.view(item, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...item.get(), text } }))
     const showCoords = false
   
     
@@ -85,7 +85,7 @@ export const ItemView = (
             setEditingIfAllowed
         )
       }} />
-      { showCoords ? <small>{L.view(postIt, p => Math.floor(p.x) + ", " + Math.floor(p.y))}</small> : null}
+      { showCoords ? <small>{L.view(item, p => Math.floor(p.x) + ", " + Math.floor(p.y))}</small> : null}
     </span>
   }
 };

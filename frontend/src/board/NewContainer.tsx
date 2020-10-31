@@ -1,7 +1,7 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Color, Item, newContainer, newPostIt, PostIt } from "../../../common/domain";
+import { Color, Item, newContainer, newNote, Note } from "../../../common/domain";
 
 export const NewContainer = (
   { onAdd, coordinateHelper }: 
