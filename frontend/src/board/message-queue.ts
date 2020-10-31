@@ -73,6 +73,12 @@ export default function(socket: typeof io.Socket) {
                     return q.concat(event)
                 } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]                
             }
+            else if (event.action === "item.lock" || event.action === "item.unlock") {
+                const idx = q.findIndex(evt => evt.action === event.action && evt.boardId === event.boardId && evt.itemId === event.itemId)
+                if (idx === -1) {
+                    return q.concat(event)
+                } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]
+            }
             return q.concat(event)
         })
     }
