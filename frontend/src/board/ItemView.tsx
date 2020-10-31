@@ -73,7 +73,7 @@ export const ItemView = (
   
       if (!u) return
       if (l[id] && l[id] !== u) return
-      focus.set(e ? { status: "editing", id } : { status: "selected", ids: [id] })
+      focus.set(e ? { status: "editing", id } : { status: "selected", ids: new Set([id]) })
   
       !l[id] && dispatch({ action: "item.lock", boardId: board.get().id, itemId: id })
     }

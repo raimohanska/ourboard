@@ -20,10 +20,10 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
       e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
       const f = focus.get()
       if (f.status === "dragging") {
-        if (!f.ids.includes(id)) {
-          focus.set({ status: "dragging", ids: [id]})
+        if (!f.ids.has(id)) {
+          focus.set({ status: "dragging", ids: new Set([id])})
         }
-      } else if (f.status === "selected" && f.ids.includes(id)) {
+      } else if (f.status === "selected" && f.ids.has(id)) {
         focus.set({ status: "dragging", ids: f.ids})
       } else {
         return

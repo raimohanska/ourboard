@@ -15,7 +15,7 @@ export const RectangularDragSelection = (
 ) => {
     let start: L.Atom<BoardCoordinates | null> = L.atom(null)
     let current: L.Atom<BoardCoordinates | null> = L.atom(null)
-    let selectedAtStart: Id[] = []
+    let selectedAtStart: Set<Id> = new Set()
     let rect: L.Property<Rect | null> = L.view(start, current, (s, c) => {
         if (!s || !c) return null
         return rectFromPoints(s, c)
@@ -30,8 +30,8 @@ export const RectangularDragSelection = (
             start.set(pos)
             current.set(pos)        
             const f = focus.get()
-            selectedAtStart = e.shiftKey && f.status === "selected" ? f.ids: []
-            focus.set(selectedAtStart.length > 0 ? { status: "selected", ids: selectedAtStart } : { status: "none" })
+            selectedAtStart = e.shiftKey && f.status === "selected" ? f.ids: new Set()
+            focus.set(selectedAtStart.size > 0 ? { status: "selected", ids: selectedAtStart } : { status: "none" })
         })
     
         el.addEventListener("drag", e => {         
@@ -43,7 +43,7 @@ export const RectangularDragSelection = (
             const bounds = rect.get()!
             const overlapping = board.get().items.filter(i => overlaps(i, bounds)).map(i => i.id)
             const allowed = overlapping.filter(id => !l[id] || l[id] === user)
-            focus.set(allowed.length > 0 ? { status: "selected", ids: allowed } : { status: "none" })
+            focus.set(allowed.length > 0 ? { status: "selected", ids: new Set(allowed) } : { status: "none" })
             allowed.forEach(id => {
                 if (l[id]) return
                 dispatch({ action: "item.lock", boardId: board.get().id, itemId: id })

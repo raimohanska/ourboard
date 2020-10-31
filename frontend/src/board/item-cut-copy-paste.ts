@@ -34,9 +34,9 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
         }
     }
 
-    function recursiveItems(ids: Id[], board: Board) {
+    function recursiveItems(ids: Set<Id>, board: Board) {
         return board.items
-            .filter(i => ids.includes(i.id))
+            .filter(i => ids.has(i.id))
             .flatMap(i => i.type === "container" ? i.items.map(childId => board.items.find(x => x.id === childId)!).concat(i) : i)
     }
 
@@ -46,14 +46,14 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
             const currentBoard = board.get()
             switch(eventType) {
                 case "cut": {
-                    if (currentFocus.status !== "selected" || currentFocus.ids.length === 0) return
+                    if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
                     const itemsToCut = recursiveItems(currentFocus.ids, currentBoard)
                     itemsToCut.forEach(it => dispatch({ action: "item.delete", boardId: currentBoard.id, itemId: it.id }))
                     clipboard = itemsToCut
                     break
                 }
                 case "copy": {
-                    if (currentFocus.status !== "selected" || currentFocus.ids.length === 0) return
+                    if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
                     const itemsToCopy = recursiveItems(currentFocus.ids, currentBoard)
                     clipboard = itemsToCopy
                     break
@@ -67,7 +67,7 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                     const yDiff = currentCenter.y - yCenterOld
                     const { toCreate, toSelect } = makeCopy(clipboard, xDiff, yDiff)                    
                     toCreate.forEach(it => dispatch({ action: "item.add", boardId: currentBoard.id, item: it }))
-                    focus.set({ status: "selected", ids: toSelect.map(it => it.id) })
+                    focus.set({ status: "selected", ids: new Set(toSelect.map(it => it.id)) })
                     break
                 }
             }

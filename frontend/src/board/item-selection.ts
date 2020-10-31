@@ -16,8 +16,8 @@ export function itemSelectionHandler(
 ) {
     const itemFocus = L.view(focus, f => {
         if (f.status === "none") return "none"
-        if (f.status === "selected") return f.ids.includes(id) ? "selected" : "none"
-        if (f.status === "dragging") return f.ids.includes(id) ? "dragging" : "none"
+        if (f.status === "selected") return f.ids.has(id) ? "selected" : "none"
+        if (f.status === "dragging") return f.ids.has(id) ? "dragging" : "none"
         return f.id === id ? "editing" : "none"
     })
 
@@ -42,17 +42,17 @@ export function itemSelectionHandler(
         const f = focus.get()
         
         if (e.shiftKey && f.status === "selected") {
-            if (f.ids.includes(id) ) {
-                focus.set({ status: "selected", ids: f.ids.filter(i => i !== id)})
+            if (f.ids.has(id) ) {
+                focus.set({ status: "selected", ids: new Set([...f.ids].filter(i => i !== id))})
             } else {
-                focus.set({ status: "selected", ids: f.ids.concat(id)})
+                focus.set({ status: "selected", ids: new Set([...f.ids].concat(id))})
                 lockAndBringToFront(id)
             }
         } else if (f.status === "none") {
-            focus.set({ status: "selected", ids: [id] })
+            focus.set({ status: "selected", ids: new Set([id]) })
             lockAndBringToFront(id)
-        } else if (f.status === "selected" && !f.ids.includes(id)) {
-            focus.set({ status: "selected", ids: [id] })
+        } else if (f.status === "selected" && !f.ids.has(id)) {
+            focus.set({ status: "selected", ids: new Set([id]) })
             lockAndBringToFront(id)
         }      
       }    

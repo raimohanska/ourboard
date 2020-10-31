@@ -18,8 +18,8 @@ import { maybeAddToContainer } from "./item-setcontainer";
 
 export type BoardFocus = 
   { status: "none" } | 
-  { status: "selected", ids: Id[] } | 
-  { status: "dragging", ids: Id[] } | 
+  { status: "selected", ids: Set<Id> } | 
+  { status: "dragging", ids: Set<Id> } | 
   { status: "editing", id: Id }
 
 export type ItemFocus = "none" | "selected" | "editing" | "dragging"
@@ -76,17 +76,17 @@ export const BoardView = (
     }
 
     if (f.status === "none") {
-      focus.set({ status: "selected", ids: hasLockOn })
+      focus.set({ status: "selected", ids: new Set(hasLockOn) })
       return
     }
 
     if (f.status === "editing" && !hasLockOn.includes(f.id)) {
-      focus.set({ status: "selected", ids: hasLockOn })
+      focus.set({ status: "selected", ids: new Set(hasLockOn) })
       return
     }
 
     if (f.status === "dragging" || f.status === "selected") {
-      focus.set({ status: f.status, ids: hasLockOn })
+      focus.set({ status: f.status, ids: new Set(hasLockOn) })
     }    
   })
 
@@ -133,7 +133,7 @@ export const BoardView = (
     if (item.type === "note") {
       focus.set({ status: "editing", id: item.id })
     } else {
-      focus.set({ status: "selected", ids: [item.id] })
+      focus.set({ status: "selected", ids: new Set([item.id]) })
     }
   }
 
