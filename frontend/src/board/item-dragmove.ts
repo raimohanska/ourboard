@@ -22,11 +22,13 @@ export function itemDragToMove(id: string, board: L.Property<Board>, focus: L.At
     (b, current) => {
         // On drop
         if (current.type !== "container") {
-            const newContainer = b.items.find(i => {
-                if (i.type !== "container") return
-                return containedBy(current, i)
-            })
-            dispatch({ action: "item.setcontainer", boardId: b.id, itemId: id, containerId: newContainer ? newContainer.id : null })
+            const currentContainer = b.items.find(i => (i.type === "container") && i.items.includes(id))
+            if (currentContainer && containedBy(current, currentContainer)) return
+
+            const newContainer = b.items.find(i => (i.type === "container") && containedBy(current, i))
+            if (newContainer != currentContainer) {
+                dispatch({ action: "item.setcontainer", boardId: b.id, itemId: id, containerId: newContainer ? newContainer.id : null })
+            }
         }
     })
 }
