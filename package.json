@@ -34,6 +34,7 @@
     "build:backend": "cd backend && yarn build",
     "tsc": "tsc",
     "clean:db": "docker-compose exec db psql -d r-board -U r-board -c 'TRUNCATE board;'",
-    "test-e2e:dev": "yarn clean:db && cypress run --headed || true && yarn clean:db"
+    "test-e2e:dev": "yarn clean:db && cypress run --headed || true && yarn clean:db",
+    "cypress": "cypress open"
   }
 }

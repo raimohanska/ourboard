@@ -210,7 +210,8 @@ describe("Example board - basic functionality", () => {
     it("Can delete post-its", () => {
         cy.visit("http://localhost:1337/b/default")
         PostitsWithText("Monoids").click({ force: true, shiftKey: true })
-        PostitsWithText("World").click({ force: true, shiftKey: true }).trigger("keyup", { keyCode: BACKSPACE, which: BACKSPACE })
+        PostitsWithText("World").click({ force: true, shiftKey: true })
+        PostitsWithText("World").trigger("keyup", { keyCode: BACKSPACE, which: BACKSPACE })
 
         PostitsWithText("Monoids").should("not.exist")
         PostitsWithText("World").should("not.exist")
