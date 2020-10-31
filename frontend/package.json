@@ -21,7 +21,7 @@
   },
   "scripts": {
     "start": "parcel src/index.html",
-    "build": "parcel build src/index.html",
+    "build": "parcel build --no-minify src/index.html",
     "watch": "nodemon -e ts,tsx,scss,html,svg,png -w src --exec \"yarn build\"",
     "tsc": "tsc"
   },
