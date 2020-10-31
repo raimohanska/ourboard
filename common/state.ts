@@ -29,6 +29,9 @@ export function boardReducer(board: Board, event: AppEvent): Board {
           ...board,
           items: sortItems(board.items.filter((p) => p.id !== event.itemId).concat(item))
         }
+      case "item.lock":
+      case "item.unlock":
+        return board;
       default:
         console.warn("Unknown event", event);
         return board
