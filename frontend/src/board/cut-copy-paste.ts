@@ -7,7 +7,6 @@ import { BoardCoordinateHelper } from "./board-coordinates";
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
-// TODO: cypress test this mofo
 export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<BoardFocus>, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void) {
 
     let clipboard: Item[] = [];
