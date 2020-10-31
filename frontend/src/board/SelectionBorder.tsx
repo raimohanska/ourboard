@@ -23,17 +23,29 @@ export const SelectionBorder = (
 
   function DragCorner({ vertical, horizontal}: { vertical: Vertical, horizontal: Horizontal } ) {    
     const ref= (e: HTMLElement) => onBoardItemDrag(e, id, board, focus, coordinateHelper, (b, current, dragStartPosition, xDiff, yDiff) => {
-      const x = horizontal === "left" 
-          ? coordinateHelper.getClippedCoordinate(dragStartPosition.x + xDiff, 'clientWidth', current.width-1)
+        let minDiff = Math.min(Math.abs(xDiff), Math.abs(yDiff))
+        const maintainAspectRatio = current.type === "image" || current.type === "note"
+        if (maintainAspectRatio) {
+          if (minDiff < 0.1) {
+            xDiff = 0
+            yDiff = 0
+          } else {
+            xDiff = xDiff * minDiff / Math.abs(xDiff)
+            yDiff = yDiff * minDiff / Math.abs(yDiff)
+          }
+        }
+        
+        const x = horizontal === "left" 
+          ? dragStartPosition.x + xDiff
           : dragStartPosition.x
         const y = vertical === "top" 
-          ? coordinateHelper.getClippedCoordinate(dragStartPosition.y + yDiff, 'clientHeight', current.height)
+          ? dragStartPosition.y + yDiff
           : dragStartPosition.y
-        const width = Math.max(2, horizontal === "left"
+        const width = Math.max(0.5, horizontal === "left"
           ? dragStartPosition.width - xDiff
           : dragStartPosition.width + xDiff)
 
-        const height = Math.max(2, vertical === "top"
+        const height = Math.max(0.5, vertical === "top"
           ? dragStartPosition.height - yDiff
           : dragStartPosition.height + yDiff)
 
