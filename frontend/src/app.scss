@@ -157,19 +157,30 @@ a {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            .note {
+            .item {
                 cursor: pointer;
                 margin-left: 0.5em;
                 height: 1em;
+            }
+            .note {
+                @extend .item;
                 width: 1em;
             }
             .container {
-                cursor: pointer;
-                margin-left: 0.5em;
-                height: 1em;
+                @extend .item;
                 width: 2em;
                 background: white;
                 border: 1px solid black;
+            }
+            .text {
+                @extend .item;
+                background: white;
+                color: #888;
+                font-size: .8em;
+                line-height: 1em;
+                display: inline-block;
+                border: 0.1em solid white;
+                box-sizing: content-box;
             }
         }
     }
@@ -206,6 +217,11 @@ a {
                 display: block;
                 font-size: 0.3em;
             }
+        } 
+
+        > .text {
+            @extend .item; 
+            box-shadow: none;           
         } 
 
         .container {

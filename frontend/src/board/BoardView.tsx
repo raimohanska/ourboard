@@ -166,6 +166,7 @@ export const BoardView = (
     return L.view(L.view(item, "type"), t => {
       switch (t) {
         case "container":
+        case "text":
         case "note" : return <ItemView {...{ 
             board, id, type: t, item: item as L.Property<Note>, 
             locks,

@@ -32,9 +32,10 @@ export type Color = string;
 export type ItemBounds = { x: number; y: number, width: number, height: number }
 
 export type Note = { id: string; type: "note"; text: string; color: Color } & ItemBounds;
+export type Text = { id: string; type: "text"; text: string } & ItemBounds;
 export type Image = { id: string; type: "image"; assetId: string; src?: string } & ItemBounds;
 export type Container = { id: string; type: "container"; items: Id[] } & ItemBounds;
-export type Item = Note | Image | Container
+export type Item = Note | Text | Image | Container
 export type ItemLocks = Record<Id, Id> 
 
 export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
@@ -82,6 +83,10 @@ export function createBoard(name: string): Board {
 
 export function newNote(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5): Note {
     return { id: uuid.v4(), type: "note", text, color, x, y, width, height }    
+}
+
+export function newText(text: string, x: number = 20, y: number = 20, width: number = 5, height: number = 2): Text {
+    return { id: uuid.v4(), type: "text", text, x, y, width, height }    
 }
 
 export function newContainer(x: number = 20, y: number = 20, width: number = 30, height: number = 20): Container {

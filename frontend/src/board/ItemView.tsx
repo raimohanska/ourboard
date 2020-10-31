@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, Id, Note, ItemLocks, Item } from "../../../common/domain";
+import { AppEvent, Board, Id, Note, ItemLocks, Item, Text } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./BoardView";
 import { ContextMenu } from "./ContextMenuView"
@@ -56,13 +56,13 @@ export const ItemView = (
         position: "absolute"
       })))}      
     >
-      { type === "note" ? <TextView item={item as L.Property<Note>}/> : null }
+      { (type === "note" || type === "text") ? <TextView item={item as L.Property<Note | Text>}/> : null }
       { L.view(locks, l => l[id] && l[id] !== userId.get() ? <span className="lock">🔒</span> : null )}
       { L.view(selected, s => s ? <SelectionBorder {...{ id, item: item, coordinateHelper, board, focus, dispatch}}/> : null) }
     </span>
   );
 
-  function TextView({ item } : { item: L.Property<Note>} ) {
+  function TextView({ item } : { item: L.Property<Note | Text>} ) {
     const textAtom = L.atom(L.view(item, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...item.get(), text } }))
     const showCoords = false
   
