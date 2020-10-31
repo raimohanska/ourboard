@@ -37,14 +37,14 @@ export type Item = PostIt | Image
 export type ItemLocks = Record<Id, Id> 
 
 export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
-export type PersistableBoardItemEvent = AddPostIt | UpdateItem | DeletePostIt
+export type PersistableBoardItemEvent = AddItem | UpdateItem | DeleteItem
 export type BoardItemEvent = PersistableBoardItemEvent | LockItem | UnlockItem
-export type AddPostIt = { action: "item.add", boardId: Id, item: Item };
+export type AddItem = { action: "item.add", boardId: Id, item: Item };
 export type UpdateItem = { action: "item.update", boardId: Id, item: Item };
 export type LockItem = { action: "item.lock", boardId: Id, itemId: Id }
 export type UnlockItem = { action: "item.unlock", boardId: Id, itemId: Id }
 export type GotBoardLocks = { action: "board.locks", boardId: Id, locks: ItemLocks }
-export type DeletePostIt = { action: "item.delete", boardId: Id, itemId: Id };
+export type DeleteItem = { action: "item.delete", boardId: Id, itemId: Id };
 export type AddBoard = { action: "board.add", boardId: Id, name: string }
 export type JoinBoard = { action: "board.join", boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessionInfo
