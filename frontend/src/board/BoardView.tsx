@@ -11,7 +11,7 @@ import { CursorsView } from "./CursorsView";
 import { ImageView } from "./ImageView";
 import { imageUploadHandler } from "./image-upload"
 import { AssetStore } from "./asset-store";
-import { cutCopyPasteHandler } from "./cut-copy-paste"
+import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { add, multiply } from "./geometry";
 import { maybeAddToContainer } from "./item-setcontainer";
