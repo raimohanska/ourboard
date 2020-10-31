@@ -1,4 +1,5 @@
-import { AppEvent, Board } from "./domain";
+import { AppEvent, Board, Item } from "./domain";
+import _ from "lodash"
 
 export function boardReducer(board: Board, event: AppEvent): Board {
     switch (event.action) {
@@ -7,7 +8,7 @@ export function boardReducer(board: Board, event: AppEvent): Board {
           console.warn(new Error("Adding duplicate item " + JSON.stringify(event.item)))
           return board
         }
-        return { ...board, items: board.items.concat(event.item) };
+        return { ...board, items: sortItems(board.items.concat(event.item)) };
       case "item.update":
         return {
           ...board,
@@ -19,19 +20,19 @@ export function boardReducer(board: Board, event: AppEvent): Board {
           items: board.items.filter((p) => p.id !== event.itemId)
         }
       case "item.front":
-        console.log("to front", event)
         const item = board.items.find(i => i.id === event.itemId)
         if (!item) {
           console.warn(`Cannot bring unknown item ${event.itemId} to front`)
           return board
         }
-        console.log("to front", item)
         return {
           ...board,
-          items: board.items.filter((p) => p.id !== event.itemId).concat(item)
+          items: sortItems(board.items.filter((p) => p.id !== event.itemId).concat(item))
         }
       default:
         console.warn("Unknown event", event);
         return board
     }
   }
+
+  const sortItems = (items: Item[]) => _.sortBy(items, i => i.type === "container" ? 0 : 1) // containers first to keep them on background

@@ -163,6 +163,14 @@ a {
                 height: 1em;
                 width: 1em;
             }
+            .container {
+                cursor: pointer;
+                margin-left: 0.5em;
+                height: 1em;
+                width: 2em;
+                background: white;
+                border: 1px solid black;
+            }
         }
     }
 
@@ -264,6 +272,13 @@ a {
         cursor: pointer;
         &.hidden {
             display: none;
+        }
+        .controls {
+            padding-left: 0;
+            background: none;
+            .palette {
+                margin-left: 0;
+            }
         }
     }
 

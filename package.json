@@ -4,6 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@types/lodash": "^4.14.164",
+    "lodash": "^4.17.20",
     "pg": "^8.3.3",
     "uuid": "^8.3.0"
   },

@@ -67,7 +67,6 @@ export const RectangularDragSelection = (
         el.addEventListener("drop", end)    
          
         function end() {    
-            console.log("drop")
             if (start.get()) {
                 start.set(null)
                 current.set(null)

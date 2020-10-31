@@ -2,13 +2,14 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import {AppEvent, Color, Id, Image, Item, PostIt, UserCursorPosition} from "../../../common/domain";
+import {AppEvent, Color, Container, Id, Image, Item, PostIt, UserCursorPosition} from "../../../common/domain";
 import { PostItView } from "./PostItView"
 import { BoardAppState } from "./board-store";
 import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView";
 import { CursorsView } from "./CursorsView";
 import { ImageView } from "./ImageView";
+import { ContainerView } from "./ContainerView";
 import { imageUploadHandler } from "./image-upload"
 import { AssetStore } from "./asset-store";
 import { cutCopyPasteHandler } from "./cut-copy-paste"
@@ -172,6 +173,14 @@ export const BoardView = (
           id, image: item as L.Property<Image>, assets, locks,
           userId, board, focus, coordinateHelper, dispatch, contextMenu
         }}/>
+        case "container": return <ContainerView {...{ 
+          board, id, container: item as L.Property<Container>, 
+          locks,
+          userId,
+          focus,
+          coordinateHelper, dispatch,
+          contextMenu
+        }} />
         default: throw Error("Unsupported item: " + t)
       }
     })    

@@ -33,7 +33,8 @@ export type ItemBounds = { x: number; y: number, width: number, height: number }
 
 export type PostIt = { id: string; type: "note"; text: string; color: Color } & ItemBounds;
 export type Image = { id: string; type: "image"; assetId: string; src?: string } & ItemBounds;
-export type Item = PostIt | Image
+export type Container = { id: string; type: "container" } & ItemBounds;
+export type Item = PostIt | Image | Container
 export type ItemLocks = Record<Id, Id> 
 
 export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
@@ -79,6 +80,10 @@ export function createBoard(name: string): Board {
 
 export function newPostIt(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5): PostIt {
     return { id: uuid.v4(), type: "note", text, color, x, y, width, height }    
+}
+
+export function newContainer(x: number = 20, y: number = 20, width: number = 30, height: number = 20): Container {
+    return { id: uuid.v4(), type: "container", x, y, width, height }    
 }
 
 export function newImage(assetId: string, x: number = 20, y: number = 20, width: number = 5, height: number = 5): Image {
