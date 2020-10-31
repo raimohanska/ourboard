@@ -3,13 +3,12 @@ import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
 import {AppEvent, Color, Container, Id, Image, Item, PostIt, UserCursorPosition} from "../../../common/domain";
-import { PostItView } from "./PostItView"
+import { ItemView } from "./ItemView"
 import { BoardAppState } from "./board-store";
 import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView";
 import { CursorsView } from "./CursorsView";
 import { ImageView } from "./ImageView";
-import { ContainerView } from "./ContainerView";
 import { imageUploadHandler } from "./image-upload"
 import { AssetStore } from "./asset-store";
 import { cutCopyPasteHandler } from "./cut-copy-paste"
@@ -161,8 +160,9 @@ export const BoardView = (
   function renderItem(id: string, item: L.Property<Item>) {
     return L.view(L.view(item, "type"), t => {
       switch (t) {
-        case "note" : return <PostItView {...{ 
-            board, id, postIt: item as L.Property<PostIt>, 
+        case "container":
+        case "note" : return <ItemView {...{ 
+            board, id, type: t, item: item as L.Property<PostIt>, 
             locks,
             userId,
             focus,
@@ -172,15 +172,7 @@ export const BoardView = (
         case "image": return <ImageView {...{
           id, image: item as L.Property<Image>, assets, locks,
           userId, board, focus, coordinateHelper, dispatch, contextMenu
-        }}/>
-        case "container": return <ContainerView {...{ 
-          board, id, container: item as L.Property<Container>, 
-          locks,
-          userId,
-          focus,
-          coordinateHelper, dispatch,
-          contextMenu
-        }} />
+        }}/>        
         default: throw Error("Unsupported item: " + t)
       }
     })    

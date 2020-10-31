@@ -44,15 +44,15 @@ describe("Example board - basic functionality", () => {
     it("Can edit post-it text", () => {
         cy.visit("http://localhost:1337/b/default")
         cy.get(".text").contains("Hello").type("Monoids")
-        cy.get(".postit").contains("Monoids").should("be.visible")
-        cy.get(".postit").contains("Hello").should("not.be.visible")
+        cy.get(".note").contains("Monoids").should("be.visible")
+        cy.get(".note").contains("Hello").should("not.be.visible")
     })
 
     it("Persists changes", () => {
         cy.visit("http://localhost:1337/b/default")
         cy.reload()
-        cy.get(".postit").contains("Monoids").should("be.visible")
-        cy.get(".postit").contains("Hello").should("not.be.visible")
+        cy.get(".note").contains("Monoids").should("be.visible")
+        cy.get(".note").contains("Hello").should("not.be.visible")
     })
 
     it("Can drag post it", () => {

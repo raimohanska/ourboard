@@ -26,7 +26,7 @@ export const ContextMenuView = ({contextMenu, setColor}:
       <div className="controls">
         <div className="palette">
           {["yellow", "pink", "cyan"].map(color => {
-            return <span className="template postit" style={{background: color}} onClick={() => setColor(color)}>
+            return <span className="template note" style={{background: color}} onClick={() => setColor(color)}>
               <span className="text"/>
             </span>
           })}

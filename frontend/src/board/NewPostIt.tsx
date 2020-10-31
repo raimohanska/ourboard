@@ -18,7 +18,7 @@ export const NewPostIt = (
     const item = newPostIt("HELLO", color, x, y)
     onAdd(item);
   }
-  return <span ref={element.set} onDragEnd={onDragEnd} className="postit palette-item" draggable={true} style={style}>
+  return <span ref={element.set} onDragEnd={onDragEnd} className="note palette-item" draggable={true} style={style}>
     <span className="text"></span>
   </span>
 }

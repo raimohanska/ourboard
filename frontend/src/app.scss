@@ -3,7 +3,7 @@ $black: #333366;
 $off-board-color: gray;
 $bottom-bar-height: 3em;
 $font-family: Roboto, sans-serif;
-$font-family-postit: Montserrat, sans-serif;
+$font-family-note: Montserrat, sans-serif;
 $link-color: #35b2dc;
 $heading-color: $link-color;
 $heading-height: 2.5em;
@@ -157,7 +157,7 @@ a {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            .postit {
+            .note {
                 cursor: pointer;
                 margin-left: 0.5em;
                 height: 1em;
@@ -198,14 +198,19 @@ a {
             cursor: pointer;
         }
     
-        .postit {
+        .note {
             @extend .item;            
-            font-family: $font-family-postit;
+            font-family: $font-family-note;
+            padding: 1em;
             small {
                 display: block;
                 font-size: 0.3em;
             }
         } 
+
+        .container {
+            @extend .item;
+        }
         
         .image {
             @extend .item;
