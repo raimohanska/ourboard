@@ -52,8 +52,19 @@ export function broadcastCursorPositions(boardId: Id, positions: Record<Id, Curs
     })
 }
 
-export function broadcastItemLocks(boardId: Id, locks: Record<Id, ItemLocks>) {
-    everyoneOnTheBoard(boardId).forEach(s => {
-        s.socket.send("app-event", { action: "board.locks", boardId, locks: locks[boardId] || {} })
-    })    
-}
+const BROADCAST_DEBOUNCE_MS = 20
+// Debounce by 20ms per board id, otherwise every item interaction (e.g. drag on 10 items, one event each) broadcasts locks
+export const broadcastItemLocks = (() => {
+    let timeouts: Record<Id, NodeJS.Timeout | undefined> = {}
+    return function _broadcastItemLocks(boardId: Id, locks: Record<Id, ItemLocks>) {
+        if (typeof timeouts[boardId] === "number") {
+            return
+        }
+        timeouts[boardId] = setTimeout(() => {
+            everyoneOnTheBoard(boardId).forEach(s => {
+                s.socket.send("app-event", { action: "board.locks", boardId, locks: locks[boardId] || {} })
+            })
+            timeouts[boardId] = undefined
+        }, BROADCAST_DEBOUNCE_MS)
+    }
+})()
