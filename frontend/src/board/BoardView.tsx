@@ -130,7 +130,7 @@ export const BoardView = (
     dispatch({ action: "item.add", boardId, item })
     maybeAddToContainer(item, board.get(), dispatch)
     
-    if (item.type === "note") {
+    if (item.type === "note" || item.type === "text") {
       focus.set({ status: "editing", id: item.id })
     } else {
       focus.set({ status: "selected", ids: new Set([item.id]) })
