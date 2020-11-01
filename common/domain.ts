@@ -14,7 +14,7 @@ export type Board = BoardInfo & {
     items: Item[]
 }
 
-export const defaultBoardSize = { width: 50, height: 50 }
+export const defaultBoardSize = { width: 100, height: 80 }
 
 export interface CursorPosition {
     x: number;
