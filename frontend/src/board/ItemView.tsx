@@ -27,7 +27,8 @@ export const ItemView = (
   const ref = (el: HTMLElement) => {
      itemDragToMove(id, board, focus, coordinateHelper, dispatch)(el)
      element.set(el)
-     referenceFont = getComputedStyle(el).font
+     const { fontFamily, fontSize } = getComputedStyle(el)
+     referenceFont = `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
   }
 
   const { itemFocus, selected, onClick } = itemSelectionHandler(id, focus, contextMenu, board, dispatch)
@@ -77,7 +78,7 @@ export const ItemView = (
     const showCoords = false
   
     const fontSize = L.view(L.view(item, "width"), L.view(item, "height"), L.view(item, "text"), (w, h, text) => {
-      const lines = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont!))      
+      const lines = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont!))
 
       const textHeight = _.sum(lines.map(l => l.height))
       const textWidth = _.max(lines.map(l => l.width)) || 0            
