@@ -65,6 +65,7 @@ function createNote(text, relX, relY) {
 describe("Board functionality", () => {
     
     beforeEach(() => {
+        cy.viewport("macbook-15")
         cy.visit("http://localhost:1337")
         cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
         cy.get("button").contains("Create").click()
