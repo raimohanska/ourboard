@@ -230,7 +230,7 @@ a {
         .note {
             @extend .item;            
             font-family: $font-family-note;
-            padding: 1em;
+            text-align: center;
             small {
                 display: block;
                 font-size: 0.3em;

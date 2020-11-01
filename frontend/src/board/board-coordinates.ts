@@ -28,8 +28,15 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
     let currentClientPos = L.atom({ x: 0, y: 0 })
 
     function pxToEm(px: number) {
-      const baseFontSize = parseFloat(getComputedStyle(boardElem.get()!).fontSize)
-      return px / baseFontSize;
+      return px / baseFontSize();
+    }
+
+    function emToPx(em: number) {
+      return em * baseFontSize();
+    }
+
+    function baseFontSize() {
+      return parseFloat(getComputedStyle(boardElem.get()!).fontSize)
     }
   
     function coordDiff(a: Coordinates, b: Coordinates) {
@@ -78,6 +85,7 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
       currentClientCoordinates: currentClientPos,
       currentBoardCoordinates,
       boardCoordDiffFromThisClientPoint: (coords: ClientCoordinates) => coordDiff(currentBoardCoordinates.get(), clientToBoardCoordinates(coords)),
-      getClippedCoordinate
+      getClippedCoordinate,
+      emToPx
     }
   }
