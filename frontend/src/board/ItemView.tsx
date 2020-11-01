@@ -1,10 +1,10 @@
 import * as H from "harmaja";
-import { componentScope, h } from "harmaja";
+import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Id, Note, ItemLocks, Item, Text, ItemType } from "../../../common/domain";
+import { Board, Note, Item, Text, ItemType } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
-import { BoardFocus } from "./BoardView";
+import { BoardFocus } from "./synchronize-focus-with-server"
 import { ContextMenu } from "./ContextMenuView"
 import { SelectionBorder } from "./SelectionBorder"
 import { itemDragToMove } from "./item-dragmove"
@@ -13,11 +13,10 @@ import { Dispatch } from "./board-store";
 import _ from "lodash"
 
 export const ItemView = (
-    { board, id, type, item, locks, userId, focus, coordinateHelper, dispatch, contextMenu }:
+    { board, id, type, item, isLocked, focus, coordinateHelper, dispatch, contextMenu }:
     {  
         board: L.Property<Board>, id: string; type: string, item: L.Property<Item>,
-        locks: L.Property<ItemLocks>,
-        userId: L.Property<Id | null>,
+        isLocked: L.Property<boolean>,
         focus: L.Atom<BoardFocus>,
         coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch,
         contextMenu: L.Atom<ContextMenu>
@@ -31,7 +30,7 @@ export const ItemView = (
      referenceFont = getComputedStyle(el).font
   }
 
-  const { itemFocus, selected, onClick } = itemSelectionHandler(id, focus, contextMenu, board, userId, locks, dispatch)
+  const { itemFocus, selected, onClick } = itemSelectionHandler(id, focus, contextMenu, board, dispatch)
 
   function onContextMenu(e: JSX.MouseEvent) {
     onClick(e)
@@ -68,7 +67,7 @@ export const ItemView = (
       })))}      
     >
       { (type === "note" || type === "text") ? <TextView item={item as L.Property<Note | Text>}/> : null }
-      { L.view(locks, l => l[id] && l[id] !== userId.get() ? <span className="lock">🔒</span> : null )}
+      { L.view(isLocked, l => l ? <span className="lock">🔒</span> : null )}
       { L.view(selected, s => s ? <SelectionBorder {...{ id, item: item, coordinateHelper, board, focus, dispatch}}/> : null) }
     </span>
   );
@@ -97,22 +96,15 @@ export const ItemView = (
       return size + "em"
     })
 
-    const setEditingIfAllowed = (e: boolean) => {
-      const l = locks.get()
-      const u = userId.get()
-  
-      if (!u) return
-      if (l[id] && l[id] !== u) return
+    const setEditing = (e: boolean) => {
       focus.set(e ? { status: "editing", id } : { status: "selected", ids: new Set([id]) })
-  
-      !l[id] && dispatch({ action: "item.lock", boardId: board.get().id, itemId: id })
     }
   
     return <span className="text" style={ L.combineTemplate({fontSize}) }>
       <EditableSpan {...{
         value: textAtom, editingThis: L.atom(
             L.view(itemFocus, f => f === "editing"),
-            setEditingIfAllowed
+            setEditing
         )
       }} />
       { showCoords ? <small>{L.view(item, p => Math.floor(p.x) + ", " + Math.floor(p.y))}</small> : null}

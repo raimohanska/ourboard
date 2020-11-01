@@ -2,7 +2,7 @@ import * as uuid from "uuid"
 import * as L from "lonna";
 import _ from "lodash";
 import { Board, Id, Item } from "../../../common/domain";
-import { BoardFocus } from "./BoardView";
+import { BoardFocus } from "./synchronize-focus-with-server"
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { Dispatch } from "./board-store";
 

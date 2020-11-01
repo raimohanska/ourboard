@@ -1,7 +1,7 @@
 import { Item, newImage } from "../../../common/domain"
 import { AssetStore, AssetURL } from "./asset-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus } from "./BoardView"
+import { BoardFocus } from "./synchronize-focus-with-server"
 import * as L from "lonna"
 
 export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore, coordinateHelper: BoardCoordinateHelper, focus: L.Atom<BoardFocus>, onAdd: (item: Item) => void, onURL: (id: string, url: AssetURL) => void) {    

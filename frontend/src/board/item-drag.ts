@@ -1,7 +1,7 @@
 import * as L from "lonna";
 import { Board, Item } from "../../../common/domain";
 import { BoardCoordinateHelper } from "./board-coordinates";
-import { BoardFocus } from "./BoardView";
+import { BoardFocus } from "./synchronize-focus-with-server"
 
 export const DND_GHOST_HIDING_IMAGE = new Image();
 // https://png-pixel.com/

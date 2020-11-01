@@ -1,16 +1,16 @@
 import { h } from "harmaja"
 import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
-import {Board, Id, ItemLocks } from "../../../common/domain"
+import {Board, Id } from "../../../common/domain"
 import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
-import { BoardFocus } from "./BoardView"
+import { BoardFocus } from "./synchronize-focus-with-server"
 import { Rect, overlaps, rectFromPoints } from "./geometry"
 import { Dispatch } from "./board-store"
 
 export const RectangularDragSelection = (
-    { boardElem, coordinateHelper, board, focus, userId, locks, dispatch }: 
+    { boardElem, coordinateHelper, board, focus, dispatch }: 
     { boardElem: L.Property<HTMLElement | null>, coordinateHelper: BoardCoordinateHelper, board: L.Property<Board>, focus: L.Atom<BoardFocus>,
-      userId: L.Property<Id | null>, locks: L.Property<ItemLocks>, dispatch: Dispatch
+      dispatch: Dispatch
     }
 ) => {
     let start: L.Atom<BoardCoordinates | null> = L.atom(null)
@@ -35,19 +35,11 @@ export const RectangularDragSelection = (
         })
     
         el.addEventListener("drag", e => {         
-            const user = userId.get()!
-            const l = locks.get()
-   
             const coords = coordinateHelper.currentBoardCoordinates.get()
             current.set(coords)
             const bounds = rect.get()!
             const overlapping = board.get().items.filter(i => overlaps(i, bounds)).map(i => i.id)
-            const allowed = overlapping.filter(id => !l[id] || l[id] === user)
-            focus.set(allowed.length > 0 ? { status: "selected", ids: new Set(allowed) } : { status: "none" })
-            allowed.forEach(id => {
-                if (l[id]) return
-                dispatch({ action: "item.lock", boardId: board.get().id, itemId: id })
-            })
+            focus.set(overlapping.length > 0 ? { status: "selected", ids: new Set(overlapping) } : { status: "none" })
         })
     
         el.addEventListener("drop", end)    

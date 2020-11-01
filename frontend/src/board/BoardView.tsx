@@ -15,7 +15,7 @@ import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { add, multiply } from "./geometry";
 import { maybeAddToContainer } from "./item-setcontainer";
-import { itemLockReconciler } from "./item-lock-reconciler"
+import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -43,7 +43,9 @@ export const BoardView = (
   const element = L.atom<HTMLElement | null>(null);
   
   const contextMenu = L.atom<ContextMenu>(HIDDEN_CONTEXT_MENU)
-  const focus = L.atom<BoardFocus>({status: "none" })
+
+  const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
+
   const coordinateHelper = boardCoordinateHelper(element)
   
   cutCopyPasteHandler(board, focus, coordinateHelper, dispatch)
@@ -60,8 +62,6 @@ export const BoardView = (
     imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL)
   }
 
-  itemLockReconciler(locks, focus, userId)
-  
   L.fromEvent<JSX.KeyboardEvent>(document, "keyup").pipe(L.applyScope(componentScope())).forEach(e => {
     if (e.keyCode === 8 || e.keyCode === 46) { // del or backspace
       const s = focus.get()
@@ -142,7 +142,7 @@ export const BoardView = (
               renderObservable={renderItem}
               getKey={(i) => i.id}
             />
-            <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, userId, locks, dispatch }}/>
+            <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, dispatch }}/>
             <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
           </div>
           <ContextMenuView {...{contextMenu, setColor } } />
@@ -152,21 +152,22 @@ export const BoardView = (
   );
 
   function renderItem(id: string, item: L.Property<Item>) {
+    const isLocked = L.combineTemplate({ locks, userId })
+      .pipe(L.map(({ locks, userId }) => locks[id] && locks[id] !== userId ))
     return L.view(L.view(item, "type"), t => {
       switch (t) {
         case "container":
         case "text":
         case "note" : return <ItemView {...{ 
             board, id, type: t, item: item as L.Property<Note>, 
-            locks,
-            userId,
+            isLocked,
             focus,
             coordinateHelper, dispatch,
             contextMenu
         }} />
         case "image": return <ImageView {...{
-          id, image: item as L.Property<Image>, assets, locks,
-          userId, board, focus, coordinateHelper, dispatch, contextMenu
+          id, image: item as L.Property<Image>, assets, board,
+          isLocked, focus, coordinateHelper, dispatch, contextMenu
         }}/>        
         default: throw Error("Unsupported item: " + t)
       }

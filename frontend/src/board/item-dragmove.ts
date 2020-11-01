@@ -3,7 +3,7 @@ import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Board } from "../../../common/domain";
-import { BoardFocus } from "./BoardView";
+import { BoardFocus } from "./synchronize-focus-with-server"
 import { onBoardItemDrag } from "./item-drag"
 import { maybeAddToContainer } from "./item-setcontainer"
 import { Dispatch } from "./board-store";

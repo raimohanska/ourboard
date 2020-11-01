@@ -1,8 +1,8 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Id, Image, ItemLocks } from "../../../common/domain";
-import { BoardFocus } from "./BoardView";
+import { Board, Image } from "../../../common/domain";
+import { BoardFocus } from "./synchronize-focus-with-server"
 import { SelectionBorder } from "./SelectionBorder"
 import { AssetStore } from "./asset-store";
 import { itemDragToMove } from "./item-dragmove";
@@ -11,18 +11,17 @@ import { ContextMenu } from "./ContextMenuView";
 import { Dispatch } from "./board-store";
 
 export const ImageView = (
-    { id, image, assets, board, locks, userId, focus, coordinateHelper, contextMenu, dispatch }:
+    { id, image, assets, board, isLocked, focus, coordinateHelper, contextMenu, dispatch }:
     {  
       board: L.Property<Board>, id: string; image: L.Property<Image>,
-      locks: L.Property<ItemLocks>,
-      userId: L.Property<Id | null> 
+      isLocked: L.Property<boolean>,
       focus: L.Atom<BoardFocus>,
       coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch,
       assets: AssetStore, contextMenu: L.Atom<ContextMenu>
   }
 ) => {
 
-  const { selected, onClick } = itemSelectionHandler(id, focus, contextMenu, board, userId, locks, dispatch)
+  const { selected, onClick } = itemSelectionHandler(id, focus, contextMenu, board, dispatch)
 
   return <span 
     className="image"       
@@ -39,7 +38,7 @@ export const ImageView = (
     <img 
       src={ L.view(image, i => assets.getAsset(i.assetId, i.src))}
     />
-    { L.view(locks, l => l[id] && l[id] !== userId.get() ? <span className="lock">🔒</span> : null )}
+    { L.view(isLocked, l => l ? <span className="lock">🔒</span> : null )}
     { L.view(selected, s => s ? <SelectionBorder {...{ id, item: image, coordinateHelper, board, focus, dispatch}}/> : null) }
   </span>
 };
