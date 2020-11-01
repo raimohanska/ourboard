@@ -20,9 +20,12 @@ export type Dispatch = (e: AppEvent) => void
 
 export function boardStore(socket: typeof io.Socket) {
     const uiEvents = L.bus<AppEvent>()
+    const dispatch: Dispatch = uiEvents.push
     const serverEvents = L.bus<AppEvent>()    
     const messageQueue = MessageQueue(socket)
-    socket.on("connect", () => { console.log("Socket connected")})
+    socket.on("connect", () => { 
+        console.log("Socket connected")
+    })
     socket.on("message", function(kind: string, event: AppEvent) { 
         if (kind === "app-event") {
             serverEvents.push(event)
@@ -41,7 +44,12 @@ export function boardStore(socket: typeof io.Socket) {
         } else if (event.action === "board.init") {
             return { ...state, board: event.board }
         } else if (event.action === "board.join.ack") {
-            return { ...state, userId: event.userId, nickname: event.nickname }
+            let nickname = event.nickname
+            if (localStorage.nickname && localStorage.nickname !== event.nickname) {
+                nickname = localStorage.nickname
+                dispatch({ action: "nickname.set", userId: event.userId, nickname })                
+            }
+            return { ...state, userId: event.userId, nickname }
         } else if (event.action === "board.joined") {
             return { ...state, users: state.users.concat({ userId: event.userId, nickname: event.nickname }) }
         } else if (event.action === "board.locks") {
@@ -50,6 +58,10 @@ export function boardStore(socket: typeof io.Socket) {
             return { ...state, cursors: event.p }
         } else if (event.action === "cursor.move") {
             return state
+        } else if (event.action === "nickname.set") {
+            const nickname = (event.userId === state.userId) ? storeNickName(event.nickname) : state.nickname
+            const users = state.users.map(u => u.userId === event.userId ? { ...u, nickname: event.nickname } : u)
+            return { ...state, users, nickname }
         } else {
             console.warn("Unhandled event", event)
             return state
@@ -60,11 +72,16 @@ export function boardStore(socket: typeof io.Socket) {
     
     return {
         state,
-        dispatch: uiEvents.push,
+        dispatch,
         events,    
         queueSize: messageQueue.queueSize,
         boardId: L.constant(boardIdFromPath())
     }
+}
+
+function storeNickName(nickname: string) {
+    localStorage.nickname = nickname
+    return nickname
 }
 
 function boardIdFromPath() {

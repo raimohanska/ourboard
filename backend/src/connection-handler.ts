@@ -1,7 +1,7 @@
 import IO from "socket.io"
 import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize } from "../../common/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
-import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions, broadcastItemLocks } from "./sessions"
+import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions, broadcastItemLocks, setNicknameForSession } from "./sessions"
 import { getSignedPutUrl } from "./storage"
 import { obtainLock, releaseLocksFor } from "./locker"
 
@@ -55,7 +55,7 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
         switch (appEvent.action) {
             case "board.join": 
                 const board = await getBoard(appEvent.boardId)
-                addSessionToBoard(board, socket)                
+                addSessionToBoard(board, socket)
                 return;
             case "board.add": {
                 const board = { ...defaultBoardSize, id: appEvent.boardId, name: appEvent.name, items: [] }
@@ -70,6 +70,10 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
                 cursorPositions[boardId][socket.id] = { x, y, userId: socket.id }
                 positionShouldBeFlushedToClients.add(boardId)
                 return;
+            }
+            case "nickname.set": {
+                setNicknameForSession(appEvent, socket)
+                return
             }
             case "asset.put.request": {
                 const { assetId } = appEvent;

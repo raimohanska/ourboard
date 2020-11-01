@@ -38,7 +38,7 @@ export type Container = { id: string; type: "container"; items: Id[] } & ItemBou
 export type Item = Note | Text | Image | Container
 export type ItemLocks = Record<Id, Id> 
 
-export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
+export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
 export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront | SetItemContainer
 export type BoardItemEvent = PersistableBoardItemEvent | LockItem | UnlockItem
 export type AddItem = { action: "item.add", boardId: Id, item: Item };
@@ -56,6 +56,7 @@ export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessi
 export type JoinedBoard = { action: "board.joined", boardId: Id } & UserSessionInfo
 export type InitBoard = { action: "board.init", board: Board }
 export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
+export type SetNickname = { action: "nickname.set", nickname: string, userId: string }
 export type AssetPutUrlRequest = { "action": "asset.put.request", assetId: string }
 export type AssetPutUrlResponse = { "action": "asset.put.response", assetId: string, signedUrl: string }
 

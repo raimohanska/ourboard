@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { Board, ItemLocks, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE } from "../../common/domain"
+import { Board, ItemLocks, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE, SetNickname } from "../../common/domain"
 import { randomProfession } from "./professions"
 
 type UserSession = {
@@ -32,6 +32,24 @@ export function addSessionToBoard(board: Board, origin: IO.Socket) {
             broadcastJoinEvent(board.id, session)    
         })
 }
+
+export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
+    Object.values(sessions)
+        .filter(s => s.socket === origin)
+        .forEach(session => {
+            if (session.socket.id !== event.userId) {
+                console.warn("Trying to set nickname for other session")
+                return
+            }
+            session.nickname = event.nickname
+            for (const boardId of session.boards) {
+                everyoneElseOnTheSameBoard(boardId, origin).forEach(s =>
+                    s.socket.send("app-event", event)
+                )
+            }
+        })
+}
+
 export function broadcastListEvent(appEvent: BoardItemEvent, origin?: IO.Socket) {
     //console.log("Broadcast", appEvent)
     everyoneElseOnTheSameBoard(appEvent.boardId, origin).forEach(s => {
