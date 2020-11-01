@@ -7,8 +7,9 @@ const mockDataTransfer = {
 const BACKSPACE = 8;
 
 const NotesWithText = text => cy.get(`[data-test^="note"][data-test*="${text}"]`)
-const Notes = () => cy.get(`[data-test^="note-"]`)
-const SelectedNotes = () => cy.get(`[data-test^="note-selected-"]`)
+const Notes = () => cy.get(`[data-test^="note"]`)
+const SelectedNotes = () => cy.get(`[data-test^="note-selected"]`)
+const PaletteNoteWithColor = color => cy.get(`[data-test="palette-new-note-${color}"]`)
 
 describe("Initial screen", () => {
     it('Opens correctly', () => {
@@ -44,13 +45,13 @@ describe("Example board", () => {
 })
 
 
-function createNote(text, relX, relY) {
-    cy.get(".palette-item").then(elements => {
+function createNote(text, relX, relY, color = "yellow") {
+    PaletteNoteWithColor(color).then(elements => {
         const { x, y } = elements[0].getBoundingClientRect()
-        cy.get(".palette-item").first().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+        PaletteNoteWithColor("yellow").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
         cy.get(".board").trigger("dragover", { force: true, clientX: x + relX, clientY: y + relY })
         // Dragging from palette is not shown in realtime, so the event is different here.
-        cy.get(".palette-item").first().trigger("dragend", { force: true })
+        PaletteNoteWithColor("yellow").trigger("dragend", { force: true })
 
         NotesWithText("HELLO").should("exist")
 

@@ -31,10 +31,20 @@ export type Color = string;
 
 export type ItemBounds = { x: number; y: number, width: number, height: number }
 
-export type Note = { id: string; type: "note"; text: string; color: Color } & ItemBounds;
-export type Text = { id: string; type: "text"; text: string } & ItemBounds;
-export type Image = { id: string; type: "image"; assetId: string; src?: string } & ItemBounds;
-export type Container = { id: string; type: "container"; items: Id[] } & ItemBounds;
+export const ITEM_TYPES = {
+    NOTE: "note",
+    TEXT: "text",
+    IMAGE: "image",
+    CONTAINER: "container"
+} as const
+export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
+
+export type Note = { id: string; type: typeof ITEM_TYPES.NOTE; text: string; color: Color } & ItemBounds;
+export type Text = { id: string; type: typeof ITEM_TYPES.TEXT; text: string } & ItemBounds;
+export type Image = { id: string; type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string } & ItemBounds;
+export type Container = { id: string; type: typeof ITEM_TYPES.CONTAINER; items: Id[] } & ItemBounds;
+
+
 export type Item = Note | Text | Image | Container
 export type ItemLocks = Record<Id, Id> 
 

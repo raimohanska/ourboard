@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Id, Note, ItemLocks, Item, Text } from "../../../common/domain";
+import { Board, Id, Note, ItemLocks, Item, Text, ItemType } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./BoardView";
 import { ContextMenu } from "./ContextMenuView"
@@ -36,8 +36,12 @@ export const ItemView = (
 
   const dataTest = L.combineTemplate({
     text: L.view(item, i => i.type === "note" ? i.text : ""),
+    type: L.view(item, "type"),
     selected
-  }).pipe(L.map(({ text, selected }: { text: string, selected: boolean }) => selected ? `note-selected-${text}` : `note-${text}`))
+  }).pipe(L.map(({ text, selected, type }: { text: string, selected: boolean, type: ItemType }) => {
+    const textSuffix = text ? "-" + text : ""
+    return selected ? `${type}-selected${textSuffix}` : `${type}${textSuffix}`
+  }))
 
 
   return (
