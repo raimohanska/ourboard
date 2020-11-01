@@ -10,7 +10,8 @@ import { SelectionBorder } from "./SelectionBorder"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection";
 import { Dispatch } from "./board-store";
-import _ from "lodash"
+import { contrastingColor } from "./contrasting-color";
+import _ from "lodash";
 
 export const ItemView = (
     { board, id, type, item, isLocked, focus, coordinateHelper, dispatch, contextMenu }:
@@ -96,11 +97,12 @@ export const ItemView = (
       return size + "em"
     })
 
+
     const setEditing = (e: boolean) => {
       focus.set(e ? { status: "editing", id } : { status: "selected", ids: new Set([id]) })
     }
-  
-    return <span className="text" style={ L.combineTemplate({fontSize}) }>
+    const color = L.view(item, i => i.type === "note" ? i.color : "white", contrastingColor)
+    return <span className="text" style={ L.combineTemplate({fontSize, color}) }>
       <EditableSpan {...{
         value: textAtom, editingThis: L.atom(
             L.view(itemFocus, f => f === "editing"),
