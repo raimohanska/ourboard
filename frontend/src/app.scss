@@ -352,3 +352,10 @@ a {
         background-image: url('img/pencil-2.svg');
     }
 }
+
+// Need this for safari
+// https://developer.mozilla.org/en-US/docs/Web/CSS/user-select
+[contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+}
