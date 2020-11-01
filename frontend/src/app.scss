@@ -111,7 +111,14 @@ body {
                 color: white;
                 text-decoration: none;
             }
+            a.github {
+                @extend .icon;
+                background-image: url('img/GitHub-Mark-Light-64px.png');
+                font-size: 0.8em;
+                margin-left: 0.3em;
+            }
         }
+
         .sync-status {
             .symbol {
                 margin-left: 0.5em;

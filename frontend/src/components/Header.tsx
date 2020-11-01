@@ -23,7 +23,11 @@ export const Header = ({ syncStatus, state, dispatch }: { syncStatus: L.Property
         dispatch({ action: "nickname.set", nickname, userId })
     })
     return <header>
-        <h1 id="app-title" data-test="app-title"><a href="/">R-Board</a></h1> 
+        <h1 id="app-title" data-test="app-title">
+            <a href="/">R-Board</a>
+            <a className="github" href="https://github.com/raimohanska/r-board"/>
+        </h1> 
+        
         <EditableSpan showIcon={true} className="nickname" {...{ value: nicknameAtom, editingThis}}/>
         <span className={ L.view(syncStatus, s => "sync-status " + s) }>
             <span title={ L.view(syncStatus, showStatus) } className="symbol">⬤</span>
