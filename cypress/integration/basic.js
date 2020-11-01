@@ -63,6 +63,8 @@ function createNote(text, relX, relY, color = "yellow") {
 
         cy.get(".text").contains("HELLO").type(text)
 
+        NotesWithText(text).should("exist")
+
         cy.get(".board").click()
     })
 }
