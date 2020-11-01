@@ -40,7 +40,7 @@ export const ItemView = (
   }
 
   const dataTest = L.combineTemplate({
-    text: L.view(item, i => i.type === "note" ? i.text : ""),
+    text: L.view(item, i => i.type === "note" || i.type === "text" ? i.text : ""),
     type: L.view(item, "type"),
     selected
   }).pipe(L.map(({ text, selected, type }: { text: string, selected: boolean, type: ItemType }) => {

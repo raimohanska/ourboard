@@ -9,7 +9,13 @@ const BACKSPACE = 8;
 const NotesWithText = text => cy.get(`[data-test^="note"][data-test*="${text}"]`)
 const Notes = () => cy.get(`[data-test^="note"]`)
 const SelectedNotes = () => cy.get(`[data-test^="note-selected"]`)
+
+const Containers = () => cy.get(`[data-test^="container"]`)
+const TextItemsWithText = text => cy.get(`[data-test^="text"][data-test*="${text}"]`)
+
 const PaletteNoteWithColor = color => cy.get(`[data-test="palette-new-note-${color}"]`)
+const PaletteContainer = () => cy.get(`[data-test="palette-new-container"]`)
+const PaletteText = () => cy.get(`[data-test="palette-new-text"]`)
 
 describe("Initial screen", () => {
     it('Opens correctly', () => {
@@ -57,7 +63,36 @@ function createNote(text, relX, relY, color = "yellow") {
 
         cy.get(".text").contains("HELLO").type(text)
 
-        NotesWithText(text).should("exist")
+        cy.get(".board").click()
+    })
+}
+
+function createTextItem(text, relX, relY) {
+    PaletteText().then(elements => {
+        const { x, y } = elements[0].getBoundingClientRect()
+        PaletteText().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+        cy.get(".board").trigger("dragover", { force: true, clientX: x + relX, clientY: y + relY })
+        PaletteText().trigger("dragend", { force: true })
+
+        TextItemsWithText("HELLO").should("exist")
+
+        TextItemsWithText("HELLO").get(".text").contains("HELLO").type(text)
+
+        TextItemsWithText(text).should("exist")
+
+        cy.get(".board").click()
+    })
+}
+
+function createContainer(relX, relY) {
+    PaletteContainer().then(elements => {
+        const { x, y } = elements[0].getBoundingClientRect()
+
+        PaletteContainer().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+        cy.get(".board").trigger("dragover", { force: true, clientX: x + relX, clientY: y + relY })
+        PaletteContainer().trigger("dragend", { force: true })
+
+        Containers().should("exist")
 
         cy.get(".board").click()
     })
@@ -96,7 +131,15 @@ describe("Board functionality", () => {
 
     it("Can create note by dragging from palette", () => {
         createNote("HELLO", 350, 200)
-    })    
+    })
+
+    it("Can create text item by dragging from palette", () => {
+        createTextItem("TextTest", 350, 200)
+    })
+
+    it("Can create container by dragging from palette", () => {
+        createContainer(350, 200)
+    })
 
     it("Can edit note text", () => {
         createNote("Hello", 350, 200)
