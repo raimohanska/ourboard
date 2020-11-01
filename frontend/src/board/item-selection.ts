@@ -47,14 +47,14 @@ export function itemSelectionHandler(
                 focus.set({ status: "selected", ids: new Set([...f.ids].filter(i => i !== id))})
             } else {
                 focus.set({ status: "selected", ids: new Set([...f.ids].concat(id))})
-                lockAndBringToFront(id)
+                bringToFront(id)
             }
         } else if (f.status === "none") {
             focus.set({ status: "selected", ids: new Set([id]) })
-            lockAndBringToFront(id)
+            bringToFront(id)
         } else if (f.status === "selected" && !f.ids.has(id)) {
             focus.set({ status: "selected", ids: new Set([id]) })
-            lockAndBringToFront(id)
+            bringToFront(id)
         }      
       }    
 
@@ -64,8 +64,7 @@ export function itemSelectionHandler(
         onClick
     }
 
-    function lockAndBringToFront(id: Id) {
-      dispatch({ action: "item.lock", boardId: board.get().id, itemId: id })             
+    function bringToFront(id: Id) {
       dispatch({ action: "item.front", boardId: board.get().id, itemId: id })
     }
 }

@@ -68,25 +68,30 @@ export const BoardView = (
 
     const f = focus.get()
 
-    const hasLockOn = Object.keys(l).filter(itemId => l[itemId] === user)
+    /*
+      Server should have authoritative answer to who is currently holding the lock to a
+      particular item, so if someone else is holding it, stop editing/dragging/selecting
+      that particular item. Do nothing if no-one seems to be holding the lock.
+    */
+    const itemsWhereSomeoneElseHasLock = new Set(Object.keys(l).filter(itemId => l[itemId] !== user))
 
-    if (hasLockOn.length === 0) {
+    if (f.status === "none") {
+      return
+    }
+
+    if (f.status === "editing" && itemsWhereSomeoneElseHasLock.has(f.id)) {
       focus.set({ status: "none" })
       return
     }
 
-    if (f.status === "none") {
-      focus.set({ status: "selected", ids: new Set(hasLockOn) })
-      return
-    }
-
-    if (f.status === "editing" && !hasLockOn.includes(f.id)) {
-      focus.set({ status: "selected", ids: new Set(hasLockOn) })
-      return
-    }
-
     if (f.status === "dragging" || f.status === "selected") {
-      focus.set({ status: f.status, ids: new Set(hasLockOn) })
+      const notLockedBySomeoneElse = [...f.ids].filter(id => !itemsWhereSomeoneElseHasLock.has(id))
+
+      focus.set(
+        notLockedBySomeoneElse.length > 0
+        ? { status: f.status, ids: new Set(notLockedBySomeoneElse) }
+        : { status: "none" }
+      )
     }    
   })
   

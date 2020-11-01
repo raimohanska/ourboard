@@ -25,9 +25,10 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
         }
       } else if (f.status === "selected" && f.ids.has(id)) {
         focus.set({ status: "dragging", ids: f.ids})
+      } else if (f.status === "editing" && f.id === id) {
+        focus.set({ status: "dragging", ids: new Set([id]) })
       } else {
         return
-        // focus.set({ status: "dragging", ids: [id]})
       }
       dragStart = e;
       dragStartPositions = board.get().items
