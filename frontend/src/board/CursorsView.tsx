@@ -1,4 +1,3 @@
-import * as H from "harmaja";
 import { h, ListView } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"

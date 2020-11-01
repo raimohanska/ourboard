@@ -1,6 +1,5 @@
-import * as uuid from "uuid";
 import * as L from "lonna";
-import { AppEvent, AssetPutUrlResponse, Image as BoardImage, UpdateItem } from "../../../common/domain";
+import { AppEvent, AssetPutUrlResponse } from "../../../common/domain";
 import { BoardStore } from "./board-store";
 import md5 from "md5"
 

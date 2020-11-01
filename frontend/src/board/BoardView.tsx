@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import {AppEvent, Color, Container, Id, Image, Item, Note, UserCursorPosition} from "../../../common/domain";
+import { Color, Image, Item, Note, UserCursorPosition} from "../../../common/domain";
 import { ItemView } from "./ItemView"
 import { BoardAppState, Dispatch } from "./board-store";
 import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
@@ -13,17 +13,9 @@ import { imageUploadHandler } from "./image-upload"
 import { AssetStore } from "./asset-store";
 import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
-import { add, multiply } from "./geometry";
+import { add } from "./geometry";
 import { maybeAddToContainer } from "./item-setcontainer";
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
-
-export type BoardFocus = 
-  { status: "none" } | 
-  { status: "selected", ids: Set<Id> } | 
-  { status: "dragging", ids: Set<Id> } | 
-  { status: "editing", id: Id }
-
-export type ItemFocus = "none" | "selected" | "editing" | "dragging"
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch }: 
