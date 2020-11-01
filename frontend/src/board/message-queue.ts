@@ -4,59 +4,24 @@ import { AppEvent } from "../../../common/domain";
 
 const noop = () => {}
 export default function(socket: typeof io.Socket) {
-    const queue = L.atom<AppEvent[]>(localStorage.messageQueue ? JSON.parse(localStorage.messageQueue) : [])
+    const queue = L.atom<AppEvent[]>(localStorage.messageQueue ? JSON.parse(localStorage.messageQueue) : []);
+    let head = L.atom<AppEvent | null>(null)
 
-    async function* eventGenerator() {
-        // Wait for ack
-        let releaseServerAckSemaphore = noop
-        let serverAckSemaphore = Promise.resolve()
-        
-        // Wait for non-empty queue
-        let releaseEmptyQueueSemaphore = noop
-        let emptyQueueSemaphore = newEmptyQueueSemaphore()
-        
-        function newEmptyQueueSemaphore() {
-            return new Promise(resolve => {
-                releaseEmptyQueueSemaphore = resolve
-            })
-        }
+    queue.forEach(q => {
+        if (q[0] && !head.get()) head.set(q[0])
+    })
 
-        function newServerAckSemaphore() {
-            return new Promise(resolve => {
-                releaseServerAckSemaphore = resolve
-            })
-        }
-
-        let buffer: AppEvent[] = []
-
-        queue.forEach(q => {
-            if (!buffer.length && q.length) {
-                releaseEmptyQueueSemaphore()
-            } else if (buffer.length && !q.length) {
-                emptyQueueSemaphore = newEmptyQueueSemaphore()
+    head.forEach(e => {
+        e && socket.send("app-event", e, () => {
+            head.set(null)
+            const next = queue.get()[0]
+            if (!next || next === e) {
+                queue.modify(q => q.slice(1))
+            } else {
+                head.set(next)
             }
-
-            if (q.length < buffer.length) releaseServerAckSemaphore()
-            buffer = q
-        })
-
-        while (true) {
-            await emptyQueueSemaphore
-            yield buffer[0]
-            serverAckSemaphore = newServerAckSemaphore() as Promise<void>
-            await serverAckSemaphore
-        }
-    }
-
-    (async function sendLoop(g: AsyncGenerator<AppEvent, void, unknown>) {
-        for await (const evt of g) {
-            socket.send("app-event", evt, dequeue)
-        }
-    })(eventGenerator())
-
-    function dequeue() {
-        queue.modify(q => q.slice(1))
-    }
+        })            
+    })
 
     function enqueue(event: AppEvent) {
         // Compact queue when possible (cursor movements and item drags are quite frequent)
