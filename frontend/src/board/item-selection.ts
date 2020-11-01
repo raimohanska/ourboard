@@ -26,7 +26,8 @@ export function itemSelectionHandler(
       const user = userId.get()
       if (!user) return
       const l = locks.get()
-      if (f === "none" && l[id] && l[id] === userId.get()) {
+      const hasLock = l[id] && l[id] === userId.get()
+      if (f === "none" && hasLock) {
         dispatch({ action: "item.unlock", boardId: board.get().id, itemId: id })    
       }
     })

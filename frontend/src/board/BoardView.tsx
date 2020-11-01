@@ -15,6 +15,7 @@ import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { add, multiply } from "./geometry";
 import { maybeAddToContainer } from "./item-setcontainer";
+import { itemLockReconciler } from "./item-lock-reconciler"
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -59,41 +60,7 @@ export const BoardView = (
     imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL)
   }
 
-  locks.forEach(l => {
-    const user = userId.get()
-    if (!user) {
-      focus.set({ status: "none" })
-      return
-    }
-
-    const f = focus.get()
-
-    /*
-      Server should have authoritative answer to who is currently holding the lock to a
-      particular item, so if someone else is holding it, stop editing/dragging/selecting
-      that particular item. Do nothing if no-one seems to be holding the lock.
-    */
-    const itemsWhereSomeoneElseHasLock = new Set(Object.keys(l).filter(itemId => l[itemId] !== user))
-
-    if (f.status === "none") {
-      return
-    }
-
-    if (f.status === "editing" && itemsWhereSomeoneElseHasLock.has(f.id)) {
-      focus.set({ status: "none" })
-      return
-    }
-
-    if (f.status === "dragging" || f.status === "selected") {
-      const notLockedBySomeoneElse = [...f.ids].filter(id => !itemsWhereSomeoneElseHasLock.has(id))
-
-      focus.set(
-        notLockedBySomeoneElse.length > 0
-        ? { status: f.status, ids: new Set(notLockedBySomeoneElse) }
-        : { status: "none" }
-      )
-    }    
-  })
+  itemLockReconciler(locks, focus, userId)
   
   L.fromEvent<JSX.KeyboardEvent>(document, "keyup").pipe(L.applyScope(componentScope())).forEach(e => {
     if (e.keyCode === 8 || e.keyCode === 46) { // del or backspace
@@ -105,8 +72,17 @@ export const BoardView = (
   })
 
 
-  L.fromEvent<JSX.KeyboardEvent>(window, "click").pipe(L.applyScope(componentScope())).forEach(event => {    
-    if (!element.get()!.contains(event.target as any)) {
+  L.fromEvent<JSX.KeyboardEvent>(window, "click").pipe(L.applyScope(componentScope())).forEach(event => {
+    // This was previously:
+    // if (!element.get()!.contains(event.target as any)) {}
+    // This does not work properly because if you click on an element to select it,
+    // the target node gets recreated and event.target is no-longer in the child tree of 'element'
+
+    // Bit of a hack, but this is a heuristic that if the event target is a detached node,
+    // it is probably an item that was destroyed and recreated by Harmaja
+    const isStillInDOM = !!(event.target as Node).parentNode
+
+    if (isStillInDOM && !element.get()!.contains(event.target as Node)) {
       // Click outside => reset selection
       focus.set({ status: "none" })
     }

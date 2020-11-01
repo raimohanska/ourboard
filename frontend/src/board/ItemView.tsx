@@ -45,7 +45,7 @@ export const ItemView = (
       ref={ref}
       data-test={dataTest}
       draggable={true}
-      onPointerDown={onClick}
+      onClick={onClick}
       onContextMenu={onContextMenu}
       className={L.view(selected, s => s ? type + " selected" : type)}
       style={item.pipe(L.map((p: Item) => ({

@@ -26,7 +26,7 @@ export const ImageView = (
 
   return <span 
     className="image"       
-    onPointerDown={onClick}
+    onClick={onClick}
     ref={itemDragToMove(id, board, focus, coordinateHelper, dispatch) as any}
     style={image.pipe(L.map((p: Image) => ({
       top: p.y + "em",
