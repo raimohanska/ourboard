@@ -274,6 +274,13 @@ a {
                 border-radius: 2px;
                 border: 1px solid #cccccc;
                 $offset: -7px;
+
+                &.left.top, &.right.bottom {
+                    cursor: nwse-resize;
+                }
+                &.left.bottom, &.right.top {
+                    cursor: nesw-resize;
+                }
                 &.left {
                     left: $offset;
                 }
