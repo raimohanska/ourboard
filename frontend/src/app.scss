@@ -333,3 +333,15 @@ a {
     bottom: 0.1em;
     left: 0.1em;
 }
+
+.icon {
+    display: inline-block;
+    width: 1em;
+    min-width: 1em;
+    height: 1em;    
+    background-size: contain;
+    background-repeat: no-repeat; 
+    &.edit {
+        background-image: url('img/pencil-2.svg');
+    }
+}

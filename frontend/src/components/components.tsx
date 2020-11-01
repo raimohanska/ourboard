@@ -30,18 +30,32 @@ export const Checkbox = (props: { checked: L.Atom<boolean> }) => {
     />    
 };  
 
-export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.Atom<boolean>, commit?: () => void, cancel?: () => void } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>) => {
+
+export type EditableSpanProps = { 
+    value: L.Atom<string>, 
+    editingThis: L.Atom<boolean>, 
+    showIcon?: boolean,
+    commit?: () => void, 
+    cancel?: () => void 
+} & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>
+
+
+export const EditableSpan = ( props : EditableSpanProps) => {
     let { value, editingThis, commit, cancel, ...rest } = props
     const nameElement = L.atom<HTMLSpanElement | null>(null)
     let settingLocally = false
     const onClick = (e: JSX.MouseEvent) => {
         if (e.shiftKey) return
         editingThis.set(true)
+        e.preventDefault()
         e.stopPropagation()
     }  
     editingThis.pipe(L.changes, L.filter(e => !!e), L.applyScope(componentScope())).forEach(() =>  { 
-        nameElement.get()!.focus() 
-        document.execCommand('selectAll',false)
+        console.log("FOCUS")
+        setTimeout(() => {
+            nameElement.get()!.focus() 
+            document.execCommand('selectAll',false)    
+        }, 1)
     })
 
     const endEditing = () => {
@@ -51,9 +65,10 @@ export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.A
         if (e.keyCode === 13){ 
             e.preventDefault(); 
             commit && commit()
-        } else if (e.keyCode === 27) { // esc
-           editingThis.set(false)
+            editingThis.set(false)
+        } else if (e.keyCode === 27) { // esc           
            cancel && cancel()
+           editingThis.set(false)
            nameElement.get()!.textContent = value.get()
         }
     }
@@ -61,18 +76,25 @@ export const EditableSpan = ( props : { value: L.Atom<string>, editingThis: L.A
         settingLocally = true        
         value.set(e.currentTarget!.textContent || "")
         settingLocally = false
-    }
+    }    
 
     return <span 
         onClick={onClick} 
-        onBlur={endEditing}
-        contentEditable={editingThis} 
-        ref={ nameElement.set } 
-        onKeyPress={onKeyPress}
-        onKeyUp={onKeyPress}
-        onInput={onInput}
+        style={{ cursor: "pointer" }}
         {...rest }
-    >{props.value.pipe(L.filter(() => !settingLocally, componentScope()))}</span>
+    >
+        { props.showIcon ? <span className="icon edit" style={{ marginRight: "0.3em", fontSize: "0.8em" }}/> : null }
+        <span 
+            onBlur={endEditing}
+            contentEditable={editingThis} 
+            ref={ nameElement.set } 
+            onKeyPress={onKeyPress}
+            onKeyUp={onKeyPress}
+            onInput={onInput}
+        >
+            {props.value.pipe(L.filter(() => !settingLocally, componentScope()))}
+        </span>
+    </span>
 }
 
 export const If = ({ condition, component }: { condition: L.Property<boolean>, component: () => H.HarmajaOutput}): HarmajaOutput => {

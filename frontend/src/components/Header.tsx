@@ -24,7 +24,7 @@ export const Header = ({ syncStatus, state, dispatch }: { syncStatus: L.Property
     })
     return <header>
         <h1 id="app-title" data-test="app-title"><a href="/">R-Board</a></h1> 
-        <EditableSpan className="nickname" {...{ value: nicknameAtom, editingThis}}/>
+        <EditableSpan showIcon={true} className="nickname" {...{ value: nicknameAtom, editingThis}}/>
         <span className={ L.view(syncStatus, s => "sync-status " + s) }>
             <span title={ L.view(syncStatus, showStatus) } className="symbol">⬤</span>
         </span>                  
