@@ -1,13 +1,14 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, Id, Image, ItemLocks } from "../../../common/domain";
+import { Board, Id, Image, ItemLocks } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
 import { SelectionBorder } from "./SelectionBorder"
 import { AssetStore } from "./asset-store";
 import { itemDragToMove } from "./item-dragmove";
 import { itemSelectionHandler } from "./item-selection"
 import { ContextMenu } from "./ContextMenuView";
+import { Dispatch } from "./board-store";
 
 export const ImageView = (
     { id, image, assets, board, locks, userId, focus, coordinateHelper, contextMenu, dispatch }:
@@ -16,7 +17,7 @@ export const ImageView = (
       locks: L.Property<ItemLocks>,
       userId: L.Property<Id | null> 
       focus: L.Atom<BoardFocus>,
-      coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void,
+      coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch,
       assets: AssetStore, contextMenu: L.Atom<ContextMenu>
   }
 ) => {

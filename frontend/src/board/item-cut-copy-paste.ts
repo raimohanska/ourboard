@@ -1,13 +1,14 @@
 import * as uuid from "uuid"
 import * as L from "lonna";
 import _ from "lodash";
-import { AppEvent, Board, Id, Item } from "../../../common/domain";
+import { Board, Id, Item } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
 import { BoardCoordinateHelper } from "./board-coordinates";
+import { Dispatch } from "./board-store";
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
-export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<BoardFocus>, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void) {
+export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<BoardFocus>, coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch) {
 
     let clipboard: Item[] = [];
 

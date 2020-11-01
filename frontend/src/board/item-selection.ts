@@ -1,7 +1,8 @@
 import * as H from "harmaja";
 import { h } from "harmaja";
 import * as L from "lonna";
-import { AppEvent, Board, Id, ItemLocks } from "../../../common/domain";
+import { Board, Id, ItemLocks } from "../../../common/domain";
+import { Dispatch } from "./board-store";
 import { BoardFocus } from "./BoardView";
 import { ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 
@@ -12,7 +13,7 @@ export function itemSelectionHandler(
   board: L.Property<Board>,
   userId: L.Property<Id | null>,
   locks: L.Property<ItemLocks>,
-  dispatch: (e: AppEvent) => void
+  dispatch: Dispatch
 ) {
     const itemFocus = L.view(focus, f => {
         if (f.status === "none") return "none"

@@ -1,8 +1,9 @@
 import { h } from "harmaja";
 import * as L from "lonna";
+import { Dispatch } from "../board/board-store";
 import { SyncStatus } from "../sync-status/sync-status-store";
 
-export const Header = ({ syncStatus, nickname }: { syncStatus: L.Property<SyncStatus>, nickname: L.Property<string> }) => {
+export const Header = ({ syncStatus, nickname, dispatch }: { syncStatus: L.Property<SyncStatus>, nickname: L.Property<string>, dispatch: Dispatch }) => {
     const logout = () => {
         localStorage.clear();
         document.location.reload()

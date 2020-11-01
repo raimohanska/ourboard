@@ -42,7 +42,7 @@ const App = () => {
     })
 
     return <div id="root">        
-        <Header syncStatus={syncStatus} nickname={nickname}/>
+        <Header {...{syncStatus, nickname, dispatch: store.dispatch }}/>
         {
             L.view(store.boardId, boardId => 
                 boardId ? L.view(showingBoardId, boardId => boardId 

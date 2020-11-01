@@ -1,16 +1,16 @@
 import { h } from "harmaja"
 import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
-import { AppEvent, Board, Id, ItemLocks } from "../../../common/domain"
+import {Board, Id, ItemLocks } from "../../../common/domain"
 import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
-import { over, xor } from "lodash"
 import { BoardFocus } from "./BoardView"
 import { Rect, overlaps, rectFromPoints } from "./geometry"
+import { Dispatch } from "./board-store"
 
 export const RectangularDragSelection = (
     { boardElem, coordinateHelper, board, focus, userId, locks, dispatch }: 
     { boardElem: L.Property<HTMLElement | null>, coordinateHelper: BoardCoordinateHelper, board: L.Property<Board>, focus: L.Atom<BoardFocus>,
-      userId: L.Property<Id | null>, locks: L.Property<ItemLocks>, dispatch: (a: AppEvent) => void
+      userId: L.Property<Id | null>, locks: L.Property<ItemLocks>, dispatch: Dispatch
     }
 ) => {
     let start: L.Atom<BoardCoordinates | null> = L.atom(null)

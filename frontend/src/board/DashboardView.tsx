@@ -1,10 +1,11 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import * as uuid from "uuid";
-import { AppEvent, exampleBoard } from "../../../common/domain";
+import { exampleBoard } from "../../../common/domain";
 import { TextInput } from "../components/components";
+import { Dispatch } from "./board-store";
 
-export const DashboardView = ({ dispatch }: {dispatch: (e: AppEvent) => void }) => {
+export const DashboardView = ({ dispatch }: {dispatch: Dispatch }) => {
   const boardName = L.atom("")
   const disabled = L.view(boardName, n => !n)
   function createBoard(e: JSX.MouseEvent) {

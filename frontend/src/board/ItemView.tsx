@@ -2,13 +2,14 @@ import * as H from "harmaja";
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, Id, Note, ItemLocks, Item, Text } from "../../../common/domain";
+import { Board, Id, Note, ItemLocks, Item, Text } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./BoardView";
 import { ContextMenu } from "./ContextMenuView"
 import { SelectionBorder } from "./SelectionBorder"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection";
+import { Dispatch } from "./board-store";
 
 export const ItemView = (
     { board, id, type, item, locks, userId, focus, coordinateHelper, dispatch, contextMenu }:
@@ -17,7 +18,7 @@ export const ItemView = (
         locks: L.Property<ItemLocks>,
         userId: L.Property<Id | null>,
         focus: L.Atom<BoardFocus>,
-        coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void,
+        coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch,
         contextMenu: L.Atom<ContextMenu>
     }
 ) => {

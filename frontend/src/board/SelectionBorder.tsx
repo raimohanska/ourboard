@@ -1,17 +1,17 @@
-import * as H from "harmaja";
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board, Item, Note } from "../../../common/domain";
+import { Board, Item } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
 import { onBoardItemDrag } from "./item-drag"
+import { Dispatch } from "./board-store";
 
 type Horizontal = "left" | "right"
 type Vertical = "top" | "bottom"
 
 export const SelectionBorder = (
   { id, item, board, coordinateHelper, focus, dispatch }: 
-  { id: string, item: L.Property<Item>, coordinateHelper: BoardCoordinateHelper, focus: L.Atom<BoardFocus>, board: L.Property<Board>, dispatch: (e: AppEvent) => void }
+  { id: string, item: L.Property<Item>, coordinateHelper: BoardCoordinateHelper, focus: L.Atom<BoardFocus>, board: L.Property<Board>, dispatch: Dispatch }
 ) => {
   return <span className="selection-control">
     <span className="corner-drag top left"></span>

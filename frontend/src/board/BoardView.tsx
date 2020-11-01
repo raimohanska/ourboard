@@ -4,7 +4,7 @@ import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
 import {AppEvent, Color, Container, Id, Image, Item, Note, UserCursorPosition} from "../../../common/domain";
 import { ItemView } from "./ItemView"
-import { BoardAppState } from "./board-store";
+import { BoardAppState, Dispatch } from "./board-store";
 import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView";
 import { CursorsView } from "./CursorsView";
@@ -27,7 +27,7 @@ export type ItemFocus = "none" | "selected" | "editing" | "dragging"
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch }: 
   { boardId: string, cursors: L.Property<UserCursorPosition[]>, state: L.Property<BoardAppState>, 
-    assets: AssetStore, dispatch: (e: AppEvent) => void }
+    assets: AssetStore, dispatch: Dispatch }
 ) => {
   const board = L.view(state, s => s.board!)
   const locks = L.view(state, s => s.locks)

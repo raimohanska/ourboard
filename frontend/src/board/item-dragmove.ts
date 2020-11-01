@@ -2,13 +2,13 @@ import * as H from "harmaja";
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { AppEvent, Board } from "../../../common/domain";
+import { Board } from "../../../common/domain";
 import { BoardFocus } from "./BoardView";
 import { onBoardItemDrag } from "./item-drag"
-import { containedBy, overlaps } from "./geometry";
 import { maybeAddToContainer } from "./item-setcontainer"
+import { Dispatch } from "./board-store";
 
-export function itemDragToMove(id: string, board: L.Property<Board>, focus: L.Atom<BoardFocus>, coordinateHelper: BoardCoordinateHelper, dispatch: (e: AppEvent) => void) {
+export function itemDragToMove(id: string, board: L.Property<Board>, focus: L.Atom<BoardFocus>, coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch) {
     return (elem: HTMLElement) => onBoardItemDrag(elem, id, board, focus, coordinateHelper, (b, current, dragStartPosition, xDiff, yDiff) => {
         // While dragging
         const f = focus.get()
