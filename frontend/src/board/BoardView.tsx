@@ -44,7 +44,7 @@ export const BoardView = (
   const contextMenu = L.atom<ContextMenu>(HIDDEN_CONTEXT_MENU)
   const focus = L.atom<BoardFocus>({status: "none" })
   const coordinateHelper = boardCoordinateHelper(element)
-
+  
   cutCopyPasteHandler(board, focus, coordinateHelper, dispatch)
 
   const ref = (el: HTMLElement) => {
@@ -89,13 +89,21 @@ export const BoardView = (
       focus.set({ status: f.status, ids: new Set(hasLockOn) })
     }    
   })
-
+  
   L.fromEvent<JSX.KeyboardEvent>(document, "keyup").pipe(L.applyScope(componentScope())).forEach(e => {
     if (e.keyCode === 8 || e.keyCode === 46) { // del or backspace
       const s = focus.get()
       if (s.status === "selected") {
         s.ids.forEach(id => dispatch({ action: "item.delete", boardId, itemId: id}))
       }      
+    }
+  })
+
+
+  L.fromEvent<JSX.KeyboardEvent>(window, "click").pipe(L.applyScope(componentScope())).forEach(event => {    
+    if (!element.get()!.contains(event.target as any)) {
+      // Click outside => reset selection
+      focus.set({ status: "none" })
     }
   })
 
