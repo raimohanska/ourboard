@@ -322,6 +322,7 @@ a {
     }
 
     .context-menu {
+        z-index: 10;
         $menu-border: #cccccc;
         position: absolute;
         width: 1.5em;
