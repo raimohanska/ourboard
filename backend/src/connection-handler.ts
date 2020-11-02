@@ -66,7 +66,7 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
                 return;
             case "board.add": {
                 const board = { ...defaultBoardSize, id: appEvent.boardId, name: appEvent.name, items: [] }
-                addBoard(board)
+                await addBoard(board)
                 addSessionToBoard(board, socket)
                 return
             }
