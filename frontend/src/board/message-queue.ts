@@ -52,18 +52,11 @@ export default function(socket: typeof io.Socket) {
             }
         })
     }
-
-    function replayBuffer(fn: (e: AppEvent) => void) {
-        queue.get().forEach(fn)
-    }
-
-
     queue.pipe(L.throttle(2000)).forEach(q => localStorage.messageQueue = JSON.stringify(q))
     const queueSize = L.view(queue, "length")
 
     return { 
         enqueue,
-        replayBuffer,
         queueSize: queueSize
     }
 }
