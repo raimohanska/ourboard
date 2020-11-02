@@ -12,6 +12,13 @@ export const connectionHandler = (socket: IO.Socket) => {
             ackFn?.("ack")
             return await handleAppEvent(socket, event as AppEvent)  
         }
+        if (kind === "app-events") {
+            ackFn?.("ack")
+            for (const e of (event as AppEvent[])) {
+                await handleAppEvent(socket, e)  
+            }   
+            return         
+        }
         console.warn("Unhandled message", kind, event)
     })
 

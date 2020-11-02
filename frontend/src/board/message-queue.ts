@@ -3,57 +3,74 @@ import io from 'socket.io-client';
 import { AppEvent } from "../../../common/domain";
 
 const noop = () => {}
+type QueueState = {
+    queue: AppEvent[],
+    sent: AppEvent[]
+}
 export default function(socket: typeof io.Socket) {
-    const queue = L.atom<AppEvent[]>(localStorage.messageQueue ? JSON.parse(localStorage.messageQueue) : []);
-    let head = L.atom<AppEvent | null>(null)
-
-    queue.forEach(q => {
-        if (q[0] && !head.get()) head.set(q[0])
+    let state = L.atom<QueueState>({
+        queue: [],
+        sent: []
     })
 
-    head.forEach(e => {
-        e && socket.send("app-event", e, () => {
-            head.set(null)
-            const next = queue.get()[0]
-            if (!next || next === e) {
-                queue.modify(q => q.slice(1))
-            } else {
-                head.set(next)
-            }
-        })            
-    })
-
-    function enqueue(event: AppEvent) {
-        // Compact queue when possible (cursor movements and item drags are quite frequent)
-        queue.modify(q => {
-            if (event.action === "cursor.move") {
-                return replaceInQueue(evt => evt.action === "cursor.move")
-            }
-            else if (event.action === "item.move") {
-                return replaceInQueue(evt => evt.action === "item.move" && evt.boardId === event.boardId && evt.itemId === event.itemId)
-            }
-            else if (event.action === "item.update") {
-                return replaceInQueue(evt => evt.action === "item.update" && evt.boardId === event.boardId && evt.item.id === event.item.id)                
-            }
-            else if (event.action === "item.lock" || event.action === "item.unlock") {
-                return replaceInQueue(evt => evt.action === event.action && evt.boardId === event.boardId && evt.itemId === event.itemId)                
-            }
-            return q.concat(event)
-
-            function replaceInQueue(matchFn: (e: AppEvent) => boolean) {
-                const idx = q.findIndex(matchFn)
-                if (idx === -1) {
-                    return q.concat(event)
-                }
-                return [...q.slice(0, idx), event, ...q.slice(idx+1)]
+    function sendIfPossible() {
+        state.modify(s => {
+            if (s.sent.length > 0 || s.queue.length === 0) return s
+            //console.log("Send", s.queue.length)
+            socket.send("app-events", s.queue, ack)    
+            return {
+                queue: [],
+                sent: s.queue
             }
         })
     }
-    queue.pipe(L.throttle(2000)).forEach(q => localStorage.messageQueue = JSON.stringify(q))
-    const queueSize = L.view(queue, "length")
+
+    function ack() {
+        state.modify(s => ({ ...s, sent: [] }))
+        sendIfPossible()
+    }
+
+    function enqueue(event: AppEvent) {
+        state.modify(s =>({ ...s, queue: addEventToQueue(event, s.queue) }))
+        sendIfPossible()
+    }
+
+    function onConnect() {
+        // Stop waiting for acks for messages from earlier sessions, no way to know whether they
+        // were received or not. 
+        state.modify(s => ({ ...s, sent: [] }))
+        sendIfPossible() 
+    }
+
+    function addEventToQueue(event: AppEvent, q: AppEvent[]) {
+        if (event.action === "cursor.move") {
+            return replaceInQueue(evt => evt.action === "cursor.move")
+        }
+        else if (event.action === "item.move") {
+            return replaceInQueue(evt => evt.action === "item.move" && evt.boardId === event.boardId && evt.itemId === event.itemId)
+        }
+        else if (event.action === "item.update") {
+            return replaceInQueue(evt => evt.action === "item.update" && evt.boardId === event.boardId && evt.item.id === event.item.id)                
+        }
+        else if (event.action === "item.lock" || event.action === "item.unlock") {
+            return replaceInQueue(evt => evt.action === event.action && evt.boardId === event.boardId && evt.itemId === event.itemId)                
+        }
+        return q.concat(event)
+
+        function replaceInQueue(matchFn: (e: AppEvent) => boolean) {
+            const idx = q.findIndex(matchFn)
+            if (idx === -1) {
+                return q.concat(event)
+            }
+            return [...q.slice(0, idx), event, ...q.slice(idx+1)]
+        }
+    }
+
+    const queueSize = L.view(state, s => s.queue.length + s.sent.length)
 
     return { 
         enqueue,
+        onConnect,
         queueSize: queueSize
     }
 }

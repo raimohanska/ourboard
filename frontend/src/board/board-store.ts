@@ -25,6 +25,7 @@ export function boardStore(socket: typeof io.Socket) {
     const messageQueue = MessageQueue(socket)
     socket.on("connect", () => { 
         console.log("Socket connected")
+        messageQueue.onConnect()
     })
     socket.on("message", function(kind: string, event: AppEvent) { 
         if (kind === "app-event") {
