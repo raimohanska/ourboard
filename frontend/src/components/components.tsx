@@ -70,6 +70,10 @@ export const EditableSpan = ( props : EditableSpanProps) => {
            editingThis.set(false)
            nameElement.get()!.textContent = value.get()
         }
+        e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
+    }
+    const onKey = (e: JSX.KeyboardEvent) => {
+        e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
     const onInput = (e: JSX.InputEvent<HTMLSpanElement>) => {
         settingLocally = true        
@@ -89,6 +93,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
             ref={ nameElement.set } 
             onKeyPress={onKeyPress}
             onKeyUp={onKeyPress}
+            onKeyDown={onKey}
             onInput={onInput}
         >
             {props.value.pipe(L.filter(() => !settingLocally, componentScope()))}
