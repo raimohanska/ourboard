@@ -1,11 +1,13 @@
 import { h } from "harmaja";
 import { Color, Item, newContainer, newNote, newText, Note } from "../../../common/domain";
 
+export const NOTE_COLORS = ["yellow", "pink", "cyan", "#673ab7", "black", "lightgreen", "#f0350b"]
+
 export const PaletteView = ( { onAdd }: { onAdd: (item: Item) => void } ) => {
   return <span className="palette">
     <span>Drag to add</span>
     {
-      ["yellow", "pink", "cyan", "#673ab7"].map(color =>
+      NOTE_COLORS.map(color =>
         <NewNote {...{ onAdd, color }} />
       )
     }

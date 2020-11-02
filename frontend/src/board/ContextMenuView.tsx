@@ -1,6 +1,7 @@
 import {h} from "harmaja"
 import * as L from "lonna"
 import {Color} from "../../../common/domain"
+import { NOTE_COLORS } from "./PaletteView"
 
 export type ContextMenu = {
   hidden: boolean
@@ -25,7 +26,7 @@ export const ContextMenuView = ({contextMenu, setColor}:
       })))}>
       <div className="controls">
         <div className="palette">
-          {["yellow", "pink", "cyan"].map(color => {
+          {NOTE_COLORS.map(color => {
             return <span className="template note" style={{background: color}} onClick={() => setColor(color)}>
               
             </span>
