@@ -5,6 +5,7 @@ import { Board, Item } from "../../../common/domain";
 import { BoardFocus } from "./synchronize-focus-with-server"
 import { onBoardItemDrag } from "./item-drag"
 import { Dispatch } from "./board-store";
+import { sign } from "jsonwebtoken";
 
 type Horizontal = "left" | "right"
 type Vertical = "top" | "bottom"
@@ -23,15 +24,23 @@ export const SelectionBorder = (
 
   function DragCorner({ vertical, horizontal}: { vertical: Vertical, horizontal: Horizontal } ) {    
     const ref= (e: HTMLElement) => onBoardItemDrag(e, id, board, focus, coordinateHelper, (b, current, dragStartPosition, xDiff, yDiff) => {
-        let minDiff = Math.min(Math.abs(xDiff), Math.abs(yDiff))
+        
         const maintainAspectRatio = current.type === "image" || current.type === "note"
         if (maintainAspectRatio) {
+          let minDiff = Math.min(Math.abs(xDiff), Math.abs(yDiff))
           if (minDiff < 0.1) {
             xDiff = 0
             yDiff = 0
           } else {
-            xDiff = xDiff * minDiff / Math.abs(xDiff)
-            yDiff = yDiff * minDiff / Math.abs(yDiff)
+            const aspectRatio = dragStartPosition.width / dragStartPosition.height
+            const invert = (horizontal == "left" && vertical == "bottom") || (horizontal == "right" && vertical == "top")
+            const factor = invert ? -1 : 1
+            
+            if (Math.abs(xDiff) == minDiff) { // x is the smaller adjustment, use that as basis
+              yDiff = minDiff / aspectRatio * factor * sign(xDiff)           
+            } else {
+              xDiff = minDiff * aspectRatio * factor * sign(yDiff)               
+            }            
           }
         }
         
@@ -52,6 +61,10 @@ export const SelectionBorder = (
         dispatch({ action: "item.update", boardId: b.id, item: { 
           ...current, x, y, width, height
         } });
+
+        function sign(x: number) {
+          return x / Math.abs(x)
+        }
     })
     
     return <span 
