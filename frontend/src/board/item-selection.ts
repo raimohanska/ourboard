@@ -3,12 +3,10 @@ import * as L from "lonna";
 import { Board, Id } from "../../../common/domain";
 import { Dispatch } from "./board-store";
 import { BoardFocus } from "./synchronize-focus-with-server"
-import { ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
 
 export function itemSelectionHandler(
   id: string,
   focus: L.Atom<BoardFocus>,
-  contextMenu: L.Atom<ContextMenu>,
   board: L.Property<Board>,
   dispatch: Dispatch
 ) {
@@ -22,7 +20,6 @@ export function itemSelectionHandler(
     const selected = L.view(itemFocus, s => s !== "none")
 
     function onClick(e: JSX.MouseEvent) {
-        contextMenu.set(HIDDEN_CONTEXT_MENU)
         const f = focus.get()
         
         if (e.shiftKey && f.status === "selected") {

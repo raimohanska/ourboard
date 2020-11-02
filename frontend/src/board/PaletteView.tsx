@@ -16,11 +16,11 @@ export const PaletteView = ( { onAdd }: { onAdd: (item: Item) => void } ) => {
   </span>
 }
 
-export const NewText = ({ onAdd, }: { onAdd: (i: Note) => void }) => {
+export const NewText = ({ onAdd, }: { onAdd: (i: Item) => void }) => {
   return <span data-test="palette-new-text" onDragEnd={() => onAdd(newText("HELLO"))} className="text palette-item" draggable={true}>Text</span>    
 }
 
-export const NewNote = ({ color, onAdd, }: { color: Color, onAdd: (i: Note) => void }) => {
+export const NewNote = ({ color, onAdd, }: { color: Color, onAdd: (i: Item) => void }) => {
   return <span data-test={`palette-new-note-${color}`} onDragEnd={() => onAdd(newNote("HELLO", color))} className="note palette-item" draggable={true} style={{background: color}}/>    
 }
 

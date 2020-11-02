@@ -322,19 +322,26 @@ a {
     }
 
     .context-menu {
-        position: fixed;
-        padding: 1em;
-        border: 1px solid black;
+        $menu-border: #cccccc;
+        position: absolute;
+        padding: 0.5em;
+        height: 2em;
+        margin-top: -3em;
+        border: 1px solid $menu-border;
+        border-radius: 2px;
         background: white;
         cursor: pointer;
         &.hidden {
             display: none;
         }
-        .controls {
-            padding-left: 0;
-            background: none;
-            .palette {
-                margin-left: 0;
+        .colors {
+            .color {
+                height: 1em;
+                width: 1em;
+                display: inline-block;
+                &:not(:last-child) {
+                    margin-right: 0.5em;
+                }                
             }
         }
     }

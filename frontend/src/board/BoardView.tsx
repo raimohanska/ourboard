@@ -5,7 +5,7 @@ import { boardCoordinateHelper } from "./board-coordinates"
 import { Color, Image, Item, Note, UserCursorPosition} from "../../../common/domain";
 import { ItemView } from "./ItemView"
 import { BoardAppState, Dispatch } from "./board-store";
-import { ContextMenuView, ContextMenu, HIDDEN_CONTEXT_MENU } from "./ContextMenuView"
+import { ContextMenuView } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView";
 import { CursorsView } from "./CursorsView";
 import { ImageView } from "./ImageView";
@@ -34,8 +34,6 @@ export const BoardView = (
     height: L.view(board, b => b.height + "em")
   })
   const element = L.atom<HTMLElement | null>(null);
-  
-  const contextMenu = L.atom<ContextMenu>(HIDDEN_CONTEXT_MENU)
 
   const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
 
@@ -80,22 +78,10 @@ export const BoardView = (
   function onClick(e: JSX.MouseEvent) {
     if (e.target === element.get()) {
       focus.set({ status: "none" })
-      contextMenu.set(HIDDEN_CONTEXT_MENU)
     }
   }
 
-  function setColor(color: Color) {
-    const f = focus.get()
-    const b = board.get()
-    if (f.status === "selected") {
-      f.ids.forEach(id => {
-        const current = b.items.find(i => i.id === id)
-        if (!current) throw Error("Item not found: " + id)
-        dispatch({ action: "item.update", boardId: b.id, item: { ...current, color } as Item  }); // TODO: this is post-it specific, not for all Items
-      })
-      contextMenu.set(HIDDEN_CONTEXT_MENU)
-    }
-  }
+
 
   function onAdd(item: Item) {
     const { x, y } = add(coordinateHelper.currentBoardCoordinates.get(), { x: -item.width / 2, y: -item.height / 2 })
@@ -129,8 +115,8 @@ export const BoardView = (
             />
             <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, dispatch }}/>
             <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
-          </div>
-          <ContextMenuView {...{contextMenu, setColor } } />
+            <ContextMenuView {...{dispatch, board, focus } } />
+          </div>          
         </div>        
       </div>
     </div>
@@ -147,12 +133,11 @@ export const BoardView = (
             board, id, type: t, item: item as L.Property<Note>, 
             isLocked,
             focus,
-            coordinateHelper, dispatch,
-            contextMenu
+            coordinateHelper, dispatch
         }} />
         case "image": return <ImageView {...{
           id, image: item as L.Property<Image>, assets, board,
-          isLocked, focus, coordinateHelper, dispatch, contextMenu
+          isLocked, focus, coordinateHelper, dispatch
         }}/>        
         default: throw Error("Unsupported item: " + t)
       }

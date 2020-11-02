@@ -1,10 +1,9 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Note, Item, Text, ItemType, Container, TextItem } from "../../../common/domain";
+import { Board, Note, Item, Text, ItemType, TextItem } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./synchronize-focus-with-server"
-import { ContextMenu } from "./ContextMenuView"
 import { SelectionBorder } from "./SelectionBorder"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection";
@@ -13,13 +12,12 @@ import { contrastingColor } from "./contrasting-color";
 import _ from "lodash";
 
 export const ItemView = (
-    { board, id, type, item, isLocked, focus, coordinateHelper, dispatch, contextMenu }:
+    { board, id, type, item, isLocked, focus, coordinateHelper, dispatch }:
     {  
         board: L.Property<Board>, id: string; type: string, item: L.Property<Item>,
         isLocked: L.Property<boolean>,
         focus: L.Atom<BoardFocus>,
-        coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch,
-        contextMenu: L.Atom<ContextMenu>
+        coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch
     }
 ) => {
   const element = L.atom<HTMLElement | null>(null)
@@ -31,15 +29,7 @@ export const ItemView = (
      referenceFont = `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
   }
 
-  const { itemFocus, selected, onClick } = itemSelectionHandler(id, focus, contextMenu, board, dispatch)
-
-  function onContextMenu(e: JSX.MouseEvent) {
-    onClick(e)
-    e.preventDefault()
-    if (item.get().type !== "note") return    
-    const { x, y } = coordinateHelper.currentClientCoordinates.get()
-    contextMenu.set({ hidden: false, x: x, y: y})
-  }
+  const { itemFocus, selected, onClick } = itemSelectionHandler(id, focus, board, dispatch)
 
   const dataTest = L.combineTemplate({
     text: L.view(item, i => i.type === "note" || i.type === "text" ? i.text : ""),
@@ -57,7 +47,6 @@ export const ItemView = (
       data-test={dataTest}
       draggable={true}
       onClick={onClick}
-      onContextMenu={onContextMenu}
       className={L.view(selected, s => s ? type + " selected" : type)}
       style={item.pipe(L.map((p: Item) => ({
         top: p.y + "em",

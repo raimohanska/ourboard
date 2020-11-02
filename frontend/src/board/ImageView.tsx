@@ -7,21 +7,20 @@ import { SelectionBorder } from "./SelectionBorder"
 import { AssetStore } from "./asset-store";
 import { itemDragToMove } from "./item-dragmove";
 import { itemSelectionHandler } from "./item-selection"
-import { ContextMenu } from "./ContextMenuView";
 import { Dispatch } from "./board-store";
 
 export const ImageView = (
-    { id, image, assets, board, isLocked, focus, coordinateHelper, contextMenu, dispatch }:
+    { id, image, assets, board, isLocked, focus, coordinateHelper, dispatch }:
     {  
       board: L.Property<Board>, id: string; image: L.Property<Image>,
       isLocked: L.Property<boolean>,
       focus: L.Atom<BoardFocus>,
       coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch,
-      assets: AssetStore, contextMenu: L.Atom<ContextMenu>
+      assets: AssetStore
   }
 ) => {
 
-  const { selected, onClick } = itemSelectionHandler(id, focus, contextMenu, board, dispatch)
+  const { selected, onClick } = itemSelectionHandler(id, focus, board, dispatch)
 
   return <span 
     className="image"       
