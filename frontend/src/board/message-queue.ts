@@ -27,30 +27,29 @@ export default function(socket: typeof io.Socket) {
         // Compact queue when possible (cursor movements and item drags are quite frequent)
         queue.modify(q => {
             if (event.action === "cursor.move") {
-                const idx = q.findIndex(evt => evt.action === "cursor.move")
-                if (idx === -1) {
-                    return q.concat(event)
-                } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]
+                return replaceInQueue(evt => evt.action === "cursor.move")
             }
             else if (event.action === "item.move") {
-                const idx = q.findIndex(evt => evt.action === "item.move" && evt.boardId === event.boardId && evt.itemId === event.itemId)
-                if (idx === -1) {
-                    return q.concat(event)
-                } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]                
+                return replaceInQueue(evt => evt.action === "item.move" && evt.boardId === event.boardId && evt.itemId === event.itemId)
             }
             else if (event.action === "item.update") {
-                const idx = q.findIndex(evt => evt.action === "item.update" && evt.boardId === event.boardId && evt.item.id === event.item.id)
-                if (idx === -1) {
-                    return q.concat(event)
-                } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]                
+                if (event.action === "item.update" && event.item.type === "note") {
+                    console.log("Enqueue text", event.item.text)
+                }
+                return replaceInQueue(evt => evt.action === "item.update" && evt.boardId === event.boardId && evt.item.id === event.item.id)                
             }
             else if (event.action === "item.lock" || event.action === "item.unlock") {
-                const idx = q.findIndex(evt => evt.action === event.action && evt.boardId === event.boardId && evt.itemId === event.itemId)
-                if (idx === -1) {
-                    return q.concat(event)
-                } else return [...q.slice(0, idx), event, ...q.slice(idx+1)]
+                return replaceInQueue(evt => evt.action === event.action && evt.boardId === event.boardId && evt.itemId === event.itemId)                
             }
             return q.concat(event)
+
+            function replaceInQueue(matchFn: (e: AppEvent) => boolean) {
+                const idx = q.findIndex(matchFn)
+                if (idx === -1) {
+                    return q.concat(event)
+                }
+                return [...q.slice(0, idx), event, ...q.slice(idx+1)]
+            }
         })
     }
 
