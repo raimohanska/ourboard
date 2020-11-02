@@ -33,9 +33,6 @@ export default function(socket: typeof io.Socket) {
                 return replaceInQueue(evt => evt.action === "item.move" && evt.boardId === event.boardId && evt.itemId === event.itemId)
             }
             else if (event.action === "item.update") {
-                if (event.action === "item.update" && event.item.type === "note") {
-                    console.log("Enqueue text", event.item.text)
-                }
                 return replaceInQueue(evt => evt.action === "item.update" && evt.boardId === event.boardId && evt.item.id === event.item.id)                
             }
             else if (event.action === "item.lock" || event.action === "item.unlock") {
