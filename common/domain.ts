@@ -42,10 +42,10 @@ export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
 export type Note = { id: string; type: typeof ITEM_TYPES.NOTE; text: string; color: Color } & ItemBounds;
 export type Text = { id: string; type: typeof ITEM_TYPES.TEXT; text: string } & ItemBounds;
 export type Image = { id: string; type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string } & ItemBounds;
-export type Container = { id: string; type: typeof ITEM_TYPES.CONTAINER; items: Id[] } & ItemBounds;
+export type Container = { id: string; type: typeof ITEM_TYPES.CONTAINER; text: string; items: Id[] } & ItemBounds;
 
-
-export type Item = Note | Text | Image | Container
+export type TextItem = Note | Text | Container
+export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id> 
 
 export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
@@ -101,7 +101,7 @@ export function newText(text: string, x: number = 20, y: number = 20, width: num
 }
 
 export function newContainer(x: number = 20, y: number = 20, width: number = 30, height: number = 20): Container {
-    return { id: uuid.v4(), type: "container", items: [], x, y, width, height }    
+    return { id: uuid.v4(), type: "container", text: "Unnamed area", items: [], x, y, width, height }    
 }
 
 export function newImage(assetId: string, x: number = 20, y: number = 20, width: number = 5, height: number = 5): Image {

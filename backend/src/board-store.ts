@@ -39,7 +39,13 @@ function migrateBoard(board: Board) {
     
     function migrateItem(item: Item): Item {
         const { width, height, type, ...rest } = item
-        return { type: type || "note", width: width || 5, height: height || 5, ...rest } as Item
+
+        let fixedItem = { type: type || "note", width: width || 5, height: height || 5, ...rest } as Item
+        if (fixedItem.type === "container") {
+            fixedItem.text = fixedItem.text || ""
+        }
+
+        return fixedItem
     }
 }
 

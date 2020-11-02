@@ -246,6 +246,12 @@ a {
 
         .container {
             @extend .item;
+            align-items: flex-start;
+            justify-content: flex-start;     
+            .text {
+                margin-left: 0.5em;
+                margin-top: 0.5em;
+            }       
         }
         
         .image {
@@ -257,11 +263,14 @@ a {
         }
 
         .selection-control {
+            $border-offset: 0.25em;
             display: block;
             pointer-events: none;
             border: 2px solid $link-color;
-            width: calc(100% + 0.5em);
-            height: calc(100% + 0.5em);
+            width: calc(100% + 2 * #{$border-offset});
+            height: calc(100% + 2 * #{$border-offset});
+            top: -#{$border-offset};
+            left: -#{$border-offset};
             position: absolute;
             .corner-drag {
                 pointer-events: all;
@@ -273,7 +282,7 @@ a {
                 background: white;
                 border-radius: 2px;
                 border: 1px solid #cccccc;
-                $offset: -7px;
+                $corner-offset: -7px;
 
                 &.left.top, &.right.bottom {
                     cursor: nwse-resize;
@@ -282,16 +291,16 @@ a {
                     cursor: nesw-resize;
                 }
                 &.left {
-                    left: $offset;
+                    left: $corner-offset;
                 }
                 &.right {
-                    right: $offset;
+                    right: $corner-offset;
                 }
                 &.top {
-                    top: $offset;
+                    top: $corner-offset;
                 }
                 &.bottom {
-                    bottom: $offset;
+                    bottom: $corner-offset;
                 }
             }
         }

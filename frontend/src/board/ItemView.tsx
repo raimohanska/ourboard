@@ -1,7 +1,7 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Note, Item, Text, ItemType } from "../../../common/domain";
+import { Board, Note, Item, Text, ItemType, Container, TextItem } from "../../../common/domain";
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./synchronize-focus-with-server"
 import { ContextMenu } from "./ContextMenuView"
@@ -67,17 +67,18 @@ export const ItemView = (
         position: "absolute"        
       })))}      
     >
-      { (type === "note" || type === "text") ? <TextView item={item as L.Property<Note | Text>}/> : null }
+      { (type === "note" || type === "text" || type === "container") ? <TextView item={item as L.Property<TextItem>}/> : null }
       { L.view(isLocked, l => l ? <span className="lock">🔒</span> : null )}
       { L.view(selected, s => s ? <SelectionBorder {...{ id, item: item, coordinateHelper, board, focus, dispatch}}/> : null) }
     </span>
   );
 
-  function TextView({ item } : { item: L.Property<Note | Text>} ) {
+  function TextView({ item } : { item: L.Property<TextItem>} ) {
     const textAtom = L.atom(L.view(item, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...item.get(), text } }))
     const showCoords = false
   
-    const fontSize = L.view(L.view(item, "width"), L.view(item, "height"), L.view(item, "text"), (w, h, text) => {
+    const fontSize = L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), L.view(item, "text"), (t, w, h, text) => {
+      if (t === "container") return "1em";
       const lines = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont!))
 
       const textHeight = _.sum(lines.map(l => l.height))
