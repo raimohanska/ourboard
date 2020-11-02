@@ -16,6 +16,7 @@ import { RectangularDragSelection } from "./RectangularDragSelection"
 import { add } from "./geometry";
 import { maybeAddToContainer } from "./item-setcontainer";
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
+import { itemDeleteHandler } from "./item-delete"
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch }: 
@@ -54,20 +55,7 @@ export const BoardView = (
     imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL)
   }
 
-  ["keydown", "keyup", "keypress"].forEach(eventName => { // Prevent default for all of these to prevent Backspace=Back behavior on Firefox
-    L.fromEvent<JSX.KeyboardEvent>(document, eventName).pipe(L.applyScope(componentScope())).forEach(e => {
-      if (e.keyCode === 8 || e.keyCode === 46) { // del or backspace
-        e.preventDefault()   
-        if (eventName === "keyup") {
-          const s = focus.get()
-          if (s.status === "selected") {
-            s.ids.forEach(id => dispatch({ action: "item.delete", boardId, itemId: id}))
-          }        
-        }   
-      }
-    })  
-  })
-
+  itemDeleteHandler(boardId, dispatch, focus)
 
   L.fromEvent<JSX.KeyboardEvent>(window, "click").pipe(L.applyScope(componentScope())).forEach(event => {
     // This was previously:
