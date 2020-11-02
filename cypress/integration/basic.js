@@ -5,6 +5,7 @@ const mockDataTransfer = {
 }
 
 const BACKSPACE = 8;
+const DELETE = 46;
 
 const NotesWithText = text => cy.get(`[data-test^="note"][data-test*="${text}"]`)
 const Notes = () => cy.get(`[data-test^="note"]`)
@@ -249,7 +250,7 @@ describe("Board functionality", () => {
         })
     })
 
-    it("Can change color of existing note from right click context menu", () => {
+    it("Can change color of existing note from context menu", () => {
         createNote("HELLO", 250, 200)  
         let originalColor;
         NotesWithText("HELLO").then(els => {
@@ -257,9 +258,9 @@ describe("Board functionality", () => {
             expect(originalColor).not.to.equal(undefined)
         })
 
-        NotesWithText("HELLO").rightclick({ force: true })
+        NotesWithText("HELLO").click({ force: true })
         cy.get(".context-menu").should("be.visible")
-        cy.get(".context-menu").find(".template").then(elements => {
+        cy.get(".colors").find(".color").then(elements => {
             const templateWithNewColor = [...elements].find(el => el.style.background && el.style.background !== originalColor)
             const newColor = templateWithNewColor.style.background
 
@@ -267,8 +268,6 @@ describe("Board functionality", () => {
             NotesWithText("HELLO").then(els => {
                 expect(els[0].style.background, `Note 'HELLO' should have turned ${newColor}`).to.equal(newColor)
             })
-
-            cy.get(".context-menu").should("not.be.visible")
         })
     })
 
@@ -303,12 +302,23 @@ describe("Board functionality", () => {
 
     })
 
-    it("Can delete notes", () => {
+    it("Can delete notes with backspace key", () => {
         createNote("Monoids", 250, 200)  
         createNote("World", 150, 200)  
         NotesWithText("Monoids").click({ force: true, shiftKey: true })
         NotesWithText("World").click({ force: true, shiftKey: true })
-        NotesWithText("World").trigger("keyup", { keyCode: BACKSPACE, which: BACKSPACE })
+        NotesWithText("World").trigger("keyup", { keyCode: BACKSPACE, which: BACKSPACE, force: true })
+
+        NotesWithText("Monoids").should("not.exist")
+        NotesWithText("World").should("not.exist")
+    })
+
+    it("Can delete notes with delete key", () => {
+        createNote("Monoids", 250, 200)  
+        createNote("World", 150, 200)  
+        NotesWithText("Monoids").click({ force: true, shiftKey: true })
+        NotesWithText("World").click({ force: true, shiftKey: true })
+        NotesWithText("World").trigger("keyup", { keyCode: DELETE, which: DELETE, force: true })
 
         NotesWithText("Monoids").should("not.exist")
         NotesWithText("World").should("not.exist")
