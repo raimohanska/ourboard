@@ -17,7 +17,7 @@ export const ContextMenuView = (
     dispatch({ action: "item.update", boardId: b.id, item: { ...current, color } as Item  }); // TODO: this is post-it specific, not for all Items
   }
   
-  return L.view(board, "items").pipe(L.map((items: Item[]) => items.find(i => i.id === id))).pipe(L.map((item: Item | undefined) => !item ? null : (
+  return (
     <div data-test="context-menu" className="context-menu">
       <div className="colors">
         {NOTE_COLORS.map(color => {
@@ -25,5 +25,5 @@ export const ContextMenuView = (
         })}
       </div>
     </div>
-  )))
+  )
 }
