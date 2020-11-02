@@ -35,9 +35,10 @@ export const ItemView = (
 
   function onContextMenu(e: JSX.MouseEvent) {
     onClick(e)
+    e.preventDefault()
+    if (item.get().type !== "note") return    
     const { x, y } = coordinateHelper.currentClientCoordinates.get()
     contextMenu.set({ hidden: false, x: x, y: y})
-    e.preventDefault()
   }
 
   const dataTest = L.combineTemplate({
