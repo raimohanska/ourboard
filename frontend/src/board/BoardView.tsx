@@ -2,10 +2,9 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import { Color, Image, Item, Note, UserCursorPosition} from "../../../common/domain";
+import { Image, Item, Note, UserCursorPosition} from "../../../common/domain";
 import { ItemView } from "./ItemView"
 import { BoardAppState, Dispatch } from "./board-store";
-import { ContextMenuView } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView";
 import { CursorsView } from "./CursorsView";
 import { ImageView } from "./ImageView";
@@ -64,8 +63,18 @@ export const BoardView = (
     // Bit of a hack, but this is a heuristic that if the event target is a detached node,
     // it is probably an item that was destroyed and recreated by Harmaja
     const isStillInDOM = !!(event.target as Node).parentNode
+    // TODO: Let's figure out a better way instead of these hacks
+    const isContextMenu = (() => {
+      let curr: Element | null = event.target as Element
+      while (curr) {
+        if (curr.className.includes("context-menu")) return true
+        curr = curr.parentElement
+      }
 
-    if (isStillInDOM && !element.get()!.contains(event.target as Node)) {
+      return false
+    })()
+
+    if (isStillInDOM && !isContextMenu && !element.get()!.contains(event.target as Node)) {
       // Click outside => reset selection
       focus.set({ status: "none" })
     }
@@ -115,7 +124,6 @@ export const BoardView = (
             />
             <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, dispatch }}/>
             <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
-            <ContextMenuView {...{dispatch, board, focus } } />
           </div>          
         </div>        
       </div>
