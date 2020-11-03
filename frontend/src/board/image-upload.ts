@@ -21,7 +21,8 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
         }
         const url = e.dataTransfer?.getData('URL')
         if (url) {
-            const res = await assets.getExternalAssetAsBytes(url)
+            // Try direct fetch first, and on CORS error fall back to letting the server request it
+            const res = await fetch(url).catch(() => assets.getExternalAssetAsBytes(url))
             const blob = await res.blob()
             await uploadImageFile(blob as any)    
         } else {
