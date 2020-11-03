@@ -5,6 +5,7 @@ import { Board, Note, Item, Text, ItemType, TextItem } from "../../../common/dom
 import { EditableSpan } from "../components/components"
 import { BoardFocus } from "./synchronize-focus-with-server"
 import { SelectionBorder } from "./SelectionBorder"
+import { DragBorder } from "./DragBorder"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection";
 import { Dispatch } from "./board-store";
@@ -24,7 +25,7 @@ export const ItemView = (
   const element = L.atom<HTMLElement | null>(null)
   let referenceFont: string | null = null
   const ref = (el: HTMLElement) => {
-     itemDragToMove(id, board, focus, coordinateHelper, dispatch)(el)
+     type !== "container" && itemDragToMove(id, board, focus, coordinateHelper, dispatch)(el)
      element.set(el)
      const { fontFamily, fontSize } = getComputedStyle(el)
      referenceFont = `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
@@ -62,6 +63,7 @@ export const ItemView = (
       { L.view(isLocked, l => l ? <span className="lock">🔒</span> : null )}
       { L.view(selected, s => s ? <SelectionBorder {...{ id, item: item, coordinateHelper, board, focus, dispatch}}/> : null) }
       { L.view(selected, s => type === "note" && s ? <ContextMenuView {...{dispatch, board, id } } /> : null) }
+      { type === "container" ? <DragBorder {...{ id, board, coordinateHelper, focus, dispatch }}/> : null }
     </span>
   );
 

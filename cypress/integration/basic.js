@@ -237,9 +237,9 @@ describe("Board functionality", () => {
             originalWidth = width
             originalHeight = height
             NotesWithText("Monoids").click({ force: true })
-            NotesWithText("Monoids").get(".corner-drag.bottom.right").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+            NotesWithText("Monoids").get(".corner-resize-drag.bottom.right").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
             cy.get(".board").trigger("dragover", { force: true, clientX: x + 200, clientY: y + 200 })
-            NotesWithText("Monoids").get(".corner-drag.bottom.right").trigger("drag", { force: true })
+            NotesWithText("Monoids").get(".corner-resize-drag.bottom.right").trigger("drag", { force: true })
         })
 
         NotesWithText("Monoids").then(elements => {

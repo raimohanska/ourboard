@@ -5,7 +5,6 @@ import { Board, Item } from "../../../common/domain";
 import { BoardFocus } from "./synchronize-focus-with-server"
 import { onBoardItemDrag } from "./item-drag"
 import { Dispatch } from "./board-store";
-import { sign } from "jsonwebtoken";
 
 type Horizontal = "left" | "right"
 type Vertical = "top" | "bottom"
@@ -15,7 +14,7 @@ export const SelectionBorder = (
   { id: string, item: L.Property<Item>, coordinateHelper: BoardCoordinateHelper, focus: L.Atom<BoardFocus>, board: L.Property<Board>, dispatch: Dispatch }
 ) => {
   return <span className="selection-control">
-    <span className="corner-drag top left"></span>
+    <span className="corner-resize-drag top left"></span>
     <DragCorner {...{ horizontal: "left", vertical: "top" }}/>
     <DragCorner {...{ horizontal: "left", vertical: "bottom" }}/>
     <DragCorner {...{ horizontal: "right", vertical: "top" }}/>
@@ -70,7 +69,7 @@ export const SelectionBorder = (
     return <span 
       ref={ref}
       draggable={true}
-      className={`corner-drag ${horizontal} ${vertical}`}
+      className={`corner-resize-drag ${horizontal} ${vertical}`}
     />
   }
 }
