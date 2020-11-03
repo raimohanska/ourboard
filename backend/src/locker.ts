@@ -51,9 +51,11 @@ function renewLease(boardId: Id, itemId: Id) {
 }
 
 export function obtainLock(e: BoardItemEvent, socket: IO.Socket, cb: () => any) {
-    if (isPersistableBoardItemEvent(e)) {
-        const itemId = "item" in e ? e.item.id : e.itemId
-        lockItem(e.boardId, itemId, socket.id) && cb()
+    if (isPersistableBoardItemEvent(e)) {        
+        const itemIds = "items" in e ? (e.items as { id: string }[] ).map(i => i.id) : e.itemIds
+        for (let id of itemIds) {
+            lockItem(e.boardId, id, socket.id) && cb()
+        }
     } else {
         const { boardId, itemId, action } = e
         switch(action) {

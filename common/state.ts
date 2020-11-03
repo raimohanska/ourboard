@@ -4,44 +4,57 @@ import _ from "lodash"
 export function boardReducer(board: Board, event: AppEvent): Board {
     switch (event.action) {
       case "item.add":
-        if (board.items.find(i => i.id === event.item.id)) {
-          console.warn(new Error("Adding duplicate item " + JSON.stringify(event.item)))
+        if (board.items.find(i => event.items.some(a => a.id === i.id))) {
+          console.warn(new Error("Adding duplicate item " + JSON.stringify(event.items)))
           return board
         }
-        return { ...board, items: sortItems(board.items.concat(event.item)) };
+        return { ...board, items: sortItems(board.items.concat(event.items)) };
       case "item.update":
         return {
           ...board,
-          items: board.items.map((p) => (p.id === event.item.id ? event.item : p))
+          items: board.items.map((p) => {
+            const updated = event.items.find(i => i.id === p.id)
+            if (updated) return updated
+            return p
+          })
         };
       case "item.move":
         return {
           ...board,
-          items: moveItems(board.items, event.itemId, event.x, event.y)
+          items: event.items.reduce((itemsBeforeMove, i) => moveItems(itemsBeforeMove, i.id, i.x, i.y), board.items)
         };
       case "item.delete": {
-        const item = board.items.find(i => i.id === event.itemId)
-        if (!item) {
-          console.warn("Deleting non-existing item " + event.itemId)
-          return board
-        }
-        const idsToDelete = new Set(item.type === "container" ? item.items.concat(event.itemId) : [event.itemId])
+        const idsToDelete = new Set<Id>()
+        for (let id of event.itemIds) {
+          const item = board.items.find(i => i.id === id)
+          if (!item) {
+            console.warn("Deleting non-existing item " + id)
+            return board
+          }
+          idsToDelete.add(id)
+          if (item.type === "container") {
+            item.items.forEach(child => idsToDelete.add(child))
+          }          
+        }        
         return {
           ...board,
           items: board.items
             .filter(i => !idsToDelete.has(i.id))
-            .map(i => i.type === "container" ? { ...i, items: i.items.filter(child => child !== event.itemId) } : i)
+            .map(i => i.type === "container" ? { ...i, items: i.items.filter(child => !idsToDelete.has(child)) } : i)
         }
       }
-      case "item.front":
-        const item = board.items.find(i => i.id === event.itemId)
-        if (!item) {
-          console.warn(`Cannot bring unknown item ${event.itemId} to front`)
-          return board
-        }
+      case "item.front":        
+        const items = event.itemIds.flatMap(id => {
+          const item = board.items.find(i => i.id === id)
+          if (!item) {
+            console.warn(`Cannot bring unknown item ${id} to front`)
+            return []
+          }
+          return [item]
+        }) 
         return {
           ...board,
-          items: sortItems(board.items.filter((p) => p.id !== event.itemId).concat(item))
+          items: sortItems(board.items.filter((p) => !event.itemIds.includes(p.id)).concat(items))
         }
       case "item.setcontainer":
         return {
@@ -51,8 +64,8 @@ export function boardReducer(board: Board, event: AppEvent): Board {
             return {
               ...i,
               items: event.containerId === i.id
-                ? (i.items.includes(event.itemId) ? i.items : i.items.concat(event.itemId))
-                : i.items.filter(i => i !== event.itemId)
+                ? i.items.concat(event.itemIds.filter(id => !i.items.includes(id)))
+                : i.items.filter(i => !event.itemIds.includes(i))
             }
           })
         }

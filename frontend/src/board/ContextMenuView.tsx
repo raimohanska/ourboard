@@ -14,7 +14,7 @@ export const ContextMenuView = (
     const current = b.items.find(i => i.id === id)
     if (!current) throw Error("Item not found: " + id)
     
-    dispatch({ action: "item.update", boardId: b.id, item: { ...current, color } as Item  }); // TODO: this is post-it specific, not for all Items
+    dispatch({ action: "item.update", boardId: b.id, items: [{ ...current, color } as Item]  }); // TODO: this is post-it specific, not for all Items
   }
   
   return (

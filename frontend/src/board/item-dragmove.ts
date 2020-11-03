@@ -16,7 +16,7 @@ export function itemDragToMove(id: string, board: L.Property<Board>, focus: L.At
         const x = Math.min(Math.max(dragStartPosition.x + xDiff, margin), b.width - current.width - margin)        
         const y = Math.min(Math.max(dragStartPosition.y + yDiff, margin), b.height - current.height - margin)
         
-        dispatch({ action: "item.move", boardId: b.id, itemId: current.id, x, y });
+        dispatch({ action: "item.move", boardId: b.id, items: [{id: current.id, x, y}] });
     },
     (b, current) => {
         maybeAddToContainer(current, b, dispatch)        

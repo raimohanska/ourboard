@@ -57,9 +57,9 @@ export const SelectionBorder = (
           ? dragStartPosition.height - yDiff
           : dragStartPosition.height + yDiff)
 
-        dispatch({ action: "item.update", boardId: b.id, item: { 
+        dispatch({ action: "item.update", boardId: b.id, items: [{ 
           ...current, x, y, width, height
-        } });
+        }] });
 
         function sign(x: number) {
           return x / Math.abs(x)

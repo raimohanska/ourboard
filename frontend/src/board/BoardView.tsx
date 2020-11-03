@@ -45,7 +45,7 @@ export const BoardView = (
     function onURL(assetId: string, url: string) {
       board.get().items.forEach(i => {
         if (i.type === "image" && i.assetId === assetId && i.src != url) {
-          dispatch({ action: "item.update", boardId, item: { ...i, src: url }  })
+          dispatch({ action: "item.update", boardId, items: [{ ...i, src: url }]  })
         }
       })      
     }
@@ -96,7 +96,7 @@ export const BoardView = (
     const { x, y } = add(coordinateHelper.currentBoardCoordinates.get(), { x: -item.width / 2, y: -item.height / 2 })
     item = { ...item, x, y }
 
-    dispatch({ action: "item.add", boardId, item })
+    dispatch({ action: "item.add", boardId, items: [item] })
     maybeAddToContainer(item, board.get(), dispatch)
     
     if (item.type === "note" || item.type === "text") {

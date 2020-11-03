@@ -45,6 +45,6 @@ export function itemSelectionHandler(
     }
 
     function bringToFront(id: Id) {
-      dispatch({ action: "item.front", boardId: board.get().id, itemId: id })
+      dispatch({ action: "item.front", boardId: board.get().id, itemIds: [id] })
     }
 }

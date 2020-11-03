@@ -49,7 +49,7 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                 case "cut": {
                     if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
                     const itemsToCut = recursiveItems(currentFocus.ids, currentBoard)
-                    itemsToCut.forEach(it => dispatch({ action: "item.delete", boardId: currentBoard.id, itemId: it.id }))
+                    dispatch({ action: "item.delete", boardId: currentBoard.id, itemIds: itemsToCut.map(i => i.id)})
                     clipboard = itemsToCut
                     break
                 }
@@ -67,7 +67,7 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                     const xDiff = currentCenter.x - xCenterOld
                     const yDiff = currentCenter.y - yCenterOld
                     const { toCreate, toSelect } = makeCopy(clipboard, xDiff, yDiff)                    
-                    toCreate.forEach(it => dispatch({ action: "item.add", boardId: currentBoard.id, item: it }))
+                    dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate })
                     focus.set({ status: "selected", ids: new Set(toSelect.map(it => it.id)) })
                     break
                 }

@@ -9,7 +9,7 @@ export function maybeAddToContainer(item: Item, b: Board, dispatch: Dispatch) {
 
         const newContainer = b.items.find(i => (i.type === "container") && containedBy(item, i))
         if (newContainer != currentContainer) {
-            dispatch({ action: "item.setcontainer", boardId: b.id, itemId: item.id, containerId: newContainer ? newContainer.id : null })
+            dispatch({ action: "item.setcontainer", boardId: b.id, itemIds: [item.id], containerId: newContainer ? newContainer.id : null })
         }
     }    
 }

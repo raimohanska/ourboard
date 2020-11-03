@@ -12,7 +12,7 @@ export function itemDeleteHandler(boardId: Id, dispatch: Dispatch, focus: L.Prop
                 if (eventName === "keyup") {
                     const s = focus.get()
                     if (s.status === "selected") {
-                        s.ids.forEach(id => dispatch({ action: "item.delete", boardId, itemId: id }))
+                        s.ids.forEach(id => dispatch({ action: "item.delete", boardId, itemIds: [id] }))
                     }
                 }
             }

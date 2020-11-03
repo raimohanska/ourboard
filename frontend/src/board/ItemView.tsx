@@ -68,7 +68,7 @@ export const ItemView = (
   );
 
   function TextView({ item } : { item: L.Property<TextItem>} ) {
-    const textAtom = L.atom(L.view(item, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, item: { ...item.get(), text } }))
+    const textAtom = L.atom(L.view(item, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, items: [{ ...item.get(), text }] }))
     const showCoords = false
   
     const fontSize = L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), L.view(item, "text"), (t, w, h, text) => {
@@ -94,7 +94,7 @@ export const ItemView = (
 
 
     const setEditing = (e: boolean) => {
-      dispatch({ action: "item.front", boardId: board.get().id, itemId: id })
+      dispatch({ action: "item.front", boardId: board.get().id, itemIds: [id] })
       focus.set(e ? { status: "editing", id } : { status: "selected", ids: new Set([id]) })
     }
     const color = L.view(item, i => i.type === "note" ? i.color : "white", contrastingColor)
