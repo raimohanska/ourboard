@@ -48,7 +48,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         if (e.shiftKey) return
         editingThis.set(true)
         e.preventDefault()
-        //e.stopPropagation()
+        e.stopPropagation()
     }  
     editingThis.pipe(L.changes, L.filter(e => !!e), L.applyScope(componentScope())).forEach(() =>  { 
         setTimeout(() => {

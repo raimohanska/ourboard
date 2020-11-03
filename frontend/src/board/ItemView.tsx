@@ -92,6 +92,7 @@ export const ItemView = (
 
 
     const setEditing = (e: boolean) => {
+      dispatch({ action: "item.front", boardId: board.get().id, itemId: id })
       focus.set(e ? { status: "editing", id } : { status: "selected", ids: new Set([id]) })
     }
     const color = L.view(item, i => i.type === "note" ? i.color : "white", contrastingColor)
