@@ -1,6 +1,7 @@
 import * as L from "lonna";
 import io from 'socket.io-client';
-import { AppEvent, MoveItem, UpdateItem, PersistableBoardItemEvent } from "../../../common/domain";
+import { AppEvent } from "../../../common/domain";
+import { addOrReplaceEvent } from "./action-folding"
 
 const noop = () => {}
 type QueueState = {
@@ -31,7 +32,7 @@ export default function(socket: typeof io.Socket) {
     }
 
     function enqueue(event: AppEvent) {
-        state.modify(s =>({ ...s, queue: addEventToQueue(event, s.queue) }))
+        state.modify(s =>({ ...s, queue: addOrReplaceEvent(event, s.queue) }))
         sendIfPossible()
     }
 
@@ -40,34 +41,6 @@ export default function(socket: typeof io.Socket) {
         // were received or not. 
         state.modify(s => ({ ...s, sent: [] }))
         sendIfPossible() 
-    }
-
-    function everyItemMatches(evt: MoveItem | UpdateItem, evt2: MoveItem | UpdateItem) {
-        return evt.items.length === evt2.items.length && evt.items.every((it, ind) => evt2.items[ind].id === it.id)
-    }
-
-    function addEventToQueue(event: AppEvent, q: AppEvent[]) {
-        if (event.action === "cursor.move") {
-            return replaceInQueue(evt => evt.action === "cursor.move")
-        }
-        else if (event.action === "item.move") {
-            return replaceInQueue(evt => evt.action === "item.move" && evt.boardId === event.boardId && everyItemMatches(evt, event))
-        }
-        else if (event.action === "item.update") {
-            return replaceInQueue(evt => evt.action === "item.update" && evt.boardId === event.boardId && everyItemMatches(evt, event))                
-        }
-        else if (event.action === "item.lock" || event.action === "item.unlock") {
-            return replaceInQueue(evt => evt.action === event.action && evt.boardId === event.boardId && evt.itemId === event.itemId)                
-        }
-        return q.concat(event)
-
-        function replaceInQueue(matchFn: (e: AppEvent) => boolean) {
-            const idx = q.findIndex(matchFn)
-            if (idx === -1) {
-                return q.concat(event)
-            }
-            return [...q.slice(0, idx), event, ...q.slice(idx+1)]
-        }
     }
 
     const queueSize = L.view(state, s => s.queue.length + s.sent.length)
