@@ -2,7 +2,7 @@ import * as L from "lonna";
 import { globalScope } from "lonna";
 import { AppEvent, Board, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, UserCursorPosition, UserSessionInfo } from "../../../common/domain";
 import { boardReducer } from "../../../common/state";
-import { addIfNotExists, addOrReplaceEvent } from "./action-folding";
+import { canFoldActions } from "./action-folding";
 import MessageQueue from "./message-queue";
 
 
@@ -48,20 +48,19 @@ export function boardStore(socket: typeof io.Socket) {
             const undoOperation = undoBuffer.pop()!
             messageQueue.enqueue(undoOperation)
             const [board, reverse] = boardReducer(state.board!, undoOperation)
-            if (reverse) redoBuffer = addIfNotExists(reverse, redoBuffer)
+            if (reverse) redoBuffer = addToBuffer(reverse, redoBuffer)
             return { ...state, board }
         } else if (event.action === "redo") {
             if (!redoBuffer.length) return state
             const redoOperation = redoBuffer.pop()!
             messageQueue.enqueue(redoOperation)
             const [board, reverse] = boardReducer(state.board!, redoOperation)
-            if (reverse) undoBuffer = addIfNotExists(reverse, undoBuffer)
+            if (reverse) undoBuffer = addToBuffer(reverse, undoBuffer)
             return { ...state, board }
         } else if (event.action.startsWith("item.")) {
             redoBuffer = []
             const [board, reverse] = boardReducer(state.board!, event)
-            if (reverse) undoBuffer = addIfNotExists(reverse, undoBuffer)
-            console.log(undoBuffer)
+            if (reverse) undoBuffer = addToBuffer(reverse, undoBuffer)
             return { ...state, board }
         } else if (event.action === "board.init") {
             return { ...state, board: event.board }
@@ -110,4 +109,12 @@ function storeNickName(nickname: string) {
 function boardIdFromPath() {
     const match = document.location.pathname.match(/b\/(.*)/)
     return (match && match[1]) || undefined
+}
+
+export function addToBuffer(event: AppEvent, b:AppEvent[]) {
+    const top = b[b.length - 1]
+    if (!top || !canFoldActions(top, event)) {
+        return b.concat(event)
+    }
+    return b
 }

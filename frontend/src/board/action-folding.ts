@@ -1,36 +1,19 @@
 import { AppEvent, MoveItem, UpdateItem } from "../../../common/domain"
 
-function findEquivalent(event: AppEvent, q: AppEvent[]) {
-    if (event.action === "cursor.move") {
-        return q.findIndex(evt => evt.action === "cursor.move")
+export function canFoldActions(a: AppEvent, b: AppEvent) {
+    if (a.action === "cursor.move") {
+        return b.action === "cursor.move" && b.boardId === a.boardId
     }
-    else if (event.action === "item.move") {
-        return q.findIndex(evt => evt.action === "item.move" && evt.boardId === event.boardId && everyItemMatches(evt, event))
+    else if (a.action === "item.move") {
+        return b.action === "item.move" && b.boardId === a.boardId && everyItemMatches(b, a)
     }
-    else if (event.action === "item.update") {
-        return q.findIndex(evt => evt.action === "item.update" && evt.boardId === event.boardId && everyItemMatches(evt, event))                
+    else if (a.action === "item.update") {
+        return b.action === "item.update" && b.boardId === a.boardId && everyItemMatches(b, a)
     }
-    else if (event.action === "item.lock" || event.action === "item.unlock") {
-        return q.findIndex(evt => evt.action === event.action && evt.boardId === event.boardId && evt.itemId === event.itemId)                
+    else if (a.action === "item.lock" || a.action === "item.unlock") {
+        return b.action === a.action && b.boardId === a.boardId && b.itemId === a.itemId            
     } 
-
-    return -1
-}
-
-export function addOrReplaceEvent(event: AppEvent, q: AppEvent[]) {
-    const idx = findEquivalent(event, q)
-    if (idx === -1) {
-        return q.concat(event)
-    }
-    return [...q.slice(0, idx), event, ...q.slice(idx+1)]
-}
-
-export function addIfNotExists(event: AppEvent, b:AppEvent[]) {
-    const idx = findEquivalent(event, b)
-    if (idx === -1) {
-        return b.concat(event)
-    }
-    return b
+    return false
 }
 
 function everyItemMatches(evt: MoveItem | UpdateItem, evt2: MoveItem | UpdateItem) {

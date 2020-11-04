@@ -1,7 +1,7 @@
 import * as L from "lonna";
 import io from 'socket.io-client';
 import { AppEvent } from "../../../common/domain";
-import { addOrReplaceEvent } from "./action-folding"
+import { canFoldActions } from "./action-folding"
 
 const noop = () => {}
 type QueueState = {
@@ -50,4 +50,13 @@ export default function(socket: typeof io.Socket) {
         onConnect,
         queueSize: queueSize
     }
+}
+
+
+function addOrReplaceEvent(event: AppEvent, q: AppEvent[]) {
+    const idx = q.findIndex(evt => canFoldActions(event, evt))
+    if (idx === -1) {
+        return q.concat(event)
+    }
+    return [...q.slice(0, idx), event, ...q.slice(idx+1)]
 }
