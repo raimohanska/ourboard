@@ -16,6 +16,7 @@ import { add } from "./geometry";
 import { maybeAddToContainer } from "./item-setcontainer";
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 import { itemDeleteHandler } from "./item-delete"
+import { itemUndoHandler } from "./item-undo-redo"
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch }: 
@@ -53,6 +54,7 @@ export const BoardView = (
   }
 
   itemDeleteHandler(boardId, dispatch, focus)
+  itemUndoHandler(dispatch)
 
   L.fromEvent<JSX.KeyboardEvent>(window, "click").pipe(L.applyScope(componentScope())).forEach(event => {
     if (!element.get()!.contains(event.target as Node)) {

@@ -1,47 +1,65 @@
 import { AppEvent, Board, Id, Item } from "./domain";
 import _ from "lodash"
 
-export function boardReducer(board: Board, event: AppEvent): Board {
+export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | null] {
     switch (event.action) {
       case "item.add":
         if (board.items.find(i => event.items.some(a => a.id === i.id))) {
           console.warn(new Error("Adding duplicate item " + JSON.stringify(event.items)))
-          return board
+          return [board, null]
         }
-        return { ...board, items: sortItems(board.items.concat(event.items)) };
+        return [
+          { ...board, items: sortItems(board.items.concat(event.items)) }, 
+          { action: "item.delete", boardId: board.id, itemIds: event.items.map(i => i.id)}
+        ];
       case "item.update":
-        return {
+        return [{
           ...board,
           items: board.items.map((p) => {
             const updated = event.items.find(i => i.id === p.id)
             if (updated) return updated
             return p
           })
-        };
+        }, {
+          action: "item.update",
+          boardId: board.id,
+          items: event.items.map(item => findItem(board)(item.id))
+        }];
       case "item.move":
-        return {
+        return [{
           ...board,
           items: event.items.reduce((itemsBeforeMove, i) => moveItems(itemsBeforeMove, i.id, i.x, i.y), board.items)
-        };
+        }, {
+          action: "item.move",
+          boardId: board.id,
+          items: event.items.map(i => {
+            const item = findItem(board)(i.id)
+            return { id: i.id, x: item.x, y: item.y }
+          })
+        }];
       case "item.delete": {
         const idsToDelete = new Set<Id>()
         for (let id of event.itemIds) {
           const item = board.items.find(i => i.id === id)
           if (!item) {
             console.warn("Deleting non-existing item " + id)
-            return board
+            continue;
           }
           idsToDelete.add(id)
           if (item.type === "container") {
             item.items.forEach(child => idsToDelete.add(child))
           }          
         }        
-        return {
+        return [{
           ...board,
           items: board.items
             .filter(i => !idsToDelete.has(i.id))
             .map(i => i.type === "container" ? { ...i, items: i.items.filter(child => !idsToDelete.has(child)) } : i)
-        }
+        }, {
+          action: "item.add",
+          boardId: board.id,
+          items: Array.from(idsToDelete).map(findItem(board)) // TODO: the deleted items should be assigned to containers when restoring. This happens now only if the container was removed too
+        }]
       }
       case "item.front":        
         const items = event.itemIds.flatMap(id => {
@@ -52,12 +70,12 @@ export function boardReducer(board: Board, event: AppEvent): Board {
           }
           return [item]
         }) 
-        return {
+        return [{
           ...board,
           items: sortItems(board.items.filter((p) => !event.itemIds.includes(p.id)).concat(items))
-        }
+        }, null] // TODO: return item.back
       case "item.setcontainer":
-        return {
+        return [{
           ...board,
           items: board.items.map(i => {
             if (i.type !== "container") return i
@@ -68,14 +86,20 @@ export function boardReducer(board: Board, event: AppEvent): Board {
                 : i.items.filter(i => !event.itemIds.includes(i))
             }
           })
-        }
+        }, null] // TODO: set back original containers for each item. Currently setContainer only support assigning to a single container so reverting to many is not possible yet
       case "item.lock":
       case "item.unlock":
-        return board;
+        return [board, null];
       default:
         console.warn("Unknown event", event);
-        return board
+        return [board, null]
     }
+  }
+
+  const findItem = (board: Board) => (id: Id) => {
+    const item = board.items.find(i => i.id === id)
+    if (!item) throw Error("Item not found: " + id)
+    return item
   }
 
   const moveItems = (items: Item[], id: Id, x: number, y: number) => {

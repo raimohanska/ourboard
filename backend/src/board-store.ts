@@ -52,7 +52,7 @@ function migrateBoard(board: Board) {
 export async function updateBoards(appEvent: BoardItemEvent) {
     const board = await getBoard(appEvent.boardId)
     boards = boards.map(board => board.id === appEvent.boardId 
-        ? markForSave(boardReducer(board, appEvent))
+        ? markForSave(boardReducer(board, appEvent)[0])
         : board)
 }
 

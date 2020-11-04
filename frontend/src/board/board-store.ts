@@ -32,16 +32,35 @@ export function boardStore(socket: typeof io.Socket) {
             serverEvents.push(event)
         }
     })
-    uiEvents.forEach(messageQueue.enqueue)
+    L.pipe(uiEvents, L.filter((e: AppEvent) => e.action !== "undo" && e.action !== "redo")).forEach(messageQueue.enqueue)
 
     // uiEvents.log("UI")
     // serverEvents.log("Server")
     
     const events = L.merge(uiEvents, serverEvents)
+    let undoBuffer: AppEvent[] = []
+    let redoBuffer: AppEvent[] = []
 
     const eventsReducer = (state: BoardAppState, event: AppEvent) => {
-        if (event.action.startsWith("item.")) {
-            return { ...state, board: boardReducer(state.board!, event) }
+        if (event.action === "undo") {
+            if (!undoBuffer.length) return state
+            const undoOperation = undoBuffer.pop()!
+            messageQueue.enqueue(undoOperation)
+            const [board, reverse] = boardReducer(state.board!, undoOperation)
+            if (reverse) redoBuffer.push(reverse)
+            return { ...state, board }
+        } else if (event.action === "redo") {
+            if (!redoBuffer.length) return state
+            const redoOperation = redoBuffer.pop()!
+            messageQueue.enqueue(redoOperation)
+            const [board, reverse] = boardReducer(state.board!, redoOperation)
+            if (reverse) undoBuffer.push(reverse)
+            return { ...state, board }
+        } else if (event.action.startsWith("item.")) {
+            redoBuffer = []
+            const [board, reverse] = boardReducer(state.board!, event)
+            if (reverse) undoBuffer.push(reverse)
+            return { ...state, board }
         } else if (event.action === "board.init") {
             return { ...state, board: event.board }
         } else if (event.action === "board.join.ack") {
@@ -69,7 +88,8 @@ export function boardStore(socket: typeof io.Socket) {
         }
     }
     
-    const state = events.pipe(L.scan({ board: undefined, userId: null, nickname: "", users: [], cursors: {}, locks: {} }, eventsReducer, globalScope))
+    const initialState = { board: undefined, userId: null, nickname: "", users: [], cursors: {}, locks: {} }
+    const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
     
     return {
         state,

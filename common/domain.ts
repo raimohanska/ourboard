@@ -48,7 +48,7 @@ export type TextItem = Note | Text | Container
 export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id> 
 
-export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks;
+export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks | Undo | Redo;
 export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront | SetItemContainer
 export type BoardItemEvent = PersistableBoardItemEvent | LockItem | UnlockItem
 export type AddItem = { action: "item.add", boardId: Id, items: Item[] };
@@ -69,6 +69,8 @@ export type CursorMove = { action: "cursor.move", position: CursorPosition, boar
 export type SetNickname = { action: "nickname.set", nickname: string, userId: string }
 export type AssetPutUrlRequest = { "action": "asset.put.request", assetId: string }
 export type AssetPutUrlResponse = { "action": "asset.put.response", assetId: string, signedUrl: string }
+export type Undo = { action: "undo" }
+export type Redo = { action: "redo" }
 
 export type UserSessionInfo = { userId: string, nickname: string }
 
