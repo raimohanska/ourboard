@@ -40,7 +40,7 @@ export const RectangularDragSelection = (
             start.set(pos)
             current.set(pos)        
             const f = focus.get()
-            selectedAtStart = e.shiftKey && f.status === "selected" ? f.ids: new Set()
+            selectedAtStart = e.shiftKey && f.status === "selected" ? f.ids : new Set()
             focus.set(selectedAtStart.size > 0 ? { status: "selected", ids: selectedAtStart } : { status: "none" })
         })
     
@@ -60,8 +60,10 @@ export const RectangularDragSelection = (
                 }
             }
 
-            overlapping.length > 0
-                ? focus.set({ status: "selected", ids: new Set(overlapping.map(i => i.id)) })
+            const toBeSelected = new Set(overlapping.map(i => i.id).concat([...selectedAtStart]))
+
+            toBeSelected.size > 0
+                ? focus.set({ status: "selected", ids: toBeSelected })
                 : focus.set({ status: "none" })
         })
     
