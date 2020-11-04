@@ -1,11 +1,14 @@
 import { h } from "harmaja"
 import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
-import {Board, Id } from "../../../common/domain"
+import {Board, Id, Item, Container } from "../../../common/domain"
 import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { BoardFocus } from "./synchronize-focus-with-server"
 import { Rect, overlaps, rectFromPoints } from "./geometry"
 import { Dispatch } from "./board-store"
+
+const ELSEWHERE = { type: "OTHER" } as const
+type Elsewhere = typeof ELSEWHERE
 
 export const RectangularDragSelection = (
     { boardElem, coordinateHelper, board, focus, dispatch }: 
@@ -21,10 +24,17 @@ export const RectangularDragSelection = (
         return rectFromPoints(s, c)
     })
 
+    let dragStartedOn: Container | Elsewhere | null = null;
+
+    function isContainerWhereDragStarted(i: Item) {
+        return dragStartedOn?.type === "container" && i === dragStartedOn;
+    }
+
     boardElem.forEach(el => {
         if (!el) return
 
-        el.addEventListener("dragstart", e => {            
+        el.addEventListener("dragstart", e => {
+            dragStartedOn = null
             e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
             const pos = coordinateHelper.clientToBoardCoordinates({ x: e.clientX, y: e.clientY })
             start.set(pos)
@@ -38,8 +48,21 @@ export const RectangularDragSelection = (
             const coords = coordinateHelper.currentBoardCoordinates.get()
             current.set(coords)
             const bounds = rect.get()!
-            const overlapping = board.get().items.filter(i => overlaps(i, bounds)).map(i => i.id)
-            focus.set(overlapping.length > 0 ? { status: "selected", ids: new Set(overlapping) } : { status: "none" })
+
+            // Do not select container if drag originates from within container
+            const overlapping = board.get().items.filter(i => !isContainerWhereDragStarted(i) && overlaps(i, bounds))
+            if (dragStartedOn === null) {
+                if (overlapping[0]?.type === "container") {
+                    dragStartedOn = overlapping[0]
+                    overlapping.shift()
+                } else {
+                    dragStartedOn = ELSEWHERE
+                }
+            }
+
+            overlapping.length > 0
+                ? focus.set({ status: "selected", ids: new Set(overlapping.map(i => i.id)) })
+                : focus.set({ status: "none" })
         })
     
         el.addEventListener("drop", end)    
