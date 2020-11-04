@@ -1,6 +1,6 @@
 import * as L from "lonna";
 import io from 'socket.io-client';
-import { AppEvent } from "../../../common/domain";
+import { AppEvent, MoveItem, UpdateItem, PersistableBoardItemEvent } from "../../../common/domain";
 
 const noop = () => {}
 type QueueState = {
@@ -42,15 +42,19 @@ export default function(socket: typeof io.Socket) {
         sendIfPossible() 
     }
 
+    function everyItemMatches(evt: MoveItem | UpdateItem, evt2: MoveItem | UpdateItem) {
+        return evt.items.length === evt2.items.length && evt.items.every((it, ind) => evt2.items[ind].id === it.id)
+    }
+
     function addEventToQueue(event: AppEvent, q: AppEvent[]) {
         if (event.action === "cursor.move") {
             return replaceInQueue(evt => evt.action === "cursor.move")
         }
         else if (event.action === "item.move") {
-            return replaceInQueue(evt => evt.action === "item.move" && evt.boardId === event.boardId && evt.itemId === event.itemId)
+            return replaceInQueue(evt => evt.action === "item.move" && evt.boardId === event.boardId && everyItemMatches(evt, event))
         }
         else if (event.action === "item.update") {
-            return replaceInQueue(evt => evt.action === "item.update" && evt.boardId === event.boardId && evt.item.id === event.item.id)                
+            return replaceInQueue(evt => evt.action === "item.update" && evt.boardId === event.boardId && everyItemMatches(evt, event))                
         }
         else if (event.action === "item.lock" || event.action === "item.unlock") {
             return replaceInQueue(evt => evt.action === event.action && evt.boardId === event.boardId && evt.itemId === event.itemId)                
