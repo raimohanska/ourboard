@@ -45,15 +45,14 @@ const App = () => {
         <Header {...{syncStatus, state, dispatch: store.dispatch }}/>
         {
             L.view(store.boardId, boardId => 
-                boardId ? L.view(showingBoardId, boardId => boardId 
-                    ? <BoardView {...{
+                boardId ? L.view(showingBoardId, boardId => !!boardId &&
+                    <BoardView {...{
                         boardId,
                         cursors,
                         assets,
                         state,
                         dispatch: store.dispatch
                         }}/> 
-                    : null
                 ) : <DashboardView {...{ dispatch: store.dispatch }}/>               
             )
         }

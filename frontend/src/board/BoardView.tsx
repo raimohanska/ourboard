@@ -113,7 +113,7 @@ export const BoardView = (
 
   function renderItem(id: string, item: L.Property<Item>) {
     const isLocked = L.combineTemplate({ locks, userId })
-      .pipe(L.map(({ locks, userId }) => locks[id] && locks[id] !== userId ))
+      .pipe(L.map(({ locks, userId }) => !!locks[id] && locks[id] !== userId ))
     return L.view(L.view(item, "type"), t => {
       switch (t) {
         case "container":

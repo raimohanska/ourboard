@@ -86,7 +86,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         style={{ cursor: "pointer" }}
         {...rest }
     >
-        { props.showIcon ? <span className="icon edit" style={{ marginRight: "0.3em", fontSize: "0.8em" }}/> : null }
+        { !!props.showIcon && <span className="icon edit" style={{ marginRight: "0.3em", fontSize: "0.8em" }}/> }
         <span 
             onBlur={endEditing}
             contentEditable={editingThis} 

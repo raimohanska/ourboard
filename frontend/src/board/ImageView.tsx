@@ -37,7 +37,7 @@ export const ImageView = (
     <img 
       src={ L.view(image, i => assets.getAsset(i.assetId, i.src))}
     />
-    { L.view(isLocked, l => l ? <span className="lock">🔒</span> : null )}
-    { L.view(selected, s => s ? <SelectionBorder {...{ id, item: image, coordinateHelper, board, focus, dispatch}}/> : null) }
+    { L.view(isLocked, l => l && <span className="lock">🔒</span>)}
+    { L.view(selected, s => s && <SelectionBorder {...{ id, item: image, coordinateHelper, board, focus, dispatch}}/>)}
   </span>
 };
