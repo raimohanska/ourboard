@@ -55,26 +55,7 @@ export const BoardView = (
   itemDeleteHandler(boardId, dispatch, focus)
 
   L.fromEvent<JSX.KeyboardEvent>(window, "click").pipe(L.applyScope(componentScope())).forEach(event => {
-    // This was previously:
-    // if (!element.get()!.contains(event.target as any)) {}
-    // This does not work properly because if you click on an element to select it,
-    // the target node gets recreated and event.target is no-longer in the child tree of 'element'
-
-    // Bit of a hack, but this is a heuristic that if the event target is a detached node,
-    // it is probably an item that was destroyed and recreated by Harmaja
-    const isStillInDOM = !!(event.target as Node).parentNode
-    // TODO: Let's figure out a better way instead of these hacks
-    const isContextMenu = (() => {
-      let curr: Element | null = event.target as Element
-      while (curr) {
-        if (curr.className.includes("context-menu")) return true
-        curr = curr.parentElement
-      }
-
-      return false
-    })()
-
-    if (isStillInDOM && !isContextMenu && !element.get()!.contains(event.target as Node)) {
+    if (!element.get()!.contains(event.target as Node)) {
       // Click outside => reset selection
       focus.set({ status: "none" })
     }
