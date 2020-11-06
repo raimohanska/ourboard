@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import { Image, Item, Note, UserCursorPosition} from "../../../common/domain";
+import { Image, Item, newNote, Note, UserCursorPosition} from "../../../common/domain";
 import { ItemView } from "./ItemView"
 import { BoardAppState, Dispatch } from "./board-store";
 import { PaletteView } from "./PaletteView";
@@ -63,21 +63,31 @@ export const BoardView = (
     }
   })
 
-  coordinateHelper.currentBoardCoordinates.pipe(L.throttle(30)).forEach(position => {
-    dispatch({ action: "cursor.move", position, boardId })
-  })
-
   function onClick(e: JSX.MouseEvent) {
     if (e.target === element.get()) {
       focus.set({ status: "none" })
     }
   }
 
+  L.fromEvent<JSX.KeyboardEvent>(window, "dblclick").pipe(L.applyScope(componentScope())).forEach(event => {
+    if (event.target === element.get()! || element.get()!.contains(event.target as Node)) {
+      onDoubleClickAddNewNote()
+    }
+  })
 
+  let lastAddedColor = "yellow"
+  function onDoubleClickAddNewNote() {
+    const newItem = newNote(["Crikey", "Blimey", "Gosh darn"][(Math.random() * 3) | 0], lastAddedColor)
+    onAdd(newItem)
+  }
 
   function onAdd(item: Item) {
     const { x, y } = add(coordinateHelper.currentBoardCoordinates.get(), { x: -item.width / 2, y: -item.height / 2 })
     item = withCurrentContainer({ ...item, x, y }, board.get())
+
+    if (item.type === "note") {
+      lastAddedColor = item.color
+    }
 
     dispatch({ action: "item.add", boardId, items: [item] })
     
@@ -87,6 +97,10 @@ export const BoardView = (
       focus.set({ status: "selected", ids: new Set([item.id]) })
     }
   }
+
+  coordinateHelper.currentBoardCoordinates.pipe(L.throttle(30)).forEach(position => {
+    dispatch({ action: "cursor.move", position, boardId })
+  })
 
   return (
     <div className="board-container">      
