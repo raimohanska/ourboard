@@ -1,4 +1,4 @@
-import { AppEvent, Board, BoardItemEvent, defaultBoardSize, exampleBoard, Id, Item } from "../../common/domain"
+import { Board, BoardItemEvent, Container, defaultBoardSize, exampleBoard, Id, Item } from "../../common/domain"
 import { boardReducer } from "../../common/state"
 import { withDBClient } from "./db"
 import * as L from "lonna"
@@ -26,23 +26,35 @@ export async function getBoard(id: Id): Promise<Board> {
     return board
 }
 
-function migrateBoard(board: Board) {
+export function migrateBoard(board: Board) {
     const items: Item[] = []
     for (const item of board.items) {
         if (items.find(i => i.id === item.id)) {
             console.warn("Duplicate item", item, "found on table", board.name)
         } else {
-            items.push(migrateItem(item))
+            items.push(migrateItem(item, items, board.items))
         }
     }
     return { ...defaultBoardSize, ...board, items }
     
-    function migrateItem(item: Item): Item {
+    function migrateItem(item: Item, migratedItems: Item[], boardItems: Item[]): Item {
         const { width, height, type, ...rest } = item
 
+        // Force type, width and height for all items
         let fixedItem = { type: type || "note", width: width || 5, height: height || 5, ...rest } as Item
         if (fixedItem.type === "container") {
-            fixedItem.text = fixedItem.text || ""
+            let container = fixedItem as Container & { items?: string[]}
+            // Force container to have text
+            container.text = container.text || ""
+            // If container had items property, migrate each corresponding item to have containerId of that container instead
+            if (container.items) {
+                const ids = container.items
+                delete container.items
+                ids.forEach(i => {
+                    const containedItem = migratedItems.find(mi => mi.id === i) || boardItems.find(bi => bi.id === i)
+                    containedItem && containedItem.type !== "container" && (containedItem.containerId = container.id)
+                })
+            }
         }
 
         return fixedItem

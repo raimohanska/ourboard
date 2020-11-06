@@ -39,23 +39,23 @@ export const ITEM_TYPES = {
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
 
-export type Note = { id: string; type: typeof ITEM_TYPES.NOTE; text: string; color: Color } & ItemBounds;
-export type Text = { id: string; type: typeof ITEM_TYPES.TEXT; text: string } & ItemBounds;
-export type Image = { id: string; type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string } & ItemBounds;
-export type Container = { id: string; type: typeof ITEM_TYPES.CONTAINER; text: string; items: Id[] } & ItemBounds;
+export type Note = { id: string; type: typeof ITEM_TYPES.NOTE; text: string; color: Color, containerId?: string } & ItemBounds;
+export type Text = { id: string; type: typeof ITEM_TYPES.TEXT; text: string, containerId?: string } & ItemBounds;
+export type Image = { id: string; type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string, containerId?: string } & ItemBounds;
+export type Container = { id: string; type: typeof ITEM_TYPES.CONTAINER; text: string; } & ItemBounds;
+export type Containee = Note | Text | Image
 
 export type TextItem = Note | Text | Container
 export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id> 
 
 export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks | Undo | Redo;
-export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront | SetItemContainer
+export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront
 export type BoardItemEvent = PersistableBoardItemEvent | LockItem | UnlockItem
 export type AddItem = { action: "item.add", boardId: Id, items: Item[] };
 export type UpdateItem = { action: "item.update", boardId: Id, items: Item[] };
 export type MoveItem = { action: "item.move", boardId: Id, items: {id: Id, x: number, y: number}[] };
 export type BringItemToFront = { action: "item.front", boardId: Id, itemIds: Id[] };
-export type SetItemContainer = { action: "item.setcontainer", boardId: Id, itemIds: Id[], containerId: Id | null }
 export type DeleteItem = { action: "item.delete", boardId: Id, itemIds: Id[] };
 export type LockItem = { action: "item.lock", boardId: Id, itemId: Id }
 export type UnlockItem = { action: "item.unlock", boardId: Id, itemId: Id }
@@ -103,7 +103,7 @@ export function newText(text: string, x: number = 20, y: number = 20, width: num
 }
 
 export function newContainer(x: number = 20, y: number = 20, width: number = 30, height: number = 20): Container {
-    return { id: uuid.v4(), type: "container", text: "Unnamed area", items: [], x, y, width, height }    
+    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height }    
 }
 
 export function newImage(assetId: string, x: number = 20, y: number = 20, width: number = 5, height: number = 5): Image {

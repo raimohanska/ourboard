@@ -47,14 +47,12 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
           }
           idsToDelete.add(id)
           if (item.type === "container") {
-            item.items.forEach(child => idsToDelete.add(child))
+            board.items.forEach(i => i.type !== "container" && i.containerId === item.id && idsToDelete.add(i.id))
           }          
         }        
         return [{
           ...board,
-          items: board.items
-            .filter(i => !idsToDelete.has(i.id))
-            .map(i => i.type === "container" ? { ...i, items: i.items.filter(child => !idsToDelete.has(child)) } : i)
+          items: board.items.filter(i => !idsToDelete.has(i.id))
         }, {
           action: "item.add",
           boardId: board.id,
@@ -74,19 +72,6 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
           ...board,
           items: sortItems(board.items.filter((p) => !event.itemIds.includes(p.id)).concat(items))
         }, null] // TODO: return item.back
-      case "item.setcontainer":
-        return [{
-          ...board,
-          items: board.items.map(i => {
-            if (i.type !== "container") return i
-            return {
-              ...i,
-              items: event.containerId === i.id
-                ? i.items.concat(event.itemIds.filter(id => !i.items.includes(id)))
-                : i.items.filter(i => !event.itemIds.includes(i))
-            }
-          })
-        }, null] // TODO: set back original containers for each item. Currently setContainer only support assigning to a single container so reverting to many is not possible yet
       case "item.lock":
       case "item.unlock":
         return [board, null];
@@ -110,7 +95,9 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
     }
     const xDiff = x - item.x
     const yDiff = y - item.y
-    const movedItems = new Set(item.type === "container" ? item.items.concat(id) : [id])
+
+    const containedBy = (i: Item) => i.type !== "container" && i.containerId === item.id
+    const movedItems = new Set(item.type === "container" ? items.filter(containedBy).map(i => i.id).concat(id) : [id])
 
     return items.map((i) => movedItems.has(i.id) ? { ...i, x: i.x + xDiff, y: i.y + yDiff } : i)
   }
