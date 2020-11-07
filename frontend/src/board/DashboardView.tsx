@@ -81,7 +81,7 @@ export const DashboardView = ({ dispatch }: {dispatch: Dispatch }) => {
             </option>
         )}
       </select>
-      <input data-test="create-board-submit"type="submit" disabled={ disabled }>Create</input>
+      <input data-test="create-board-submit"type="submit" value="Create" disabled={ disabled } />
     </form>
     <p>
       Or try the <a href={`/b/${exampleBoard.id}`}>Example Board</a>!
