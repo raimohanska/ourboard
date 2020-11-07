@@ -108,7 +108,7 @@ export const BoardView = (
         <span data-test="board-name" id="board-name">{L.view(board, "name")}</span>
         <button className="mini" onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
         <button className="mini" onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
-        <PaletteView {...{ onAdd }}/>
+        <PaletteView {...{ onAdd, board }}/>
       </div>
       <div className="scroll-container">
         <div className="border-container" style={style}>

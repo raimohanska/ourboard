@@ -14,6 +14,12 @@ export type Board = BoardInfo & {
     items: Item[]
 }
 
+export type BoardStub = Pick<Board, "id" | "name">
+
+export function boardIsStub(b: Board | BoardStub): b is BoardStub {
+    return "id" in b && "name" in b && Object.keys(b).length === 2
+}
+
 export const defaultBoardSize = { width: 100, height: 80 }
 
 export interface CursorPosition {
@@ -60,7 +66,7 @@ export type DeleteItem = { action: "item.delete", boardId: Id, itemIds: Id[] };
 export type LockItem = { action: "item.lock", boardId: Id, itemId: Id }
 export type UnlockItem = { action: "item.unlock", boardId: Id, itemId: Id }
 export type GotBoardLocks = { action: "board.locks", boardId: Id, locks: ItemLocks }
-export type AddBoard = { action: "board.add", boardId: Id, name: string }
+export type AddBoard = { action: "board.add", payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join", boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessionInfo
 export type JoinedBoard = { action: "board.joined", boardId: Id } & UserSessionInfo

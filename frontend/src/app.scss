@@ -23,6 +23,26 @@ html {
     color: $black;
 }
 
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    .templates {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+}
+
+li.create-template {
+    > button {
+        padding: 0.1em;
+    }
+    margin-bottom: 0.2em;
+    font-size: 0.8em;
+}
+
 h2 {
     font-size: 1.3em;
 }
@@ -199,6 +219,22 @@ a {
                 display: inline-block;
                 border: 0.1em solid white;
                 box-sizing: content-box;
+            }
+
+            .button {
+                @extend .item;
+                background: white;
+                color: $black;
+                font-size: .8em;
+                line-height: 1em;
+                display: inline-block;
+                border: 0.1em solid white;
+                box-sizing: content-box;
+
+                &:disabled {
+                    background: lightgray;
+                    color: gray;
+                }
             }
         }
     }

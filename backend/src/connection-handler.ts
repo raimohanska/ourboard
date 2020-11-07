@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize } from "../../common/domain"
+import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize, boardIsStub } from "../../common/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
 import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions, broadcastItemLocks, setNicknameForSession } from "./sessions"
 import { getSignedPutUrl } from "./storage"
@@ -65,7 +65,8 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
                 addSessionToBoard(board, socket)
                 return;
             case "board.add": {
-                const board = { ...defaultBoardSize, id: appEvent.boardId, name: appEvent.name, items: [] }
+                const { payload } = appEvent
+                const board = boardIsStub(payload) ? { ...defaultBoardSize, ...payload, items: [] } : payload
                 await addBoard(board)
                 addSessionToBoard(board, socket)
                 return
