@@ -1,26 +1,28 @@
 import { h } from "harmaja";
 import * as L from "lonna";
-import { item } from "lonna";
 import * as uuid from "uuid";
-import { exampleBoard, Board, Item, Containee } from "../../../common/domain";
+import { exampleBoard, Board, Item, Containee, BoardStub, isFullyFormedBoard } from "../../../common/domain";
 import { TextInput } from "../components/components";
 import { Dispatch } from "./board-store";
 
 export const DashboardView = ({ dispatch }: {dispatch: Dispatch }) => {
   const boardName = L.atom("")
   const disabled = L.view(boardName, n => !n)
-  function createBoard(e: JSX.MouseEvent) {
-    dispatch({ action: "board.add", payload: { id: uuid.v4(), name: boardName.get() } })
-    e.preventDefault()
-  }
-  function createBoardFromTemplate(t: Board) {
-    return (e: JSX.MouseEvent) => {
+
+  function createBoard(e: JSX.FormEvent) {
       e.preventDefault();
-      const newBoard = generateFromTemplate(t)
+      const templateName = chosenTemplate.get()
+      const template = allTemplates[templateName]
+      if (!template) {
+        throw Error("Template" + templateName + "not found??")
+      }
+      const newBoard = generateFromTemplate(template)
       dispatch({ action: "board.add", payload: newBoard })
-    }
   }
-  function generateFromTemplate(t: Board): Board {
+  function generateFromTemplate(t: Board | BoardStub): Board | BoardStub {
+    if (!isFullyFormedBoard(t)) {
+      return { name: boardName.get() || t.name, id: uuid.v4() }
+    }
     const itemMapper = new Map<string,string>()
     t.items.forEach(i => {
       itemMapper.set(i.id, uuid.v4())
@@ -48,22 +50,39 @@ export const DashboardView = ({ dispatch }: {dispatch: Dispatch }) => {
   }
 
   const maybeTemplates = localStorage.getItem("rboard_templates")
-  const templates = maybeTemplates ? JSON.parse(maybeTemplates) as Record<string,Board> : {}
+  const defaultTemplates = { "Empty board": { id: "default", name: "Empty board" } }
+  const userTemplates = (() => {
+    if (!maybeTemplates) return {};
+    
+    try {
+      return JSON.parse(maybeTemplates) as Record<string,Board>
+    } catch(e) {
+      return {}
+    }
+  })()
+
+  const allTemplates: Record<string, Board | BoardStub> = { ...defaultTemplates, ...userTemplates }
+
+  const templateOptions = Object.keys(defaultTemplates).concat(Object.keys(userTemplates))
+
+  const chosenTemplate = L.atom<string>(defaultTemplates["Empty board"].name)
+
+  chosenTemplate.forEach(console.log)
+
   return <div className="dashboard">
-    <form className="create-board">
+    <form onSubmit={createBoard} className="create-board">
       <h2>Create a board</h2>
       <TextInput value={boardName} placeholder="Enter board name" />
-      <button onClick={createBoard} disabled={ disabled }>Create</button>
+      <small><label htmlFor="template-select">Use template</label></small>
+      <select onChange={e => chosenTemplate.set(e.target.value)} name="templates" id="template-select">
+        {templateOptions.map(name => 
+            <option value={name}>
+              {name}
+            </option>
+        )}
+      </select>
+      <input data-test="create-board-submit"type="submit" disabled={ disabled }>Create</input>
     </form>
-    <ul className="templates">
-      {/* TODO be less lazy and make a dropdown */ Object.entries(templates).map(([name, tmpl]) => 
-        <li className="create-template">
-          <button onClick={createBoardFromTemplate(tmpl)}>
-            Create new from saved template '{name}'
-          </button>
-        </li>
-      )}
-    </ul>
     <p>
       Or try the <a href={`/b/${exampleBoard.id}`}>Example Board</a>!
     </p>

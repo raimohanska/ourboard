@@ -16,8 +16,8 @@ export type Board = BoardInfo & {
 
 export type BoardStub = Pick<Board, "id" | "name">
 
-export function boardIsStub(b: Board | BoardStub): b is BoardStub {
-    return "id" in b && "name" in b && Object.keys(b).length === 2
+export function isFullyFormedBoard(b: Board | BoardStub): b is Board {
+    return !!b.id && !!b.name && ["width", "height", "items"].every(prop => prop in b)
 }
 
 export const defaultBoardSize = { width: 100, height: 80 }

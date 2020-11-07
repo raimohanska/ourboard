@@ -36,7 +36,7 @@ describe("Initial screen", () => {
     it('Creating new board works', () => {
         cy.visit("http://localhost:1337")
         cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
-        cy.get("button").contains("Create").click()
+        cy.get('[data-test="create-board-submit"]').click()
         
         cy.url().should("contain", "http://localhost:1337/b/")
         cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
@@ -107,7 +107,7 @@ describe("Board functionality", () => {
         cy.viewport("macbook-15")
         cy.visit("http://localhost:1337")
         cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
-        cy.get("button").contains("Create").click()
+        cy.get('[data-test="create-board-submit"]').click()
         
         cy.url().should("contain", "http://localhost:1337/b/")
         

@@ -101,6 +101,14 @@ button {
     }
 }
 
+input[type="submit"] {
+    @extend button;
+    &[disabled] {
+        background-color: lightgrey;
+        color: grey;
+    }
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -441,6 +449,9 @@ a {
 .dashboard {
     padding-left: $left-padding;
     .create-board {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
         * {
              margin-right: 1em;
              margin-bottom: 1em;
@@ -471,4 +482,23 @@ a {
 [contenteditable] {
     -webkit-user-select: text;
     user-select: text;
+}
+
+select {
+    border: 0;
+    width: 95.3%; // i'm so bad at css
+    border-bottom: 1px solid black;
+    font: 0.7em $font-family;
+
+    &:focus{
+        outline: 0;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .dashboard {
+        .create-board {
+            width: 100%;
+        }
+    }
 }
