@@ -37,7 +37,9 @@
     "build:backend": "cd backend && yarn build",
     "tsc": "tsc",
     "clean:db": "docker-compose exec db psql -d r-board -U r-board -c 'TRUNCATE board;'",
-    "test-unit": "jest",
+    "test-unit": "npm-run-all --parallel test-unit-fe test-unit-common",
+    "test-unit-fe": "TEST_TARGET=frontend jest",
+    "test-unit-common": "TEST_TARGET=common jest",
     "test-e2e:dev": "cypress run --headed || true && yarn clean:db",
     "cypress": "cypress open"
   }

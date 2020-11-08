@@ -3,12 +3,16 @@ import io from 'socket.io-client';
 import { AppEvent } from "../../../common/src/domain";
 import { canFoldActions } from "./action-folding"
 
-const noop = () => {}
 type QueueState = {
     queue: AppEvent[],
     sent: AppEvent[]
 }
-export default function(socket: typeof io.Socket) {
+
+type Sender = {
+    send: (...args: any[]) => any
+}
+
+export default function(socket: Sender) {
     let state = L.atom<QueueState>({
         queue: [],
         sent: []
@@ -17,7 +21,6 @@ export default function(socket: typeof io.Socket) {
     function sendIfPossible() {
         state.modify(s => {
             if (s.sent.length > 0 || s.queue.length === 0) return s
-            //console.log("Send", s.queue.length)
             socket.send("app-events", s.queue, ack)    
             return {
                 queue: [],
