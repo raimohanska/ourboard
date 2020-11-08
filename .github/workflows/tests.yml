@@ -1,7 +1,7 @@
-name: e2e-cypress
+name: tests
 on: [push]
 jobs:
-  e2e:
+  test:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -26,8 +26,15 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Install dependencies
+      uses: cypress-io/github-action@v2
+      with:
+        runTests: false
+    - name: Run unit tests
+      run: jest
     - name: Run cypress tests
       uses: cypress-io/github-action@v2
       with:
+        install: false
         start: yarn start:dev:no-db
         wait-on: 'http://localhost:1337'
