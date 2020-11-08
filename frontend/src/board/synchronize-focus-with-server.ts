@@ -1,6 +1,6 @@
 
 import * as L from "lonna"
-import { Board, Id, ItemLocks } from "../../../common/domain";
+import { Board, Id, ItemLocks } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
   
 /*

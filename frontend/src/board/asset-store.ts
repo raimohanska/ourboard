@@ -1,5 +1,5 @@
 import * as L from "lonna";
-import { AppEvent, AssetPutUrlResponse } from "../../../common/domain";
+import { AppEvent, AssetPutUrlResponse } from "../../../common/src/domain";
 import { BoardStore } from "./board-store";
 import md5 from "md5"
 

@@ -7,7 +7,7 @@ import { BoardAppState, boardStore } from "./board/board-store";
 import { BoardView } from "./board/BoardView";
 import { Header } from "./components/Header";
 import { syncStatusStore } from "./sync-status/sync-status-store";
-import { Board, exampleBoard } from "../../common/domain";
+import { Board, exampleBoard } from "../../common/src/domain";
 import { DashboardView } from "./board/DashboardView"
 import { assetStore } from "./board/asset-store";
 

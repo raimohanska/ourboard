@@ -1,6 +1,6 @@
 import { h } from "harmaja"
 import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
-import {Board, Id, Item, Container } from "../../../common/domain"
+import {Board, Id, Item, Container } from "../../../common/src/domain"
 import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { BoardFocus } from "./synchronize-focus-with-server"

@@ -1,5 +1,5 @@
 import * as L from "lonna";
-import { Board, Item } from "../../../common/domain";
+import { Board, Item } from "../../../common/src/domain";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus } from "./synchronize-focus-with-server"
 

@@ -1,4 +1,4 @@
-import { AppEvent, MoveItem, UpdateItem } from "../../../common/domain"
+import { AppEvent, MoveItem, UpdateItem } from "../../../common/src/domain"
 
 export function canFoldActions(a: AppEvent, b: AppEvent) {
     if (a.action === "cursor.move") {

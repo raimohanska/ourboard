@@ -1,6 +1,6 @@
 import * as L from "lonna";
 import io from 'socket.io-client';
-import { AppEvent } from "../../../common/domain";
+import { AppEvent } from "../../../common/src/domain";
 import { canFoldActions } from "./action-folding"
 
 const noop = () => {}

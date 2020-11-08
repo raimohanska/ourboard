@@ -1,6 +1,6 @@
 import { componentScope } from "harmaja";
 import * as L from "lonna";
-import { Id } from "../../../common/domain";
+import { Id } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
 import { BoardFocus } from "./synchronize-focus-with-server";
 

@@ -1,7 +1,7 @@
 import { h } from "harmaja";
 import * as L from "lonna";
-import * as uuid from "uuid";
-import { exampleBoard, Board, Item, Containee, BoardStub, isFullyFormedBoard } from "../../../common/domain";
+import { exampleBoard } from "../../../common/src/domain";
+import { generateFromTemplate, getUserTemplates } from "./templates"
 import { TextInput } from "../components/components";
 import { Dispatch } from "./board-store";
 
@@ -12,62 +12,17 @@ export const DashboardView = ({ dispatch }: {dispatch: Dispatch }) => {
   function createBoard(e: JSX.FormEvent) {
       e.preventDefault();
       const templateName = chosenTemplate.get()
-      const template = allTemplates[templateName]
+      const template = templates[templateName]
       if (!template) {
         throw Error("Template" + templateName + "not found??")
       }
-      const newBoard = generateFromTemplate(template)
+      const newBoard = generateFromTemplate(boardName.get(), template)
       dispatch({ action: "board.add", payload: newBoard })
   }
-  function generateFromTemplate(t: Board | BoardStub): Board | BoardStub {
-    if (!isFullyFormedBoard(t)) {
-      return { name: boardName.get() || t.name, id: uuid.v4() }
-    }
-    const itemMapper = new Map<string,string>()
-    t.items.forEach(i => {
-      itemMapper.set(i.id, uuid.v4())
-    })
-  
-    function newId(i: Item) {
-      const newItem = {
-        ...i,
-        id: itemMapper.get(i.id)!
-      }
-  
-      if (i.type !== "container" && i.containerId) {
-        (newItem as Containee).containerId = itemMapper.get(i.containerId)!
-      }
-  
-      return newItem
-    }
-  
-    return {
-      ...t,
-      id: uuid.v4(),
-      name: boardName.get() || ("Board from template " + t.name), // todo better UX, no-one will intuitively realize these buttons use the same input field
-      items: t.items.map(newId)
-    }
-  }
 
-  const maybeTemplates = localStorage.getItem("rboard_templates")
-  const defaultTemplates = { "Empty board": { id: "default", name: "Empty board" } }
-  const userTemplates = (() => {
-    if (!maybeTemplates) return {};
-    
-    try {
-      return JSON.parse(maybeTemplates) as Record<string,Board>
-    } catch(e) {
-      return {}
-    }
-  })()
+  const { templates, templateOptions, defaultTemplate } = getUserTemplates();
 
-  const allTemplates: Record<string, Board | BoardStub> = { ...defaultTemplates, ...userTemplates }
-
-  const templateOptions = Object.keys(defaultTemplates).concat(Object.keys(userTemplates))
-
-  const chosenTemplate = L.atom<string>(defaultTemplates["Empty board"].name)
-
-  chosenTemplate.forEach(console.log)
+  const chosenTemplate = L.atom<string>(defaultTemplate.name)
 
   return <div className="dashboard">
     <form onSubmit={createBoard} className="create-board">

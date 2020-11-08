@@ -1,7 +1,7 @@
 import { h, ListView } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import {UserCursorPosition, UserSessionInfo} from "../../../common/domain";
+import {UserCursorPosition, UserSessionInfo} from "../../../common/src/domain";
 
 export const CursorsView = (
     { sessions, cursors, coordinateHelper }: 

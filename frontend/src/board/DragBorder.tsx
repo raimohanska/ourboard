@@ -1,7 +1,7 @@
 import { h, Fragment } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Item } from "../../../common/domain";
+import { Board, Item } from "../../../common/src/domain";
 import { BoardFocus } from "./synchronize-focus-with-server"
 import { itemDragToMove } from "./item-dragmove"
 import { Dispatch } from "./board-store";

@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { Board, ItemLocks, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE, SetNickname } from "../../common/domain"
+import { Board, ItemLocks, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE, SetNickname } from "../../common/src/domain"
 import { randomProfession } from "./professions"
 
 type UserSession = {

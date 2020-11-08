@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import { Image, Item, newNote, Note, UserCursorPosition} from "../../../common/domain";
+import { Image, Item, newNote, Note, UserCursorPosition} from "../../../common/src/domain";
 import { ItemView } from "./ItemView"
 import { BoardAppState, Dispatch } from "./board-store";
 import { PaletteView } from "./PaletteView";

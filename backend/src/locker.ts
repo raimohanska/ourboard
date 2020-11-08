@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { ItemLocks, exampleBoard, Id, BoardItemEvent, isPersistableBoardItemEvent } from "../../common/domain"
+import { ItemLocks, exampleBoard, Id, BoardItemEvent, isPersistableBoardItemEvent } from "../../common/src/domain"
 import { broadcastItemLocks } from "./sessions"
 
 const locks: Record<Id, ItemLocks> = {

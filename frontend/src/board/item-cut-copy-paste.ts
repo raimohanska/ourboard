@@ -1,7 +1,7 @@
 import * as uuid from "uuid"
 import * as L from "lonna";
 import _ from "lodash";
-import { Board, Container, Containee, Id, Item } from "../../../common/domain";
+import { Board, Container, Containee, Id, Item } from "../../../common/src/domain";
 import { BoardFocus } from "./synchronize-focus-with-server"
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { Dispatch } from "./board-store";

@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize, isFullyFormedBoard } from "../../common/domain"
+import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize, isFullyFormedBoard } from "../../common/src/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
 import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions, broadcastItemLocks, setNicknameForSession } from "./sessions"
 import { getSignedPutUrl } from "./storage"

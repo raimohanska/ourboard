@@ -1,6 +1,6 @@
 import {h} from "harmaja"
 import * as L from "lonna"
-import {Board, Color, Id, Item} from "../../../common/domain"
+import {Board, Color, Id, Item} from "../../../common/src/domain"
 import { Dispatch } from "./board-store"
 import { NOTE_COLORS } from "./PaletteView"
 

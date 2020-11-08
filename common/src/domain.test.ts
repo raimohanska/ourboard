@@ -1,7 +1,6 @@
-import { Board, defaultBoardSize, Item, Note } from "../../common/domain"
-import { migrateBoard } from "./board-store"
+import { migrateBoard, defaultBoardSize } from "./domain"
 
-describe("board-store", () => {
+describe("Domain", () => {
     describe("Migrate board", () => {
         it("Migrates boards correctly", () => {
             const containedNoteWithNoType = { id: "a", x: 1, y: 1, width: 1, height: 1, text: "note a", color: "yellow" }

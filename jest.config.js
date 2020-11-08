@@ -1,6 +1,6 @@
 
 
-const which = process.env.TEST_TARGET || "backend"
+const which = process.env.TEST_TARGET || "common"
 
 module.exports = {
     "roots": [

@@ -1,4 +1,4 @@
-import { Board, Container, Item } from "../../../common/domain";
+import { Board, Container, Item } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
 import { containedBy } from "./geometry";
 

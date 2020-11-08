@@ -1,6 +1,6 @@
 import { h } from "harmaja";
 import * as L from "lonna";
-import { Board, Id } from "../../../common/domain";
+import { Board, Id } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
 import { BoardFocus } from "./synchronize-focus-with-server"
 

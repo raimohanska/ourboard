@@ -1,4 +1,4 @@
-import { Item, newImage } from "../../../common/domain"
+import { Item, newImage } from "../../../common/src/domain"
 import { AssetStore, AssetURL } from "./asset-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./synchronize-focus-with-server"

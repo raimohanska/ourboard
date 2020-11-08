@@ -1,6 +1,6 @@
 import { h } from "harmaja";
 import * as L from "lonna";
-import { Board, Color, Item, newContainer, newNote, newText, Note } from "../../../common/domain";
+import { Board, Color, Item, newContainer, newNote, newText, Note } from "../../../common/src/domain";
 
 export const NOTE_COLORS = ["yellow", "pink", "cyan", "#673ab7", "black", "lightgreen", "#f0350b"]
 
