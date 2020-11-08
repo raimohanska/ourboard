@@ -31,7 +31,7 @@ jobs:
       with:
         runTests: false
     - name: Run unit tests
-      run: jest
+      run: yarn test-unit
     - name: Run cypress tests
       uses: cypress-io/github-action@v2
       with:
