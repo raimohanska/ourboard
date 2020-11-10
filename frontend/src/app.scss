@@ -144,6 +144,36 @@ body {
                 font-size: 0.8em;
                 margin-left: 0.3em;
             }
+            > .icon.menu {
+                background-image: url('img/dots.svg');
+                margin-left: 0.3em;
+                margin-top: 0.3em;
+                font-size: 0.7em;
+                position: relative;
+                cursor: pointer;
+
+                >.menu {
+                    position: absolute;
+                    left: 1.5em;
+                    width: 20em;
+                    background: #eeeeeeee;
+                    color: $black;
+                    padding: 0.5em;
+                    li {
+                        padding: 0.2em 0.5em;
+                        cursor: pointer;
+                        &:hover:not(.disabled) {
+                            background: #666666;
+                            color: white;
+                        }
+                        &.disabled {
+                            pointer-events: none;
+                            color: #aaaaaa;
+                            cursor: auto;
+                        }
+                    }
+                }
+            }
         }
 
         .sync-status {
