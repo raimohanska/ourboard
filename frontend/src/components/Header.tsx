@@ -29,8 +29,7 @@ export const Header = ({ syncStatus, state, dispatch }: { syncStatus: L.Property
             <BoardMenu state={state} dispatch={dispatch}/>
             
         </h1> 
-                    
-        <EditableSpan showIcon={true} className="nickname" {...{ value: nicknameAtom, editingThis}}/>
+        { L.view(nicknameAtom, n => !!n, n => n && <EditableSpan showIcon={true} className="nickname" {...{ value: nicknameAtom, editingThis}}/>) }        
         <span className={ L.view(syncStatus, s => "sync-status " + s) }/>
     </header>
 }
