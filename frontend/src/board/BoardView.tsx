@@ -14,7 +14,7 @@ import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { add } from "./geometry";
 import { withCurrentContainer } from "./item-setcontainer";
-import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
+import { BoardFocus, synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 import { itemDeleteHandler } from "./item-delete"
 import { itemUndoHandler } from "./item-undo-redo"
 
@@ -69,17 +69,23 @@ export const BoardView = (
     }
   }
 
+  function getSelectedElement(f: BoardFocus): Item | null {
+    if (f.status !== "selected" || f.ids.size !== 1) return null
+    return board.get().items.find(i => i.id === [...f.ids][0]) || null
+  }
+
   L.fromEvent<JSX.KeyboardEvent>(window, "dblclick").pipe(L.applyScope(componentScope())).forEach(event => {
     if (event.target === element.get()! || element.get()!.contains(event.target as Node)) {
-      onDoubleClickAddNewNote()
+      const f = focus.get()
+      const selectedElement = getSelectedElement(focus.get())
+      if (f.status === "none" || (selectedElement && selectedElement.type === "container")) {
+        const newItem = newNote("HELLO", lastAddedColor)
+        onAdd(newItem)
+      }
     }
   })
 
   let lastAddedColor = "yellow"
-  function onDoubleClickAddNewNote() {
-    const newItem = newNote(["Crikey", "Blimey", "Gosh darn"][(Math.random() * 3) | 0], lastAddedColor)
-    onAdd(newItem)
-  }
 
   function onAdd(item: Item) {
     const { x, y } = add(coordinateHelper.currentBoardCoordinates.get(), { x: -item.width / 2, y: -item.height / 2 })
