@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize, isFullyFormedBoard } from "../../common/src/domain"
+import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize, isFullyFormedBoard, newNote } from "../../common/src/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
 import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions, broadcastItemLocks, setNicknameForSession } from "./sessions"
 import { getSignedPutUrl } from "./storage"
@@ -63,6 +63,10 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
             case "board.join": 
                 const board = await getBoard(appEvent.boardId)
                 addSessionToBoard(board, socket)
+                let counter = new Date().getTime()
+                setInterval(() => {
+                    broadcastListEvent({ "action": "item.add", boardId: appEvent.boardId, items: [newNote("servers " + (counter ++))] }, undefined)
+                }, 10000)
                 return;
             case "board.add": {
                 const { payload } = appEvent
