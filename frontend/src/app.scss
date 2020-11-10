@@ -176,20 +176,15 @@ body {
             }
         }
 
-        .sync-status {
-            .symbol {
-                margin-left: 0.5em;
-                transition: all 0.5s;
-                cursor: pointer;
-                font-size: 2.5em
-            }
-            &.up-to-date .symbol {
-                color: #4aea4a;
-                font-size: 1em;
-            }
-            &.offline .symbol, &.sync-pending .symbol {
-                @extend .textshadow;
-                color: #ed4444;
+        .sync-status {   
+            display: inline-block;
+            height: 16px;
+            width: 16px;
+            margin: auto 0.3em;
+            background-image: url('img/ajax-loader.gif');         
+            transition: opacity 0.5s;
+            &.up-to-date {
+                opacity: 0;
             }
         }      
     }    
