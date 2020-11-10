@@ -6,7 +6,7 @@ $font-family: Roboto, sans-serif;
 $font-family-note: Montserrat, sans-serif;
 $link-color: #35b2dc;
 $heading-color: $link-color;
-$heading-height: 2.5em;
+$heading-height: 1.8em;
 
 * {
     box-sizing: border-box;
@@ -132,8 +132,7 @@ body {
         }
         h1 {
             flex-grow: 1;
-            margin: 0.3em 0;
-            font-size: 1.4em;
+            font-size: 1em;
             margin-bottom: 0.4em;
             a {
                 color: white;

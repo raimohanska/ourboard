@@ -1,4 +1,4 @@
-import { h } from "harmaja";
+import { h, Fragment } from "harmaja";
 import * as L from "lonna";
 import { BoardAppState, Dispatch } from "../board/board-store";
 import { SyncStatus } from "../sync-status/sync-status-store";
@@ -25,9 +25,15 @@ export const Header = ({ syncStatus, state, dispatch }: { syncStatus: L.Property
     return <header>
         <h1 id="app-title" data-test="app-title">
             <a href="/">R-Board</a>
-            <a className="github" href="https://github.com/raimohanska/r-board"/>
+            {
+                L.view(state, s => !!s.board, b => b && <>
+                    <span> &gt; </span>
+                    <span data-test="board-name" id="board-name">{L.view(state, s => s.board?.name)}</span>
+                </>)
+            }
+            
         </h1> 
-        
+                    
         <EditableSpan showIcon={true} className="nickname" {...{ value: nicknameAtom, editingThis}}/>
         <span className={ L.view(syncStatus, s => "sync-status " + s) }>
             <span title={ L.view(syncStatus, showStatus) } className="symbol">⬤</span>
