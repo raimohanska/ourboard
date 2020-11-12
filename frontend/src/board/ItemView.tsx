@@ -2,7 +2,7 @@ import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Board, Note, Item, Text, ItemType, TextItem } from "../../../common/src/domain";
-import { EditableSpan } from "../components/components"
+import { EditableSpan } from "../components/EditableSpan"
 import { BoardFocus } from "./synchronize-focus-with-server"
 import { SelectionBorder } from "./SelectionBorder"
 import { DragBorder } from "./DragBorder"

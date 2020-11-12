@@ -2,7 +2,7 @@ import { h, Fragment } from "harmaja";
 import * as L from "lonna";
 import { BoardAppState, Dispatch } from "../board/board-store";
 import { SyncStatus } from "../sync-status/sync-status-store";
-import { EditableSpan } from "./components";
+import { EditableSpan } from "./EditableSpan";
 import { SaveAsTemplate } from "../board/SaveAsTemplate";
 
 export const Header = ({ syncStatus, state, dispatch }: { syncStatus: L.Property<SyncStatus>, state: L.Property<BoardAppState>, dispatch: Dispatch }) => {
