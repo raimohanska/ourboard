@@ -12,7 +12,7 @@ export type EditableSpanProps = {
 
 export const EditableSpan = ( props : EditableSpanProps) => {
     let { value, editingThis, commit, cancel, ...rest } = props
-    const nameElement = L.atom<HTMLSpanElement | null>(null)
+    let nameElement: HTMLSpanElement | null = null
     let settingLocally = false
     const onClick = (e: JSX.MouseEvent) => {
         if (e.shiftKey) return
@@ -22,7 +22,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
     }  
     editingThis.pipe(L.changes, L.filter(e => !!e), L.applyScope(componentScope())).forEach(() =>  { 
         setTimeout(() => {
-            nameElement.get()!.focus() 
+            nameElement!.focus() 
             document.execCommand('selectAll',false)    
         }, 1)
     })
@@ -38,7 +38,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         } else if (e.keyCode === 27) { // esc           
            cancel && cancel()
            editingThis.set(false)
-           nameElement.get()!.textContent = value.get()
+           nameElement!.textContent = value.get()
         }
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
@@ -49,7 +49,16 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         settingLocally = true        
         value.set(e.currentTarget!.textContent || "")
         settingLocally = false
-    }    
+    }   
+    const scope = componentScope()
+    const ref = (el: HTMLElement) => {
+        nameElement = el        
+        value.pipe(L.applyScope(scope)).forEach(v => {
+            if (!settingLocally) {
+                el.textContent = v
+            }
+        })
+    } 
 
     return <span 
         onClick={onClick} 
@@ -60,13 +69,13 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         <span 
             onBlur={endEditing}
             contentEditable={editingThis} 
-            ref={ nameElement.set } 
+            ref={ ref } 
             onKeyPress={onKeyPress}
             onKeyUp={onKeyPress}
             onKeyDown={onKey}
             onInput={onInput}
         >
-            {props.value.pipe(L.filter(() => !settingLocally, componentScope()))}
+            
         </span>
     </span>
 }
