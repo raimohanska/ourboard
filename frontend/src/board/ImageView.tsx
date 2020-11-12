@@ -31,6 +31,7 @@ export const ImageView = (
       left: p.x + "em",
       height: p.height + "em",
       width: p.width + "em",
+      zIndex: p.z,
       position: "absolute"
     })))}
   >

@@ -35,7 +35,7 @@ export type BoardCursorPositions = Record<Id, UserCursorPosition>;
 
 export type Color = string;
 
-export type ItemBounds = { x: number; y: number, width: number, height: number }
+export type ItemBounds = { x: number; y: number, width: number, height: number, z: number }
 
 export const ITEM_TYPES = {
     NOTE: "note",
@@ -100,20 +100,20 @@ export function createBoard(name: string): Board {
     return { id: uuid.v4(), name, items: [], ...defaultBoardSize } 
 }
 
-export function newNote(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5): Note {
-    return { id: uuid.v4(), type: "note", text, color, x, y, width, height }    
+export function newNote(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5, z: number = 0): Note {
+    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z }    
 }
 
-export function newText(text: string, x: number = 20, y: number = 20, width: number = 5, height: number = 2): Text {
-    return { id: uuid.v4(), type: "text", text, x, y, width, height }    
+export function newText(text: string, x: number = 20, y: number = 20, width: number = 5, height: number = 2, z: number = 0): Text {
+    return { id: uuid.v4(), type: "text", text, x, y, width, height, z }    
 }
 
-export function newContainer(x: number = 20, y: number = 20, width: number = 30, height: number = 20): Container {
-    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height }    
+export function newContainer(x: number = 20, y: number = 20, width: number = 30, height: number = 20, z: number = 0): Container {
+    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height, z }    
 }
 
-export function newImage(assetId: string, x: number = 20, y: number = 20, width: number = 5, height: number = 5): Image {
-    return { id: uuid.v4(), type: "image", assetId, x, y, width, height }
+export function newImage(assetId: string, x: number = 20, y: number = 20, width: number = 5, height: number = 5, z: number = 0): Image {
+    return { id: uuid.v4(), type: "image", assetId, x, y, width, height, z }
 }
 
 export function getCurrentTime(): ISOTimeStamp {
@@ -136,10 +136,10 @@ export function migrateBoard(board: Board) {
     return { ...defaultBoardSize, ...board, items }
     
     function migrateItem(item: Item, migratedItems: Item[], boardItems: Item[]): Item {
-        const { width, height, type, ...rest } = item
+        const { width, height, z, type, ...rest } = item
 
         // Force type, width and height for all items
-        let fixedItem = { type: type || "note", width: width || 5, height: height || 5, ...rest } as Item
+        let fixedItem = { type: type || "note", width: width || 5, height: height || 5, z: z || 0, ...rest } as Item
         if (fixedItem.type === "container") {
             let container = fixedItem as Container & { items?: string[]}
             // Force container to have text

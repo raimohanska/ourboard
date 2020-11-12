@@ -60,17 +60,13 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
         }]
       }
       case "item.front":        
-        const items = event.itemIds.flatMap(id => {
-          const item = board.items.find(i => i.id === id)
-          if (!item) {
-            console.warn(`Cannot bring unknown item ${id} to front`)
-            return []
-          }
-          return [item]
-        }) 
+        let maxZ = 0
+        for (let i of board.items) {
+          maxZ = Math.max(maxZ, i.z)
+        }
         return [{
           ...board,
-          items: sortItems(board.items.filter((p) => !event.itemIds.includes(p.id)).concat(items))
+          items: sortItems(board.items.map(i => event.itemIds.includes(i.id) ? { ...i, z: maxZ + 1 } : i))
         }, null] // TODO: return item.back
       case "item.lock":
       case "item.unlock":
