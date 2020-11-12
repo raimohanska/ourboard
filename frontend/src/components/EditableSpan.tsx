@@ -1,6 +1,7 @@
 import * as H from "harmaja";
 import * as L from "lonna";
 import { componentScope, h, HarmajaOutput } from "harmaja";
+import { globalScope } from "lonna";
 
 export type EditableSpanProps = { 
     value: L.Atom<string>, 
@@ -11,9 +12,8 @@ export type EditableSpanProps = {
 } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>
 
 export const EditableSpan = ( props : EditableSpanProps) => {
-    let { value, editingThis, commit, cancel, ...rest } = props
+    let { value, editingThis, commit, cancel, ...rest } = props    
     const nameElement = L.atom<HTMLSpanElement | null>(null)
-    let settingLocally = false
     const onClick = (e: JSX.MouseEvent) => {
         if (e.shiftKey) return
         editingThis.set(true)
@@ -46,9 +46,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
     const onInput = (e: JSX.InputEvent<HTMLSpanElement>) => {
-        settingLocally = true        
         value.set(e.currentTarget!.textContent || "")
-        settingLocally = false
     }    
 
     return <span 
@@ -66,7 +64,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
             onKeyDown={onKey}
             onInput={onInput}
         >
-            {props.value.pipe(L.filter(() => !settingLocally, componentScope()))}
+            { props.value }
         </span>
     </span>
 }
