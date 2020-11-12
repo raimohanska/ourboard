@@ -113,7 +113,7 @@ export const BoardView = (
       <div className="controls">        
         <button className="mini" onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
         <button className="mini" onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
-        <PaletteView {...{ onAdd, board }}/>
+        <PaletteView {...{ onAdd, board, dispatch }}/>
       </div>
       <div className="scroll-container">
         <div className="border-container" style={style}>

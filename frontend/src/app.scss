@@ -268,6 +268,11 @@ a {
                     color: gray;
                 }
             }
+            
+            .icon {
+                margin-left: 0.5em;
+                cursor: pointer;
+            }
         }
     }
 
@@ -498,6 +503,12 @@ a {
     background-repeat: no-repeat; 
     &.edit {
         background-image: url('img/pencil-2.svg');
+    }
+    &.forward {
+        background-image: url('img/forward.svg');
+    }
+    &.back {
+        background-image: url('img/back.svg');
     }
 }
 
