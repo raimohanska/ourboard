@@ -66,7 +66,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
         }
         return [{
           ...board,
-          items: sortItems(board.items.map(i => event.itemIds.includes(i.id) ? { ...i, z: maxZ + 1 } : i))
+          items: sortItems(board.items.map(i => i.type !== "container" && event.itemIds.includes(i.id) ? { ...i, z: maxZ + 1 } : i))
         }, null] // TODO: return item.back
       case "item.lock":
       case "item.unlock":
