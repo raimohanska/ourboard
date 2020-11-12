@@ -57,10 +57,12 @@ export function boardStore(socket: typeof io.Socket) {
             const [board, reverse] = boardReducer(state.board!, redoOperation)
             if (reverse) undoBuffer = addToBuffer(reverse, undoBuffer)
             return { ...state, board }
-        } else if (event.action.startsWith("item.")) {
-            redoBuffer = []
+        } else if (event.action.startsWith("item.")) {            
             const [board, reverse] = boardReducer(state.board!, event)
-            if (reverse) undoBuffer = addToBuffer(reverse, undoBuffer)
+            if (reverse) {
+                redoBuffer = []
+                undoBuffer = addToBuffer(reverse, undoBuffer)
+            }
             return { ...state, board }
         } else if (event.action === "board.init") {
             return { ...state, board: event.board }
