@@ -25,10 +25,10 @@ describe("Domain", () => {
                 ...legacyBoard,
                 ...defaultBoardSize,
                 items: [
-                    { ...containedNoteWithNoType, type: "note", containerId: "d" },
-                    { ...containedNote2, containerId: "d" },
-                    { ...unContainedNoteWithNoDimensions, width: 5, height: 5 },
-                    { type: "container", id: "d", x: 0, y: 0, width: 5, height: 5, text: "" }
+                    { ...containedNoteWithNoType, type: "note", containerId: "d", z:0 },
+                    { ...containedNote2, containerId: "d", z:0 },
+                    { ...unContainedNoteWithNoDimensions, width: 5, height: 5, z:0 },
+                    { type: "container", id: "d", x: 0, y: 0, width: 5, height: 5, z:0, text: "" }
                 ]
             })
         })
