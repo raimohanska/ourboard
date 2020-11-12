@@ -50,6 +50,10 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         value.set(e.currentTarget!.textContent || "")
         settingLocally = false
     }   
+
+    // TODO: come up with a nicer way to deal with contentEditable fields with Harmaja.
+    // Observable embedding doesn't work because when use deletes the whole text, the Text node is
+    // detached from DOM and Harmaja keeps trying to track an out-of-date Text node.
     const scope = componentScope()
     const ref = (el: HTMLElement) => {
         nameElement = el        
