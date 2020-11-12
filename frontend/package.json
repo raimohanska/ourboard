@@ -10,6 +10,7 @@
     "@types/md5": "^2.2.1",
     "@types/socket.io-client": "^1.4.33",
     "cookie": "^0.4.1",
+    "cypress": "5.6.0",
     "email-validator": "^2.0.4",
     "harmaja": "^0.13.5",
     "jsonwebtoken": "^8.5.1",
