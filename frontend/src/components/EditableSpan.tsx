@@ -1,6 +1,7 @@
 import * as H from "harmaja";
 import * as L from "lonna";
 import { componentScope, h, HarmajaOutput } from "harmaja";
+import { globalScope } from "lonna";
 
 export type EditableSpanProps = { 
     value: L.Atom<string>, 
@@ -11,9 +12,8 @@ export type EditableSpanProps = {
 } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>
 
 export const EditableSpan = ( props : EditableSpanProps) => {
-    let { value, editingThis, commit, cancel, ...rest } = props
-    let nameElement: HTMLSpanElement | null = null
-    let settingLocally = false
+    let { value, editingThis, commit, cancel, ...rest } = props    
+    const nameElement = L.atom<HTMLSpanElement | null>(null)
     const onClick = (e: JSX.MouseEvent) => {
         if (e.shiftKey) return
         editingThis.set(true)
@@ -22,7 +22,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
     }  
     editingThis.pipe(L.changes, L.filter(e => !!e), L.applyScope(componentScope())).forEach(() =>  { 
         setTimeout(() => {
-            nameElement!.focus() 
+            nameElement.get()!.focus() 
             document.execCommand('selectAll',false)    
         }, 1)
     })
@@ -38,7 +38,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         } else if (e.keyCode === 27) { // esc           
            cancel && cancel()
            editingThis.set(false)
-           nameElement!.textContent = value.get()
+           nameElement.get()!.textContent = value.get()
         }
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
@@ -46,23 +46,8 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
     const onInput = (e: JSX.InputEvent<HTMLSpanElement>) => {
-        settingLocally = true        
         value.set(e.currentTarget!.textContent || "")
-        settingLocally = false
-    }   
-
-    // TODO: come up with a nicer way to deal with contentEditable fields with Harmaja.
-    // Observable embedding doesn't work because when use deletes the whole text, the Text node is
-    // detached from DOM and Harmaja keeps trying to track an out-of-date Text node.
-    const scope = componentScope()
-    const ref = (el: HTMLElement) => {
-        nameElement = el        
-        value.pipe(L.applyScope(scope)).forEach(v => {
-            if (!settingLocally) {
-                el.textContent = v
-            }
-        })
-    } 
+    }    
 
     return <span 
         onClick={onClick} 
@@ -73,13 +58,13 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         <span 
             onBlur={endEditing}
             contentEditable={editingThis} 
-            ref={ ref } 
+            ref={ nameElement.set } 
             onKeyPress={onKeyPress}
             onKeyUp={onKeyPress}
             onKeyDown={onKey}
             onInput={onInput}
         >
-            
+            { props.value }
         </span>
     </span>
 }
