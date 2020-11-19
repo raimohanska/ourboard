@@ -26,14 +26,14 @@ export const ImageView = (
     className="image"       
     onClick={onClick}
     ref={itemDragToMove(id, board, focus, coordinateHelper, dispatch) as any}
-    style={image.pipe(L.map((p: Image) => ({
+    style={L.view(image, (p: Image) => ({
       top: p.y + "em",
       left: p.x + "em",
       height: p.height + "em",
       width: p.width + "em",
       zIndex: p.z,
       position: "absolute"
-    })))}
+    }))}
   >
     <img 
       src={ L.view(image, i => assets.getAsset(i.assetId, i.src))}
