@@ -57,7 +57,8 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         { !!props.showIcon && <span className="icon edit" style={{ marginRight: "0.3em", fontSize: "0.8em" }}/> }
         <span 
             onBlur={endEditing}
-            contentEditable={editingThis} 
+            contentEditable={editingThis}
+            style={L.view(value, v => v ? {} : { display: "inline-block", minWidth: "1em", minHeight:"1em" })}
             ref={ nameElement.set } 
             onKeyPress={onKeyPress}
             onKeyUp={onKeyPress}
