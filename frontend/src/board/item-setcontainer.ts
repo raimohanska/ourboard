@@ -1,17 +1,14 @@
-import { Board, Container, Item } from "../../../common/src/domain";
-import { Dispatch } from "./board-store";
+import { Board, Container, Id, Item } from "../../../common/src/domain";
 import { containedBy } from "./geometry";
 
-// Todo remove this
-export function maybeAddToContainer(item: Item, b: Board, dispatch: Dispatch) {
+export function maybeChangeContainer(item: Item, b: Board): Id | undefined {
     if (item.type !== "container") {
         const currentContainer = item.containerId && b.items.find((i): i is Container => i.type === "container" && item.containerId == i.id)
-        if (currentContainer && containedBy(item, currentContainer)) return
+        if (currentContainer && containedBy(item, currentContainer)) return item.containerId
 
         const newContainer = b.items.find((i): i is Container => i.type === "container" && containedBy(item, i))
-        if (newContainer != currentContainer) {
-            dispatch({ action: "item.update", boardId: b.id, items: [{...item, containerId: newContainer?.id }] })
-        }
+        
+        return newContainer ? newContainer.id : undefined
     }    
 }
 

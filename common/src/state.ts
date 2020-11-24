@@ -28,13 +28,13 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
       case "item.move":
         return [{
           ...board,
-          items: event.items.reduce((itemsBeforeMove, i) => moveItems(itemsBeforeMove, i.id, i.x, i.y), board.items)
+          items: event.items.reduce((itemsBeforeMove, i) => moveItems(itemsBeforeMove, i.id, i.x, i.y, i.containerId), board.items)
         }, {
           action: "item.move",
           boardId: board.id,
           items: event.items.map(i => {
             const item = findItem(board)(i.id)
-            return { id: i.id, x: item.x, y: item.y }
+            return { id: i.id, x: item.x, y: item.y, containerId: item.type === "container" ? undefined : item.containerId }
           })
         }];
       case "item.delete": {
@@ -83,7 +83,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
     return item
   }
 
-  const moveItems = (items: Item[], id: Id, x: number, y: number) => {
+  const moveItems = (items: Item[], id: Id, x: number, y: number, containerId: Id | undefined) => {
     const item = items.find(i => i.id === id)
     if (!item) {
       console.warn("Moving unknown item", id)
@@ -95,7 +95,11 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
     const containedBy = (i: Item) => i.type !== "container" && i.containerId === item.id
     const movedItems = new Set(item.type === "container" ? items.filter(containedBy).map(i => i.id).concat(id) : [id])
 
-    return items.map((i) => movedItems.has(i.id) ? { ...i, x: i.x + xDiff, y: i.y + yDiff } : i)
+    return items.map((i) => {
+      if (!movedItems.has(i.id)) return i
+      const updated = { ...i, x: i.x + xDiff, y: i.y + yDiff }
+      return i.id === id ? { ...updated, containerId } : updated
+    })
   }
 
   const sortItems = (items: Item[]) => _.sortBy(items, i => i.type === "container" ? 0 : 1) // containers first to keep them on background
