@@ -1,4 +1,4 @@
-import { AppEvent, MoveItem, UpdateItem } from "../../../common/src/domain"
+import { AppEvent, Item, MoveItem, UpdateItem } from "../../../common/src/domain"
 
 export function canFoldActions(a: AppEvent, b: AppEvent) {
     if (a.action === "cursor.move") {
@@ -17,5 +17,5 @@ export function canFoldActions(a: AppEvent, b: AppEvent) {
 }
 
 function everyItemMatches(evt: MoveItem | UpdateItem, evt2: MoveItem | UpdateItem) {
-    return evt.items.length === evt2.items.length && evt.items.every((it, ind) => evt2.items[ind].id === it.id)
+    return evt.items.length === evt2.items.length && (evt.items as Item[] /* TODO no assertion */).every((it, ind) => evt2.items[ind].id === it.id)
 }

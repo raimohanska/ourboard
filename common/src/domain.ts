@@ -126,8 +126,8 @@ export const isPersistableBoardItemEvent = (bie: BoardItemEvent): bie is Persist
 
 export function migrateBoard(board: Board) {
     const items: Item[] = []
-    const width = Math.max(board.width, defaultBoardSize.width)
-    const height = Math.max(board.height, defaultBoardSize.height)
+    const width = Math.max(board.width || 0, defaultBoardSize.width)
+    const height = Math.max(board.height || 0, defaultBoardSize.height)
     for (const item of board.items) {
         if (items.find(i => i.id === item.id)) {
             console.warn("Duplicate item", item, "found on table", board.name)
