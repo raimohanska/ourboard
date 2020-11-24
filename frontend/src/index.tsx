@@ -24,6 +24,9 @@ const App = () => {
     }))
     const state = store.state
 
+    const title = L.view(store.state, s => s.board ? `${s.board.name} - R-Board` : "R-Board")
+    title.forEach(t => document.querySelector("title")!.textContent = t)
+
     store.boardId.forEach(boardId => {
         if (!boardId) {
             // no board in URL => do nothing
