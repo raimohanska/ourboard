@@ -9,7 +9,7 @@ import MessageQueue from "./message-queue";
 export type BoardAppState = {
     board: Board | undefined
     userId: Id | null
-    nickname: string,
+    nickname: string | undefined,
     users: UserSessionInfo[]
     cursors: Record<Id, UserCursorPosition>
     locks: ItemLocks
@@ -91,7 +91,7 @@ export function boardStore(socket: typeof io.Socket) {
         }
     }
     
-    const initialState = { board: undefined, userId: null, nickname: "", users: [], cursors: {}, locks: {} }
+    const initialState = { board: undefined, userId: null, nickname: undefined, users: [], cursors: {}, locks: {} }
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
     
     return {

@@ -21,6 +21,7 @@ export const Header = ({ syncStatus, state, dispatch }: { syncStatus: L.Property
     const nicknameAtom = L.atom(L.view(state, "nickname"), nickname => {
         const userId = state.get().userId
         if (!userId) throw Error("User id missing")
+        if (nickname === undefined) throw Error("Cannot set nickname to undefined")
         dispatch({ action: "nickname.set", nickname, userId })
     })
     return <header>
@@ -29,7 +30,7 @@ export const Header = ({ syncStatus, state, dispatch }: { syncStatus: L.Property
             <BoardMenu state={state} dispatch={dispatch}/>
             
         </h1> 
-        { L.view(nicknameAtom, n => !!n, n => n && <EditableSpan showIcon={true} className="nickname" {...{ value: nicknameAtom, editingThis}}/>) }        
+        { L.view(nicknameAtom, n => n !== undefined, n => n && <EditableSpan showIcon={true} className="nickname" {...{ value: nicknameAtom as L.Atom<string>, editingThis}}/>) }        
         <span className={ L.view(syncStatus, s => "sync-status " + s) }/>
     </header>
 }
