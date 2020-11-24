@@ -14,6 +14,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
 ) {
     let dragStart: DragEvent | null = null;
     let dragStartPositions: Item[]
+    let currentPos: { x: number, y: number } | null = null;
   
     elem.addEventListener("dragstart", e => {
       e.stopPropagation()
@@ -39,7 +40,12 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
         e.preventDefault()
         return
       }
-      const { x: xDiff, y: yDiff } = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
+      const newPos = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
+      if (currentPos && currentPos.x == newPos.x && currentPos.y === newPos.y) {
+        return 
+      }
+      currentPos = newPos
+      const { x: xDiff, y: yDiff } = newPos
   
       const b = board.get()
       const items = [...f.ids].map(id => {
@@ -68,6 +74,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
           })
           doOnDrop(b, items)
         }
+        currentPos = null
         return { status: "selected", ids: f.ids }
       })
     })
