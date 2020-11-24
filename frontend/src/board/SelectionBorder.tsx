@@ -22,44 +22,48 @@ export const SelectionBorder = (
   </span>
 
   function DragCorner({ vertical, horizontal}: { vertical: Vertical, horizontal: Horizontal } ) {    
-    const ref= (e: HTMLElement) => onBoardItemDrag(e, id, board, focus, coordinateHelper, (b, current, dragStartPosition, xDiff, yDiff) => {
+    const ref= (e: HTMLElement) => onBoardItemDrag(e, id, board, focus, coordinateHelper, (b, items, xDiff, yDiff) => {
         
-        const maintainAspectRatio = current.type === "image" || current.type === "note"
-        if (maintainAspectRatio) {
-          let minDiff = Math.min(Math.abs(xDiff), Math.abs(yDiff))
-          if (minDiff < 0.1) {
-            xDiff = 0
-            yDiff = 0
-          } else {
-            const aspectRatio = dragStartPosition.width / dragStartPosition.height
-            const invert = (horizontal == "left" && vertical == "bottom") || (horizontal == "right" && vertical == "top")
-            const factor = invert ? -1 : 1
-            
-            if (Math.abs(xDiff) == minDiff) { // x is the smaller adjustment, use that as basis
-              yDiff = minDiff / aspectRatio * factor * sign(xDiff)           
+        const updatedItems = items.map(({ current, dragStartPosition}) => {
+          const maintainAspectRatio = current.type === "image" || current.type === "note"
+          if (maintainAspectRatio) {
+            let minDiff = Math.min(Math.abs(xDiff), Math.abs(yDiff))
+            if (minDiff < 0.1) {
+              xDiff = 0
+              yDiff = 0
             } else {
-              xDiff = minDiff * aspectRatio * factor * sign(yDiff)               
-            }            
+              const aspectRatio = dragStartPosition.width / dragStartPosition.height
+              const invert = (horizontal == "left" && vertical == "bottom") || (horizontal == "right" && vertical == "top")
+              const factor = invert ? -1 : 1
+              
+              if (Math.abs(xDiff) == minDiff) { // x is the smaller adjustment, use that as basis
+                yDiff = minDiff / aspectRatio * factor * sign(xDiff)           
+              } else {
+                xDiff = minDiff * aspectRatio * factor * sign(yDiff)               
+              }            
+            }
           }
-        }
-        
-        const x = horizontal === "left" 
-          ? dragStartPosition.x + xDiff
-          : dragStartPosition.x
-        const y = vertical === "top" 
-          ? dragStartPosition.y + yDiff
-          : dragStartPosition.y
-        const width = Math.max(0.5, horizontal === "left"
-          ? dragStartPosition.width - xDiff
-          : dragStartPosition.width + xDiff)
+          
+          const x = horizontal === "left" 
+            ? dragStartPosition.x + xDiff
+            : dragStartPosition.x
+          const y = vertical === "top" 
+            ? dragStartPosition.y + yDiff
+            : dragStartPosition.y
+          const width = Math.max(0.5, horizontal === "left"
+            ? dragStartPosition.width - xDiff
+            : dragStartPosition.width + xDiff)
+  
+          const height = Math.max(0.5, vertical === "top"
+            ? dragStartPosition.height - yDiff
+            : dragStartPosition.height + yDiff)
+          const updatedItem = { 
+            ...current, x, y, width, height
+          }
+          return updatedItem
+        })
 
-        const height = Math.max(0.5, vertical === "top"
-          ? dragStartPosition.height - yDiff
-          : dragStartPosition.height + yDiff)
-
-        dispatch({ action: "item.update", boardId: b.id, items: [{ 
-          ...current, x, y, width, height
-        }] });
+        dispatch({ action: "item.update", boardId: b.id, items: updatedItems });
 
         function sign(x: number) {
           return x / Math.abs(x)

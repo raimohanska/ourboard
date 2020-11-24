@@ -9,8 +9,8 @@ DND_GHOST_HIDING_IMAGE.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEA
 
 export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property<Board>, focus: L.Atom<BoardFocus>, 
     coordinateHelper: BoardCoordinateHelper, 
-    doWhileDragging: (b: Board, current: Item, dragStartPosition: Item, xDiff: number, yDiff: number) => void,
-    doOnDrop?: (b: Board, current: Item) => void,
+    doWhileDragging: (b: Board, items: { current: Item, dragStartPosition: Item }[], xDiff: number, yDiff: number) => void,
+    doOnDrop?: (b: Board, current: Item[]) => void,
 ) {
     let dragStart: DragEvent | null = null;
     let dragStartPositions: Item[]
@@ -42,13 +42,15 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
       const { x: xDiff, y: yDiff } = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
   
       const b = board.get()
-      f.ids.forEach(id => {
+      const items = [...f.ids].map(id => {
         const current = b.items.find(i => i.id === id)
         const dragStartPosition = dragStartPositions.find(i => i.id === id)
         if (!current || !dragStartPosition) throw Error("Item not found: " + id)
-  
-        doWhileDragging(b, current, dragStartPosition, xDiff, yDiff)      
+        return {
+          current, dragStartPosition
+        }        
       })
+      doWhileDragging(b, items, xDiff, yDiff)      
     })
 
     elem.addEventListener("dragend", e => {
@@ -59,11 +61,12 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
         }
         if (doOnDrop) {
           const b = board.get()
-          f.ids.forEach(id => {
-            const current = b.items.find(i => i.id === id)
+          const items = [...f.ids].map(id => {
+            const current = b.items.find(i => i.id === id) // TODO: extract findBoardItem helper
             if (!current) throw Error("Item not found: " + id)
-            doOnDrop(b, current)      
+            return current      
           })
+          doOnDrop(b, items)
         }
         return { status: "selected", ids: f.ids }
       })
