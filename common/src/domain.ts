@@ -20,7 +20,7 @@ export function isFullyFormedBoard(b: Board | BoardStub): b is Board {
     return !!b.id && !!b.name && ["width", "height", "items"].every(prop => prop in b)
 }
 
-export const defaultBoardSize = { width: 100, height: 80 }
+export const defaultBoardSize = { width: 200, height: 160 }
 
 export interface CursorPosition {
     x: number;
@@ -126,6 +126,8 @@ export const isPersistableBoardItemEvent = (bie: BoardItemEvent): bie is Persist
 
 export function migrateBoard(board: Board) {
     const items: Item[] = []
+    const width = Math.max(board.width, defaultBoardSize.width)
+    const height = Math.max(board.height, defaultBoardSize.height)
     for (const item of board.items) {
         if (items.find(i => i.id === item.id)) {
             console.warn("Duplicate item", item, "found on table", board.name)
@@ -133,7 +135,7 @@ export function migrateBoard(board: Board) {
             items.push(migrateItem(item, items, board.items))
         }
     }
-    return { ...defaultBoardSize, ...board, items }
+    return { ...board, width, height, items }
     
     function migrateItem(item: Item, migratedItems: Item[], boardItems: Item[]): Item {
         const { width, height, z, type, ...rest } = item
