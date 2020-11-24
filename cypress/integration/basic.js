@@ -66,8 +66,12 @@ function createNote(text, relX, relY, color = "yellow") {
 
         NotesWithText(text).should("exist")
 
-        cy.get(".board").click()
+        clickBoard()
     })
+}
+
+function clickBoard() {
+    cy.get(".board").click({force: true})
 }
 
 function createTextItem(text, relX, relY) {
@@ -83,7 +87,7 @@ function createTextItem(text, relX, relY) {
 
         TextItemsWithText(text).should("exist")
 
-        cy.get(".board").click()
+        clickBoard()
     })
 }
 
@@ -97,7 +101,7 @@ function createContainer(relX, relY) {
 
         Containers().should("exist")
 
-        cy.get(".board").click()
+        clickBoard()
     })
 }
 
