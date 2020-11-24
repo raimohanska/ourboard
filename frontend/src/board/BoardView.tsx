@@ -63,14 +63,22 @@ export const BoardView = (
     }
   })
 
-  L.fromEvent<JSX.WheelEvent>(window, "wheel").pipe(L.applyScope(componentScope())).forEach(event => {
+  function wheelZoomHandler(event: WheelEvent) {
     if (event.target === element.get() || element.get()!.contains(event.target as Node)) {
       const ctrlOrCmd = event.ctrlKey || event.metaKey
       if (!event.deltaY || !ctrlOrCmd) return
       event.preventDefault()
       zoom.modify(z => event.deltaY < 0 ? z * 1.1 : z / 1.1)
     }
+  }
+  H.onMount(() => {
+    // have to use this for chrome: https://stackoverflow.com/questions/42101723/unable-to-preventdefault-inside-passive-event-listener
+    window.addEventListener("wheel", wheelZoomHandler, { passive: false })
   })
+  H.onUnmount(() => {
+    window.removeEventListener("wheel", wheelZoomHandler)
+  })
+
 
   function onClick(e: JSX.MouseEvent) {
     if (e.target === element.get()) {
