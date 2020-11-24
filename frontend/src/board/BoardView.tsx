@@ -63,6 +63,15 @@ export const BoardView = (
     }
   })
 
+  L.fromEvent<JSX.WheelEvent>(window, "wheel").pipe(L.applyScope(componentScope())).forEach(event => {
+    if (event.target === element.get() || element.get()!.contains(event.target as Node)) {
+      const ctrlOrCmd = event.ctrlKey || event.metaKey
+      if (!event.deltaY || !ctrlOrCmd) return
+      event.preventDefault()
+      zoom.modify(z => event.deltaY < 0 ? z * 1.1 : z / 1.1)
+    }
+  })
+
   function onClick(e: JSX.MouseEvent) {
     if (e.target === element.get()) {
       focus.set({ status: "none" })
