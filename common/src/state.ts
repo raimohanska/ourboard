@@ -77,7 +77,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
     }
   }
 
-  const findItem = (board: Board) => (id: Id) => {
+  export const findItem = (board: Board) => (id: Id) => {
     const item = board.items.find(i => i.id === id)
     if (!item) throw Error("Item not found: " + id)
     return item

@@ -1,5 +1,6 @@
 import * as L from "lonna";
 import { Board, Item } from "../../../common/src/domain";
+import { findItem } from "../../../common/src/state";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus } from "./synchronize-focus-with-server"
 
@@ -67,11 +68,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
         }
         if (doOnDrop) {
           const b = board.get()
-          const items = [...f.ids].map(id => {
-            const current = b.items.find(i => i.id === id) // TODO: extract findBoardItem helper
-            if (!current) throw Error("Item not found: " + id)
-            return current      
-          })
+          const items = [...f.ids].map(findItem(b))
           doOnDrop(b, items)
         }
         currentPos = null
