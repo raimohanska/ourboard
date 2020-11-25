@@ -10,6 +10,7 @@ import { syncStatusStore } from "./sync-status/sync-status-store";
 import { Board, exampleBoard } from "../../common/src/domain";
 import { DashboardView } from "./board/DashboardView"
 import { assetStore } from "./board/asset-store";
+import { storeRecentBoard } from "./board/recent-boards"
 
 const App = () => {
     const socket = io();    
@@ -42,6 +43,10 @@ const App = () => {
         if (boardId && boardId !== store.boardId.get()) {
             document.location.replace("/b/" + boardId)
         }
+    })
+
+    L.view(store.state, "board").forEach(b => {
+        b && storeRecentBoard(b)
     })
 
     return <div id="root">        
