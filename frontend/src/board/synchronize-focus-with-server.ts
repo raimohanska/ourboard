@@ -18,10 +18,7 @@ import { BoardFocus, getSelectedIds, removeFromSelection } from "./board-focus"
   item.lock and item.unlock events can be tycitteld freely because the server decides
   whether to allow the action or not.
 */
-export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Property<ItemLocks>, userId: L.Property<string | null>, dispatch: Dispatch): L.Atom<BoardFocus> {
-  const lock = (itemId: Id) => dispatch({ action: "item.lock", boardId: board.get().id, itemId })
-  const unlock = (itemId: Id) => dispatch({ action: "item.unlock", boardId: board.get().id, itemId })
-   
+export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Property<ItemLocks>, userId: L.Property<string | null>, dispatch: Dispatch): L.Atom<BoardFocus> {   
   // represents the raw user selection, including possible illegal selections
   const rawFocus = L.atom<BoardFocus>({ status: "none" })
 
@@ -46,4 +43,11 @@ export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Pr
     locksHeld.filter(id => !selectedIds.has(id)).forEach(unlock);
     [...selectedIds].filter(id => !locksHeld.includes(id)).forEach(lock)
   }  
+
+  function lock(itemId: Id) { 
+    dispatch({ action: "item.lock", boardId: board.get().id, itemId }) 
+  }
+  function unlock(itemId: Id) { 
+    dispatch({ action: "item.unlock", boardId: board.get().id, itemId }) 
+  }
 }
