@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import { Image, Item, newNote, Note, UserCursorPosition} from "../../../common/src/domain";
+import { Id, Image, Item, newNote, Note, UserCursorPosition} from "../../../common/src/domain";
 import { ItemView } from "./ItemView"
 import { BoardAppState, Dispatch } from "./board-store";
 import { PaletteView } from "./PaletteView";
@@ -15,7 +15,7 @@ import { RectangularDragSelection } from "./RectangularDragSelection"
 import { add } from "./geometry";
 import { withCurrentContainer } from "./item-setcontainer";
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
-import { BoardFocus } from "./board-focus";
+import { BoardFocus, getSelectedIds } from "./board-focus";
 import { itemDeleteHandler } from "./item-delete"
 import { itemUndoHandler } from "./item-undo-redo"
 
@@ -37,6 +37,10 @@ export const BoardView = (
   const element = L.atom<HTMLElement | null>(null);
 
   const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
+
+  focus.forEach(f => {
+    dispatch({ action: "item.front", boardId: board.get().id, itemIds: [...getSelectedIds(f)] })
+  })
 
   const coordinateHelper = boardCoordinateHelper(element)
   

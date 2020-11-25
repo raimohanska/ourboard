@@ -27,14 +27,11 @@ export function itemSelectionHandler(
                 focus.set({ status: "selected", ids: new Set([...f.ids].filter(i => i !== id))})
             } else {
                 focus.set({ status: "selected", ids: new Set([...f.ids].concat(id))})
-                bringToFront(id)
             }
         } else if (f.status === "none") {
             focus.set({ status: "selected", ids: new Set([id]) })
-            bringToFront(id)
         } else if (f.status === "selected" && !f.ids.has(id)) {
             focus.set({ status: "selected", ids: new Set([id]) })
-            bringToFront(id)
         }      
       }    
 
@@ -42,9 +39,5 @@ export function itemSelectionHandler(
         itemFocus,
         selected,
         onClick
-    }
-
-    function bringToFront(id: Id) {
-      dispatch({ action: "item.front", boardId: board.get().id, itemIds: [id] })
     }
 }

@@ -1,5 +1,6 @@
 
 import * as L from "lonna"
+import * as _ from "lodash"
 import { Board, Id, ItemLocks } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
 import { BoardFocus, getSelectedIds, removeFromSelection } from "./board-focus";
@@ -23,11 +24,11 @@ export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Pr
   const rawFocus = L.atom<BoardFocus>({ status: "none" })
 
   // selection where illegal (locked) items are removed
-  const resolvedFocus = L.combine(locks, rawFocus, userId, (locks: ItemLocks, focus: BoardFocus, user: string | null): BoardFocus => {
+  const resolvedFocus = L.pipe(L.combine(locks, rawFocus, userId, (locks: ItemLocks, focus: BoardFocus, user: string | null): BoardFocus => {
     if (!user) return { status: "none" }
     const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter(itemId => locks[itemId] !== user));
     return removeFromSelection(focus, itemsWhereSomeoneElseHasLock)
-  })
+  }), L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope))
   
   resolvedFocus.forEach(dispatchLocksIfNecessary)  
 

@@ -3736,10 +3736,10 @@ log-symbols@^2.2.0:
   dependencies:
     chalk "^2.0.1"
 
-lonna@^0.5:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.5.0.tgz#8e85467d6eda9beb763bb6dacb05440507c3bc25"
-  integrity sha512-tLp3eN1N84dqnRLEFhXN7SiJzZiH4kw3Qa03YEw0ufkXZDCq1OusQ6yoioHrZ8fSTbIqEheorEjUT7Gy0sPeKw==
+lonna@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.5.1.tgz#d265a2c5d64f4009a45f790684873f5c749c7c76"
+  integrity sha512-TEwDizz38tJfEZvmZlpZsOWlCoAjakyyC4G1NZr7NVVSY9ZtI69GWOXCBcneLUBCG2fsFivtU0CqwMllDAvAcQ==
 
 loose-envify@^1.0.0:
   version "1.4.0"
