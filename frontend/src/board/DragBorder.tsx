@@ -1,11 +1,11 @@
 import { h, Fragment } from "harmaja";
 import * as L from "lonna";
-import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Item } from "../../../common/src/domain";
-import { BoardFocus } from "./synchronize-focus-with-server"
-import { itemDragToMove } from "./item-dragmove"
+import { Board } from "../../../common/src/domain";
+import { BoardCoordinateHelper } from "./board-coordinates";
+import { BoardFocus } from "./board-focus";
 import { Dispatch } from "./board-store";
-
+import { itemDragToMove } from "./item-dragmove";
+¨
 type Position = "left" | "right" | "top" | "bottom"
 
 export const DragBorder = (

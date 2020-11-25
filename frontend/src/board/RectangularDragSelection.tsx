@@ -3,7 +3,7 @@ import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
 import {Board, Id, Item, Container } from "../../../common/src/domain"
 import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
-import { BoardFocus } from "./synchronize-focus-with-server"
+import { BoardFocus } from "./board-focus";
 import { Rect, overlaps, rectFromPoints } from "./geometry"
 import { Dispatch } from "./board-store"
 

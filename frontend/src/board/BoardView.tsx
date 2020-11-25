@@ -14,7 +14,8 @@ import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { add } from "./geometry";
 import { withCurrentContainer } from "./item-setcontainer";
-import { BoardFocus, synchronizeFocusWithServer } from "./synchronize-focus-with-server"
+import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
+import { BoardFocus } from "./board-focus";
 import { itemDeleteHandler } from "./item-delete"
 import { itemUndoHandler } from "./item-undo-redo"
 

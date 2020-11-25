@@ -3,7 +3,7 @@ import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Board, Note, Item, Text, ItemType, TextItem } from "../../../common/src/domain";
 import { EditableSpan } from "../components/EditableSpan"
-import { BoardFocus } from "./synchronize-focus-with-server"
+import { BoardFocus } from "./board-focus";
 import { SelectionBorder } from "./SelectionBorder"
 import { DragBorder } from "./DragBorder"
 import { itemDragToMove } from "./item-dragmove"

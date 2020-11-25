@@ -2,7 +2,7 @@ import { h } from "harmaja";
 import * as L from "lonna";
 import { Board, Id } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
-import { BoardFocus } from "./synchronize-focus-with-server"
+import { BoardFocus } from "./board-focus";
 
 export function itemSelectionHandler(
   id: string,

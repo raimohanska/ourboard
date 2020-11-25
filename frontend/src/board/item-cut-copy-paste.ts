@@ -1,9 +1,9 @@
-import * as uuid from "uuid"
-import * as L from "lonna";
 import _ from "lodash";
-import { Board, Container, Containee, Id, Item } from "../../../common/src/domain";
-import { BoardFocus } from "./synchronize-focus-with-server"
+import * as L from "lonna";
+import * as uuid from "uuid";
+import { Board, Containee, Id, Item } from "../../../common/src/domain";
 import { BoardCoordinateHelper } from "./board-coordinates";
+import { BoardFocus } from "./board-focus";
 import { Dispatch } from "./board-store";
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const

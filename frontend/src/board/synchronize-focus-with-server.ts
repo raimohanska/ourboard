@@ -2,6 +2,7 @@
 import * as L from "lonna"
 import { Board, Id, ItemLocks } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
+import { BoardFocus } from "./board-focus";
   
 /*
   Centralized module to handle locking/unlocking items, i.e. disallow operating on
@@ -17,13 +18,6 @@ import { Dispatch } from "./board-store";
   item.lock and item.unlock events can be tycitteld freely because the server decides
   whether to allow the action or not.
 */
-
-export type BoardFocus = 
-  { status: "none" } | 
-  { status: "selected", ids: Set<Id> } | 
-  { status: "dragging", ids: Set<Id> } | 
-  { status: "editing", id: Id }
-
 export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Property<ItemLocks>, userId: L.Property<string | null>, dispatch: Dispatch) {
   const lock = (itemId: Id) => dispatch({ action: "item.lock", boardId: board.get().id, itemId })
   const unlock = (itemId: Id) => dispatch({ action: "item.unlock", boardId: board.get().id, itemId })

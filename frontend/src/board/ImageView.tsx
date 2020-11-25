@@ -2,7 +2,7 @@ import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Board, Image } from "../../../common/src/domain";
-import { BoardFocus } from "./synchronize-focus-with-server"
+import { BoardFocus } from "./board-focus";
 import { SelectionBorder } from "./SelectionBorder"
 import { AssetStore } from "./asset-store";
 import { itemDragToMove } from "./item-dragmove";

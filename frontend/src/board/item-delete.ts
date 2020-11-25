@@ -2,7 +2,7 @@ import { componentScope } from "harmaja";
 import * as L from "lonna";
 import { Id } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
-import { BoardFocus } from "./synchronize-focus-with-server";
+import { BoardFocus } from "./board-focus";
 
 export function itemDeleteHandler(boardId: Id, dispatch: Dispatch, focus: L.Property<BoardFocus>) {
     ["keydown", "keyup", "keypress"].forEach(eventName => { // Prevent default for all of these to prevent Backspace=Back behavior on Firefox

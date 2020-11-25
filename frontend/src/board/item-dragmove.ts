@@ -1,7 +1,7 @@
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Board } from "../../../common/src/domain";
-import { BoardFocus } from "./synchronize-focus-with-server"
+import { BoardFocus } from "./board-focus";
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainer } from "./item-setcontainer"
 import { Dispatch } from "./board-store";
