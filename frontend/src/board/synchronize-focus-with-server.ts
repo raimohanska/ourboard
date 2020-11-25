@@ -2,7 +2,7 @@
 import * as L from "lonna"
 import { Board, Id, ItemLocks } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
-import { BoardFocus, getSelectedIds } from "./board-focus";
+import { BoardFocus, getSelectedIds, removeFromSelection } from "./board-focus";
   
 /*
   Centralized module to handle locking/unlocking items, i.e. disallow operating on
@@ -18,9 +18,24 @@ import { BoardFocus, getSelectedIds } from "./board-focus";
   item.lock and item.unlock events can be tycitteld freely because the server decides
   whether to allow the action or not.
 */
-export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Property<ItemLocks>, userId: L.Property<string | null>, dispatch: Dispatch) {
+export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Property<ItemLocks>, userId: L.Property<string | null>, dispatch: Dispatch): L.Atom<BoardFocus> {
   const lock = (itemId: Id) => dispatch({ action: "item.lock", boardId: board.get().id, itemId })
   const unlock = (itemId: Id) => dispatch({ action: "item.unlock", boardId: board.get().id, itemId })
+   
+  // represents the raw user selection, including possible illegal selections
+  const rawFocus = L.atom<BoardFocus>({ status: "none" })
+
+  // selection where illegal (locked) items are removed
+  const resolvedFocus = L.combine(locks, rawFocus, userId, (locks: ItemLocks, focus: BoardFocus, user: string | null): BoardFocus => {
+    if (!user) return { status: "none" }
+    const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter(itemId => locks[itemId] !== user));
+    return removeFromSelection(focus, itemsWhereSomeoneElseHasLock)
+  })
+  
+  resolvedFocus.forEach(dispatchLocksIfNecessary)  
+
+  // Result atom that allows setting arbitrary focus, but reflects valid selections only
+  return L.atom(resolvedFocus, rawFocus.set)
 
   function dispatchLocksIfNecessary(f: BoardFocus) {
     const user = userId.get()
@@ -30,74 +45,5 @@ export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Pr
     const selectedIds = getSelectedIds(f)
     locksHeld.filter(id => !selectedIds.has(id)).forEach(unlock);
     [...selectedIds].filter(id => !locksHeld.includes(id)).forEach(lock)
-  }
-
-  function allowFocusIfAtLeastOneItemNotLockedBySomeoneElse_AndThenNastilyMutateSelectedIDsConditionallyToOnlyIncludeTheAllowedOnes(f: BoardFocus) {
-    const user = userId.get()!
-
-    if (f.status === "none") return true
-    
-    const l = locks.get()
-
-    const itemsWhereSomeoneElseHasLock = new Set(Object.keys(l).filter(itemId => l[itemId] !== user))
-
-    switch (f.status) {
-      case "editing":
-        return !itemsWhereSomeoneElseHasLock.has(f.id)
-      case "selected":
-      case "dragging": {
-        const notLockedItems = new Set([...f.ids].filter(id => !itemsWhereSomeoneElseHasLock.has(id)))
-        if (notLockedItems.size === 0) {
-          return false
-        }
-
-        // MUTATION IN FILTER ALERT -- which function should I add to 'pipe' to first return true here
-        // but then map the result, while still returning an Atom?
-        f.ids = notLockedItems
-        return true
-      }
-    }
-  }
-
-  const focus = L.atom<BoardFocus>({status: "none" })
-    .pipe(
-      L.filter(allowFocusIfAtLeastOneItemNotLockedBySomeoneElse_AndThenNastilyMutateSelectedIDsConditionallyToOnlyIncludeTheAllowedOnes, L.globalScope)
-    )
-
-  focus.forEach(dispatchLocksIfNecessary)
-
-  locks.forEach(l => {
-    const user = userId.get()
-    const f = focus.get()
-    if (!user && f.status !== "none") {
-      focus.set({ status: "none" })
-      return
-    }
-
-    const itemsWhereSomeoneElseHasLock = new Set(Object.keys(l).filter(itemId => l[itemId] !== user))
-
-    if (f.status === "none") {
-      return
-    }
-
-    if (f.status === "editing" && itemsWhereSomeoneElseHasLock.has(f.id)) {
-      focus.set({ status: "none" })
-      return
-    }
-
-    if (f.status === "dragging" || f.status === "selected") {
-      const notLockedBySomeoneElse = [...f.ids].filter(id => !itemsWhereSomeoneElseHasLock.has(id))
-
-      const notChanged = notLockedBySomeoneElse.length === f.ids.size && notLockedBySomeoneElse.every(id => f.ids.has(id))
-      if (notChanged) return
-
-      focus.set(
-        notLockedBySomeoneElse.length > 0
-        ? { status: f.status, ids: new Set(notLockedBySomeoneElse) }
-        : { status: "none" }
-      )
-    }    
-  })
-
-  return focus
+  }  
 }

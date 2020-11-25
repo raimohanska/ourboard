@@ -14,3 +14,22 @@ export function getSelectedIds(f: BoardFocus): Set<Id> {
         case "dragging": return f.ids
     }
 }
+
+export function removeFromSelection(selection: BoardFocus, toRemove: Set<Id>): BoardFocus {
+    switch (selection.status) {
+      case "none": return selection
+      case "editing": return toRemove.has(selection.id) ? { status: "none" } : selection
+      case "dragging":
+      case "selected": 
+        selection = { ...selection, ids: difference(selection.ids, toRemove) }
+        return selection.ids.size > 0 ? selection : { status: "none" }
+    }
+  }
+
+function difference<A>(setA: Set<A>, setB: Set<A>) {
+    let _difference = new Set(setA)
+    for (let elem of setB) {
+        _difference.delete(elem)
+    }
+    return _difference
+}
