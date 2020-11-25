@@ -9,7 +9,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
           return [board, null]
         }
         return [
-          { ...board, items: sortItems(board.items.concat(event.items)) }, 
+          { ...board, items: board.items.concat(event.items) }, 
           { action: "item.delete", boardId: board.id, itemIds: event.items.map(i => i.id)}
         ];
       case "item.update":
@@ -66,7 +66,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
         }
         return [{
           ...board,
-          items: sortItems(board.items.map(i => i.type !== "container" && event.itemIds.includes(i.id) ? { ...i, z: maxZ + 1 } : i))
+          items: board.items.map(i => i.type !== "container" && event.itemIds.includes(i.id) ? { ...i, z: maxZ + 1 } : i)
         }, null] // TODO: return item.back
       case "item.lock":
       case "item.unlock":
@@ -101,5 +101,3 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
       return i.id === id ? { ...updated, containerId } : updated
     })
   }
-
-  const sortItems = (items: Item[]) => _.sortBy(items, i => i.type === "container" ? 0 : 1) // containers first to keep them on background
