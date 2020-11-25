@@ -3,7 +3,7 @@ import * as L from "lonna";
 import * as uuid from "uuid";
 import { Board, Containee, Id, Item } from "../../../common/src/domain";
 import { BoardCoordinateHelper } from "./board-coordinates";
-import { BoardFocus } from "./board-focus";
+import { BoardFocus, getSelectedIds } from "./board-focus";
 import { Dispatch } from "./board-store";
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
@@ -60,11 +60,9 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                     break
                 }
                 case "copy": {
-                    if (currentFocus.status === "selected") {
-                        clipboard = selectedItemsAndChildren(currentFocus.ids, currentBoard)
-                    }
-                    else if (currentFocus.status === "editing") {
-                        clipboard = selectedItemsAndChildren(new Set([currentFocus.id]), currentBoard)
+                    const selectedIds = getSelectedIds(currentFocus)
+                    if (selectedIds.size > 0) {
+                        clipboard = selectedItemsAndChildren(selectedIds, currentBoard)
                     }
                     break
                 }

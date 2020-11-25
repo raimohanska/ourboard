@@ -2,7 +2,7 @@
 import * as L from "lonna"
 import { Board, Id, ItemLocks } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
-import { BoardFocus } from "./board-focus";
+import { BoardFocus, getSelectedIds } from "./board-focus";
   
 /*
   Centralized module to handle locking/unlocking items, i.e. disallow operating on
@@ -27,24 +27,9 @@ export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Pr
     if (!user) return
     const l = locks.get()
     const locksHeld = Object.keys(l).filter(itemId => l[itemId] === user)
-
-    switch (f.status) {
-      case "none": {
-        locksHeld.forEach(unlock)
-        break
-      }
-      case "editing": {
-        const lockHeld = locksHeld.includes(f.id)
-        !lockHeld && lock(f.id)
-        break
-      }
-      case "selected":
-      case "dragging": {
-        locksHeld.filter(id => !f.ids.has(id)).forEach(unlock);
-        [...f.ids].filter(id => !locksHeld.includes(id)).forEach(lock)
-        break
-      }
-    }
+    const selectedIds = getSelectedIds(f)
+    locksHeld.filter(id => !selectedIds.has(id)).forEach(unlock);
+    [...selectedIds].filter(id => !locksHeld.includes(id)).forEach(lock)
   }
 
   function allowFocusIfAtLeastOneItemNotLockedBySomeoneElse_AndThenNastilyMutateSelectedIDsConditionallyToOnlyIncludeTheAllowedOnes(f: BoardFocus) {
