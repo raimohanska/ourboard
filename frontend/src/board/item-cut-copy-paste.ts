@@ -60,9 +60,12 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                     break
                 }
                 case "copy": {
-                    if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
-                    const itemsToCopy = selectedItemsAndChildren(currentFocus.ids, currentBoard)
-                    clipboard = itemsToCopy
+                    if (currentFocus.status === "selected") {
+                        clipboard = selectedItemsAndChildren(currentFocus.ids, currentBoard)
+                    }
+                    else if (currentFocus.status === "editing") {
+                        clipboard = selectedItemsAndChildren(new Set([currentFocus.id]), currentBoard)
+                    }
                     break
                 }
                 case "paste": {
