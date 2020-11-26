@@ -111,7 +111,8 @@ export const BoardView = (
   let lastAddedColor = "yellow"
 
   function onAdd(item: Item) {
-    const { x, y } = add(coordinateHelper.currentBoardCoordinates.get(), { x: -item.width / 2, y: -item.height / 2 })
+    const point = coordinateHelper.currentBoardCoordinates.get()
+    const { x, y } = item.type !== "container" ? add(point, { x: -item.width / 2, y: -item.height / 2 }) : point
     item = withCurrentContainer({ ...item, x, y }, board.get())
 
     if (item.type === "note") {
