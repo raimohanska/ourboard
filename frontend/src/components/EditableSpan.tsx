@@ -11,6 +11,10 @@ export type EditableSpanProps = {
     cancel?: () => void 
 } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>
 
+function clearSelection(){
+    window.getSelection()?.removeAllRanges()
+}
+
 export const EditableSpan = ( props : EditableSpanProps) => {
     let { value, editingThis, commit, cancel, ...rest } = props    
     const nameElement = L.atom<HTMLSpanElement | null>(null)
@@ -20,11 +24,15 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         e.preventDefault()
         e.stopPropagation()
     }  
-    editingThis.pipe(L.changes, L.filter(e => !!e), L.applyScope(componentScope())).forEach(() =>  { 
-        setTimeout(() => {
-            nameElement.get()!.focus() 
-            document.execCommand('selectAll',false)    
-        }, 1)
+    editingThis.pipe(L.changes).forEach((editing) =>  { 
+        if (editing) {
+            setTimeout(() => {
+                nameElement.get()!.focus() 
+                document.execCommand('selectAll',false)    
+            }, 1)
+        } else {
+            clearSelection()
+        }
     })
 
     const endEditing = () => {
