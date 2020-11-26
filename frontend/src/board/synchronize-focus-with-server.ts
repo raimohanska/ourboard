@@ -3,7 +3,7 @@ import * as L from "lonna"
 import * as _ from "lodash"
 import { Board, Id, ItemLocks } from "../../../common/src/domain";
 import { Dispatch } from "./board-store";
-import { BoardFocus, getSelectedIds, removeFromSelection } from "./board-focus";
+import { BoardFocus, getSelectedIds, removeFromSelection, removeNonExistingFromSelection } from "./board-focus";
   
 /*
   Centralized module to handle locking/unlocking items, i.e. disallow operating on
@@ -24,10 +24,11 @@ export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Pr
   const rawFocus = L.atom<BoardFocus>({ status: "none" })
 
   // selection where illegal (locked) items are removed
-  const resolvedFocus = L.pipe(L.combine(locks, rawFocus, userId, (locks: ItemLocks, focus: BoardFocus, user: string | null): BoardFocus => {
+  const resolvedFocus = L.pipe(L.combine(locks, rawFocus, userId, board, (locks: ItemLocks, focus: BoardFocus, user: string | null, b: Board): BoardFocus => {
     if (!user) return { status: "none" }
     const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter(itemId => locks[itemId] !== user));
-    return removeFromSelection(focus, itemsWhereSomeoneElseHasLock)
+    
+    return removeNonExistingFromSelection(removeFromSelection(focus, itemsWhereSomeoneElseHasLock), new Set(b.items.map(i => i.id)))
   }), L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope))
   
   resolvedFocus.forEach(dispatchLocksIfNecessary)  

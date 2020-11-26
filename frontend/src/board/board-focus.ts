@@ -17,14 +17,19 @@ export function getSelectedIds(f: BoardFocus): Set<Id> {
 
 export function removeFromSelection(selection: BoardFocus, toRemove: Set<Id>): BoardFocus {
     switch (selection.status) {
-      case "none": return selection
-      case "editing": return toRemove.has(selection.id) ? { status: "none" } : selection
-      case "dragging":
-      case "selected": 
+        case "none": return selection
+        case "editing": return toRemove.has(selection.id) ? { status: "none" } : selection
+        case "dragging":
+        case "selected": 
         selection = { ...selection, ids: difference(selection.ids, toRemove) }
         return selection.ids.size > 0 ? selection : { status: "none" }
     }
-  }
+}
+
+export function removeNonExistingFromSelection(selection: BoardFocus, existing: Set<Id>): BoardFocus {
+    const nonExistent = difference(getSelectedIds(selection), existing)
+    return removeFromSelection(selection, nonExistent)
+}
 
 function difference<A>(setA: Set<A>, setB: Set<A>) {
     let _difference = new Set(setA)
