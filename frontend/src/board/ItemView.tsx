@@ -71,7 +71,7 @@ export const ItemView = (
     const showCoords = false
   
     const fontSize = L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), L.view(item, "text"), (t, w, h, text) => {
-      if (t === "container") return "1em";
+      if (t !== "note") return "1em";
       const lines = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont!))
 
       const textHeight = _.sum(lines.map(l => l.height))
