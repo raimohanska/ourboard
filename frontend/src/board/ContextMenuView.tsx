@@ -1,9 +1,11 @@
 import {h} from "harmaja"
 import * as L from "lonna"
+import _ from "lodash"
 import {Board, Color, Id, Item} from "../../../common/src/domain"
 import { Dispatch } from "./board-store"
 import { NOTE_COLORS } from "./PaletteView"
-import { BoardFocus } from "./board-focus"
+import { BoardFocus, getSelectedIds } from "./board-focus"
+import { findItem } from "../../../common/src/state"
 
 export const ContextMenuView = (
   { dispatch, board, focus }:
@@ -11,15 +13,18 @@ export const ContextMenuView = (
 ) => {
 
   function setColor(color: Color) {
-    const f = focus.get()
-    const b = board.get()
-    if (f.status === "selected") {
-      f.ids.forEach(id => {
-        const current = b.items.find(i => i.id === id)
-        if (!current) throw Error("Item not found: " + id)
-        dispatch({ action: "item.update", boardId: b.id, items: [{ ...current, color } as Item]  }); // TODO: this is post-it specific, not for all Items
-      })
-    }
+    const f = focus.get();
+    const b = board.get();
+
+    const updated = [...getSelectedIds(f)].flatMap(id => {
+      const current = findItem(b)(id)
+      if (current.type === "note") {
+        return { ...current, color } as Item
+      }
+      return []
+    })
+
+    dispatch({ action: "item.update", boardId: b.id, items: updated  });
   }
 
   const focusedItems = L.view(focus, f => {
@@ -32,7 +37,7 @@ export const ContextMenuView = (
   }, ids => ids.map(id => board.get().items.find(i => i.id === id)))
 
   const focusItem = L.view(focusedItems, items => {
-    return items.length === 1 && items[0]?.type === "note" ? items[0] : null
+    return _.minBy(items, i => i?.y) || null
   })
   
   return L.view(focusItem, p => p === null, hide => hide ? null : (
