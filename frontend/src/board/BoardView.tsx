@@ -2,9 +2,10 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import { Id, Image, Item, newNote, Note, UserCursorPosition} from "../../../common/src/domain";
+import { Image, Item, newNote, Note, UserCursorPosition} from "../../../common/src/domain";
 import { ItemView } from "./ItemView"
 import { BoardAppState, Dispatch } from "./board-store";
+import { ContextMenuView } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView";
 import { CursorsView } from "./CursorsView";
 import { ImageView } from "./ImageView";
@@ -147,6 +148,7 @@ export const BoardView = (
             />
             <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, dispatch }}/>
             <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
+            <ContextMenuView {...{dispatch, board, focus } } />
           </div>          
         </div>        
       </div>

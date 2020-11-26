@@ -11,7 +11,6 @@ import { itemSelectionHandler } from "./item-selection";
 import { Dispatch } from "./board-store";
 import { contrastingColor } from "./contrasting-color";
 import _ from "lodash";
-import { ContextMenuView } from "./ContextMenuView";
 
 export const ItemView = (
     { board, id, type, item, isLocked, focus, coordinateHelper, dispatch }:
@@ -63,7 +62,6 @@ export const ItemView = (
       { (type === "note" || type === "text" || type === "container") && <TextView item={item as L.Property<TextItem>}/>}
       { L.view(isLocked, l => l && <span className="lock">🔒</span>)}
       { L.view(selected, s => s && <SelectionBorder {...{ id, item: item, coordinateHelper, board, focus, dispatch}}/>)}
-      { L.view(selected, s => type === "note" && s && <ContextMenuView {...{dispatch, board, id } } />) }
       { type === "container" && <DragBorder {...{ id, board, coordinateHelper, focus, dispatch }}/>}
     </span>
   );

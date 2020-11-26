@@ -262,53 +262,15 @@ describe("Board functionality", () => {
             expect(originalColor).not.to.equal(undefined)
         })
 
-        NotesWithText("HELLO").click({ force: true }).find(".context-menu").find(".color").then(elements => {
+        NotesWithText("HELLO").click({ force: true })
+        cy.get(".context-menu").scrollIntoView().should("be.visible")
+        cy.get(".colors").find(".color").then(elements => {
             const templateWithNewColor = [...elements].find(el => el.style.background && el.style.background !== originalColor)
             const newColor = templateWithNewColor.style.background
 
             templateWithNewColor.click()
             NotesWithText("HELLO").then(els => {
                 expect(els[0].style.background, `Note 'HELLO' should have turned ${newColor}`).to.equal(newColor)
-            })
-        })
-    })
-
-    it("Multiple selected notes each have their own self-scoped context menu", () => {
-        createNote("HELLO", 250, 200)
-        createNote("GREETINGS", 550, 500)  
-        const originalColors = {};
-
-
-        NotesWithText("HELLO").then(els => {
-            originalColors["HELLO"] = els[0].style.background
-            expect(originalColors["HELLO"]).not.to.equal(undefined)
-        })
-
-        NotesWithText("GREETINGS").then(els => {
-            originalColors["GREETINGS"] = els[0].style.background
-            expect(originalColors["GREETINGS"]).not.to.equal(undefined)
-        })
-
-        NotesWithText("HELLO").click({ force: true, shiftKey: true })
-        NotesWithText("GREETINGS").click({ force: true, shiftKey: true })
-        
-        NotesWithText("HELLO").find(".context-menu").find(".color").then(elements => {
-            const templateWithNewColor = [...elements].find(el => el.style.background && el.style.background !== originalColors["HELLO"])
-            const newColor = templateWithNewColor.style.background
-
-            templateWithNewColor.click()
-            NotesWithText("HELLO").then(els => {
-                expect(els[0].style.background, `Note 'HELLO' should have turned ${newColor}`).to.equal(newColor)
-            })
-        })
-
-        NotesWithText("GREETINGS").find(".context-menu").find(".color").then(elements => {
-            const templateWithNewColor = [...elements].find(el => el.style.background && el.style.background !== originalColors["GREETINGS"])
-            const newColor = templateWithNewColor.style.background
-
-            templateWithNewColor.click()
-            NotesWithText("GREETINGS").then(els => {
-                expect(els[0].style.background, `Note 'GREETINGS' should have turned ${newColor}`).to.equal(newColor)
             })
         })
     })
