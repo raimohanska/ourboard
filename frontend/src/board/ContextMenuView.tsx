@@ -25,7 +25,7 @@ export const ContextMenuView = (
   const focusedItems = L.view(focus, f => {
     switch (f.status) {
       case "dragging": return []
-      case "editing": return []
+      case "editing": return [f.id]
       case "none": return []
       case "selected": return [...f.ids]
     }
