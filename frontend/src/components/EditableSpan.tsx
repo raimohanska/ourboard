@@ -11,8 +11,11 @@ export type EditableSpanProps = {
     cancel?: () => void 
 } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>
 
+const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 function clearSelection(){
-    window.getSelection()?.removeAllRanges()
+    if (!isFirefox) { // Don't clear selection on Firefox, because for an unknown reason, the "selectAll" functionality below breaks after first clearSelection call.
+        window.getSelection()?.removeAllRanges()
+    }
 }
 
 export const EditableSpan = ( props : EditableSpanProps) => {
@@ -25,6 +28,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         e.stopPropagation()
     }  
     editingThis.pipe(L.changes).forEach((editing) =>  { 
+        console.log("Editing", value.get(), editing)
         if (editing) {
             setTimeout(() => {
                 nameElement.get()!.focus() 
