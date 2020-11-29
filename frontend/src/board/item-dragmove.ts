@@ -16,8 +16,8 @@ export function itemDragToMove(id: string, board: L.Property<Board>, focus: L.At
         const movedItems = items.map(({ dragStartPosition, current }) => {
             const x = Math.min(Math.max(dragStartPosition.x + xDiff, margin), b.width - current.width - margin)        
             const y = Math.min(Math.max(dragStartPosition.y + yDiff, margin), b.height - current.height - margin)
-            const containerId = maybeChangeContainer(current, b)  
-            return {id: current.id, x, y, containerId }
+            const container = maybeChangeContainer(current, b)  
+            return {id: current.id, x, y, containerId: container ? container.id : undefined }
         })
         
         dispatch({ action: "item.move", boardId: b.id, items: movedItems });

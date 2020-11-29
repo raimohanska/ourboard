@@ -36,6 +36,7 @@ export type BoardCursorPositions = Record<Id, UserCursorPosition>;
 export type Color = string;
 
 export type ItemBounds = { x: number; y: number, width: number, height: number, z: number }
+export type ItemProperties = { id: string, containerId?: string } & ItemBounds
 
 export const ITEM_TYPES = {
     NOTE: "note",
@@ -45,11 +46,10 @@ export const ITEM_TYPES = {
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
 
-export type Note = { id: string; type: typeof ITEM_TYPES.NOTE; text: string; color: Color, containerId?: string } & ItemBounds;
-export type Text = { id: string; type: typeof ITEM_TYPES.TEXT; text: string, containerId?: string } & ItemBounds;
-export type Image = { id: string; type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string, containerId?: string } & ItemBounds;
-export type Container = { id: string; type: typeof ITEM_TYPES.CONTAINER; text: string; } & ItemBounds;
-export type Containee = Note | Text | Image
+export type Note = ItemProperties & { type: typeof ITEM_TYPES.NOTE; text: string; color: Color };
+export type Text = ItemProperties & { type: typeof ITEM_TYPES.TEXT; text: string };
+export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string };
+export type Container = ItemProperties & { type: typeof ITEM_TYPES.CONTAINER; text: string; };
 
 export type TextItem = Note | Text | Container
 export type Item = TextItem | Image
@@ -152,7 +152,7 @@ export function migrateBoard(board: Board) {
                 delete container.items
                 ids.forEach(i => {
                     const containedItem = migratedItems.find(mi => mi.id === i) || boardItems.find(bi => bi.id === i)
-                    containedItem && containedItem.type !== "container" && (containedItem.containerId = container.id)
+                    containedItem && (containedItem.containerId = container.id)
                 })
             }
         }

@@ -28,28 +28,17 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
       case "item.move":
         return [{
           ...board,
-          items: event.items.reduce((itemsBeforeMove, i) => moveItems(itemsBeforeMove, i.id, i.x, i.y, i.containerId), board.items)
+          items: event.items.reduce((itemsBeforeMove, i) => moveItemWithChildren(itemsBeforeMove, i.id, i.x, i.y, i.containerId), board.items)
         }, {
           action: "item.move",
           boardId: board.id,
           items: event.items.map(i => {
             const item = findItem(board)(i.id)
-            return { id: i.id, x: item.x, y: item.y, containerId: item.type === "container" ? undefined : item.containerId }
+            return { id: i.id, x: item.x, y: item.y, containerId: item.containerId }
           })
         }];
       case "item.delete": {
-        const idsToDelete = new Set<Id>()
-        for (let id of event.itemIds) {
-          const item = board.items.find(i => i.id === id)
-          if (!item) {
-            console.warn("Deleting non-existing item " + id)
-            continue;
-          }
-          idsToDelete.add(id)
-          if (item.type === "container") {
-            board.items.forEach(i => i.type !== "container" && i.containerId === item.id && idsToDelete.add(i.id))
-          }          
-        }        
+        const idsToDelete = findItemIdsRecursively(event.itemIds, board)                
         return [{
           ...board,
           items: board.items.filter(i => !idsToDelete.has(i.id))
@@ -77,25 +66,50 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
     }
   }
 
-  export const findItem = (board: Board) => (id: Id) => {
-    const item = board.items.find(i => i.id === id)
+  export const findItem = (board: Board | Item[]) => (id: Id) => {
+    const items: Item[] = board instanceof Array ? board : board.items
+    const item = items.find(i => i.id === id)
     if (!item) throw Error("Item not found: " + id)
     return item
   }
 
-  const moveItems = (items: Item[], id: Id, x: number, y: number, containerId: Id | undefined) => {
-    const item = items.find(i => i.id === id)
-    if (!item) {
-      console.warn("Moving unknown item", id)
-      return items
+  export function findItemIdsRecursively(ids: Id[], board: Board): Set<Id> {
+    const recursiveIds = new Set<Id>()
+    const addIdRecursively = (id: Id) => {
+      recursiveIds.add(id)
+      board.items.forEach(i => i.containerId === id && addIdRecursively(i.id))          
     }
-    const xDiff = x - item.x
-    const yDiff = y - item.y
+    ids.forEach(addIdRecursively)
+    return recursiveIds
+  }
 
-    const containedBy = (i: Item) => i.type !== "container" && i.containerId === item.id
-    const movedItems = new Set(item.type === "container" ? items.filter(containedBy).map(i => i.id).concat(id) : [id])
+  export function findItemsRecursively(ids: Id[], board: Board): Item[] {
+    const recursiveIds = findItemIdsRecursively(ids, board)
+    return [...recursiveIds].map(findItem(board))
+  }
 
-    return items.map((i) => {
+  const moveItemWithChildren = (itemsOnBoard: Item[], id: Id, x: number, y: number, containerId: Id | undefined) => {
+    const mainItem = itemsOnBoard.find(i => i.id === id)
+    if (mainItem === undefined) {
+      console.warn("Moving unknown item", id)
+      return itemsOnBoard
+    }
+    const xDiff = x - mainItem.x
+    const yDiff = y - mainItem.y
+
+    function containedByMainItem(i: Item): boolean { 
+      if (!i.containerId) return false
+      if (i.containerId === mainItem!.id) return true
+      const parent = findItem(itemsOnBoard)(i.containerId)
+      if (i.containerId === i.id) throw Error("Self-contained")
+      if (parent == i) throw Error("self parent")
+      if (!parent) throw Error("Wat")
+
+      return containedByMainItem(parent)
+    }
+    const movedItems = new Set(itemsOnBoard.filter(containedByMainItem).map(i => i.id).concat(id))
+
+    return itemsOnBoard.map((i) => {
       if (!movedItems.has(i.id)) return i
       const updated = { ...i, x: i.x + xDiff, y: i.y + yDiff }
       return i.id === id ? { ...updated, containerId } : updated

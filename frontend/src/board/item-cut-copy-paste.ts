@@ -1,7 +1,8 @@
 import _ from "lodash";
 import * as L from "lonna";
 import * as uuid from "uuid";
-import { Board, Containee, Id, Item } from "../../../common/src/domain";
+import { Board, Id, Item } from "../../../common/src/domain";
+import { findItemsRecursively } from "../../../common/src/state";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus, getSelectedIds } from "./board-focus";
 import { Dispatch } from "./board-store";
@@ -13,8 +14,8 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
     let clipboard: Item[] = [];
 
     const makeCopies = (items: Item[], xDiff: number, yDiff: number): { toCreate: Item[], toSelect: Item[] } => {
-        const containerIds = items.filter(i => i.type === "container").map(i => i.id)
-        const contained = items.filter((i): i is Containee => i.type !== "container" && !!i.containerId && containerIds.includes(i.containerId))
+        const containerIds = items.map(i => i.id)
+        const contained = items.filter(i => !!i.containerId && containerIds.includes(i.containerId))
         const notContained = items.filter(i => !contained.some(c => c.id === i.id))
 
         let toCreate: Item[] = []
@@ -23,11 +24,9 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
         return { toCreate, toSelect }
 
         function makeCopy(i: Item): Item {
-            if (i.type !== "container") {
-                return move({ ...i, id: uuid.v4()})
-            }
             const containerId = i.id
             const newContainer = move({ ...i, id: uuid.v4()})
+            // TODO: this won't work for deep containment hierarchies
             contained.filter(ctd => ctd.containerId === containerId).forEach(ctd => {
                 toCreate.push(move({ ...ctd, id: uuid.v4(), containerId: newContainer.id }))
             })
@@ -37,14 +36,6 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
         function move(i: Item) {
             return { ...i, x: i.x + xDiff, y: i.y + yDiff }
         }
-
-        
-    }
-
-    function selectedItemsAndChildren(selectedIDs: Set<Id>, board: Board) {
-        const containerOfItemIsSelected = (i: Item) => i.type !== "container" && i.containerId && selectedIDs.has(i.containerId)
-        return board.items
-            .filter(i => selectedIDs.has(i.id) || containerOfItemIsSelected(i))
     }
 
     CLIPBOARD_EVENTS.forEach(eventType => {
@@ -54,7 +45,7 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
             switch(eventType) {
                 case "cut": {
                     if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
-                    const itemsToCut = selectedItemsAndChildren(currentFocus.ids, currentBoard)
+                    const itemsToCut = findItemsRecursively([...currentFocus.ids], currentBoard)
                     dispatch({ action: "item.delete", boardId: currentBoard.id, itemIds: itemsToCut.map(i => i.id)})
                     clipboard = itemsToCut
                     break
@@ -62,7 +53,7 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                 case "copy": {
                     const selectedIds = getSelectedIds(currentFocus)
                     if (selectedIds.size > 0) {
-                        clipboard = selectedItemsAndChildren(selectedIds, currentBoard)
+                        clipboard = findItemsRecursively([...selectedIds], currentBoard)
                     }
                     break
                 }

@@ -1,5 +1,5 @@
 import * as uuid from "uuid";
-import { Board, BoardStub, Item, Containee, isFullyFormedBoard, migrateBoard } from "../../../common/src/domain"
+import { Board, BoardStub, Item, isFullyFormedBoard, migrateBoard } from "../../../common/src/domain"
 
 export function generateFromTemplate(boardName: string, tmpl: Board | BoardStub): Board | BoardStub {
     if (!isFullyFormedBoard(tmpl)) {
@@ -16,8 +16,8 @@ export function generateFromTemplate(boardName: string, tmpl: Board | BoardStub)
         id: itemMapper.get(i.id)!
       }
   
-      if (i.type !== "container" && i.containerId) {
-        (newItem as Containee).containerId = itemMapper.get(i.containerId)!
+      if (i.containerId) {
+        newItem.containerId = itemMapper.get(i.containerId)!
       }
   
       return newItem
