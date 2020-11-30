@@ -267,6 +267,7 @@ a {
 
     .scroll-container {
         flex-grow: 1;
+        overflow: auto;
         background: $off-board-color;
         .border-container {
             box-sizing: content-box;
