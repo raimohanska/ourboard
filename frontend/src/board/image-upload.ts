@@ -15,6 +15,13 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
 
     boardElement.addEventListener('drop', handleDrop, false)
 
+    document.addEventListener("paste", e => {
+        if (e.clipboardData) {
+            const imageFile = [...e.clipboardData.files].find(file => file.type.startsWith("image/"))
+            imageFile && uploadImageFile(imageFile)
+        }
+    })
+
     async function handleDrop(e: DragEvent) {
         if (focus.get().status === "dragging") {
             return // was dragging an item
