@@ -7,14 +7,12 @@ import { BoardAppState, Dispatch } from "./board-store";
 import { getRecentBoards } from "./recent-boards";
 
 export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppState>, dispatch: Dispatch }) => {
-  return <div id="root">
-    <div className="dashboard">
-      <h1 id="app-title" data-test="app-title">
-      R-Board         
-      </h1>
-      <RecentBoards/>
-      <CreateBoard dispatch={dispatch}/>
-    </div> 
+  return <div id="root" className="dashboard">
+    <h1 id="app-title" data-test="app-title">
+    R-Board         
+    </h1>
+    <RecentBoards/>
+    <CreateBoard dispatch={dispatch}/>
   </div>
 }
 

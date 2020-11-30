@@ -285,7 +285,6 @@ a {
     }      
 
     .scroll-container {
-        overflow: auto;
         flex-grow: 1;
         background: $off-board-color;
         .border-container {
@@ -391,6 +390,12 @@ a {
             }
         }
 
+        .lock {
+            position: absolute;
+            bottom: 0.1em;
+            left: 0.1em;
+        }        
+
         .selection-control {
             $border-offset: 0.25em;
             display: block;
@@ -478,7 +483,7 @@ a {
 
 }
 
-.dashboard {
+#root.dashboard {
     padding-left: $left-padding;
     .create-board {
         width: 50%;
@@ -489,12 +494,6 @@ a {
              margin-bottom: 1em;
         }
     }
-}
-
-.lock {
-    position: absolute;
-    bottom: 0.1em;
-    left: 0.1em;
 }
 
 .icon {
