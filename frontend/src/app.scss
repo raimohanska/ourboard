@@ -159,7 +159,6 @@ a {
         color: $black;
 
         > #board-name {
-            font-size: 0.8em;
             margin-left: 0.5em;
             margin-left: 1rem;
         }
@@ -195,7 +194,6 @@ a {
                     background: white;
                     border: 1px solid black;
                     color: #888;
-                    font-size: .8em;
                     line-height: 1em;
                     display: inline-block;
                     box-sizing: content-box;
@@ -205,27 +203,10 @@ a {
                     @extend .item;
                     background: white;
                     color: $black;
-                    font-size: .8em;
                     line-height: 1em;
                     display: inline-block;
                     border: 0.1em solid white;
                     box-sizing: content-box;
-                }
-    
-                .button {
-                    @extend .item;
-                    background: white;
-                    color: $black;
-                    font-size: .8em;
-                    line-height: 1em;
-                    display: inline-block;
-                    border: 0.1em solid white;
-                    box-sizing: content-box;
-    
-                    &:disabled {
-                        background: lightgray;
-                        color: gray;
-                    }
                 }
             }
         }        
