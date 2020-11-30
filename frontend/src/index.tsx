@@ -7,7 +7,7 @@ import { BoardAppState, boardStore } from "./board/board-store";
 import { BoardView } from "./board/BoardView";
 import { Header } from "./components/Header";
 import { syncStatusStore } from "./sync-status/sync-status-store";
-import { Board, exampleBoard } from "../../common/src/domain";
+import { Board, exampleBoard, UserCursorPosition } from "../../common/src/domain";
 import { DashboardView } from "./board/DashboardView"
 import { assetStore } from "./board/asset-store";
 import { storeRecentBoard } from "./board/recent-boards"
@@ -18,11 +18,11 @@ const App = () => {
     const assets = assetStore(socket, store)
     const syncStatus = syncStatusStore(socket, store.queueSize)
     const showingBoardId = store.state.pipe(L.map((s: BoardAppState) => s.board ? s.board.id : undefined))
-    const cursors = store.state.pipe(L.map((s: BoardAppState) => {
+    const cursors: L.Property<UserCursorPosition[]> = L.view(store.state, s => {
         const otherCursors = { ...s.cursors };
         s.userId && delete otherCursors[s.userId];
         return Object.values(otherCursors);
-    }))
+    })
     const state = store.state
 
     const title = L.view(store.state, s => s.board ? `${s.board.name} - R-Board` : "R-Board")
