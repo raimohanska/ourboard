@@ -12,7 +12,7 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<BoardAppSt
         dispatch({ action: "nickname.set", nickname, userId })
     })
     return <span className="user-info">
-        { L.view(nicknameAtom, n => n !== undefined, n => n && <EditableSpan showIcon={true} className="nickname" {...{ value: nicknameAtom as L.Atom<string>, editingThis}}/>) }
+        { L.view(nicknameAtom, n => n !== undefined, n => n && <EditableSpan title="Edit your nickname" showIcon={true} className="nickname" {...{ value: nicknameAtom as L.Atom<string>, editingThis}}/>) }
         <span className="icon user"/>
     </span>
 }

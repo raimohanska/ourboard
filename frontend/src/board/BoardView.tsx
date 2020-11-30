@@ -162,9 +162,11 @@ export const BoardView = (
         <BoardMenu state={state} dispatch={dispatch}/>            
   
         <div className="controls">        
-            <span className="icon zoom_in" onClick={() => zoom.modify((z) => z * 1.1)}></span>
-            <span className="icon zoom_out" onClick={() => zoom.modify((z) => z / 1.1)}></span>
+            <span className="icon zoom_in" title="Zoom in" onClick={() => zoom.modify((z) => z * 1.1)}></span>
+            <span className="icon zoom_out" title="Zoom out" onClick={() => zoom.modify((z) => z / 1.1)}></span>
             <PaletteView {...{ latestNoteColor, onAdd, board, dispatch }}/>
+            <span className="icon undo" title="Undo" onClick={() => dispatch({ action: "undo" })} />
+            <span className="icon redo" title="Redo" onClick={() => dispatch({ action: "redo" })} />
         </div>            
   
         <UserInfoView state={state} dispatch={dispatch} />

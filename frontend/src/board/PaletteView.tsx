@@ -14,19 +14,17 @@ export const PaletteView = ( { latestNoteColor, onAdd, board, dispatch }: { late
     }
     <NewContainer {...{ onAdd }} />
     <NewText {...{onAdd}} />
-    <span className="icon undo" onClick={() => dispatch({ action: "undo" })} />
-    <span className="icon redo" onClick={() => dispatch({ action: "redo" })} />
   </span>
 }
 
 export const NewText = ({ onAdd, }: { onAdd: (i: Item) => void }) => {
-  return <span data-test="palette-new-text" onDragEnd={() => onAdd(newText("HELLO"))} className="text palette-item" draggable={true}>Text</span>    
+  return <span data-test="palette-new-text" title="Drag to add new text area" onDragEnd={() => onAdd(newText("HELLO"))} className="text palette-item" draggable={true}>Text</span>    
 }
 
 export const NewNote = ({ color, onAdd, }: { color: Color, onAdd: (i: Item) => void }) => {
-  return <span data-test={`palette-new-note-${color}`} onDragEnd={() => onAdd(newNote("HELLO", color))} className="note palette-item" draggable={true} style={{background: color}}/>    
+  return <span data-test={`palette-new-note-${color}`} title="Drag to add new text note" onDragEnd={() => onAdd(newNote("HELLO", color))} className="note palette-item" draggable={true} style={{background: color}}/>    
 }
 
 export const NewContainer = ({ onAdd }: { onAdd: (i: Item) => void }) => {
-  return <span data-test="palette-new-container" onDragEnd={() => onAdd(newContainer())} className="container palette-item" draggable={true}>Area</span>
+  return <span data-test="palette-new-container" title="Drag to add new area" onDragEnd={() => onAdd(newContainer())} className="container palette-item" draggable={true}>Area</span>
 }
