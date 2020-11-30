@@ -3,13 +3,18 @@ import * as L from "lonna";
 import { exampleBoard } from "../../../common/src/domain";
 import { generateFromTemplate, getUserTemplates } from "./templates"
 import { TextInput } from "../components/components";
-import { Dispatch } from "./board-store";
+import { BoardAppState, Dispatch } from "./board-store";
 import { getRecentBoards } from "./recent-boards";
 
-export const DashboardView = ({ dispatch }: {dispatch: Dispatch }) => {
-  return <div className="dashboard">
-    <RecentBoards/>
-    <CreateBoard dispatch={dispatch}/>
+export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppState>, dispatch: Dispatch }) => {
+  return <div id="root">
+    <div className="dashboard">
+      <h1 id="app-title" data-test="app-title">
+      R-Board         
+      </h1>
+      <RecentBoards/>
+      <CreateBoard dispatch={dispatch}/>
+    </div> 
   </div>
 }
 
@@ -30,9 +35,8 @@ const Welcome = () => {
   return <div>
     <h2>Welcome to R-Board!</h2>
     <p>
-      Please try the <a href={`/b/${exampleBoard.id}`}>Example Board</a>!
+      Please try the <a href={`/b/${exampleBoard.id}`}>Example Board</a>, or create a new board below.
     </p>
-    <p>... or create a new board below.</p>
   </div>
 }
 const CreateBoard = ({ dispatch }: {dispatch: Dispatch }) => {
@@ -65,5 +69,5 @@ const CreateBoard = ({ dispatch }: {dispatch: Dispatch }) => {
         )}
       </select>
       <input data-test="create-board-submit"type="submit" value="Create" disabled={ disabled } />
-  </form>
+  </form>    
 }

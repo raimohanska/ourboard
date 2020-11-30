@@ -49,22 +49,18 @@ const App = () => {
         b && storeRecentBoard(b)
     })
 
-    return <div id="root">        
-        <Header {...{syncStatus, state, dispatch: store.dispatch }}/>
-        {
-            L.view(store.boardId, boardId => 
-                boardId ? L.view(showingBoardId, boardId => !!boardId &&
-                    <BoardView {...{
-                        boardId,
-                        cursors,
-                        assets,
-                        state,
-                        dispatch: store.dispatch
-                        }}/> 
-                ) : <DashboardView {...{ dispatch: store.dispatch }}/>               
-            )
-        }
-    </div>
+    return L.view(store.boardId, boardId => 
+        boardId ? L.view(showingBoardId, boardId => !!boardId &&
+            <BoardView {...{
+                boardId,
+                cursors,
+                assets,
+                state,
+                dispatch: store.dispatch,
+                syncStatus
+                }}/> 
+        ) : <DashboardView {...{ dispatch: store.dispatch, state }}/>               
+    )
 }
 
 H.mount(<App/>, document.getElementById("root")!)

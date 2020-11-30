@@ -19,11 +19,15 @@ import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 import { BoardFocus, getSelectedIds } from "./board-focus";
 import { itemDeleteHandler } from "./item-delete"
 import { itemUndoHandler } from "./item-undo-redo"
+import { BoardMenu } from "./BoardMenu";
+import { UserInfoView } from "../components/UserInfoView";
+import { SyncStatusView } from "../components/SyncStatusView";
+import { SyncStatus } from "../sync-status/sync-status-store";
 
 export const BoardView = (
-  { boardId, cursors, state, assets, dispatch }: 
+  { boardId, cursors, state, assets, dispatch, syncStatus }: 
   { boardId: string, cursors: L.Property<UserCursorPosition[]>, state: L.Property<BoardAppState>, 
-    assets: AssetStore, dispatch: Dispatch }
+    assets: AssetStore, dispatch: Dispatch, syncStatus: L.Property<SyncStatus> }
 ) => {
   const board = L.view(state, s => s.board!)
   const locks = L.view(state, s => s.locks)
@@ -36,7 +40,7 @@ export const BoardView = (
     height: L.view(board, b => b.height + "em")
   })
   const element = L.atom<HTMLElement | null>(null);
-
+  const latestNoteColor = L.atom("yellow")
   const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
 
   focus.forEach(f => {
@@ -102,13 +106,11 @@ export const BoardView = (
       const f = focus.get()
       const selectedElement = getSelectedElement(focus.get())
       if (f.status === "none" || (selectedElement && selectedElement.type === "container")) {
-        const newItem = newNote("HELLO", lastAddedColor)
+        const newItem = newNote("HELLO", latestNoteColor.get())
         onAdd(newItem)
       }
     }
-  })
-
-  let lastAddedColor = "yellow"
+  })  
 
   function onAdd(item: Item) {
     const point = coordinateHelper.currentBoardCoordinates.get()
@@ -116,7 +118,7 @@ export const BoardView = (
     item = withCurrentContainer({ ...item, x, y }, board.get())
 
     if (item.type === "note") {
-      lastAddedColor = item.color
+      latestNoteColor.set(item.color)
     }
 
     dispatch({ action: "item.add", boardId, items: [item] })
@@ -133,13 +135,10 @@ export const BoardView = (
   })
 
   return (
-    <div className="board-container">      
-      <div className="controls">        
-        <button className="mini" onClick={() => zoom.modify((z) => z * 1.1)}>+</button>
-        <button className="mini" onClick={() => zoom.modify((z) => z / 1.1)}>-</button>
-        <PaletteView {...{ onAdd, board, dispatch }}/>
-      </div>
+    <div id="root" className="board-container">      
       <div className="scroll-container">
+        <BoardViewHeader state={state} dispatch={dispatch} syncStatus={syncStatus}/>
+
         <div className="border-container" style={style}>
           <div className="board" draggable={true} ref={ref} onClick={onClick}>
             <ListView
@@ -149,12 +148,29 @@ export const BoardView = (
             />
             <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, dispatch }}/>
             <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
-            <ContextMenuView {...{dispatch, board, focus } } />
+            <ContextMenuView {...{latestNoteColor, dispatch, board, focus } } />
           </div>          
         </div>        
       </div>
+
     </div>
   );
+
+  function BoardViewHeader({ syncStatus, state, dispatch }: { syncStatus: L.Property<SyncStatus>, state: L.Property<BoardAppState>, dispatch: Dispatch }) {
+    return <header>
+        <a href="/"><span className="icon back"/></a>
+        <BoardMenu state={state} dispatch={dispatch}/>            
+  
+        <div className="controls">        
+            <span className="icon zoom_in" onClick={() => zoom.modify((z) => z * 1.1)}></span>
+            <span className="icon zoom_out" onClick={() => zoom.modify((z) => z / 1.1)}></span>
+            <PaletteView {...{ latestNoteColor, onAdd, board, dispatch }}/>
+        </div>            
+  
+        <UserInfoView state={state} dispatch={dispatch} />
+        <SyncStatusView syncStatus={syncStatus}/>
+    </header>
+  }
 
   function renderItem(id: string, item: L.Property<Item>) {
     const isLocked = L.combineTemplate({ locks, userId })

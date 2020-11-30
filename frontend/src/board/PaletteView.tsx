@@ -5,18 +5,17 @@ import { Dispatch } from "./board-store";
 
 export const NOTE_COLORS = ["yellow", "pink", "cyan", "#673ab7", "black", "lightgreen", "#f0350b"]
 
-export const PaletteView = ( { onAdd, board, dispatch }: { onAdd: (item: Item) => void, board: L.Property<Board>, dispatch: Dispatch } ) => {
+export const PaletteView = ( { latestNoteColor, onAdd, board, dispatch }: { latestNoteColor: L.Atom<Color>, onAdd: (item: Item) => void, board: L.Property<Board>, dispatch: Dispatch } ) => {
   return <span className="palette">
-    <span>Drag to add</span>
     {
-      NOTE_COLORS.map(color =>
+      L.view(latestNoteColor, color =>
         <NewNote {...{ onAdd, color }} />
       )
     }
     <NewContainer {...{ onAdd }} />
     <NewText {...{onAdd}} />
-    <span className="icon back" onClick={() => dispatch({ action: "undo" })} />
-    <span className="icon forward" onClick={() => dispatch({ action: "redo" })} />
+    <span className="icon undo" onClick={() => dispatch({ action: "undo" })} />
+    <span className="icon redo" onClick={() => dispatch({ action: "redo" })} />
   </span>
 }
 
