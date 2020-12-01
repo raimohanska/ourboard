@@ -28,7 +28,6 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         e.stopPropagation()
     }  
     editingThis.pipe(L.changes).forEach((editing) =>  { 
-        console.log("Editing", value.get(), editing)
         if (editing) {
             setTimeout(() => {
                 nameElement.get()!.focus() 
