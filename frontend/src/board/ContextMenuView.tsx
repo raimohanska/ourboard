@@ -35,10 +35,13 @@ export const ContextMenuView = (
       case "none": return []
       case "selected": return [...f.ids]
     }
-  }, ids => ids.map(id => board.get().items.find(i => i.id === id)))
+  }, ids => ids.map(findItem(board.get())));
 
   const focusItem = L.view(focusedItems, items => {
-    return _.minBy(items, i => i?.y) || null
+    return { 
+      x: _.mean(items.map(i => i.x)),
+      y: _.min(items.map(i => i.y))
+    }
   })
   
   return L.view(focusItem, p => p === null, hide => hide ? null : (
