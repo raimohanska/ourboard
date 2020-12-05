@@ -33,6 +33,7 @@ export const BoardView = (
     assets: AssetStore, dispatch: Dispatch, syncStatus: L.Property<SyncStatus> }
 ) => {
   const board = L.view(state, s => s.board!)
+  const history = L.view(state, "history")
   const locks = L.view(state, s => s.locks)
   const userId = L.view(state, s => s.userId)
   const sessions = L.view(state, s => s.users)
@@ -174,7 +175,7 @@ export const BoardView = (
           </div>          
         </div>                
       </div>
-      <HistoryView board={board} history={L.view(state, "history") }/>
+      <HistoryView board={board} history={history}/>
       { L.view(viewRect, r => r != null, r => <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />) }
     </div>
   );
@@ -205,7 +206,7 @@ export const BoardView = (
         case "container":
         case "text":
         case "note" : return <ItemView {...{ 
-            board, id, type: t, item: item as L.Property<Note>, 
+            board, history, id, type: t, item: item as L.Property<Note>, 
             isLocked,
             focus,
             coordinateHelper, dispatch

@@ -1,7 +1,7 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Note, Item, Text, ItemType, TextItem } from "../../../common/src/domain";
+import { Board, Note, Item, Text, ItemType, TextItem, BoardHistoryEntry, Id } from "../../../common/src/domain";
 import { EditableSpan } from "../components/EditableSpan"
 import { BoardFocus } from "./board-focus";
 import { SelectionBorder } from "./SelectionBorder"
@@ -13,14 +13,15 @@ import { contrastingColor } from "./contrasting-color";
 import _ from "lodash";
 
 export const ItemView = (
-    { board, id, type, item, isLocked, focus, coordinateHelper, dispatch }:
+    { board, history, id, type, item, isLocked, focus, coordinateHelper, dispatch }:
     {  
-        board: L.Property<Board>, id: string; type: string, item: L.Property<Item>,
+        board: L.Property<Board>, history: L.Property<BoardHistoryEntry[]>, id: string; type: string, item: L.Property<Item>,
         isLocked: L.Property<boolean>,
         focus: L.Atom<BoardFocus>,
         coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch
     }
 ) => {
+  const itemHistory = findItemHistory(history.get(), id) // Purposefully fixing to the first snapshot of history instead of reacting to changes. Would be a performance disaster most likely.
   const element = L.atom<HTMLElement | null>(null)
   let referenceFont: string | null = null
   const ref = (el: HTMLElement) => {
@@ -63,6 +64,7 @@ export const ItemView = (
       { L.view(isLocked, l => l && <span className="lock">🔒</span>)}
       { L.view(selected, s => s && <SelectionBorder {...{ id, item: item, coordinateHelper, board, focus, dispatch}}/>)}
       { type === "container" && <DragBorder {...{ id, board, coordinateHelper, focus, dispatch }}/>}
+      { type === "note" && <AuthorInfo {...{ item, itemHistory }}/> }
     </span>
   );
 
@@ -107,6 +109,12 @@ export const ItemView = (
       { showCoords && <small>{L.view(item, p => Math.floor(p.x) + ", " + Math.floor(p.y))}</small>}
     </span>
   }
+
+  function AuthorInfo({item, itemHistory}: {item: L.Property<Item>, itemHistory: BoardHistoryEntry[]}) {
+    const color = L.view(item, i => i.type === "note" ? i.color : "white", contrastingColor)
+    const style = L.combineTemplate({ color })    
+    return <span className="author" style={style}>{itemHistory[0] ? itemHistory[0].user.nickname : null}</span>
+  }
 };
 
 export function getTextDimensions(text: string, font: string) {
@@ -122,3 +130,17 @@ export function getTextDimensions(text: string, font: string) {
   
   return { height, width };
 };
+
+function findItemHistory(history: BoardHistoryEntry[], id: Id): BoardHistoryEntry[] {
+  return history.filter(e => itemIds(e).includes(id))
+}
+
+function itemIds(e: BoardHistoryEntry) {
+  switch (e.action) {
+    case "item.front":
+    case "item.delete": return e.itemIds
+    case "item.move": return e.items.map(i => i.id)
+    case "item.update":
+    case "item.add": return e.items.map(i => i.id)
+  }
+}
