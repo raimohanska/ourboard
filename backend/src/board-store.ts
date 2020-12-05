@@ -1,13 +1,14 @@
+import { update } from "lodash"
 import { Board, BoardItemEvent, migrateBoard, exampleBoard, Id } from "../../common/src/domain"
 import { boardReducer } from "../../common/src/state"
 import { withDBClient } from "./db"
 
-let updateQueue: Board[] = []
+let updateQueue: Set<Id> = new Set()
 
-let boards: Board[] = []
+let boards: Map<Id, Board> = new Map()
 
 export async function getBoard(id: Id): Promise<Board> {
-    let board = boards.find(b => b.id === id)
+    let board = boards.get(id)
     if (!board) {
         const result = await withDBClient(client => client.query("SELECT content FROM board WHERE id=$1", [id]))
         if (result.rows.length == 0) {
@@ -19,22 +20,20 @@ export async function getBoard(id: Id): Promise<Board> {
         } else {
             board = migrateBoard(result.rows[0].content as Board)
         }
-        boards.push(board)
+        boards.set(board.id, board)
     }
     return board
 }
 
 export async function updateBoards(appEvent: BoardItemEvent) {
     const board = await getBoard(appEvent.boardId)
-    boards = boards.map(board => board.id === appEvent.boardId 
-        ? markForSave(boardReducer(board, appEvent)[0])
-        : board)
+    const updated = boardReducer(board, appEvent)[0]    
+    markForSave(updated)
 }
 
 export async function addBoard(board: Board) {
     const result = await withDBClient(client => client.query("SELECT id FROM board WHERE id=$1", [board.id]))
     if (result.rows.length > 0) throw Error("Board already exists: " + board.id)
-    boards.push(board)
     markForSave(board)
 }
 
@@ -43,20 +42,21 @@ export function getActiveBoards() {
 }
 
 export function cleanActiveBoards() {
-    boards = []
+    boards.clear()
 }
 
-function markForSave(board: Board): Board {
-    updateQueue = updateQueue.filter(b => b.id !== board.id).concat(board)
-    return board
+function markForSave(board: Board) {
+    boards.set(board.id, board)
+    updateQueue.add(board.id)
 }
 
 setInterval(saveBoards, 1000)
 
 async function saveBoards() {
-    while (updateQueue.length > 0) {
-        const board = updateQueue.shift()!
-        await saveBoard(board)
+    while (updateQueue.size > 0) {
+        const id = updateQueue.values().next().value
+        updateQueue.delete(id)
+        await saveBoard(boards.get(id)!)
     }
 }
 
