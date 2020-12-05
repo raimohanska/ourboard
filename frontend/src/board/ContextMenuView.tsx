@@ -1,21 +1,21 @@
 import {h} from "harmaja"
 import * as L from "lonna"
 import _ from "lodash"
-import {Board, Color, Item} from "../../../common/src/domain"
+import {Board, Color, Item, Note} from "../../../common/src/domain"
 import { Dispatch } from "./board-store"
 import { NOTE_COLORS } from "./PaletteView"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 import { findItem } from "../../../common/src/state"
 
 export const ContextMenuView = (
-  { latestNoteColor, dispatch, board, focus }:
-  { latestNoteColor: L.Atom<Color>, dispatch: Dispatch, board: L.Property<Board>, focus: L.Property<BoardFocus> }
+  { latestNote, dispatch, board, focus }:
+  { latestNote: L.Atom<Note>, dispatch: Dispatch, board: L.Property<Board>, focus: L.Property<BoardFocus> }
 ) => {
 
   function setColor(color: Color) {
     const f = focus.get();
     const b = board.get();
-    latestNoteColor.set(color)
+    latestNote.modify(n => ({...n, color }))
 
     const updated = [...getSelectedIds(f)].flatMap(id => {
       const current = findItem(b)(id)

@@ -104,6 +104,10 @@ export function newNote(text: string, color: Color = "yellow", x: number = 20, y
     return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z }    
 }
 
+export function newSimilarNote(note: Note) {
+    return newNote("HELLO", note.color, 20, 20, note.width, note.height)
+}
+
 export function newText(text: string, x: number = 20, y: number = 20, width: number = 5, height: number = 2, z: number = 0): Text {
     return { id: uuid.v4(), type: "text", text, x, y, width, height, z }    
 }

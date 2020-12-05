@@ -2,7 +2,7 @@ import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
 import { boardCoordinateHelper } from "./board-coordinates"
-import { Image, Item, newNote, Note, UserCursorPosition} from "../../../common/src/domain";
+import { Image, Item, newNote, newSimilarNote, Note, UserCursorPosition} from "../../../common/src/domain";
 import { ItemView } from "./ItemView"
 import { BoardAppState, Dispatch } from "./board-store";
 import { ContextMenuView } from "./ContextMenuView"
@@ -40,11 +40,15 @@ export const BoardView = (
     height: L.view(board, b => b.height + "em")
   })
   const element = L.atom<HTMLElement | null>(null);
-  const latestNoteColor = L.atom("yellow")
+  const latestNote = L.atom(newNote("Hello"))
   const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
 
   focus.forEach(f => {
     dispatch({ action: "item.front", boardId: board.get().id, itemIds: [...getSelectedIds(f)] })
+    const item = getSelectedElement(f)
+    if (item && item.type === "note") {
+      latestNote.set(item)
+    }
   })
 
   const coordinateHelper = boardCoordinateHelper(element)
@@ -106,7 +110,7 @@ export const BoardView = (
       const f = focus.get()
       const selectedElement = getSelectedElement(focus.get())
       if (f.status === "none" || (selectedElement && selectedElement.type === "container")) {
-        const newItem = newNote("HELLO", latestNoteColor.get())
+        const newItem = newSimilarNote(latestNote.get())
         onAdd(newItem)
       }
     }
@@ -116,10 +120,6 @@ export const BoardView = (
     const point = coordinateHelper.currentBoardCoordinates.get()
     const { x, y } = item.type !== "container" ? add(point, { x: -item.width / 2, y: -item.height / 2 }) : point
     item = withCurrentContainer({ ...item, x, y }, board.get())
-
-    if (item.type === "note") {
-      latestNoteColor.set(item.color)
-    }
 
     dispatch({ action: "item.add", boardId, items: [item] })
     
@@ -148,7 +148,7 @@ export const BoardView = (
             />
             <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, dispatch }}/>
             <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
-            <ContextMenuView {...{latestNoteColor, dispatch, board, focus } } />
+            <ContextMenuView {...{latestNote, dispatch, board, focus } } />
           </div>          
         </div>        
       </div>
@@ -164,7 +164,7 @@ export const BoardView = (
         <div className="controls">        
             <span className="icon zoom_in" title="Zoom in" onClick={() => zoom.modify((z) => z * 1.1)}></span>
             <span className="icon zoom_out" title="Zoom out" onClick={() => zoom.modify((z) => z / 1.1)}></span>
-            <PaletteView {...{ latestNoteColor, onAdd, board, dispatch }}/>
+            <PaletteView {...{ latestNote, onAdd, board, dispatch }}/>
             <span className="icon undo" title="Undo" onClick={() => dispatch({ action: "undo" })} />
             <span className="icon redo" title="Redo" onClick={() => dispatch({ action: "redo" })} />
         </div>            
