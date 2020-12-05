@@ -1,5 +1,6 @@
+import { componentScope } from "harmaja";
 import * as L from "lonna"
-import { Coordinates } from "./geometry";
+import { Coordinates, subtract } from "./geometry";
 
 const COORDINATES_PROTOTYPE = {
   x: 0,
@@ -24,7 +25,7 @@ export type BoardCoordinates = Coordinates
 
 export type BoardCoordinateHelper = ReturnType<typeof boardCoordinateHelper>
 
-export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
+export function boardCoordinateHelper(boardElem: L.Property<HTMLElement | null>, scrollElem: L.Property<HTMLElement | null>, zoom: L.Property<number>) {
     let currentClientPos = L.atom({ x: 0, y: 0 })
 
     function pxToEm(px: number) {
@@ -36,7 +37,8 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
     }
 
     function baseFontSize() {
-      return parseFloat(getComputedStyle(boardElem.get()!).fontSize)
+      const e = boardElem.get()
+      return e ? parseFloat(getComputedStyle(e).fontSize) : 10
     }
   
     function coordDiff(a: Coordinates, b: Coordinates) {
@@ -76,9 +78,23 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
         currentClientPos.set({ x: e.clientX, y: e.clientY })
       })
     })
+
+    function scrollCursorToBoardCoordinates(coords: Coordinates) {
+      const diff = subtract(coords, currentBoardCoordinates.get())
+      const diffPixels = { x: emToPx(diff.x), y: emToPx(diff.y) }
+      scrollElem.get()!.scrollLeft += diffPixels.x
+      scrollElem.get()!.scrollTop += diffPixels.y
+      const diff2 = subtract(coords, currentBoardCoordinates.get())
+      const absDiff = Math.sqrt(diff2.x * diff2.x + diff2.y * diff2.y)
+    }
   
-    const currentBoardCoordinates = L.view(currentClientPos, pos => clientToBoardCoordinates(pos))
-  
+
+    const scrollEvent = scrollElem.pipe(L.changes, L.flatMapLatest(el => L.fromEvent(el, "scroll"), componentScope()))
+    const updateEvent = L.merge(scrollEvent, L.changes(zoom), L.changes(currentClientPos))
+    const currentBoardCoordinates = updateEvent.pipe(L.toStatelessProperty(() => {
+      return clientToBoardCoordinates(currentClientPos.get())
+    }))
+
     return {
       clientToBoardCoordinates,
       clientCoordDiffToThisPoint,
@@ -87,7 +103,8 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
       boardCoordDiffFromThisClientPoint: (coords: ClientCoordinates) => coordDiff(currentBoardCoordinates.get(), clientToBoardCoordinates(coords)),
       getClippedCoordinate,
       emToPx,
-      pxToEm
+      pxToEm,
+      scrollCursorToBoardCoordinates
     }
   }
   

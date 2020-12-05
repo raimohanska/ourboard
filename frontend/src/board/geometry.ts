@@ -6,6 +6,14 @@ export function add(a: Coordinates, b: Coordinates) {
     return { x: a.x + b.x, y: a.y + b.y }
 }
 
+export function subtract(a: Coordinates, b: Coordinates) {
+    return { x: a.x - b.x, y: a.y - b.y }
+}
+
+export function negate(a: Coordinates) {
+    return { x: -a.x, y: -a.y }
+}
+
 export function multiply(a: Coordinates, factor: number) {
     return { x: a.x * factor, y: a.y * factor }
 }

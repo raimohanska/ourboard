@@ -14,7 +14,7 @@ import { imageUploadHandler } from "./image-upload"
 import { AssetStore } from "./asset-store";
 import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
-import { add, Rect } from "./geometry";
+import * as G from "./geometry";
 import { withCurrentContainer } from "./item-setcontainer";
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 import { BoardFocus, getSelectedIds } from "./board-focus";
@@ -45,7 +45,7 @@ export const BoardView = (
   const scrollElement = L.atom<HTMLElement | null>(null);
   const latestNote = L.atom(newNote("Hello"))
   const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
-  const coordinateHelper = boardCoordinateHelper(boardElement)  
+  const coordinateHelper = boardCoordinateHelper(boardElement, scrollElement, zoom)  
 
   focus.forEach(f => {
     dispatch({ action: "item.front", boardId: board.get().id, itemIds: [...getSelectedIds(f)] })
@@ -99,8 +99,11 @@ export const BoardView = (
     if (event.target === boardElement.get() || boardElement.get()!.contains(event.target as Node)) {
       const ctrlOrCmd = event.ctrlKey || event.metaKey
       if (!event.deltaY || !ctrlOrCmd) return
-      event.preventDefault()      
-      zoom.modify(z => _.clamp(event.deltaY < 0 ? z * 1.1 : z / 1.1, 0.2, 1.5))
+      event.preventDefault()   
+      const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
+      const step = 1.04
+      zoom.modify(z => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 1.5))
+      coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
     }
   }
   H.onMount(() => {
@@ -136,7 +139,7 @@ export const BoardView = (
 
   function onAdd(item: Item) {
     const point = coordinateHelper.currentBoardCoordinates.get()
-    const { x, y } = item.type !== "container" ? add(point, { x: -item.width / 2, y: -item.height / 2 }) : point
+    const { x, y } = item.type !== "container" ? G.add(point, { x: -item.width / 2, y: -item.height / 2 }) : point
     item = withCurrentContainer({ ...item, x, y }, board.get())
 
     dispatch({ action: "item.add", boardId, items: [item] })
@@ -170,7 +173,7 @@ export const BoardView = (
           </div>          
         </div>                
       </div>
-      { L.view(viewRect, r => r != null, r => <MiniMapView board={board} viewRect={viewRect as L.Property<Rect>} />) }      
+      { L.view(viewRect, r => r != null, r => <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />) }      
     </div>
   );
 
