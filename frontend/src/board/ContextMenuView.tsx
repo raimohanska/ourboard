@@ -38,6 +38,7 @@ export const ContextMenuView = (
   }, ids => ids.map(findItem(board.get())));
 
   const focusItem = L.view(focusedItems, items => {
+    if (items.length === 0) return null
     return { 
       x: _.mean(items.map(i => i.x)),
       y: _.min(items.map(i => i.y))
