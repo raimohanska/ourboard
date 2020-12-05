@@ -1,4 +1,4 @@
-import { h } from "harmaja";
+import { h, Fragment } from "harmaja";
 import * as L from "lonna";
 import { exampleBoard } from "../../../common/src/domain";
 import { generateFromTemplate, getUserTemplates } from "./templates"
@@ -58,14 +58,18 @@ const CreateBoard = ({ dispatch }: {dispatch: Dispatch }) => {
   return <form onSubmit={createBoard} className="create-board">
       <h2>Create a board</h2>
       <TextInput value={boardName} placeholder="Enter board name" />
-      <small><label htmlFor="template-select">Use template</label></small>
-      <select onChange={e => chosenTemplate.set(e.target.value)} name="templates" id="template-select">
-        {templateOptions.map(name => 
-            <option value={name}>
-              {name}
-            </option>
-        )}
-      </select>
+      { templateOptions.length > 1 &&
+        <>
+        <small><label htmlFor="template-select">Use template</label></small>
+        <select onChange={e => chosenTemplate.set(e.target.value)} name="templates" id="template-select">
+          {templateOptions.map(name => 
+              <option value={name}>
+                {name}
+              </option>
+          )}
+        </select>      
+        </>
+      }      
       <input data-test="create-board-submit"type="submit" value="Create" disabled={ disabled } />
   </form>    
 }
