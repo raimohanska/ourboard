@@ -9,7 +9,7 @@ const DELETE = 46;
 
 const NotesWithText = text => cy.get(`[data-test^="note"][data-test*="${text}"]`)
 const Notes = () => cy.get(`[data-test^="note"]`)
-const SelectedNotes = () => cy.get(`[data-test^="note-selected"]`)
+const SelectedNotes = () => cy.get(`[data-test^="note-selected"] .text`)
 
 const Containers = () => cy.get(`[data-test^="container"]`)
 const TextItemsWithText = text => cy.get(`[data-test^="text"][data-test*="${text}"]`)
