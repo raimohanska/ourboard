@@ -437,6 +437,22 @@ a {
 
     }
 
+    .minimap {
+        font-size: 1vw;
+        display: inline-block;
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+        background: #eeeeee88;
+        border: 0.3em solid #eeeeee88;
+        box-sizing: content-box;
+        .viewarea {
+            display: inline-block;
+            position: absolute;
+            background: #dddddd;
+        }
+    }
+
     .context-menu {
         z-index: 1000000;
         $menu-border: #cccccc;

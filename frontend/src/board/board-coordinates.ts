@@ -86,7 +86,8 @@ export function boardCoordinateHelper(boardElem: L.Atom<HTMLElement | null>) {
       currentBoardCoordinates,
       boardCoordDiffFromThisClientPoint: (coords: ClientCoordinates) => coordDiff(currentBoardCoordinates.get(), clientToBoardCoordinates(coords)),
       getClippedCoordinate,
-      emToPx
+      emToPx,
+      pxToEm
     }
   }
   

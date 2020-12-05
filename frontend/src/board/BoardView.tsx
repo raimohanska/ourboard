@@ -13,7 +13,7 @@ import { imageUploadHandler } from "./image-upload"
 import { AssetStore } from "./asset-store";
 import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
-import { add } from "./geometry";
+import { add, Rect } from "./geometry";
 import { withCurrentContainer } from "./item-setcontainer";
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 import { BoardFocus, getSelectedIds } from "./board-focus";
@@ -23,6 +23,7 @@ import { BoardMenu } from "./BoardMenu";
 import { UserInfoView } from "../components/UserInfoView";
 import { SyncStatusView } from "../components/SyncStatusView";
 import { SyncStatus } from "../sync-status/sync-status-store";
+import { MiniMapView } from "./MiniMapView";
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch, syncStatus }: 
@@ -39,9 +40,11 @@ export const BoardView = (
     width: L.view(board, b => b.width + "em"),
     height: L.view(board, b => b.height + "em")
   })
-  const element = L.atom<HTMLElement | null>(null);
+  const boardElement = L.atom<HTMLElement | null>(null);
+  const scrollElement = L.atom<HTMLElement | null>(null);
   const latestNote = L.atom(newNote("Hello"))
   const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
+  const coordinateHelper = boardCoordinateHelper(boardElement)  
 
   focus.forEach(f => {
     dispatch({ action: "item.front", boardId: board.get().id, itemIds: [...getSelectedIds(f)] })
@@ -50,13 +53,11 @@ export const BoardView = (
       latestNote.set(item)
     }
   })
-
-  const coordinateHelper = boardCoordinateHelper(element)
   
   cutCopyPasteHandler(board, focus, coordinateHelper, dispatch)
 
-  const ref = (el: HTMLElement) => {
-    element.set(el)
+  const boardRef = (el: HTMLElement) => {
+    boardElement.set(el)
     function onURL(assetId: string, url: string) {
       board.get().items.forEach(i => {
         if (i.type === "image" && i.assetId === assetId && i.src != url) {
@@ -67,18 +68,34 @@ export const BoardView = (
     imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL)
   }
 
+  const scrollEvent = scrollElement.pipe(L.changes, L.flatMapLatest(el => L.fromEvent(el, "scroll"), componentScope()))
+  const changes = L.merge(L.fromEvent(window, "resize"), scrollEvent, L.changes(boardElement), L.changes(zoom))
+  const viewRect = changes.pipe(L.toStatelessProperty(() => {
+    const boardRect = boardElement.get()?.getBoundingClientRect()
+    const viewRect = scrollElement.get()?.getBoundingClientRect()!
+
+    if (!boardRect || !viewRect) return null;
+    
+    return {
+      x: coordinateHelper.pxToEm(viewRect.x - boardRect.x),
+      y: coordinateHelper.pxToEm(viewRect.y - boardRect.y),
+      width: coordinateHelper.pxToEm(viewRect.width),
+      height: coordinateHelper.pxToEm(viewRect.height)
+    }
+  }))
+  
   itemDeleteHandler(boardId, dispatch, focus)
   itemUndoHandler(dispatch)
 
   L.fromEvent<JSX.KeyboardEvent>(window, "click").pipe(L.applyScope(componentScope())).forEach(event => {
-    if (!element.get()!.contains(event.target as Node)) {
+    if (!boardElement.get()!.contains(event.target as Node)) {
       // Click outside => reset selection
       focus.set({ status: "none" })
     }
   })
 
   function wheelZoomHandler(event: WheelEvent) {
-    if (event.target === element.get() || element.get()!.contains(event.target as Node)) {
+    if (event.target === boardElement.get() || boardElement.get()!.contains(event.target as Node)) {
       const ctrlOrCmd = event.ctrlKey || event.metaKey
       if (!event.deltaY || !ctrlOrCmd) return
       event.preventDefault()
@@ -95,7 +112,7 @@ export const BoardView = (
 
 
   function onClick(e: JSX.MouseEvent) {
-    if (e.target === element.get()) {
+    if (e.target === boardElement.get()) {
       focus.set({ status: "none" })
     }
   }
@@ -106,7 +123,7 @@ export const BoardView = (
   }
 
   L.fromEvent<JSX.KeyboardEvent>(window, "dblclick").pipe(L.applyScope(componentScope())).forEach(event => {
-    if (event.target === element.get()! || element.get()!.contains(event.target as Node)) {
+    if (event.target === boardElement.get()! || boardElement.get()!.contains(event.target as Node)) {
       const f = focus.get()
       const selectedElement = getSelectedElement(focus.get())
       if (f.status === "none" || (selectedElement && selectedElement.type === "container")) {
@@ -136,23 +153,23 @@ export const BoardView = (
 
   return (
     <div id="root" className="board-container">      
-      <div className="scroll-container">
+      <div className="scroll-container" ref={scrollElement.set}>
         <BoardViewHeader state={state} dispatch={dispatch} syncStatus={syncStatus}/>
 
         <div className="border-container" style={style}>
-          <div className="board" draggable={true} ref={ref} onClick={onClick}>
+          <div className="board" draggable={true} ref={boardRef} onClick={onClick}>
             <ListView
               observable={L.view(board, "items")}
               renderObservable={renderItem}
               getKey={(i) => i.id}
             />
-            <RectangularDragSelection {...{ board, boardElem: element, coordinateHelper, focus, dispatch }}/>
+            <RectangularDragSelection {...{ board, boardElem: boardElement, coordinateHelper, focus, dispatch }}/>
             <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
             <ContextMenuView {...{latestNote, dispatch, board, focus } } />
           </div>          
-        </div>        
+        </div>                
       </div>
-
+      { L.view(viewRect, r => r != null, r => <MiniMapView board={board} viewRect={viewRect as L.Property<Rect>} />) }      
     </div>
   );
 
