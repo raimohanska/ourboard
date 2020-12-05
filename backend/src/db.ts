@@ -16,6 +16,7 @@ export async function initDB() {
         await client.query(`
             CREATE TABLE IF NOT EXISTS board (id text PRIMARY KEY, name text NOT NULL);
             ALTER TABLE board ADD COLUMN IF NOT EXISTS content JSONB NOT NULL;
+            ALTER TABLE board ADD COLUMN IF NOT EXISTS history JSONB NOT NULL default '[]';
 
             CREATE OR REPLACE FUNCTION notify_clean_boards() RETURNS trigger AS $$
             DECLARE

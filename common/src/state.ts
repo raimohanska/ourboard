@@ -53,6 +53,13 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
         for (let i of board.items) {
           maxZ = Math.max(maxZ, i.z)
         }
+        const isFine = (item: Item) => {
+          return !event.itemIds.includes(item.id) || item.z === maxZ
+        }
+        if (board.items.every(isFine)) {
+          // Requested items already on front
+          return [board, null]
+        }
         return [{
           ...board,
           items: board.items.map(i => i.type !== "container" && event.itemIds.includes(i.id) ? { ...i, z: maxZ + 1 } : i)

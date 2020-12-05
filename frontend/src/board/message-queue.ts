@@ -1,7 +1,7 @@
 import * as L from "lonna";
 import io from 'socket.io-client';
 import { AppEvent } from "../../../common/src/domain";
-import { canFoldActions } from "./action-folding"
+import { canFoldActions } from "../../../common/src/action-folding"
 
 type QueueState = {
     queue: AppEvent[],

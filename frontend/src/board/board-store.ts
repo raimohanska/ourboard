@@ -2,7 +2,7 @@ import * as L from "lonna";
 import { globalScope } from "lonna";
 import { AppEvent, Board, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, UserCursorPosition, UserSessionInfo } from "../../../common/src/domain";
 import { boardReducer } from "../../../common/src/state";
-import { canFoldActions } from "./action-folding";
+import { canFoldActions } from "../../../common/src/action-folding";
 import MessageQueue from "./message-queue";
 
 
