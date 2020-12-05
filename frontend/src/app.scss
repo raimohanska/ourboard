@@ -422,6 +422,7 @@ a {
         }
 
         .cursor {
+            z-index: 400000000;
             .text {
                 font-size: 0.5rem;
                 margin-left: 0.5rem;
