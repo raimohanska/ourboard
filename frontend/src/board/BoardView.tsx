@@ -1,6 +1,7 @@
 import * as H from "harmaja";
 import { componentScope, h, ListView } from "harmaja";
 import * as L from "lonna";
+import _ from "lodash";
 import { boardCoordinateHelper } from "./board-coordinates"
 import { Image, Item, newNote, newSimilarNote, Note, UserCursorPosition} from "../../../common/src/domain";
 import { ItemView } from "./ItemView"
@@ -98,8 +99,8 @@ export const BoardView = (
     if (event.target === boardElement.get() || boardElement.get()!.contains(event.target as Node)) {
       const ctrlOrCmd = event.ctrlKey || event.metaKey
       if (!event.deltaY || !ctrlOrCmd) return
-      event.preventDefault()
-      zoom.modify(z => event.deltaY < 0 ? z * 1.1 : z / 1.1)
+      event.preventDefault()      
+      zoom.modify(z => _.clamp(event.deltaY < 0 ? z * 1.1 : z / 1.1, 0.2, 1.5))
     }
   }
   H.onMount(() => {
