@@ -449,7 +449,12 @@ a {
         .viewarea {
             display: inline-block;
             position: absolute;
-            background: #dddddd;
+            background: #ffffff;
+        }
+        .item {
+            display: inline-block;
+            position: absolute;
+            background: #d8d8d8;
         }
     }
 
