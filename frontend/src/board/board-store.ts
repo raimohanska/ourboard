@@ -1,13 +1,14 @@
 import * as L from "lonna";
 import { globalScope } from "lonna";
-import { AppEvent, Board, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, UserCursorPosition, UserSessionInfo } from "../../../common/src/domain";
-import { boardReducer } from "../../../common/src/state";
+import { AppEvent, Board, EventFromServer, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, EventUserInfo, UserCursorPosition, UserSessionInfo, isPersistableBoardItemEvent, BoardHistoryEntry, isBoardItemEvent, BoardItemEvent, PersistableBoardItemEvent } from "../../../common/src/domain";
+import { boardHistoryReducer, boardReducer } from "../../../common/src/state";
 import { canFoldActions } from "../../../common/src/action-folding";
 import MessageQueue from "./message-queue";
 
 
 export type BoardAppState = {
-    board: Board | undefined
+    board: Board | undefined,
+    history: BoardHistoryEntry[],
     userId: Id | null
     nickname: string | undefined,
     users: UserSessionInfo[]
@@ -22,27 +23,31 @@ export type Dispatch = (e: AppEvent) => void
 export function boardStore(socket: typeof io.Socket) {
     const uiEvents = L.bus<AppEvent>()
     const dispatch: Dispatch = uiEvents.push
-    const serverEvents = L.bus<AppEvent>()    
+    const serverEvents = L.bus<EventFromServer>()    
     const messageQueue = MessageQueue(socket)
     socket.on("connect", () => { 
         console.log("Socket connected")
         messageQueue.onConnect()
     })
-    socket.on("message", function(kind: string, event: AppEvent) { 
+    socket.on("message", function(kind: string, event: EventFromServer) { 
         if (kind === "app-event") {
             serverEvents.push(event)
         }
     })
     L.pipe(uiEvents, L.filter((e: AppEvent) => e.action !== "undo" && e.action !== "redo")).forEach(messageQueue.enqueue)
+    const userTaggedLocalEvents = L.view(uiEvents, e => isPersistableBoardItemEvent(e) ? getUserFromState(e) : e)
+    function getUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
+        return { ...e, user: { nickname: state.get().nickname || "UNKNOWN" }, timestamp: new Date().toISOString() }
+    }
 
     // uiEvents.log("UI")
     // serverEvents.log("Server")
     
-    const events = L.merge(uiEvents, serverEvents)
+    const events = L.merge(userTaggedLocalEvents, serverEvents)
     let undoBuffer: AppEvent[] = []
     let redoBuffer: AppEvent[] = []
 
-    const eventsReducer = (state: BoardAppState, event: AppEvent) => {
+    const eventsReducer = (state: BoardAppState, event: EventFromServer) => {
         if (event.action === "undo") {
             if (!undoBuffer.length) return state
             const undoOperation = undoBuffer.pop()!
@@ -57,15 +62,15 @@ export function boardStore(socket: typeof io.Socket) {
             const [board, reverse] = boardReducer(state.board!, redoOperation)
             if (reverse) undoBuffer = addToBuffer(reverse, undoBuffer)
             return { ...state, board }
-        } else if (event.action.startsWith("item.")) {            
-            const [board, reverse] = boardReducer(state.board!, event)
+        } else if (isBoardItemEvent(event)) {            
+            const [{board, history}, reverse] = boardHistoryReducer({ board: state.board!, history: state.history}, event)
             if (reverse) {
                 redoBuffer = []
                 undoBuffer = addToBuffer(reverse, undoBuffer)
             }
-            return { ...state, board }
+            return { ...state, board, history }
         } else if (event.action === "board.init") {
-            return { ...state, board: event.board }
+            return { ...state, board: event.board.board, history: event.board.history }
         } else if (event.action === "board.join.ack") {
             let nickname = event.nickname
             if (localStorage.nickname && localStorage.nickname !== event.nickname) {
@@ -91,7 +96,7 @@ export function boardStore(socket: typeof io.Socket) {
         }
     }
     
-    const initialState = { board: undefined, userId: null, nickname: undefined, users: [], cursors: {}, locks: {} }
+    const initialState = { board: undefined, history: [], userId: null, nickname: undefined, users: [], cursors: {}, locks: {} }
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
     
     return {

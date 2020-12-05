@@ -16,6 +16,10 @@ export type Board = BoardInfo & {
 
 export type BoardStub = Pick<Board, "id" | "name">
 
+export type EventUserInfo = { nickname: string }
+export type BoardHistoryEntry = { user: EventUserInfo, timestamp: ISOTimeStamp } & PersistableBoardItemEvent
+export type BoardWithHistory = { board: Board, history: BoardHistoryEntry[] }
+
 export function isFullyFormedBoard(b: Board | BoardStub): b is Board {
     return !!b.id && !!b.name && ["width", "height", "items"].every(prop => prop in b)
 }
@@ -55,9 +59,13 @@ export type TextItem = Note | Text | Container
 export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id> 
 
-export type AppEvent = BoardItemEvent | AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks | Undo | Redo;
+export type EventFromServer = BoardHistoryEntry | TransientBoardItemEvent | OtherAppEvent
+
+export type AppEvent = BoardItemEvent | OtherAppEvent;
 export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront
-export type BoardItemEvent = PersistableBoardItemEvent | LockItem | UnlockItem
+export type TransientBoardItemEvent = LockItem | UnlockItem
+export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
+export type OtherAppEvent = AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks | Undo | Redo
 export type AddItem = { action: "item.add", boardId: Id, items: Item[] };
 export type UpdateItem = { action: "item.update", boardId: Id, items: Item[] };
 export type MoveItem = { action: "item.move", boardId: Id, items: {id: Id, x: number, y: number, containerId?: Id | undefined}[] };
@@ -70,7 +78,7 @@ export type AddBoard = { action: "board.add", payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join", boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessionInfo
 export type JoinedBoard = { action: "board.joined", boardId: Id } & UserSessionInfo
-export type InitBoard = { action: "board.init", board: Board }
+export type InitBoard = { action: "board.init", board: BoardWithHistory }
 export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
 export type SetNickname = { action: "nickname.set", nickname: string, userId: string }
 export type AssetPutUrlRequest = { "action": "asset.put.request", assetId: string }
@@ -126,7 +134,7 @@ export function getCurrentTime(): ISOTimeStamp {
 
 export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent => a.action.startsWith("item.")
 
-export const isPersistableBoardItemEvent = (bie: BoardItemEvent): bie is PersistableBoardItemEvent => !["item.lock", "item.unlock"].includes(bie.action)
+export const isPersistableBoardItemEvent = (e: AppEvent): e is PersistableBoardItemEvent => isBoardItemEvent(e) && !["item.lock", "item.unlock"].includes(e.action)
 
 export function migrateBoard(board: Board) {
     const items: Item[] = []

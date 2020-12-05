@@ -1,15 +1,10 @@
-import { update } from "lodash"
-import { Board, BoardItemEvent, migrateBoard, exampleBoard, Id, AppEvent } from "../../common/src/domain"
-import { boardReducer } from "../../common/src/state"
+import { Board, BoardWithHistory, BoardHistoryEntry, BoardItemEvent, migrateBoard, exampleBoard, Id, AppEvent, EventUserInfo } from "../../common/src/domain"
+import { boardHistoryReducer, boardReducer } from "../../common/src/state"
 import { withDBClient } from "./db"
-import { canFoldActions } from "../../common/src/action-folding"
 
 let updateQueue: Set<Id> = new Set()
 
 let boards: Map<Id, BoardWithHistory> = new Map()
-
-type BoardHistoryEvent = { user: { nickname: string }, event: AppEvent }
-type BoardWithHistory = { board: Board, history: BoardHistoryEvent[] }
 
 export async function getBoard(id: Id): Promise<BoardWithHistory> {
     let board = boards.get(id)
@@ -29,27 +24,18 @@ export async function getBoard(id: Id): Promise<BoardWithHistory> {
     return board
 }
 
-export async function updateBoards(appEvent: BoardItemEvent, user: { nickname: string }) {
-    const board = await getBoard(appEvent.boardId)
-    const updatedBoard = boardReducer(board.board, appEvent)[0]
-    const history = updatedBoard !== board.board ? addToHistory(board.history, { event: appEvent, user }) : board.history
-    const updated = { board: updatedBoard, history }
-    markForSave(updated)
+export async function updateBoards(appEvent: BoardHistoryEntry) {
+    const boardWithHistory = await getBoard(appEvent.boardId)
+    const updatedBoardWithHistory = boardHistoryReducer(boardWithHistory, appEvent)[0]    
+    markForSave(updatedBoardWithHistory)
 }
 
-function addToHistory(history: BoardHistoryEvent[], newEvent: BoardHistoryEvent) {
-    if (history.length === 0) return [newEvent]
-    const latest = history[history.length - 1]
-    if (canFoldActions(latest.event, newEvent.event)) {
-        return [...history.slice(0, history.length - 1), newEvent]
-    }
-    return [...history, newEvent]
-}
-
-export async function addBoard(board: Board) {
+export async function addBoard(board: Board): Promise<BoardWithHistory> {
     const result = await withDBClient(client => client.query("SELECT id FROM board WHERE id=$1", [board.id]))
     if (result.rows.length > 0) throw Error("Board already exists: " + board.id)
-    markForSave({ board, history: [] })
+    const boardWithHistory = { board, history: [] }
+    markForSave(boardWithHistory)
+    return boardWithHistory
 }
 
 export function getActiveBoards() {
@@ -77,7 +63,6 @@ async function saveBoards() {
 
 async function saveBoard(boardWithHistory: BoardWithHistory) {
     const { board, history } = boardWithHistory
-    console.log(history)
     try {        
         await withDBClient(async client => {
             client.query(

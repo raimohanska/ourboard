@@ -25,6 +25,7 @@ import { UserInfoView } from "../components/UserInfoView";
 import { SyncStatusView } from "../components/SyncStatusView";
 import { SyncStatus } from "../sync-status/sync-status-store";
 import { MiniMapView } from "./MiniMapView";
+import { HistoryView } from "./HistoryView";
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch, syncStatus }: 
@@ -173,7 +174,8 @@ export const BoardView = (
           </div>          
         </div>                
       </div>
-      { L.view(viewRect, r => r != null, r => <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />) }      
+      <HistoryView board={board} history={L.view(state, "history") }/>
+      { L.view(viewRect, r => r != null, r => <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />) }
     </div>
   );
 

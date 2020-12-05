@@ -1,7 +1,7 @@
 import IO from "socket.io"
 import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize, isFullyFormedBoard } from "../../common/src/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
-import { addSessionToBoard, broadcastListEvent, endSession, startSession, broadcastCursorPositions, broadcastItemLocks, setNicknameForSession, getSessionUserInfo } from "./sessions"
+import { addSessionToBoard, broadcastBoardEvent, endSession, startSession, broadcastCursorPositions, broadcastItemLocks, setNicknameForSession, getSessionUserInfo } from "./sessions"
 import { getSignedPutUrl } from "./storage"
 import { obtainLock, releaseLocksFor } from "./locker"
 
@@ -55,21 +55,23 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
     if (isBoardItemEvent(appEvent)) {
         obtainLock(appEvent, socket, async () => {
             if (isPersistableBoardItemEvent(appEvent)) {
-                await updateBoards(appEvent, getSessionUserInfo(socket))
-                broadcastListEvent(appEvent, socket)
+                const user = getSessionUserInfo(socket)
+                const historyEntry = {...appEvent, user, timestamp: new Date().toISOString() }
+                await updateBoards(historyEntry)
+                broadcastBoardEvent(historyEntry, socket)
             }            
         })
     } else {
         switch (appEvent.action) {
             case "board.join": 
                 const board = await getBoard(appEvent.boardId)
-                addSessionToBoard(board.board, socket)
+                addSessionToBoard(board, socket)
                 return;
             case "board.add": {
                 const { payload } = appEvent
                 const board = !isFullyFormedBoard(payload) ? { ...defaultBoardSize, ...payload, items: [] } : payload
-                await addBoard(board)
-                addSessionToBoard(board, socket)
+                const boardWithHistory = await addBoard(board)
+                addSessionToBoard(boardWithHistory, socket)
                 return
             }
             case "cursor.move": {

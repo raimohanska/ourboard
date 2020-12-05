@@ -1,5 +1,23 @@
-import { AppEvent, Board, Id, Item } from "./domain";
+import { AppEvent, Board, BoardHistoryEntry, BoardWithHistory, EventFromServer, EventUserInfo, Id, isPersistableBoardItemEvent, Item } from "./domain";
 import _ from "lodash"
+import { canFoldActions } from "./action-folding";
+
+export function boardHistoryReducer(board: BoardWithHistory, appEvent: EventFromServer): [BoardWithHistory, AppEvent | null] {
+  const [updatedBoard, undoAction] = boardReducer(board.board, appEvent)
+  const history = updatedBoard !== board.board ? addToHistory(board.history, appEvent) : board.history
+  const updatedBoardWithHistory = { board: updatedBoard, history }
+  return [updatedBoardWithHistory, undoAction]
+}
+
+function addToHistory(history: BoardHistoryEntry[], appEvent: EventFromServer): BoardHistoryEntry[] {
+  if (!isPersistableBoardItemEvent(appEvent)) return history
+  if (history.length === 0) return [appEvent]
+  const latest = history[history.length - 1]
+  if (canFoldActions(latest, appEvent)) {
+      return [...history.slice(0, history.length - 1), appEvent]
+  }
+  return [...history, appEvent]
+}
 
 export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | null] {
     switch (event.action) {

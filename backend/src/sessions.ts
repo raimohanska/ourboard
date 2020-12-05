@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { Board, ItemLocks, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE, SetNickname } from "../../common/src/domain"
+import { Board, ItemLocks, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE, SetNickname, BoardWithHistory, EventUserInfo, BoardHistoryEntry } from "../../common/src/domain"
 import { randomProfession } from "./professions"
 
 type UserSession = {
@@ -23,17 +23,17 @@ export function getSessionUserInfo(socket: IO.Socket) {
     const nickname = sessions[socket.id].nickname
     return { nickname }
 }
-export function addSessionToBoard(board: Board, origin: IO.Socket) {
+export function addSessionToBoard(board: BoardWithHistory, origin: IO.Socket) {
     Object.values(sessions)
         .filter(s => s.socket === origin)
         .forEach(session => {
-            session.boards.push(board.id)
+            session.boards.push(board.board.id)
             session.socket.send("app-event", { action: "board.init", board })
-            session.socket.send("app-event", { action: "board.join.ack", boardId: board.id, userId: session.socket.id, nickname: session.nickname })
-            everyoneOnTheBoard(board.id).forEach(s => {
-                session.socket.send("app-event", { action: "board.joined", boardId: board.id, userId: s.socket.id, nickname: s.nickname })
+            session.socket.send("app-event", { action: "board.join.ack", boardId: board.board.id, userId: session.socket.id, nickname: session.nickname })
+            everyoneOnTheBoard(board.board.id).forEach(s => {
+                session.socket.send("app-event", { action: "board.joined", boardId: board.board.id, userId: s.socket.id, nickname: s.nickname })
             })
-            broadcastJoinEvent(board.id, session)    
+            broadcastJoinEvent(board.board.id, session)    
         })
 }
 
@@ -54,11 +54,11 @@ export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
         })
 }
 
-export function broadcastListEvent(appEvent: BoardItemEvent, origin?: IO.Socket) {
+export function broadcastBoardEvent(event: BoardHistoryEntry, origin?: IO.Socket) {
     //console.log("Broadcast", appEvent)
-    everyoneElseOnTheSameBoard(appEvent.boardId, origin).forEach(s => {
+    everyoneElseOnTheSameBoard(event.boardId, origin).forEach(s => {
         //console.log("   Sending to", s.socket.id)
-        s.socket.send("app-event", appEvent)
+        s.socket.send("app-event", event)
     })
 }
 
