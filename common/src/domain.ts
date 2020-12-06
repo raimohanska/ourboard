@@ -178,7 +178,7 @@ export function getItemText(i: Item) {
     return i.text
 }
 
-export function getItemIds(e: BoardHistoryEntry) {
+export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent) {
     switch (e.action) {
         case "item.front":
         case "item.delete": return e.itemIds

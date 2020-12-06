@@ -1,6 +1,6 @@
 import { AppEvent, Board, BoardHistoryEntry, BoardWithHistory, EventFromServer, EventUserInfo, Id, isPersistableBoardItemEvent, Item } from "./domain";
 import _, { max } from "lodash"
-import { canFoldActions } from "./action-folding";
+import { foldActions } from "./action-folding";
 
 export function boardHistoryReducer(board: BoardWithHistory, appEvent: EventFromServer): [BoardWithHistory, AppEvent | null] {
   const [updatedBoard, undoAction] = boardReducer(board.board, appEvent)
@@ -13,8 +13,9 @@ function addToHistory(history: BoardHistoryEntry[], appEvent: EventFromServer): 
   if (!isPersistableBoardItemEvent(appEvent)) return history
   if (history.length === 0) return [appEvent]
   const latest = history[history.length - 1]
-  if (canFoldActions(latest, appEvent)) {
-      return [...history.slice(0, history.length - 1), appEvent]
+  const folded = foldActions(latest, appEvent) as null | BoardHistoryEntry
+  if (folded) {
+      return [...history.slice(0, history.length - 1), folded]
   }
   return [...history, appEvent]
 }
@@ -23,8 +24,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
     switch (event.action) {
       case "item.add":
         if (board.items.find(i => event.items.some(a => a.id === i.id))) {
-          console.warn(new Error("Adding duplicate item " + JSON.stringify(event.items)))
-          return [board, null]
+          throw new Error("Adding duplicate item " + JSON.stringify(event.items))
         }
         return [
           { ...board, items: board.items.concat(event.items) }, 
@@ -41,7 +41,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
         }, {
           action: "item.update",
           boardId: board.id,
-          items: event.items.map(item => findItem(board)(item.id))
+          items: event.items.map(item => getItem(board)(item.id))
         }];
       case "item.move":
         return [{
@@ -51,7 +51,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
           action: "item.move",
           boardId: board.id,
           items: event.items.map(i => {
-            const item = findItem(board)(i.id)
+            const item = getItem(board)(i.id)
             return { id: i.id, x: item.x, y: item.y, containerId: item.containerId }
           })
         }];
@@ -63,7 +63,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
         }, {
           action: "item.add",
           boardId: board.id,
-          items: Array.from(idsToDelete).map(findItem(board)) // TODO: the deleted items should be assigned to containers when restoring. This happens now only if the container was removed too
+          items: Array.from(idsToDelete).map(getItem(board)) // TODO: the deleted items should be assigned to containers when restoring. This happens now only if the container was removed too
         }]
       }
       case "item.front":              
@@ -97,11 +97,16 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
     }
   }
 
-  export const findItem = (board: Board | Item[]) => (id: Id) => {
-    const items: Item[] = board instanceof Array ? board : board.items
-    const item = items.find(i => i.id === id)
+  export const getItem = (board: Board | Item[]) => (id: Id) => {    
+    const item = findItem(board)(id)
     if (!item) throw Error("Item not found: " + id)
     return item
+  }
+
+  export const findItem = (board: Board | Item[]) => (id: Id) => {
+    const items: Item[] = board instanceof Array ? board : board.items
+    const item = items.find(i => i.id === id)    
+    return item || null
   }
 
   export function findItemIdsRecursively(ids: Id[], board: Board): Set<Id> {
@@ -116,7 +121,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
 
   export function findItemsRecursively(ids: Id[], board: Board): Item[] {
     const recursiveIds = findItemIdsRecursively(ids, board)
-    return [...recursiveIds].map(findItem(board))
+    return [...recursiveIds].map(getItem(board))
   }
 
   const moveItemWithChildren = (itemsOnBoard: Item[], id: Id, x: number, y: number, containerId: Id | undefined) => {
@@ -134,8 +139,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
       const parent = findItem(itemsOnBoard)(i.containerId)
       if (i.containerId === i.id) throw Error("Self-contained")
       if (parent == i) throw Error("self parent")
-      if (!parent) throw Error("Wat")
-
+      if (!parent) return false // Don't fail here, because when folding create+move, the action is run in an incomplete board context
       return containedByMainItem(parent)
     }
     const movedItems = new Set(itemsOnBoard.filter(containedByMainItem).map(i => i.id).concat(id))

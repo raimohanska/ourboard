@@ -1,6 +1,6 @@
 import * as L from "lonna";
 import { Board, Item } from "../../../common/src/domain";
-import { findItem } from "../../../common/src/state";
+import { getItem } from "../../../common/src/state";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus } from "./board-focus";
 
@@ -68,7 +68,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
         }
         if (doOnDrop) {
           const b = board.get()
-          const items = [...f.ids].map(findItem(b))
+          const items = [...f.ids].map(getItem(b))
           doOnDrop(b, items)
         }
         currentPos = null

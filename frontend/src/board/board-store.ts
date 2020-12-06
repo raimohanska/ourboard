@@ -2,7 +2,7 @@ import * as L from "lonna";
 import { globalScope } from "lonna";
 import { AppEvent, Board, EventFromServer, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, EventUserInfo, UserCursorPosition, UserSessionInfo, isPersistableBoardItemEvent, BoardHistoryEntry, isBoardItemEvent, BoardItemEvent, PersistableBoardItemEvent } from "../../../common/src/domain";
 import { boardHistoryReducer, boardReducer } from "../../../common/src/state";
-import { canFoldActions } from "../../../common/src/action-folding";
+import { foldActions } from "../../../common/src/action-folding";
 import MessageQueue from "./message-queue";
 
 
@@ -35,7 +35,11 @@ export function boardStore(socket: typeof io.Socket) {
         }
     })
     L.pipe(uiEvents, L.filter((e: AppEvent) => e.action !== "undo" && e.action !== "redo")).forEach(messageQueue.enqueue)
-    const userTaggedLocalEvents = L.view(uiEvents, e => isPersistableBoardItemEvent(e) ? getUserFromState(e) : e)
+    const userTaggedLocalEvents = L.view(uiEvents, tagWithUser)
+    
+    function tagWithUser(e: AppEvent): EventFromServer {
+        return isPersistableBoardItemEvent(e) ? getUserFromState(e) : e
+    }
     function getUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
         return { ...e, user: { nickname: state.get().nickname || "UNKNOWN" }, timestamp: new Date().toISOString() }
     }
@@ -44,29 +48,29 @@ export function boardStore(socket: typeof io.Socket) {
     // serverEvents.log("Server")
     
     const events = L.merge(userTaggedLocalEvents, serverEvents)
-    let undoBuffer: AppEvent[] = []
-    let redoBuffer: AppEvent[] = []
+    let undoStack: AppEvent[] = []
+    let redoStack: AppEvent[] = []
 
     const eventsReducer = (state: BoardAppState, event: EventFromServer) => {
         if (event.action === "undo") {
-            if (!undoBuffer.length) return state
-            const undoOperation = undoBuffer.pop()!
+            if (!undoStack.length) return state
+            const undoOperation = undoStack.pop()!
             messageQueue.enqueue(undoOperation)
-            const [board, reverse] = boardReducer(state.board!, undoOperation)
-            if (reverse) redoBuffer = addToBuffer(reverse, redoBuffer)
-            return { ...state, board }
+            const [{board, history}, reverse] = boardHistoryReducer({ board: state.board!, history: state.history}, tagWithUser(undoOperation))
+            if (reverse) redoStack = addToStack(reverse, redoStack)
+            return { ...state, board, history }
         } else if (event.action === "redo") {
-            if (!redoBuffer.length) return state
-            const redoOperation = redoBuffer.pop()!
+            if (!redoStack.length) return state
+            const redoOperation = redoStack.pop()!
             messageQueue.enqueue(redoOperation)
-            const [board, reverse] = boardReducer(state.board!, redoOperation)
-            if (reverse) undoBuffer = addToBuffer(reverse, undoBuffer)
-            return { ...state, board }
+            const [{board, history}, reverse] = boardHistoryReducer({ board: state.board!, history: state.history}, tagWithUser(redoOperation))
+            if (reverse) undoStack = addToStack(reverse, undoStack)
+            return { ...state, board, history }
         } else if (isBoardItemEvent(event)) {            
             const [{board, history}, reverse] = boardHistoryReducer({ board: state.board!, history: state.history}, event)
             if (reverse) {
-                redoBuffer = []
-                undoBuffer = addToBuffer(reverse, undoBuffer)
+                redoStack = []
+                undoStack = addToStack(reverse, undoStack)
             }
             return { ...state, board, history }
         } else if (event.action === "board.init") {
@@ -118,10 +122,14 @@ function boardIdFromPath() {
     return (match && match[1]) || undefined
 }
 
-export function addToBuffer(event: AppEvent, b:AppEvent[]) {
+export function addToStack(event: AppEvent, b:AppEvent[]) {
     const latest = b[b.length - 1]
-    if (!latest || !canFoldActions(latest, event)) {
-        return b.concat(event)
+    if (latest) {
+        const folded = foldActions(event, latest)  // The order is like this, because when applied the new event would be applied before the one in the stack
+        if (folded) {
+            return [...b.slice(0, b.length - 1), folded] // Replace top of stack with folded
+        }
     }
-    return b
+    
+    return b.concat(event)
 }

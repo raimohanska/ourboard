@@ -4,7 +4,7 @@ import { Board, BoardHistoryEntry, Id, Item, createBoard, getItemIds, getItemTex
 import prettyMs from "pretty-ms"
 import _ from "lodash";
 import { ISODate } from "./recent-boards";
-import { boardReducer, findItem } from "../../../common/src/state";
+import { boardReducer, getItem } from "../../../common/src/state";
 
 type ParsedHistoryEntry = {
     timestamp: ISODate,
@@ -27,7 +27,7 @@ export const HistoryView = ({ history, board }: { history: L.Property<BoardHisto
     function HistoryTable() {
         // Note: parsing full history once a second may or may not prove to be a performance challenge.
         // At least it's done only when the history table is visible and debounced with 1000 milliseconds.
-        const parsedHistory = history.pipe(L.debounce(1000, componentScope()), L.map(parseFullHistory))
+        const parsedHistory = history.pipe(L.debounce(1000, componentScope()), L.map(parseFullHistory), L.map(clipHistory))
         return <>
             <h2>Change Log</h2>
             <table>
@@ -56,6 +56,10 @@ export const HistoryView = ({ history, board }: { history: L.Property<BoardHisto
         return prettyMs(diff, {compact: true}) + " ago"
     }
 
+    function clipHistory(history: ParsedHistoryEntry[]) {
+        return history.reverse().slice(0, 100)
+    }
+
     function parseFullHistory(history: BoardHistoryEntry[]): ParsedHistoryEntry[] {
         const init = {
             board: createBoard("tmp"),
@@ -74,24 +78,29 @@ export const HistoryView = ({ history, board }: { history: L.Property<BoardHisto
         const { timestamp, user } = event;
         const itemIds = getItemIds(event)
         switch (event.action) {
-            case "item.add": return { timestamp, user, itemIds, kind: "added", actionText: "added " + describeItems(event.items) }
-            case "item.delete": return { timestamp, user, itemIds, kind: "deleted", actionText: "deleted " + describeItems(itemIds.map(findItem(boardBefore))) }
+            case "item.add": {
+                const containerIds = [...new Set(event.items.map(i => i.containerId))]
+                const containerInfo = containerIds.length === 1 && containerIds[0] && ` to ${describeItems([getItem(boardBefore)(containerIds[0])])}` || ""
+                return { timestamp, user, itemIds, kind: "added", actionText: `added ${describeItems(event.items)}${containerInfo}`}
+            }
+            case "item.delete": return { timestamp, user, itemIds, kind: "deleted", actionText: "deleted " + describeItems(itemIds.map(getItem(boardBefore))) }
             case "item.front": return null
-            case "item.move": 
-                const containerChanged = event.items.some(i => i.containerId !== findItem(boardBefore)(i.id).containerId)
+            case "item.move": {
+                const containerChanged = event.items.some(i => i.containerId !== getItem(boardBefore)(i.id).containerId)
                 const containerIds = event.items.map(i => i.containerId)
                 const containerId = containerIds[0]
                 const sameContainer = new Set(containerIds).size === 1
                 if (containerId && containerChanged && sameContainer) {
-                    return { timestamp, user, itemIds, kind: "moved into", actionText: `moved ${describeItems(itemIds.map(findItem(boardBefore)))} to ${ describeItems([findItem(boardBefore)(containerId)])}` }
+                    return { timestamp, user, itemIds, kind: "moved into", actionText: `moved ${describeItems(itemIds.map(getItem(boardBefore)))} to ${ describeItems([getItem(boardBefore)(containerId)])}` }
                 } else {
                     return null
                 }
-            case "item.update":
+            }
+            case "item.update": {
                 if (event.items.length === 1) {
                     const itemId = event.items[0].id
-                    const itemBefore = findItem(boardBefore)(itemId)
-                    const itemAfter = findItem(boardAfter)(itemId)
+                    const itemBefore = getItem(boardBefore)(itemId)
+                    const itemAfter = getItem(boardAfter)(itemId)
                     const textBefore = getItemText(itemBefore)
                     const textAfter = getItemText(itemAfter)
                     if (textBefore !== textAfter) {
@@ -101,6 +110,7 @@ export const HistoryView = ({ history, board }: { history: L.Property<BoardHisto
                     }
                 }
                 return {timestamp, user, itemIds, kind: "changed", actionText: `changed ${describeItems(event.items)}` }
+            }
         }
     }
 

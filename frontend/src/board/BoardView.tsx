@@ -26,7 +26,7 @@ import { SyncStatusView } from "../components/SyncStatusView";
 import { SyncStatus } from "../sync-status/sync-status-store";
 import { MiniMapView } from "./MiniMapView";
 import { HistoryView } from "./HistoryView";
-import { findItem } from "../../../common/src/state";
+import { getItem } from "../../../common/src/state";
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch, syncStatus }: 

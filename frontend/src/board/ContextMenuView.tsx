@@ -5,7 +5,7 @@ import {Board, Color, Item, Note} from "../../../common/src/domain"
 import { Dispatch } from "./board-store"
 import { NOTE_COLORS } from "./PaletteView"
 import { BoardFocus, getSelectedIds } from "./board-focus"
-import { findItem } from "../../../common/src/state"
+import { getItem } from "../../../common/src/state"
 
 export const ContextMenuView = (
   { latestNote, dispatch, board, focus }:
@@ -18,7 +18,7 @@ export const ContextMenuView = (
     latestNote.modify(n => ({...n, color }))
 
     const updated = [...getSelectedIds(f)].flatMap(id => {
-      const current = findItem(b)(id)
+      const current = getItem(b)(id)
       if (current.type === "note") {
         return { ...current, color } as Item
       }
@@ -35,7 +35,7 @@ export const ContextMenuView = (
       case "none": return []
       case "selected": return [...f.ids]
     }
-  }, ids => ids.map(findItem(board.get())));
+  }, ids => ids.map(getItem(board.get())));
 
   const focusItem = L.view(focusedItems, items => {
     if (items.length === 0) return null
