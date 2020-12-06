@@ -1,7 +1,7 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Note, Item, Text, ItemType, TextItem, BoardHistoryEntry, Id } from "../../../common/src/domain";
+import { Board, Note, Item, Text, ItemType, TextItem, BoardHistoryEntry, Id, getItemIds } from "../../../common/src/domain";
 import { EditableSpan } from "../components/EditableSpan"
 import { BoardFocus } from "./board-focus";
 import { SelectionBorder } from "./SelectionBorder"
@@ -132,15 +132,5 @@ export function getTextDimensions(text: string, font: string) {
 };
 
 function findItemHistory(history: BoardHistoryEntry[], id: Id): BoardHistoryEntry[] {
-  return history.filter(e => itemIds(e).includes(id))
-}
-
-function itemIds(e: BoardHistoryEntry) {
-  switch (e.action) {
-    case "item.front":
-    case "item.delete": return e.itemIds
-    case "item.move": return e.items.map(i => i.id)
-    case "item.update":
-    case "item.add": return e.items.map(i => i.id)
-  }
+  return history.filter(e => getItemIds(e).includes(id))
 }

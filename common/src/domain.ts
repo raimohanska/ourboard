@@ -172,3 +172,18 @@ export function migrateBoard(board: Board) {
         return fixedItem
     }
 }
+
+export function getItemText(i: Item) {
+    if (i.type === "image") return ""
+    return i.text
+}
+
+export function getItemIds(e: BoardHistoryEntry) {
+    switch (e.action) {
+        case "item.front":
+        case "item.delete": return e.itemIds
+        case "item.move": return e.items.map(i => i.id)
+        case "item.update":
+        case "item.add": return e.items.map(i => i.id)
+    }
+}

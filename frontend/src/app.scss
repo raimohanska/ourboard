@@ -499,11 +499,15 @@ a {
         > .icon {
             cursor: pointer;
         }
-        .row {
-            display: flex;
-            .timestamp {
-                display: inline-block;
-                width: 8em;
+        table {
+            tr { 
+                vertical-align: top;           
+                .timestamp {                
+                    min-width: 5em;
+                }
+                .action {                
+                    min-width: 8em;
+                }
             }
         }
     }
