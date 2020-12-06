@@ -5,6 +5,7 @@ import prettyMs from "pretty-ms"
 import _ from "lodash";
 import { ISODate } from "./recent-boards";
 import { boardReducer, getItem } from "../../../common/src/state";
+import { BoardFocus, getSelectedIds, getSelectedItems } from "./board-focus";
 
 type ParsedHistoryEntry = {
     timestamp: ISODate,
@@ -14,7 +15,7 @@ type ParsedHistoryEntry = {
     actionText: string // TODO: this should include links to items for selecting by click.
 }
 
-export const HistoryView = ({ history, board }: { history: L.Property<BoardHistoryEntry[]>, board: L.Property<Board>}) => {
+export const HistoryView = ({ history, board, focus }: { history: L.Property<BoardHistoryEntry[]>, board: L.Property<Board>, focus: L.Property<BoardFocus}) => {
     const expanded = L.atom(false)
     
     return <div className={L.view(expanded, e => e ? "history expanded" : "history")}>
@@ -27,12 +28,17 @@ export const HistoryView = ({ history, board }: { history: L.Property<BoardHisto
     function HistoryTable() {
         // Note: parsing full history once a second may or may not prove to be a performance challenge.
         // At least it's done only when the history table is visible and debounced with 1000 milliseconds.
-        const parsedHistory = history.pipe(L.debounce(1000, componentScope()), L.map(parseFullHistory), L.map(clipHistory))
+        const parsedHistory = history.pipe(L.debounce(1000, componentScope()), L.map(parseFullHistory))
+        const focusedHistory = L.combine(parsedHistory, focus, focusHistory)
+        const clippedHistory = L.view(focusedHistory, clipHistory)
+        const focusItems = L.combine(focus, board, (f, b) => getSelectedItems(b)(f))
+        const selectionDescription = L.view(focusItems, describeItems, d => d || `board ${ board.get().name }`)
         return <>
             <h2>Change Log</h2>
+            <div className="selection">for {selectionDescription}</div>
             <div className="scroll-container">
                 <table>
-                    <ListView observable={parsedHistory} getKey={i => i.timestamp} renderObservable={ renderHistoryEntry }/>
+                    <ListView observable={clippedHistory} getKey={i => i.timestamp} renderObservable={ renderHistoryEntry }/>
                 </table>  
             </div>
         </>
@@ -56,6 +62,14 @@ export const HistoryView = ({ history, board }: { history: L.Property<BoardHisto
         const diff = new Date().getTime() - new Date(timestamp).getTime()
         if (diff < 1000) return "just now"
         return prettyMs(diff, {compact: true}) + " ago"
+    }
+    
+    function focusHistory(history: ParsedHistoryEntry[], focus: BoardFocus) {
+        const selectedIds = getSelectedIds(focus)
+        if (selectedIds.size === 0) {
+            return history
+        }
+        return history.filter(entry => entry.itemIds.some(id => selectedIds.has(id)))
     }
 
     function clipHistory(history: ParsedHistoryEntry[]) {
@@ -116,13 +130,14 @@ export const HistoryView = ({ history, board }: { history: L.Property<BoardHisto
         }
     }
 
-    function describeItems(items: Item[]): string {
+    function describeItems(items: Item[]): string | null {
+        if (items.length === 0) return null
         if (items.length > 1) return "multiple items"
         const item = items[0]
         switch (item.type) {
             case "note": 
             case "container":
-            case "text": return item.text // TODO: fold creation and consecutive renames
+            case "text": return item.text
             case "image": return "an image"
         }
     }

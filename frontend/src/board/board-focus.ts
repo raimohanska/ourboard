@@ -1,4 +1,5 @@
-import { Id } from "../../../common/src/domain";
+import { Board, Id, Item } from "../../../common/src/domain";
+import { getItem } from "../../../common/src/state";
 
 export type BoardFocus = 
   { status: "none" } | 
@@ -13,6 +14,10 @@ export function getSelectedIds(f: BoardFocus): Set<Id> {
         case "selected":
         case "dragging": return f.ids
     }
+}
+
+export const getSelectedItems =(b: Board) => (f: BoardFocus): Item[] => {
+    return [...getSelectedIds(f)].map(getItem(b))
 }
 
 export function removeFromSelection(selection: BoardFocus, toRemove: Set<Id>): BoardFocus {

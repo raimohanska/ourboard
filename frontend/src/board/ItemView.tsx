@@ -47,6 +47,7 @@ export const ItemView = (
     <span
       ref={ref}
       data-test={dataTest}
+      data-itemid={id}
       draggable={true}
       onClick={onClick}
       className={L.view(selected, s => s ? type + " selected" : type)}

@@ -505,6 +505,11 @@ a {
         background: white;
         padding: $board-border-top 1em 1em 1em;
         border-left: 1px solid #cccccc;
+        > .selection {
+            margin-top: -1rem;
+            margin-bottom: 1em;
+            font-size: 0.6em;
+        }
         > .icon {
             cursor: pointer;
         }

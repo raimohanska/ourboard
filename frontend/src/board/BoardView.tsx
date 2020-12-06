@@ -179,7 +179,7 @@ export const BoardView = (
           </div>          
         </div>                
       </div>
-      <HistoryView board={board} history={history}/>
+      <HistoryView board={board} history={history} focus={focus}/>
       { L.view(viewRect, r => r != null, r => <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />) }
     </div>
   );
