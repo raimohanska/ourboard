@@ -42,10 +42,6 @@ export function getActiveBoards() {
     return boards
 }
 
-export function cleanActiveBoards() {
-    boards.clear()
-}
-
 function markForSave(board: BoardWithHistory) {
     boards.set(board.board.id, board)
     updateQueue.add(board.board.id)
