@@ -30,9 +30,11 @@ export const HistoryView = ({ history, board }: { history: L.Property<BoardHisto
         const parsedHistory = history.pipe(L.debounce(1000, componentScope()), L.map(parseFullHistory), L.map(clipHistory))
         return <>
             <h2>Change Log</h2>
-            <table>
-                <ListView observable={parsedHistory} getKey={i => i.timestamp} renderObservable={ renderHistoryEntry }/>
-            </table>  
+            <div className="scroll-container">
+                <table>
+                    <ListView observable={parsedHistory} getKey={i => i.timestamp} renderObservable={ renderHistoryEntry }/>
+                </table>  
+            </div>
         </>
     }
 

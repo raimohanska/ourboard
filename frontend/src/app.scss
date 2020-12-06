@@ -268,7 +268,7 @@ a {
         }      
     }      
 
-    .scroll-container {
+    > .scroll-container {
         flex-grow: 1;
         overflow: auto;
         background: $off-board-color;
@@ -498,6 +498,9 @@ a {
     }
 
     > .history {
+        max-height: 100vh;
+        display: flex;
+        flex-direction: column;        
         z-index: $z-index-menu;
         background: white;
         padding: $board-border-top 1em 1em 1em;
@@ -505,17 +508,20 @@ a {
         > .icon {
             cursor: pointer;
         }
-        table {
-            tr { 
-                vertical-align: top;           
-                .timestamp {                
-                    min-width: 5em;
-                }
-                .action {                
-                    min-width: 8em;
+        .scroll-container {
+            overflow-y: auto;
+            table {
+                tr { 
+                    vertical-align: top;           
+                    .timestamp {                
+                        min-width: 5em;
+                    }
+                    .action {                
+                        min-width: 8em;
+                    }
                 }
             }
-        }
+        }        
     }
 }
 
