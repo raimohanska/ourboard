@@ -49,11 +49,8 @@ export const HistoryView = ({ history, board, focus }: { history: L.Property<Boa
             <td className="timestamp">
                 { L.view(entry, e => renderTimestamp(e.timestamp) ) }  
             </td>
-            <td className="user">
-                { L.view(entry, e => e.user.nickname) }
-            </td>
             <td className="action">
-            { L.view(entry, e => e.actionText) }
+            { L.view(entry, e => `${e.user.nickname} ${e.actionText}`) }
             </td>
         </tr>
     }
