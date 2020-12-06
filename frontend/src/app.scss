@@ -9,7 +9,10 @@ $heading-color: $link-color;
 $heading-height: 1.8em;
 $board-border-top: 2.8em;
 $material-design-icons-font-directory-path: '~../node_modules/material-design-icons-iconfont/dist/fonts/';
- 
+$z-index-menu: 400000002;
+$z-index-minimap: 400000001;
+$z-index-cursors: 400000000;
+
 @import '~material-design-icons-iconfont/src/material-design-icons';
 
 * {
@@ -150,7 +153,7 @@ a {
         @extend .dropshadow;
 
         position: fixed;
-        z-index: 400000000;
+        z-index: $z-index-menu;
         padding: 0.2em $left-padding;
         width: 100%;
         display: flex;  
@@ -430,7 +433,7 @@ a {
         }
 
         .cursor {
-            z-index: 400000000;
+            z-index: $z-index-cursors;
             .text {
                 font-size: 0.5rem;
                 margin-left: 0.5rem;
@@ -447,11 +450,12 @@ a {
     }
 
     .minimap {
+        z-index: $z-index-minimap;
         font-size: 1vw;
         display: inline-block;
         position: absolute;
         bottom: 1rem;
-        right: 1rem;
+        right: 4rem;
         background: #eeeeee88;
         border: 0.3em solid #eeeeee88;
         box-sizing: content-box;
@@ -468,7 +472,7 @@ a {
     }
 
     .context-menu {
-        z-index: 1000000;
+        z-index: $z-index-menu;
         $menu-border: #cccccc;
         position: absolute;
         padding: 0.5em;
@@ -494,6 +498,8 @@ a {
     }
 
     > .history {
+        z-index: $z-index-menu;
+        background: white;
         padding: $board-border-top 1em 1em 1em;
         border-left: 1px solid #cccccc;
         > .icon {
