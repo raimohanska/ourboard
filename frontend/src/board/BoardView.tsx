@@ -26,6 +26,7 @@ import { SyncStatusView } from "../components/SyncStatusView";
 import { SyncStatus } from "../sync-status/sync-status-store";
 import { MiniMapView } from "./MiniMapView";
 import { HistoryView } from "./HistoryView";
+import { findItem } from "../../../common/src/state";
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch, syncStatus }: 
@@ -50,10 +51,13 @@ export const BoardView = (
   const coordinateHelper = boardCoordinateHelper(boardElement, scrollElement, zoom)  
 
   focus.forEach(f => {
-    dispatch({ action: "item.front", boardId: board.get().id, itemIds: [...getSelectedIds(f)] })
-    const item = getSelectedElement(f)
-    if (item && item.type === "note") {
-      latestNote.set(item)
+    const itemIds = [...getSelectedIds(f)]
+    if (itemIds.length > 0) {
+      dispatch({ action: "item.front", boardId: board.get().id, itemIds })
+      const item = getSelectedElement(f)
+      if (item && item.type === "note") {
+        latestNote.set(item)
+      }  
     }
   })
   

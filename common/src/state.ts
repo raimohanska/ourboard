@@ -1,5 +1,5 @@
 import { AppEvent, Board, BoardHistoryEntry, BoardWithHistory, EventFromServer, EventUserInfo, Id, isPersistableBoardItemEvent, Item } from "./domain";
-import _ from "lodash"
+import _, { max } from "lodash"
 import { canFoldActions } from "./action-folding";
 
 export function boardHistoryReducer(board: BoardWithHistory, appEvent: EventFromServer): [BoardWithHistory, AppEvent | null] {
@@ -66,15 +66,21 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
           items: Array.from(idsToDelete).map(findItem(board)) // TODO: the deleted items should be assigned to containers when restoring. This happens now only if the container was removed too
         }]
       }
-      case "item.front":        
+      case "item.front":              
         let maxZ = 0
+        let maxZCount = 0
         for (let i of board.items) {
-          maxZ = Math.max(maxZ, i.z)
+          if (i.z > maxZ) {
+            maxZCount = 1;
+            maxZ = i.z
+          } else if (i.z === maxZ) {
+            maxZCount++
+          }          
         }
         const isFine = (item: Item) => {
           return !event.itemIds.includes(item.id) || item.z === maxZ
         }
-        if (board.items.every(isFine)) {
+        if (maxZCount === event.itemIds.length && board.items.every(isFine)) {
           // Requested items already on front
           return [board, null]
         }
