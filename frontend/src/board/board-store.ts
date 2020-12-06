@@ -119,8 +119,8 @@ function boardIdFromPath() {
 }
 
 export function addToBuffer(event: AppEvent, b:AppEvent[]) {
-    const top = b[b.length - 1]
-    if (!top || !canFoldActions(top, event)) {
+    const latest = b[b.length - 1]
+    if (!latest || !canFoldActions(latest, event)) {
         return b.concat(event)
     }
     return b
