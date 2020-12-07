@@ -30,10 +30,8 @@ export default function(socket: Sender) {
     }
 
     function ack() {
-        setTimeout(() => {
         state.modify(s => ({ ...s, sent: [] }))
         sendIfPossible()
-        }, 1000)
     }
 
     function enqueue(event: AppEvent) {
