@@ -1,4 +1,5 @@
 import * as uuid from "uuid";
+import { boardReducer } from "./state";
 
 export type Id = string
 export type ISOTimeStamp = string
@@ -62,7 +63,7 @@ export type ItemLocks = Record<Id, Id>
 export type EventFromServer = BoardHistoryEntry | TransientBoardItemEvent | OtherAppEvent
 
 export type AppEvent = BoardItemEvent | OtherAppEvent;
-export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront
+export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront | BootstrapBoard
 export type TransientBoardItemEvent = LockItem | UnlockItem
 export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
 export type OtherAppEvent = AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks | Undo | Redo
@@ -71,6 +72,7 @@ export type UpdateItem = { action: "item.update", boardId: Id, items: Item[] };
 export type MoveItem = { action: "item.move", boardId: Id, items: {id: Id, x: number, y: number, containerId?: Id | undefined}[] };
 export type BringItemToFront = { action: "item.front", boardId: Id, itemIds: Id[] };
 export type DeleteItem = { action: "item.delete", boardId: Id, itemIds: Id[] };
+export type BootstrapBoard = { action: "item.bootstrap", boardId: Id, items: Item[] }
 export type LockItem = { action: "item.lock", boardId: Id, itemId: Id }
 export type UnlockItem = { action: "item.unlock", boardId: Id, itemId: Id }
 export type GotBoardLocks = { action: "board.locks", boardId: Id, locks: ItemLocks }
@@ -136,6 +138,17 @@ export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent => a.action.s
 
 export const isPersistableBoardItemEvent = (e: AppEvent): e is PersistableBoardItemEvent => isBoardItemEvent(e) && !["item.lock", "item.unlock"].includes(e.action)
 
+export function migrateHistory(board: Board, history: BoardHistoryEntry[]): BoardHistoryEntry[] {
+    if (history.length > 0) {
+        try {
+            history.reduce((b, e) => boardReducer(b, e)[0], createBoard("tmp"))
+            return history
+        } catch (e) {
+            console.warn("Board history check fail, bootstrapping", e)
+        }
+    }
+    return [{ "action": "item.bootstrap", boardId: board.id, items: board.items, timestamp: new Date().toISOString(), user: { nickname: "admin" } }]
+}
 export function migrateBoard(board: Board) {
     const items: Item[] = []
     const width = Math.max(board.width || 0, defaultBoardSize.width)
@@ -178,12 +191,13 @@ export function getItemText(i: Item) {
     return i.text
 }
 
-export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent) {
+export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id[] {
     switch (e.action) {
         case "item.front":
         case "item.delete": return e.itemIds
         case "item.move": return e.items.map(i => i.id)
         case "item.update":
         case "item.add": return e.items.map(i => i.id)
+        case "item.bootstrap": return e.items.map(i => i.id)
     }
 }

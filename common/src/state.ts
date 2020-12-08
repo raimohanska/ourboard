@@ -22,6 +22,12 @@ function addToHistory(history: BoardHistoryEntry[], appEvent: EventFromServer): 
 
 export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | null] {
     switch (event.action) {
+      case "item.bootstrap":
+        if (board.items.length > 0) throw Error("Trying to bootstrap non-empty board")
+        return [
+          { ...board, items: event.items },
+          null
+        ]
       case "item.add":
         if (board.items.find(i => event.items.some(a => a.id === i.id))) {
           throw new Error("Adding duplicate item " + JSON.stringify(event.items))

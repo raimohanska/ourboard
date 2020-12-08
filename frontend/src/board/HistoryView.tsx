@@ -15,7 +15,7 @@ type ParsedHistoryEntry = {
     actionText: string // TODO: this should include links to items for selecting by click.
 }
 
-export const HistoryView = ({ history, board, focus }: { history: L.Property<BoardHistoryEntry[]>, board: L.Property<Board>, focus: L.Property<BoardFocus}) => {
+export const HistoryView = ({ history, board, focus }: { history: L.Property<BoardHistoryEntry[]>, board: L.Property<Board>, focus: L.Property<BoardFocus>}) => {
     const expanded = L.atom(false)
     
     return <div className={L.view(expanded, e => e ? "history expanded" : "history")}>
@@ -123,6 +123,9 @@ export const HistoryView = ({ history, board, focus }: { history: L.Property<Boa
                     }
                 }
                 return {timestamp, user, itemIds, kind: "changed", actionText: `changed ${describeItems(event.items)}` }
+            }
+            case "item.bootstrap": {
+                return null
             }
         }
     }

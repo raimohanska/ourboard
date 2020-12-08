@@ -1,4 +1,4 @@
-import { Board, BoardWithHistory, BoardHistoryEntry, BoardItemEvent, migrateBoard, exampleBoard, Id, AppEvent, EventUserInfo } from "../../common/src/domain"
+import { Board, BoardWithHistory, BoardHistoryEntry, BoardItemEvent, migrateBoard, exampleBoard, Id, AppEvent, EventUserInfo, migrateHistory } from "../../common/src/domain"
 import { boardHistoryReducer, boardReducer } from "../../common/src/state"
 import { withDBClient } from "./db"
 
@@ -17,7 +17,11 @@ export async function getBoard(id: Id): Promise<BoardWithHistory> {
                 throw Error(`Board ${id} not found`)
             }
         } else {
-            board = { board: migrateBoard(result.rows[0].content as Board), history: result.rows[0].history.history || [] }
+            const b = migrateBoard(result.rows[0].content as Board)
+            board = { 
+                board: b, 
+                history: migrateHistory(b, result.rows[0].history.history || []) 
+            }
         }
         boards.set(board.board.id, board)
     }
