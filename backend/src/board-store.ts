@@ -1,6 +1,6 @@
-import { Board, BoardWithHistory, BoardHistoryEntry, BoardItemEvent, exampleBoard, Id, AppEvent, EventUserInfo } from "../../common/src/domain"
-import { migrateBoard, migrateHistory } from "../../common/src/migration"
-import { boardHistoryReducer, boardReducer } from "../../common/src/state"
+import { Board, BoardHistoryEntry, BoardWithHistory, exampleBoard, Id } from "../../common/src/domain"
+import { migrateBoardWithHistory } from "../../common/src/migration"
+import { boardHistoryReducer } from "../../common/src/state"
 import { withDBClient } from "./db"
 
 let updateQueue: Set<Id> = new Set()
@@ -18,11 +18,10 @@ export async function getBoard(id: Id): Promise<BoardWithHistory> {
                 throw Error(`Board ${id} not found`)
             }
         } else {
-            const b = migrateBoard(result.rows[0].content as Board)
-            board = { 
-                board: b, 
-                history: migrateHistory(b, result.rows[0].history.history || []) 
-            }
+            board = migrateBoardWithHistory({ 
+                board: result.rows[0].content as Board, 
+                history: result.rows[0].history.history || [] 
+            })
         }
         boards.set(board.board.id, board)
     }

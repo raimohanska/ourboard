@@ -1,7 +1,14 @@
-import { Board, BoardHistoryEntry, Container, createBoard, defaultBoardSize, Item } from "./domain"
+import { Board, BoardHistoryEntry, BoardWithHistory, Container, createBoard, defaultBoardSize, Item } from "./domain"
 import { boardReducer } from "./state"
 
-export function migrateHistory(board: Board, history: BoardHistoryEntry[]): BoardHistoryEntry[] {
+export function migrateBoardWithHistory(boardWithHistory: BoardWithHistory) {
+    const board = migrateBoard(boardWithHistory.board)
+    return {
+        board,
+        history: migrateHistory(board, boardWithHistory.history)
+    }
+}
+function migrateHistory(board: Board, history: BoardHistoryEntry[]): BoardHistoryEntry[] {
     if (history.length > 0) {
         try {
             history.reduce((b, e) => boardReducer(b, e)[0], createBoard("tmp"))
