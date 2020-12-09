@@ -1,5 +1,6 @@
 import * as uuid from "uuid";
-import { Board, BoardStub, Item, isFullyFormedBoard, migrateBoard } from "../../../common/src/domain"
+import { Board, BoardStub, Item, isFullyFormedBoard } from "../../../common/src/domain"
+import { migrateBoard } from "../../../common/src/migration"
 
 export function generateFromTemplate(boardName: string, tmpl: Board | BoardStub): Board | BoardStub {
     if (!isFullyFormedBoard(tmpl)) {

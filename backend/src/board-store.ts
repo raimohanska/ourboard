@@ -1,4 +1,5 @@
-import { Board, BoardWithHistory, BoardHistoryEntry, BoardItemEvent, migrateBoard, exampleBoard, Id, AppEvent, EventUserInfo, migrateHistory } from "../../common/src/domain"
+import { Board, BoardWithHistory, BoardHistoryEntry, BoardItemEvent, exampleBoard, Id, AppEvent, EventUserInfo } from "../../common/src/domain"
+import { migrateBoard, migrateHistory } from "../../common/src/migration"
 import { boardHistoryReducer, boardReducer } from "../../common/src/state"
 import { withDBClient } from "./db"
 
