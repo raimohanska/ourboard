@@ -1,7 +1,9 @@
-import { Board, BoardHistoryEntry, BoardWithHistory, exampleBoard, Id } from "../../common/src/domain"
+import { Item, Board, BoardHistoryEntry, BoardWithHistory, exampleBoard, Id, BoardAttributes } from "../../common/src/domain"
 import { migrateBoardWithHistory } from "../../common/src/migration"
-import { boardHistoryReducer } from "../../common/src/state"
+import { boardHistoryReducer, boardReducer } from "../../common/src/state"
 import { withDBClient } from "./db"
+import _ from "lodash"
+import JsonDiff from "json-diff"
 
 let updateQueue: Set<Id> = new Set()
 
@@ -18,14 +20,19 @@ export async function getBoard(id: Id): Promise<BoardWithHistory> {
                 throw Error(`Board ${id} not found`)
             }
         } else {
-            board = migrateBoardWithHistory({ 
-                board: result.rows[0].content as Board, 
-                history: result.rows[0].history.history || [] 
-            })
+            const { boardAttributes, history } = migrateBoardWithHistory(result.rows[0].content as Board, result.rows[0].history.history || [])
+            const boardWithHistory = { board: buildBoardFromHistory(boardAttributes, history), history }
+            boards.set(boardWithHistory.board.id, boardWithHistory)
+            return boardWithHistory
         }
-        boards.set(board.board.id, board)
     }
     return board
+}
+
+function buildBoardFromHistory(boardAttributes: BoardAttributes, history: BoardHistoryEntry[]): Board {
+    const emptyBoard = { ...boardAttributes, items: [] as Item[] } as Board
+    const resultBoard = history.reduce((b, e) => boardReducer(b, e)[0], emptyBoard)
+    return resultBoard
 }
 
 export async function updateBoards(appEvent: BoardHistoryEntry) {

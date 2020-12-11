@@ -1,24 +1,34 @@
-import { Board, BoardHistoryEntry, BoardWithHistory, Container, createBoard, defaultBoardSize, Item } from "./domain"
+import { Board, BoardAttributes, BoardHistoryEntry, BoardWithHistory, CompactBoardHistory, Container, createBoard, defaultBoardSize, Item } from "./domain"
 import { boardReducer } from "./state"
 
-export function migrateBoardWithHistory(boardWithHistory: BoardWithHistory) {
-    const board = migrateBoard(boardWithHistory.board)
-    return {
-        board,
-        history: migrateHistory(board, boardWithHistory.history)
-    }
-}
-function migrateHistory(board: Board, history: BoardHistoryEntry[]): BoardHistoryEntry[] {
+export function migrateBoardWithHistory(boardToMigrate: Board, historyToMigrate: BoardHistoryEntry[]): CompactBoardHistory {
+    const board = migrateBoard(boardToMigrate)
+    const history = historyToMigrate
+    const { items, ...boardAttributes } = board
     if (history.length > 0) {
         try {
-            history.reduce((b, e) => boardReducer(b, e)[0], createBoard("tmp"))
-            return history
+            const emptyBoard = { ...boardAttributes, items: [] as Item[] } as Board
+            history.reduce((b, e) => boardReducer(b, e)[0], emptyBoard) // To verify consistency of history
+            return { boardAttributes, history }
         } catch (e) {
             console.warn("Board history check fail, bootstrapping", e)
         }
     }
-    return [{ "action": "item.bootstrap", boardId: board.id, items: board.items, timestamp: new Date().toISOString(), user: { nickname: "admin" } }]
+    const bootstrappedHistory = [{ "action": "item.bootstrap", boardId: board.id, items: board.items, timestamp: new Date().toISOString(), user: { nickname: "admin" } }] as BoardHistoryEntry[]
+    return { boardAttributes, history: bootstrappedHistory }
 }
+
+export function buildBoardFromHistory(boardAttributes: BoardAttributes, history: BoardHistoryEntry[]): Board {
+    const emptyBoard = { ...boardAttributes, items: [] as Item[] } as Board
+    const resultBoard = history.reduce((b, e) => boardReducer(b, e)[0], emptyBoard)
+    return resultBoard
+}
+
+export function toCompactBoardHistory(board: BoardWithHistory) {
+    const { items, ...boardAttributes } = board.board
+    return { boardAttributes, history: board.history }    
+}
+
 export function migrateBoard(board: Board) {
     const items: Item[] = []
     const width = Math.max(board.width || 0, defaultBoardSize.width)

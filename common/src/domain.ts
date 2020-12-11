@@ -4,14 +4,14 @@ import { boardReducer } from "./state";
 export type Id = string
 export type ISOTimeStamp = string
 
-export type BoardInfo = {
+export type BoardAttributes = {
     id: Id,
     name: string,
-}
-
-export type Board = BoardInfo & {
     width: number;
     height: number;
+}
+
+export type Board = BoardAttributes & {
     items: Item[]
 }
 
@@ -20,6 +20,7 @@ export type BoardStub = Pick<Board, "id" | "name">
 export type EventUserInfo = { nickname: string }
 export type BoardHistoryEntry = { user: EventUserInfo, timestamp: ISOTimeStamp } & PersistableBoardItemEvent
 export type BoardWithHistory = { board: Board, history: BoardHistoryEntry[] }
+export type CompactBoardHistory = { boardAttributes: BoardAttributes, history: BoardHistoryEntry[] }
 
 export function isFullyFormedBoard(b: Board | BoardStub): b is Board {
     return !!b.id && !!b.name && ["width", "height", "items"].every(prop => prop in b)
@@ -80,7 +81,7 @@ export type AddBoard = { action: "board.add", payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join", boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessionInfo
 export type JoinedBoard = { action: "board.joined", boardId: Id } & UserSessionInfo
-export type InitBoard = { action: "board.init", board: BoardWithHistory }
+export type InitBoard = { action: "board.init", board: CompactBoardHistory }
 export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
 export type SetNickname = { action: "nickname.set", nickname: string, userId: string }
 export type AssetPutUrlRequest = { "action": "asset.put.request", assetId: string }

@@ -1,5 +1,6 @@
 import IO from "socket.io"
 import { Board, ItemLocks, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE, SetNickname, BoardWithHistory, EventUserInfo, BoardHistoryEntry } from "../../common/src/domain"
+import { toCompactBoardHistory } from "../../common/src/migration"
 import { randomProfession } from "./professions"
 
 type UserSession = {
@@ -28,7 +29,7 @@ export function addSessionToBoard(board: BoardWithHistory, origin: IO.Socket) {
         .filter(s => s.socket === origin)
         .forEach(session => {
             session.boards.push(board.board.id)
-            session.socket.send("app-event", { action: "board.init", board })
+            session.socket.send("app-event", { action: "board.init", board: toCompactBoardHistory(board) })
             session.socket.send("app-event", { action: "board.join.ack", boardId: board.board.id, userId: session.socket.id, nickname: session.nickname })
             everyoneOnTheBoard(board.board.id).forEach(s => {
                 session.socket.send("app-event", { action: "board.joined", boardId: board.board.id, userId: s.socket.id, nickname: s.nickname })

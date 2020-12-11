@@ -4,6 +4,7 @@ import { AppEvent, Board, EventFromServer, CURSOR_POSITIONS_ACTION_TYPE, Id, Ite
 import { boardHistoryReducer, boardReducer } from "../../../common/src/state";
 import { foldActions } from "../../../common/src/action-folding";
 import MessageQueue from "./message-queue";
+import { buildBoardFromHistory } from "../../../common/src/migration";
 
 
 export type BoardAppState = {
@@ -74,7 +75,7 @@ export function boardStore(socket: typeof io.Socket) {
             }
             return { ...state, board, history }
         } else if (event.action === "board.init") {
-            return { ...state, board: event.board.board, history: event.board.history }
+            return { ...state, board: buildBoardFromHistory(event.board.boardAttributes, event.board.history), history: event.board.history }
         } else if (event.action === "board.join.ack") {
             let nickname = event.nickname
             if (localStorage.nickname && localStorage.nickname !== event.nickname) {
