@@ -1,9 +1,9 @@
-import { Board, BoardAttributes, BoardHistoryEntry, BoardWithHistory, CompactBoardHistory, Container, createBoard, defaultBoardSize, Item } from "./domain"
+import { Board, BoardAttributes, BoardHistoryEntry, BoardWithHistory, CompactBoardHistory, Container, createBoard, defaultBoardSize, EventUserInfo, Item } from "./domain"
 import { boardReducer } from "./state"
 
 export function migrateBoardWithHistory(boardToMigrate: Board, historyToMigrate: BoardHistoryEntry[]): CompactBoardHistory {
     const board = migrateBoard(boardToMigrate)
-    const history = historyToMigrate
+    const history = migrateHistory(historyToMigrate)
     const { items, ...boardAttributes } = board
     if (history.length > 0) {
         try {
@@ -16,6 +16,13 @@ export function migrateBoardWithHistory(boardToMigrate: Board, historyToMigrate:
     }
     const bootstrappedHistory = [{ "action": "item.bootstrap", boardId: board.id, items: board.items, timestamp: new Date().toISOString(), user: { nickname: "admin" } }] as BoardHistoryEntry[]
     return { boardAttributes, history: bootstrappedHistory }
+}
+
+function migrateHistory(historyToMigrate: BoardHistoryEntry[]) {
+    return historyToMigrate.map(entry => {
+        const user = { ...entry.user, userType: entry.user.userType || (entry.user.nickname === "admin" ? "system" : "unidentified") } as EventUserInfo
+        return {...entry, user}
+    })
 }
 
 export function buildBoardFromHistory(boardAttributes: BoardAttributes, history: BoardHistoryEntry[]): Board {

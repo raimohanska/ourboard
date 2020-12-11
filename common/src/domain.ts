@@ -17,7 +17,7 @@ export type Board = BoardAttributes & {
 
 export type BoardStub = Pick<Board, "id" | "name">
 
-export type EventUserInfo = { nickname: string }
+export type EventUserInfo = { nickname: string, userType: "unidentified" | "system" }
 export type BoardHistoryEntry = { user: EventUserInfo, timestamp: ISOTimeStamp } & PersistableBoardItemEvent
 export type BoardWithHistory = { board: Board, history: BoardHistoryEntry[] }
 export type CompactBoardHistory = { boardAttributes: BoardAttributes, history: BoardHistoryEntry[] }

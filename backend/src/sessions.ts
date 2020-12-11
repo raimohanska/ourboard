@@ -20,9 +20,9 @@ export function endSession(socket: IO.Socket) {
     const boards = sessions[socket.id].boards
     delete sessions[socket.id]
 }
-export function getSessionUserInfo(socket: IO.Socket) {
+export function getSessionUserInfo(socket: IO.Socket): EventUserInfo {
     const nickname = sessions[socket.id].nickname
-    return { nickname }
+    return { userType: "unidentified", nickname }
 }
 export function addSessionToBoard(board: BoardWithHistory, origin: IO.Socket) {
     Object.values(sessions)

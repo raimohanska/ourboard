@@ -42,7 +42,7 @@ export function boardStore(socket: typeof io.Socket) {
         return isPersistableBoardItemEvent(e) ? getUserFromState(e) : e
     }
     function getUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
-        return { ...e, user: { nickname: state.get().nickname || "UNKNOWN" }, timestamp: new Date().toISOString() }
+        return { ...e, user: { userType: "unidentified", nickname: state.get().nickname || "UNKNOWN" }, timestamp: new Date().toISOString() }
     }
 
     // uiEvents.log("UI")
