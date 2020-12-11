@@ -114,7 +114,9 @@ export const ItemView = (
   function AuthorInfo({item, itemHistory}: {item: L.Property<Item>, itemHistory: BoardHistoryEntry[]}) {
     const color = L.view(item, i => i.type === "note" ? i.color : "white", contrastingColor)
     const style = L.combineTemplate({ color })    
-    return <span className="author" style={style}>{itemHistory[0] ? itemHistory[0].user.nickname : null}</span>
+    const interestingHistory = itemHistory.filter(e => e.action !== "item.move" && e.action !== "item.front")
+    const lastItem = interestingHistory[interestingHistory.length - 1]
+    return <span className="author" style={style}>{lastItem && lastItem.user.userType !== "system" ? lastItem.user.nickname : null}</span>
   }
 };
 
