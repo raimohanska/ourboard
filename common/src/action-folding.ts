@@ -1,10 +1,13 @@
-import { AppEvent, BoardHistoryEntry, BringItemToFront, createBoard, getItemIds, isPersistableBoardItemEvent, Item, MoveItem, UpdateItem } from "./domain"
+import { AppEvent, BoardHistoryEntry, BringItemToFront, createBoard, getItemIds, isBoardHistoryEntry, isPersistableBoardItemEvent, isSameUser, Item, MoveItem, UpdateItem } from "./domain"
 import { boardReducer, getItem } from "./state"
 /*
 Folding can be done if in any given state S, applying actions A and B consecutively can be replaced with a single action C.
 This function should return that composite action or null if folding is not possible.
 */
 export function foldActions(a: AppEvent, b: AppEvent): AppEvent | null {
+    if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
+        if (!isSameUser(a.user, b.user)) return null
+    }
     if (a.action === "item.add") {
         if (isPersistableBoardItemEvent(b) && b.action !== "item.delete" && a.boardId === b.boardId) {
             const createdItemIds = new Set(getItemIds(a))

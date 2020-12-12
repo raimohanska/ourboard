@@ -139,6 +139,12 @@ export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent => a.action.s
 
 export const isPersistableBoardItemEvent = (e: AppEvent): e is PersistableBoardItemEvent => isBoardItemEvent(e) && !["item.lock", "item.unlock"].includes(e.action)
 
+export const isBoardHistoryEntry = (e: AppEvent): e is BoardHistoryEntry => isPersistableBoardItemEvent(e) && !!(e as BoardHistoryEntry).user && !!(e as BoardHistoryEntry).timestamp
+
+export function isSameUser(a: EventUserInfo, b: EventUserInfo) {
+    return a.userType == b.userType && a.nickname == b.nickname
+}
+
 export function getItemText(i: Item) {
     if (i.type === "image") return ""
     return i.text
