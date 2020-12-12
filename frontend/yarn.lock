@@ -3743,10 +3743,10 @@ log-symbols@^2.2.0:
   dependencies:
     chalk "^2.0.1"
 
-lonna@^0.7:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.7.0.tgz#bf3a98121a8f1a1eab14f5b0b4fef77654a25295"
-  integrity sha512-M7D2vy/n4UaU+dC0DxFBHFYfAQfqjMtcEKa8QrfLFNYxaug8XkoHv6sn5Nfabm10im504UunoJKJitYMmgdPSg==
+lonna@^0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.7.1.tgz#fa2185f69957b12f61f75853aa842f7dd1f1e03f"
+  integrity sha512-paQJi7n62BLZIfzVRmHDzdqgDYHP10ZWuf2AgdNibXj6ZDUCT+cggjsFkXXHq35G2mpI61wCq85QtzeGpX+yIw==
   dependencies:
     optics-ts "^1.2.0"
 
