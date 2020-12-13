@@ -71,7 +71,12 @@ export function assetStore(socket: typeof io.Socket, store: BoardStore) {
         if (src) return src
         const local = dataURLs[assetId]
         if (local) return local
-        return `/assets/${assetId}` // TODO: some Progress Indicator
+        // When src is not set and asset not found locally, it indicates that this image was added by
+        // some other user and image upload is not complete yet. (src will be set on completion)
+        // Currently returned image URL if currently a 404 which results to a temporary "broken image"
+        // Shown to other users while upload in progress (this is not bad, but could be better)
+        // TODO: show a progress indicator instead. 
+        return `/not-uploaded-yet.png` 
     }
 
     return {
