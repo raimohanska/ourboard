@@ -89,7 +89,7 @@ export const BoardView = (
       width: coordinateHelper.pxToEm(viewRect.width),
       height: coordinateHelper.pxToEm(viewRect.height)
     }
-  }))
+  }), L.cached<G.Rect | null>(componentScope()))
   
   itemDeleteHandler(boardId, dispatch, focus)
   itemUndoHandler(dispatch)
