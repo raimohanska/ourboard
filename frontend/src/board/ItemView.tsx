@@ -1,6 +1,7 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { BoardCoordinateHelper } from "./board-coordinates"
+import { getSelectedIds } from "./board-focus"
 import { Board, Note, Item, Text, ItemType, TextItem, BoardHistoryEntry, Id, getItemIds } from "../../../common/src/domain";
 import { EditableSpan } from "../components/EditableSpan"
 import { BoardFocus } from "./board-focus";
@@ -73,22 +74,25 @@ export const ItemView = (
     const textAtom = L.atom(L.view(item, "text"), text => dispatch({ action: "item.update", boardId: board.get().id, items: [{ ...item.get(), text }] }))
     const showCoords = false
   
-    const fontSize = L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), L.view(item, "text"), (t, w, h, text) => {
+
+    const focused = L.view(focus, f => getSelectedIds(f).has(id))
+
+    const fontSize = L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), L.view(item, "text"), focused, (t, w, h, text, f) => {
       if (t !== "note") return "1em";
+      
       const lines = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont!))
 
-      const textHeight = _.sum(lines.map(l => l.height))
-      const textWidth = _.max(lines.map(l => l.width)) || 0            
+      const maxWordHeight = _.sum(lines.map(l => l.height))
+      const maxWordWidth = _.max(lines.map(l => l.width)) || 0            
       const width = coordinateHelper.emToPx(w)
       const height = coordinateHelper.emToPx(h)
 
       let size = 0
-      for (let wpl = 1; wpl < 20; wpl++) { // try different numbers of words-per-line
-        const thisSize = Math.min(width/textWidth/wpl*0.6, height/textHeight*0.8*wpl)
-        if (thisSize < size) {
-            break
-        }
-        size = thisSize
+      for (let wpl = 1; wpl <= lines.length; wpl++) { // try different numbers of words-per-line
+        const thisWidth = maxWordWidth * wpl
+        const thisHeight = maxWordHeight / wpl
+        const thisSize = Math.min(width/thisWidth*0.6, height/thisHeight*1.2)
+        size = Math.max(thisSize, size)
       }
 
       return size + "em"
