@@ -11,7 +11,8 @@ import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection";
 import { Dispatch } from "./board-store";
 import { contrastingColor } from "./contrasting-color";
-import _ from "lodash";
+import _, { size } from "lodash";
+import { Dimensions } from "./geometry";
 
 export const ItemView = (
     { board, history, id, type, item, isLocked, focus, coordinateHelper, dispatch }:
@@ -80,23 +81,86 @@ export const ItemView = (
     const fontSize = L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), L.view(item, "text"), focused, (t, w, h, text, f) => {
       if (t !== "note") return "1em";
       
-      const lines = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont!))
+      const words = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont!))
+      const spaceCharSize = getTextDimensions("", referenceFont!)         
+      const widthTarget = coordinateHelper.emToPx(w) * 0.7
+      const heightTarget = coordinateHelper.emToPx(h) * 0.6
 
-      const maxWordHeight = _.sum(lines.map(l => l.height))
-      const maxWordWidth = _.max(lines.map(l => l.width)) || 0            
-      const width = coordinateHelper.emToPx(w)
-      const height = coordinateHelper.emToPx(h)
+      const maxWidth = widthTarget
+      const lineSpacingEm = 0.4
 
-      let size = 0
-      for (let wpl = 1; wpl <= lines.length; wpl++) { // try different numbers of words-per-line
-        const thisWidth = maxWordWidth * wpl
-        const thisHeight = maxWordHeight / wpl
-        const thisSize = Math.min(width/thisWidth*0.6, height/thisHeight*1.2)
-        size = Math.max(thisSize, size)
+      let lowerBound = 0
+      let upperBound = 10
+      let sizeEm = 1
+      if (words.length > 0) {
+        let iterations = 1
+        while (iterations < 10) { // Limited binary search
+            const fitInfo = tryFit(sizeEm)
+            const fitFactor = fitInfo.fitFactor
+            //if (f) console.log(text, "Try size", sizeEm, "Total lines", fitInfo.lines.length, "V-Fit", fitInfo.heightFitFactor, "H-fit", fitInfo.widthFitFactor, "limited by", fitFactor === fitInfo.heightFitFactor ? "height" : "width")
+            
+            if (fitFactor < 0.95) {
+              // too small
+              lowerBound = sizeEm
+              sizeEm = (sizeEm + upperBound) / 2
+            } else if (fitFactor > 1) {
+              // too big
+              upperBound = sizeEm
+              sizeEm = (sizeEm + lowerBound) / 2
+            } else {
+              // Good enough
+              break
+            }
+            iterations++          
+        }
       }
 
-      return size + "em"
+      return sizeEm + "em"
+
+      // Try to fit text using given font size. Return fit factor (text size / max size)
+      function tryFit(sizeEm: number) {
+        let index = 0
+        let lines: Dimensions[] = []
+        let maxWordWidth = 0
+        let lineWidth = 0
+
+        while(true) { // loop through lines
+          let nextWord = words[index]
+          let nextWordWidth = nextWord.width * sizeEm
+          maxWordWidth = Math.max(nextWordWidth, maxWordWidth)
+          let nextWordWidthWithSpacing = (lineWidth == 0 ? nextWord.width : nextWord.width + spaceCharSize.width) * sizeEm
+          let fitFactor = (lineWidth + nextWordWidthWithSpacing) / maxWidth
+          if (fitFactor > 1) {
+            // no more words for this line
+            if (lineWidth === 0) {
+              //if (f) console.log("couldn't fit a single word, return factor based on width")              
+              return { lines: [], fitFactor, widthFitFactor: fitFactor, heightFitFactor: 0 }
+            } else {
+              lines.push({ width: lineWidth, height: nextWord.height * sizeEm })
+              lineWidth = 0;
+            }            
+          } else {
+            // add this word on the line            
+            lineWidth = lineWidth + nextWordWidthWithSpacing            
+            if (++index >= words.length) {
+              //if (f) console.log("All words added", words)
+              lines.push({ width: lineWidth, height: nextWord.height * sizeEm })
+              lineWidth = 0
+              break
+            }
+          }
+        }
+        // At this point the text was horizontally fit. Return fit factor based on height
+        const totalHeight = lines.reduce((h, l) => h + l.height, 0) + (lines.length - 1) * lineSpacingEm * sizeEm
+        const heightFitFactor = totalHeight / heightTarget
+        const widthFitFactor = maxWordWidth / widthTarget
+        const fitFactor = Math.max(heightFitFactor, widthFitFactor)
+        return { lines, fitFactor, heightFitFactor, widthFitFactor, totalHeight, lineCount: lines.length }
+      }
     })
+
+
+
 
 
     const setEditing = (e: boolean) => {
@@ -124,7 +188,7 @@ export const ItemView = (
   }
 };
 
-export function getTextDimensions(text: string, font: string) {
+export function getTextDimensions(text: string, font: string): Dimensions {
   // if given, use cached canvas for better performance
   // else, create new canvas
   var gtw: any = getTextDimensions

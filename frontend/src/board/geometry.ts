@@ -1,5 +1,6 @@
 
 export type Coordinates = { x: number, y: number }
+export type Dimensions = { width: number, height: number }
 export type Rect = { x: number, y: number, width: number, height: number }
 
 export function add(a: Coordinates, b: Coordinates) {
