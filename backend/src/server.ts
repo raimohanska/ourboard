@@ -8,6 +8,9 @@ import { initDB } from "./db"
 import fs from "fs"
 import path from "path"
 import config from "./config"
+import bodyParser from "body-parser"
+import { Board, createBoard } from "../../common/src/domain"
+import { addBoard } from "./board-store"
 
 const app = express();
 let http = new Http.Server(app);
@@ -56,6 +59,16 @@ app.get("/assets/external", (req, res) => {
 
 app.get("/b/:boardId", async (req, res) => {    
     res.sendFile(path.resolve("../frontend/dist/index.html"))
+})
+
+app.post("/api/v1/board", bodyParser.json(), async (req, res) => {
+    let { name } = req.body
+    if (!name) {
+        res.status(400).send("Expecting JSON document containing the field \"name\".");
+    }
+    let board: Board = createBoard(name)
+    const boardWithHistory = await addBoard(board)
+    res.json(boardWithHistory.board)
 })
 
 io.on("connection", connectionHandler)
