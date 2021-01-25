@@ -13,6 +13,13 @@ import { assetStore } from "./board/asset-store";
 import { storeRecentBoard } from "./board/recent-boards"
 
 const App = () => {
+    const nicknameFromURL = new URLSearchParams(location.search).get("nickname")
+    if (nicknameFromURL) {
+        localStorage.nickname = nicknameFromURL;
+        const search = new URLSearchParams(location.search)
+        search.delete("nickname")
+        document.location.search = search.toString()
+    }
     const socket = io();    
     const store = boardStore(socket)    
     const assets = assetStore(socket, store)
