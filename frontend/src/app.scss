@@ -301,12 +301,16 @@ a {
                 font-size: 0.3em;
             }
             .author {
+                z-index: -1;
                 font-family: $font-family;
-                opacity: 0.8;
                 position: absolute;
                 font-size: 0.5em;
                 bottom: 0.2em;
                 right: 0.2em;
+                white-space: nowrap;
+                overflow: hidden;
+                max-width: 100%;
+                opacity: 0.5;
             }
         } 
 
