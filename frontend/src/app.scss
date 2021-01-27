@@ -474,32 +474,36 @@ a {
             background: #d8d8d8;
         }
     }
-
-    .context-menu {
+    
+    .context-menu-positioner {
         z-index: $z-index-menu;
-        $menu-border: #cccccc;
         position: absolute;
-        padding: 0.5em;
-        height: 2em;
-        margin-top: -2.5em;
-        border: 1px solid $menu-border;
-        border-radius: 2px;
-        background: white;
-        cursor: pointer;
-        &.hidden {
-            display: none;
-        }
-        .colors {
-            .color {
-                height: 1em;
-                width: 1em;
-                display: inline-block;
-                &:not(:last-child) {
-                    margin-right: 0.5em;
-                }                
+
+        .context-menu {
+            $menu-border: #cccccc;
+            padding: 0.5em;
+            height: 2em;
+            margin-top: -2.5em;
+            border: 1px solid $menu-border;
+            border-radius: 2px;
+            background: white;
+            cursor: pointer;
+            &.hidden {
+                display: none;
             }
-        }
+            .colors {
+                .color {
+                    height: 1em;
+                    width: 1em;
+                    display: inline-block;
+                    &:not(:last-child) {
+                        margin-right: 0.5em;
+                    }                
+                }
+            }
+        }    
     }
+
 
     > .history {
         max-height: 100vh;

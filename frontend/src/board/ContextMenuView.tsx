@@ -46,19 +46,18 @@ export const ContextMenuView = (
   })
   
   return L.view(focusItem, p => p === null, hide => hide ? null : (
-    <div
-      className="context-menu"
-      style={L.combineTemplate({
-        left: L.view(focusItem, p => p ? p.x + "em" : 0),
-        top: L.view(focusItem, p => p ? p.y + "em" : 0)
-      })}>
-      
+    <div className="context-menu-positioner" style={L.combineTemplate({
+      left: L.view(focusItem, p => p ? p.x + "em" : 0),
+      top: L.view(focusItem, p => p ? p.y + "em" : 0)
+    })}>
+    <div className="context-menu">      
       <div className="colors">
         {NOTE_COLORS.map(color => {
           return <span className="color" style={{background: color}} onClick={() => setColor(color)}/>            
         })}
       </div>
       
+    </div>
     </div>
   ))
 }
