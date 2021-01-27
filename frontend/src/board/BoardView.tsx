@@ -108,7 +108,7 @@ export const BoardView = (
       event.preventDefault()   
       const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
       const step = 1.04
-      zoom.modify(z => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 1.5))
+      zoom.modify(z => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 10))
       coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
     }
   }
