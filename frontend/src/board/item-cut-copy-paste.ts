@@ -51,14 +51,14 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                     break
                 }
                 case "copy": {
-                    const selectedIds = getSelectedIds(currentFocus)
-                    if (selectedIds.size > 0) {
+                    if (currentFocus.status === "selected") {
+                        const selectedIds = getSelectedIds(currentFocus)
                         clipboard = findItemsRecursively([...selectedIds], currentBoard)
                     }
                     break
                 }
                 case "paste": {
-                    if (clipboard.length === 0) return
+                    if (clipboard.length === 0 || currentFocus.status === "editing") return
                     const xCenterOld = _.sum(clipboard.map(i => i.x + i.width / 2)) / clipboard.length
                     const yCenterOld = _.sum(clipboard.map(i => i.y + i.height / 2)) / clipboard.length
                     const currentCenter = coordinateHelper.currentBoardCoordinates.get()
