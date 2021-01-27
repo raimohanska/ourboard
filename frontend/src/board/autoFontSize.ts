@@ -23,19 +23,11 @@ const defaultOptions = {
 
 export function autoFontSize(item: L.Property<TextItem>, text: L.Property<string>, focused: L.Property<boolean>, coordinateHelper: BoardCoordinateHelper, element: L.Atom<HTMLElement | null>, options: Partial<AutoFontSizeOptions> = {}) {     
     let fullOptions = { ...defaultOptions, ...options }
-    
-    let referenceFont: string | null = null
-    element.forEach((el: HTMLElement | null) => {
-       if (!el) return;
-       const { fontFamily, fontSize } = getComputedStyle(el)
-       referenceFont = `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
-    })
   
-    return L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), text, focused, (t, w, h, text, f) => {
+    return L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), text, focused, coordinateHelper.elementFont(element), (t, w, h, text, f, referenceFont) => {
       if (t !== "note") return "1em";
-      
-      const words = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont!))
-      const spaceCharSize = getTextDimensions("", referenceFont!)         
+      const words = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont))
+      const spaceCharSize = getTextDimensions("", referenceFont)         
       const widthTarget = coordinateHelper.emToPx(w) * fullOptions.widthTarget
       const heightTarget = coordinateHelper.emToPx(h) * fullOptions.heightTarget
   

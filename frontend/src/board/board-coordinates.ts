@@ -87,6 +87,14 @@ export function boardCoordinateHelper(boardElem: L.Property<HTMLElement | null>,
       const diff2 = subtract(coords, currentBoardCoordinates.get())
       const absDiff = Math.sqrt(diff2.x * diff2.x + diff2.y * diff2.y)
     }
+
+    function elementFont(element: L.Property<HTMLElement | null>): L.Property<string> {
+      return L.view(element, zoom, (e, z) => {
+        if (!e) return "10px arial";
+        const { fontFamily, fontSize } = getComputedStyle(e)
+        return `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
+      })      
+    }
   
 
     const scrollEvent = scrollElem.pipe(L.changes, L.flatMapLatest(el => L.fromEvent(el, "scroll"), componentScope()))
@@ -104,7 +112,8 @@ export function boardCoordinateHelper(boardElem: L.Property<HTMLElement | null>,
       getClippedCoordinate,
       emToPx,
       pxToEm,
-      scrollCursorToBoardCoordinates
+      scrollCursorToBoardCoordinates,
+      elementFont
     }
   }
   
