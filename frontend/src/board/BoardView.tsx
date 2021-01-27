@@ -26,7 +26,7 @@ import { SyncStatusView } from "../components/SyncStatusView";
 import { SyncStatus } from "../sync-status/sync-status-store";
 import { MiniMapView } from "./MiniMapView";
 import { HistoryView } from "./HistoryView";
-import { getItem } from "../../../common/src/state";
+import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch, syncStatus }: 
@@ -75,21 +75,7 @@ export const BoardView = (
     imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL)
   }
 
-  const scrollEvent = scrollElement.pipe(L.changes, L.flatMapLatest(el => L.fromEvent(el, "scroll"), componentScope()))
-  const changes = L.merge(L.fromEvent(window, "resize"), scrollEvent, L.changes(boardElement), L.changes(zoom))
-  const viewRect = changes.pipe(L.toStatelessProperty(() => {
-    const boardRect = boardElement.get()?.getBoundingClientRect()
-    const viewRect = scrollElement.get()?.getBoundingClientRect()!
-
-    if (!boardRect || !viewRect) return null;
-    
-    return {
-      x: coordinateHelper.pxToEm(viewRect.x - boardRect.x),
-      y: coordinateHelper.pxToEm(viewRect.y - boardRect.y),
-      width: coordinateHelper.pxToEm(viewRect.width),
-      height: coordinateHelper.pxToEm(viewRect.height)
-    }
-  }), L.cached<G.Rect | null>(componentScope()))
+  
   
   itemDeleteHandler(boardId, dispatch, focus)
   itemUndoHandler(dispatch)
@@ -101,24 +87,10 @@ export const BoardView = (
     }
   })
 
-  function wheelZoomHandler(event: WheelEvent) {
-    if (event.target === boardElement.get() || boardElement.get()!.contains(event.target as Node)) {
-      const ctrlOrCmd = event.ctrlKey || event.metaKey
-      if (!event.deltaY || !ctrlOrCmd) return
-      event.preventDefault()   
-      const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
-      const step = 1.04
-      zoom.modify(z => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 10))
-      coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
-    }
-  }
-  H.onMount(() => {
-    // have to use this for chrome: https://stackoverflow.com/questions/42101723/unable-to-preventdefault-inside-passive-event-listener
-    window.addEventListener("wheel", wheelZoomHandler, { passive: false })
-  })
-  H.onUnmount(() => {
-    window.removeEventListener("wheel", wheelZoomHandler)
-  })
+
+
+  const { viewRect } = boardScrollAndZoomHandler(boardElement, scrollElement, zoom, coordinateHelper)
+
 
 
   function onClick(e: JSX.MouseEvent) {
