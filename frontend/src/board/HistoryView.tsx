@@ -6,6 +6,7 @@ import _ from "lodash";
 import { ISODate } from "./recent-boards";
 import { boardReducer, getItem } from "../../../common/src/state";
 import { BoardFocus, getSelectedIds, getSelectedItems } from "./board-focus";
+import { Checkbox } from "../components/components";
 
 type ParsedHistoryEntry = {
     timestamp: ISODate,
@@ -29,13 +30,14 @@ export const HistoryView = ({ history, board, focus }: { history: L.Property<Boa
         // Note: parsing full history once a second may or may not prove to be a performance challenge.
         // At least it's done only when the history table is visible and debounced with 1000 milliseconds.
         const parsedHistory = history.pipe(L.debounce(1000, componentScope()), L.map(parseFullHistory))
-        const focusedHistory = L.combine(parsedHistory, focus, focusHistory)
+        const forSelectedItem = L.atom(false)
+        const historyFocus = L.view(focus, forSelectedItem, (f, s) => s ? f : { status: "none" } as BoardFocus)
+        const focusedHistory = L.combine(parsedHistory, historyFocus, focusHistory)
         const clippedHistory = L.view(focusedHistory, clipHistory)
-        const focusItems = L.combine(focus, board, (f, b) => getSelectedItems(b)(f))
-        const selectionDescription = L.view(focusItems, describeItems, d => d || `board ${ board.get().name }`)
+            
         return <>
             <h2>Change Log</h2>
-            <div className="selection">for {selectionDescription}</div>
+            <div className="selection"><Checkbox checked={forSelectedItem} /> for selected items</div>
             <div className="scroll-container">
                 <table>
                     <ListView observable={clippedHistory} getKey={i => i.timestamp} renderObservable={ renderHistoryEntry }/>
