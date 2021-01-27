@@ -10,9 +10,6 @@ import { Dispatch } from "./board-store";
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
 export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<BoardFocus>, coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch) {
-
-    let clipboard: Item[] = [];
-
     const makeCopies = (items: Item[], xDiff: number, yDiff: number): { toCreate: Item[], toSelect: Item[] } => {
         const containerIds = items.map(i => i.id)
         const contained = items.filter(i => !!i.containerId && containerIds.includes(i.containerId))
@@ -47,18 +44,23 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                     if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
                     const itemsToCut = findItemsRecursively([...currentFocus.ids], currentBoard)
                     dispatch({ action: "item.delete", boardId: currentBoard.id, itemIds: itemsToCut.map(i => i.id)})
-                    clipboard = itemsToCut
+                    e.clipboardData!.setData("application/rboard", JSON.stringify(itemsToCut))
+                    e.preventDefault()
                     break
                 }
                 case "copy": {
-                    if (currentFocus.status === "selected") {
-                        const selectedIds = getSelectedIds(currentFocus)
-                        clipboard = findItemsRecursively([...selectedIds], currentBoard)
-                    }
+                    if (currentFocus.status !== "selected") return;
+                    const selectedIds = getSelectedIds(currentFocus)
+                    const clipboard = findItemsRecursively([...selectedIds], currentBoard)
+                    e.clipboardData!.setData("application/rboard", JSON.stringify(clipboard))
+                    e.preventDefault()
                     break
                 }
                 case "paste": {
-                    if (clipboard.length === 0 || currentFocus.status === "editing") return
+                    if (currentFocus.status === "editing") return
+                    const rboardData = e.clipboardData?.getData("application/rboard")
+                    if (!rboardData) return
+                    const clipboard = JSON.parse(rboardData) as Item[]                    
                     const xCenterOld = _.sum(clipboard.map(i => i.x + i.width / 2)) / clipboard.length
                     const yCenterOld = _.sum(clipboard.map(i => i.y + i.height / 2)) / clipboard.length
                     const currentCenter = coordinateHelper.currentBoardCoordinates.get()
@@ -67,6 +69,7 @@ export function cutCopyPasteHandler(board: L.Property<Board>, focus: L.Atom<Boar
                     const { toCreate, toSelect } = makeCopies(clipboard, xDiff, yDiff)                    
                     dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate })
                     focus.set({ status: "selected", ids: new Set(toSelect.map(it => it.id)) })
+                    e.preventDefault()
                     break
                 }
             }
