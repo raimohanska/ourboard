@@ -111,7 +111,7 @@ export function createBoard(name: string): Board {
     return { id: uuid.v4(), name, items: [], ...defaultBoardSize } 
 }
 
-export function newNote(text: string, color: Color = "yellow", x: number = 20, y: number = 20, width: number = 5, height: number = 5, z: number = 0): Note {
+export function newNote(text: string, color: Color = "#F5F18D", x: number = 20, y: number = 20, width: number = 5, height: number = 5, z: number = 0): Note {
     return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z }    
 }
 
