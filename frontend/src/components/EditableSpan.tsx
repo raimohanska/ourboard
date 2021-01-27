@@ -60,6 +60,12 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         value.set(e.currentTarget!.textContent || "")
     }    
 
+    const onPaste = (e: JSX.ClipboardEvent<HTMLSpanElement>) => {
+        e.preventDefault();
+        // Paste as plain text, remove formatting.
+        var text = e.clipboardData.getData('text/plain');
+        document.execCommand("insertHTML", false, text);
+    }
     return <span 
         onClick={onClick} 
         style={{ cursor: "pointer" }}
@@ -75,6 +81,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
             onKeyUp={onKeyPress}
             onKeyDown={onKey}
             onInput={onInput}
+            onPaste={onPaste}
         >
             { props.value }
         </span>
