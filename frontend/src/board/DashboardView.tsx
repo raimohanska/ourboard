@@ -17,7 +17,7 @@ export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppS
 }
 
 const RecentBoards = () => {
-  const recent = getRecentBoards().slice(0, 5)
+  const recent = getRecentBoards().slice(0, 10)
   if (recent.length === 0) return <Welcome/>
   return <div>
     <h2>Recent boards</h2>
