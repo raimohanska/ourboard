@@ -540,6 +540,19 @@ a {
 
 #root.dashboard {
     padding-left: $left-padding;
+    .recent-boards {
+        .remove {
+            margin-left: 0.5em;
+            font-size: 0.6em;
+            visibility: hidden;
+            text-decoration: none;
+        }
+        li:hover {
+            .remove {
+                visibility: visible;
+            }
+        }
+    }
     .create-board {
         width: 50%;
         display: flex;

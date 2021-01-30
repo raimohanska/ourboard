@@ -1,10 +1,11 @@
-import { h, Fragment } from "harmaja";
+import { h, Fragment, ListView } from "harmaja";
 import * as L from "lonna";
 import { exampleBoard } from "../../../common/src/domain";
 import { generateFromTemplate, getUserTemplates } from "./templates"
 import { TextInput } from "../components/components";
 import { BoardAppState, Dispatch } from "./board-store";
-import { getRecentBoards } from "./recent-boards";
+import { getRecentBoards, RecentBoard, removeRecentBoard } from "./recent-boards";
+import { remove } from "lodash";
 
 export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppState>, dispatch: Dispatch }) => {
   return <div id="root" className="dashboard">
@@ -17,16 +18,22 @@ export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppS
 }
 
 const RecentBoards = () => {
-  const recent = getRecentBoards().slice(0, 10)
-  if (recent.length === 0) return <Welcome/>
-  return <div>
-    <h2>Recent boards</h2>
-    <ul>
-      {
-        recent.map(b => <li><a href={`/b/${b.id}`}>{ b.name }</a></li> )
-      }
-    </ul>
-  </div>
+  const recentBoardsAtom = L.view(getRecentBoards(), bs => bs.slice(0, 10))
+  return L.view(recentBoardsAtom, recent => recent.length === 0, empty => empty
+    ? <Welcome/>
+    : <div className="recent-boards">
+        <h2>Recent boards</h2>
+        <ul>
+          <ListView
+            observable={recentBoardsAtom}
+            renderItem={b => <li>
+              <a href={`/b/${b.id}`}>{ b.name }</a>
+              <a className="remove" onClick={() => removeRecentBoard(b)}>remove</a>
+            </li>}
+          />
+        </ul>
+      </div>
+  )
 }
 
 const Welcome = () => {
