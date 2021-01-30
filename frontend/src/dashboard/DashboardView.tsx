@@ -1,10 +1,10 @@
 import { h, Fragment, ListView } from "harmaja";
 import * as L from "lonna";
 import { exampleBoard } from "../../../common/src/domain";
-import { generateFromTemplate, getUserTemplates } from "./templates"
+import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components";
-import { BoardAppState, Dispatch } from "./board-store";
-import { getRecentBoards, RecentBoard, removeRecentBoard } from "./recent-boards";
+import { BoardAppState, Dispatch } from "../store/board-store";
+import { getRecentBoards, RecentBoard, removeRecentBoard } from "../store/recent-boards";
 import { remove } from "lodash";
 
 export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppState>, dispatch: Dispatch }) => {

@@ -5,7 +5,7 @@ import { EditableSpan } from "../components/EditableSpan";
 import { autoFontSize } from "./autoFontSize";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus, getSelectedIds } from "./board-focus";
-import { Dispatch } from "./board-store";
+import { Dispatch } from "../store/board-store";
 import { contrastingColor } from "./contrasting-color";
 import { DragBorder } from "./DragBorder";
 import { itemDragToMove } from "./item-dragmove";

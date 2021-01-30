@@ -1,7 +1,7 @@
 import { h, Fragment } from "harmaja";
 import * as L from "lonna";
-import { BoardAppState, Dispatch } from "../board/board-store";
-import { SyncStatus } from "../sync-status/sync-status-store";
+import { BoardAppState, Dispatch } from "../store/board-store";
+import { SyncStatus } from "../store/sync-status-store";
 import { UserInfoView } from "./UserInfoView";
 import { BoardMenu } from "../board/BoardMenu";
 import { SyncStatusView } from "./SyncStatusView";

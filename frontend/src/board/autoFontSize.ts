@@ -1,5 +1,5 @@
 import * as L from "lonna";
-import { TextItem } from "../../../common/src/domain";
+import { Item, TextItem } from "../../../common/src/domain";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { Dimensions } from "./geometry";
 
@@ -21,7 +21,7 @@ const defaultOptions = {
     heightTarget: 0.6
 }
 
-export function autoFontSize(item: L.Property<TextItem>, text: L.Property<string>, focused: L.Property<boolean>, coordinateHelper: BoardCoordinateHelper, element: L.Atom<HTMLElement | null>, options: Partial<AutoFontSizeOptions> = {}) {     
+export function autoFontSize(item: L.Property<Item>, text: L.Property<string>, focused: L.Property<boolean>, coordinateHelper: BoardCoordinateHelper, element: L.Atom<HTMLElement | null>, options: Partial<AutoFontSizeOptions> = {}) {     
     let fullOptions = { ...defaultOptions, ...options }
   
     return L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), text, focused, coordinateHelper.elementFont(element), (t, w, h, text, f, referenceFont) => {

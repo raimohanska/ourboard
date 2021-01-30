@@ -1,6 +1,6 @@
 import { h, Fragment } from "harmaja";
 import * as L from "lonna";
-import { BoardAppState, Dispatch } from "../board/board-store";
+import { BoardAppState, Dispatch } from "../store/board-store";
 import { EditableSpan } from "./EditableSpan";
 
 export const UserInfoView = ({ state, dispatch }: { state: L.Property<BoardAppState>, dispatch: Dispatch }) => {

@@ -5,7 +5,7 @@ import { Board, Id, Item } from "../../../common/src/domain";
 import { findItemsRecursively } from "../../../common/src/state";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus, getSelectedIds } from "./board-focus";
-import { Dispatch } from "./board-store";
+import { Dispatch } from "../store/board-store";
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 

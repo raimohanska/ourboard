@@ -3,14 +3,14 @@ import * as L from "lonna";
 import { h } from "harmaja";
 import io from "socket.io-client";
 import './app.scss';
-import { BoardAppState, boardStore } from "./board/board-store";
+import { BoardAppState, boardStore } from "./store/board-store";
 import { BoardView } from "./board/BoardView";
 import { Header } from "./components/Header";
-import { syncStatusStore } from "./sync-status/sync-status-store";
+import { syncStatusStore } from "./store/sync-status-store";
 import { Board, exampleBoard, UserCursorPosition } from "../../common/src/domain";
-import { DashboardView } from "./board/DashboardView"
-import { assetStore } from "./board/asset-store";
-import { storeRecentBoard } from "./board/recent-boards"
+import { DashboardView } from "./dashboard/DashboardView"
+import { assetStore } from "./store/asset-store";
+import { storeRecentBoard } from "./store/recent-boards"
 
 const App = () => {
     const nicknameFromURL = new URLSearchParams(location.search).get("nickname")

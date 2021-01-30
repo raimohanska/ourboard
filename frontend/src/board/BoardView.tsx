@@ -5,13 +5,13 @@ import _ from "lodash";
 import { boardCoordinateHelper } from "./board-coordinates"
 import { Image, Item, newNote, newSimilarNote, Note, UserCursorPosition} from "../../../common/src/domain";
 import { ItemView } from "./ItemView"
-import { BoardAppState, Dispatch } from "./board-store";
+import { BoardAppState, Dispatch } from "../store/board-store";
 import { ContextMenuView } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView";
 import { CursorsView } from "./CursorsView";
 import { ImageView } from "./ImageView";
 import { imageUploadHandler } from "./image-upload"
-import { AssetStore } from "./asset-store";
+import { AssetStore } from "../store/asset-store";
 import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import * as G from "./geometry";
@@ -23,7 +23,7 @@ import { itemUndoHandler } from "./item-undo-redo"
 import { BoardMenu } from "./BoardMenu";
 import { UserInfoView } from "../components/UserInfoView";
 import { SyncStatusView } from "../components/SyncStatusView";
-import { SyncStatus } from "../sync-status/sync-status-store";
+import { SyncStatus } from "../store/sync-status-store";
 import { MiniMapView } from "./MiniMapView";
 import { HistoryView } from "./HistoryView";
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"

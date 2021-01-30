@@ -3,7 +3,7 @@ import * as L from "lonna";
 import { Board, BoardHistoryEntry, Id, Item, createBoard, getItemIds, getItemText, EventUserInfo } from "../../../common/src/domain";
 import prettyMs from "pretty-ms"
 import _ from "lodash";
-import { ISODate } from "./recent-boards";
+import { ISODate } from "../store/recent-boards";
 import { boardReducer, getItem } from "../../../common/src/state";
 import { BoardFocus, getSelectedIds, getSelectedItems } from "./board-focus";
 import { Checkbox } from "../components/components";

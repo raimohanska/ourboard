@@ -1,5 +1,5 @@
 import { Item, newImage } from "../../../common/src/domain"
-import { AssetStore, AssetURL } from "./asset-store"
+import { AssetStore, AssetURL } from "../store/asset-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus";
 import * as L from "lonna"

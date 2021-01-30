@@ -2,7 +2,7 @@
 import * as L from "lonna"
 import * as _ from "lodash"
 import { Board, Id, ItemLocks } from "../../../common/src/domain";
-import { Dispatch } from "./board-store";
+import { Dispatch } from "../store/board-store";
 import { BoardFocus, getSelectedIds, removeFromSelection, removeNonExistingFromSelection } from "./board-focus";
   
 /*

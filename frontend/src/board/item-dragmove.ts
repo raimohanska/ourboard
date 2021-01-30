@@ -4,7 +4,7 @@ import { Board } from "../../../common/src/domain";
 import { BoardFocus } from "./board-focus";
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainer } from "./item-setcontainer"
-import { Dispatch } from "./board-store";
+import { Dispatch } from "../store/board-store";
 
 export function itemDragToMove(id: string, board: L.Property<Board>, focus: L.Atom<BoardFocus>, coordinateHelper: BoardCoordinateHelper, dispatch: Dispatch) {
     return (elem: HTMLElement) => onBoardItemDrag(elem, id, board, focus, coordinateHelper, (b, items, xDiff, yDiff) => {

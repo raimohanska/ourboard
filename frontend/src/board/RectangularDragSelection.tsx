@@ -5,7 +5,7 @@ import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { BoardFocus } from "./board-focus";
 import { Rect, overlaps, rectFromPoints } from "./geometry"
-import { Dispatch } from "./board-store"
+import { Dispatch } from "../store/board-store"
 
 const ELSEWHERE = { type: "OTHER" } as const
 type Elsewhere = typeof ELSEWHERE

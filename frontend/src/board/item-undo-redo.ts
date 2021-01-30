@@ -1,6 +1,6 @@
 import { componentScope } from "harmaja";
 import * as L from "lonna";
-import { Dispatch } from "./board-store";
+import { Dispatch } from "../store/board-store";
 
 export function itemUndoHandler(dispatch: Dispatch) {
     ["keydown", "keyup", "keypress"].forEach(eventName => { // Prevent default for all of these to prevent Backspace=Back behavior on Firefox

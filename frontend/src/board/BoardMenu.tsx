@@ -1,8 +1,6 @@
 import { h, Fragment } from "harmaja";
 import * as L from "lonna";
-import { BoardAppState, Dispatch } from "./board-store";
-import { SyncStatus } from "../sync-status/sync-status-store";
-import { EditableSpan } from "../components/EditableSpan";
+import { BoardAppState, Dispatch } from "../store/board-store";
 import { SaveAsTemplate } from "./SaveAsTemplate";
 
 export const BoardMenu = ({ state, dispatch }: { state: L.Property<BoardAppState>, dispatch: Dispatch }) => {
