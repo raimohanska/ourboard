@@ -277,7 +277,7 @@ describe("Board functionality", () => {
 
     it.skip("Can cut, copy and paste note -- figure out how to work around native clipboard stuff not working with cypress", () => {
         createNote("HELLO", 250, 200)  
-        NotesWithText("HELLO").click({ force: true }).then()
+        NotesWithText("HELLO").click({ force: true }).trigger("cut", { force: true })
 
         cy.contains("HELLO").should("not.exist")
 
