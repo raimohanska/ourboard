@@ -33,7 +33,7 @@ export const ImageView = (
       width: p.width + "em",
       zIndex: p.z,
       position: "absolute"
-    }))}
+    } as any))}
   >
     <img 
       src={ L.view(image, i => assets.getAsset(i.assetId, i.src))}
