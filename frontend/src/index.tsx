@@ -20,7 +20,7 @@ const App = () => {
         document.location.search = search.toString()
     }
     const socket = io();    
-    const store = boardStore(socket)    
+    const store = boardStore(socket, boardIdFromPath(), localStorage)    
     const assets = assetStore(socket, store)
     const syncStatus = syncStatusStore(socket, store.queueSize)
     const showingBoardId = store.state.pipe(L.map((s: BoardAppState) => s.board ? s.board.id : undefined))
@@ -70,3 +70,9 @@ const App = () => {
 }
 
 H.mount(<App/>, document.getElementById("root")!)
+
+
+function boardIdFromPath() {
+    const match = document.location.pathname.match(/b\/(.*)/)
+    return (match && match[1]) || undefined
+}

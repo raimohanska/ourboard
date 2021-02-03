@@ -21,6 +21,7 @@ export default function(socket: Sender) {
     function sendIfPossible() {
         state.modify(s => {
             if (s.sent.length > 0 || s.queue.length === 0) return s
+            //console.log("Sending", s.queue)
             socket.send("app-events", s.queue, ack)    
             return {
                 queue: [],

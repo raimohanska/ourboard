@@ -1,0 +1,40 @@
+{
+  "name": "rboard-perf-tester",
+  "version": "1.0.0",
+  "main": "dist/perf-tester/src/index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/cookie": "^0.4.0",
+    "@types/email-validator": "^1.0.6",
+    "@types/lodash": "^4.14.161",
+    "@types/md5": "^2.2.1",
+    "@types/pretty-ms": "^5.0.1",
+    "@types/socket.io-client": "^1.4.33",
+    "cookie": "^0.4.1",
+    "email-validator": "^2.0.4",
+    "harmaja": "^0.17",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.20",
+    "lonna": "^0.8",
+    "material-design-icons-iconfont": "^6.1.0",
+    "md5": "^2.3.0",
+    "pretty-ms": "^7.0.1",
+    "socket.io-client": "^2.3.0",
+    "uuid": "^8.3.0"
+  },
+  "scripts": {
+    "watch": "tsc --watch --noEmit",
+    "build": "tsc",
+    "start": "node .",
+    "start:dev": "tsc-watch --onSuccess \"node .\" --preserveWatchOutput"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/uuid": "^8.3.0",
+    "cssnano": "^4.1.10",
+    "nodemon": "^2.0.4",
+    "typescript": "^4.0.2",
+    "npm-run-all": "^4.1.5",
+    "tsc-watch": "^4.2.9"
+  }
+}

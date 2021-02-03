@@ -6,7 +6,6 @@ import { foldActions } from "../../../common/src/action-folding";
 import MessageQueue from "./message-queue";
 import { buildBoardFromHistory } from "../../../common/src/migration";
 
-
 export type BoardAppState = {
     board: Board | undefined,
     history: BoardHistoryEntry[],
@@ -21,7 +20,7 @@ export type BoardStore = ReturnType<typeof boardStore>
 
 export type Dispatch = (e: AppEvent) => void
 
-export function boardStore(socket: typeof io.Socket) {
+export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, localStorage: Storage) {
     const uiEvents = L.bus<AppEvent>()
     const dispatch: Dispatch = uiEvents.push
     const serverEvents = L.bus<EventFromServer>()    
@@ -109,18 +108,13 @@ export function boardStore(socket: typeof io.Socket) {
         dispatch,
         events,    
         queueSize: messageQueue.queueSize,
-        boardId: L.constant(boardIdFromPath())
+        boardId: L.constant(boardId)
     }
-}
 
-function storeNickName(nickname: string) {
-    localStorage.nickname = nickname
-    return nickname
-}
-
-function boardIdFromPath() {
-    const match = document.location.pathname.match(/b\/(.*)/)
-    return (match && match[1]) || undefined
+    function storeNickName(nickname: string) {
+        localStorage.nickname = nickname
+        return nickname
+    }
 }
 
 export function addToStack(event: AppEvent, b:AppEvent[]) {
