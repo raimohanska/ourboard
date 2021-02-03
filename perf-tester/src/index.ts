@@ -2,6 +2,7 @@ import * as io from "socket.io-client";
 import { boardStore } from "../../frontend/src/store/board-store";
 import * as G from "../../frontend/src/board/geometry"
 import * as L from "lonna"
+import { newNote } from "../../common/src/domain";
 
 function createTester(nickname: string) {
     const center =  {x: 10 + Math.random() * 60, y: 10 + Math.random() * 40}
@@ -15,11 +16,19 @@ function createTester(nickname: string) {
     const store = boardStore(socket, boardId, storage)    
     store.dispatch({ action: "board.join", boardId })
     let counter = 0
-    
-    setInterval(() => {
-        counter+=increment
-        store.dispatch({ action: "cursor.move", position: G.add(center, {x: radius * Math.sin(counter / 100), y: radius * Math.cos(counter / 100)}), boardId })
-    }, 1000 / fps)
+    let unsub = store.events.forEach(e => {
+        if (e.action === "board.init") {
+            unsub()
+            setInterval(() => {
+                counter+=increment
+                const position = G.add(center, {x: radius * Math.sin(counter / 100), y: radius * Math.cos(counter / 100)})
+                store.dispatch({ action: "cursor.move", position, boardId })
+                if (Math.random() < 0.01) store.dispatch({ action: "item.add", boardId, items: [
+                    newNote("NOTE " + counter, "black", position.x, position.y)
+                ] })
+            }, 1000 / fps)        
+        }
+    })    
 }
 
 const userCount = 100
