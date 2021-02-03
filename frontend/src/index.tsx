@@ -5,7 +5,6 @@ import io from "socket.io-client";
 import './app.scss';
 import { BoardAppState, boardStore } from "./store/board-store";
 import { BoardView } from "./board/BoardView";
-import { Header } from "./components/Header";
 import { syncStatusStore } from "./store/sync-status-store";
 import { Board, exampleBoard, UserCursorPosition } from "../../common/src/domain";
 import { DashboardView } from "./dashboard/DashboardView"

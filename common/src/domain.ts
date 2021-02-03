@@ -64,7 +64,7 @@ export type ItemLocks = Record<Id, Id>
 export type EventFromServer = BoardHistoryEntry | TransientBoardItemEvent | OtherAppEvent
 
 export type AppEvent = BoardItemEvent | OtherAppEvent;
-export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront | BootstrapBoard
+export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront | BootstrapBoard | RenameBoard
 export type TransientBoardItemEvent = LockItem | UnlockItem
 export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
 export type OtherAppEvent = AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks | Undo | Redo
@@ -82,6 +82,7 @@ export type JoinBoard = { action: "board.join", boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessionInfo
 export type JoinedBoard = { action: "board.joined", boardId: Id } & UserSessionInfo
 export type InitBoard = { action: "board.init", board: CompactBoardHistory }
+export type RenameBoard = { action: "board.rename", boardId: Id, name: string }
 export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
 export type SetNickname = { action: "nickname.set", nickname: string, userId: string }
 export type AssetPutUrlRequest = { "action": "asset.put.request", assetId: string }
@@ -135,7 +136,7 @@ export function getCurrentTime(): ISOTimeStamp {
     return new Date().toISOString()
 }
 
-export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent => a.action.startsWith("item.")
+export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent => a.action.startsWith("item.") || a.action === "board.rename"
 
 export const isPersistableBoardItemEvent = (e: AppEvent): e is PersistableBoardItemEvent => isBoardItemEvent(e) && !["item.lock", "item.unlock"].includes(e.action)
 
@@ -158,5 +159,6 @@ export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id
         case "item.update":
         case "item.add": return e.items.map(i => i.id)
         case "item.bootstrap": return e.items.map(i => i.id)
+        case "board.rename": return []
     }
 }

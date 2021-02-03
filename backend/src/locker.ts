@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { ItemLocks, exampleBoard, Id, BoardItemEvent, isPersistableBoardItemEvent } from "../../common/src/domain"
+import { ItemLocks, exampleBoard, Id, BoardItemEvent, isPersistableBoardItemEvent, getItemIds } from "../../common/src/domain"
 import { broadcastItemLocks } from "./sessions"
 
 const locks: Record<Id, ItemLocks> = {
@@ -52,7 +52,7 @@ function renewLease(boardId: Id, itemId: Id) {
 
 export function obtainLock(e: BoardItemEvent, socket: IO.Socket, cb: () => any) {
     if (isPersistableBoardItemEvent(e)) {        
-        const itemIds = "items" in e ? (e.items as { id: string }[] ).map(i => i.id) : e.itemIds
+        const itemIds = getItemIds(e)
         // Since we are operating on multiple items at a time, locking must succeed for all of them
         // for the action to succeed
         itemIds.every(id => lockItem(e.boardId, id, socket.id)) && cb()

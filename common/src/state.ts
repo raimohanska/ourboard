@@ -22,6 +22,11 @@ function addToHistory(history: BoardHistoryEntry[], appEvent: EventFromServer): 
 
 export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | null] {
     switch (event.action) {
+      case "board.rename": 
+        return [
+          { ...board, name: event.name },
+          null
+        ]
       case "item.bootstrap":
         if (board.items.length > 0) throw Error("Trying to bootstrap non-empty board")
         return [

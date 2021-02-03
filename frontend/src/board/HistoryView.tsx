@@ -126,9 +126,10 @@ export const HistoryView = ({ history, board, focus }: { history: L.Property<Boa
                 }
                 return {timestamp, user, itemIds, kind: "changed", actionText: `changed ${describeItems(event.items)}` }
             }
+            case "board.rename":
             case "item.bootstrap": {
                 return null
-            }
+            }            
         }
     }
 

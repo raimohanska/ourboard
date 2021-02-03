@@ -136,7 +136,7 @@ export const BoardView = (
   return (
     <div id="root" className="board-container">      
       <div className="scroll-container" ref={scrollElement.set}>
-        <BoardViewHeader state={state} dispatch={dispatch} syncStatus={syncStatus}/>
+        <BoardViewHeader boardId={boardId} state={state} dispatch={dispatch} syncStatus={syncStatus}/>
 
         <div className="border-container" style={style}>
           <div className="board" draggable={true} ref={boardRef} onClick={onClick}>
@@ -156,10 +156,10 @@ export const BoardView = (
     </div>
   );
 
-  function BoardViewHeader({ syncStatus, state, dispatch }: { syncStatus: L.Property<SyncStatus>, state: L.Property<BoardAppState>, dispatch: Dispatch }) {
+  function BoardViewHeader({ boardId, syncStatus, state, dispatch }: { boardId: string, syncStatus: L.Property<SyncStatus>, state: L.Property<BoardAppState>, dispatch: Dispatch }) {
     return <header>
         <a href="/"><span className="icon back"/></a>
-        <BoardMenu state={state} dispatch={dispatch}/>            
+        <BoardMenu boardId={boardId} state={state} dispatch={dispatch}/>            
   
         <div className="controls">        
             <span className="icon zoom_in" title="Zoom in" onClick={() => zoom.modify((z) => z * 1.1)}></span>
