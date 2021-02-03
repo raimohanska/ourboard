@@ -21,7 +21,6 @@ export const BoardMenu = ({ boardId, state, dispatch }: { boardId: string, state
                 { L.view(showMenu, s => s &&
                 <div className="menu">
                     <ul>
-                        <li>Rename</li>
                         <SaveAsTemplate board={ L.view(state, "board")}/>
                     </ul>
                 </div>
