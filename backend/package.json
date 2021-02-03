@@ -1,5 +1,5 @@
 {
-  "name": "shoppa",
+  "name": "rboard-backend",
   "version": "1.0.0",
   "main": "dist/backend/src/server.js",
   "license": "MIT",
