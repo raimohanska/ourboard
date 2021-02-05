@@ -1,7 +1,7 @@
 import * as L from "lonna";
 import { globalScope } from "lonna";
-import { AppEvent, Board, EventFromServer, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, EventUserInfo, UserCursorPosition, UserSessionInfo, isPersistableBoardItemEvent, BoardHistoryEntry, isBoardItemEvent, BoardItemEvent, PersistableBoardItemEvent } from "../../../common/src/domain";
-import { boardHistoryReducer, boardReducer } from "../../../common/src/state";
+import { AppEvent, Board, EventFromServer, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, UserCursorPosition, UserSessionInfo, isPersistableBoardItemEvent, BoardHistoryEntry, isBoardItemEvent, PersistableBoardItemEvent } from "../../../common/src/domain";
+import { boardHistoryReducer } from "../../../common/src/state";
 import { foldActions } from "../../../common/src/action-folding";
 import MessageQueue from "./message-queue";
 import { buildBoardFromHistory } from "../../../common/src/migration";
@@ -25,9 +25,15 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     const dispatch: Dispatch = uiEvents.push
     const serverEvents = L.bus<EventFromServer>()    
     const messageQueue = MessageQueue(socket)
+    const connected = L.atom(false)
     socket.on("connect", () => { 
         console.log("Socket connected")
         messageQueue.onConnect()
+        connected.set(true)
+    })
+    socket.on("disconnect", () => {
+        console.log("Socket disconnected")
+        connected.set(false)
     })
     socket.on("message", function(kind: string, event: EventFromServer) { 
         if (kind === "app-event") {
@@ -106,6 +112,7 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     return {
         state,
         dispatch,
+        connected,
         events,    
         queueSize: messageQueue.queueSize,
         boardId: L.constant(boardId)

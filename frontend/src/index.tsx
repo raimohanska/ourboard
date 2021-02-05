@@ -34,15 +34,13 @@ const App = () => {
     const title = L.view(store.state, s => s.board ? `${s.board.name} - R-Board` : "R-Board")
     title.forEach(t => document.querySelector("title")!.textContent = t)
 
-    store.boardId.forEach(boardId => {
+    const connectedBoard = L.view(store.boardId, store.connected, (b, c) => c ? b : undefined)
+    connectedBoard.forEach(boardId => {
         if (!boardId) {
-            // no board in URL => do nothing
+            // no board in URL or not connected
         } else {
-            const currentBoard = store.state.get().board
-            if (!currentBoard || currentBoard.id !== boardId) {
-                console.log("Joining board", boardId)
-                store.dispatch({ action: "board.join", boardId })
-            }
+            console.log("Joining board", boardId)
+            store.dispatch({ action: "board.join", boardId })
         }
     })
     showingBoardId.forEach(boardId => {
