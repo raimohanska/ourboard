@@ -27,20 +27,18 @@ export type BoardCoordinateHelper = ReturnType<typeof boardCoordinateHelper>
 
 export function boardCoordinateHelper(boardElem: L.Property<HTMLElement | null>, scrollElem: L.Property<HTMLElement | null>, zoom: L.Property<number>) {
     let currentClientPos = L.atom({ x: 0, y: 0 })
+    let baseFontSize = L.combine(boardElem, zoom, (e, z) => {
+      if (!e) return 10
+      return parseFloat(getComputedStyle(e).fontSize)
+    }).pipe(L.cached<number>(L.globalScope))
 
     function pxToEm(px: number) {
-      return px / baseFontSize();
+      return px / baseFontSize.get();
     }
 
     function emToPx(em: number) {
-      return em * baseFontSize();
+      return em * baseFontSize.get();
     }
-
-    function baseFontSize() {
-      const e = boardElem.get()
-      return e ? parseFloat(getComputedStyle(e).fontSize) : 10
-    }
-  
     function coordDiff(a: Coordinates, b: Coordinates) {
       return newCoordinates(a.x - b.x, a.y - b.y)
     }
@@ -95,7 +93,6 @@ export function boardCoordinateHelper(boardElem: L.Property<HTMLElement | null>,
         return `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
       })      
     }
-  
 
     const scrollEvent = scrollElem.pipe(L.changes, L.flatMapLatest(el => L.fromEvent(el, "scroll"), componentScope()))
     const updateEvent = L.merge(scrollEvent, L.changes(zoom), L.changes(currentClientPos))
