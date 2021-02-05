@@ -49,7 +49,7 @@ setInterval(() => {
         broadcastCursorPositions(b.id, cursorPositions[b.id] )
         positionShouldBeFlushedToClients.delete(b.id)
     })
-}, 30);
+}, 100);
 
 async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
     if (isBoardItemEvent(appEvent)) {
