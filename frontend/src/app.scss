@@ -441,6 +441,7 @@ a {
             pointer-events: none;
             position: absolute; 
             display: block;
+            //transition: left 0.1s, top 0.1s;
             .arrow {
                 transform: rotate(-35deg);
                 display: block; 
