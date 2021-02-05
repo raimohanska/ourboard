@@ -146,7 +146,7 @@ export const BoardView = (
               getKey={(i) => i.id}
             />
             <RectangularDragSelection {...{ board, boardElem: boardElement, coordinateHelper, focus, dispatch }}/>
-            <CursorsView {...{ cursors, sessions, coordinateHelper }}/>
+            <CursorsView {...{ cursors, sessions }}/>
             <ContextMenuView {...{latestNote, dispatch, board, focus } } />
           </div>          
         </div>                

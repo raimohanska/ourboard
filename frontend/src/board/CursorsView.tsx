@@ -1,11 +1,10 @@
 import { h, ListView } from "harmaja";
 import * as L from "lonna";
-import { BoardCoordinateHelper } from "./board-coordinates"
 import {UserCursorPosition, UserSessionInfo} from "../../../common/src/domain";
 
 export const CursorsView = (
-    { sessions, cursors, coordinateHelper }: 
-    { cursors: L.Property<UserCursorPosition[]>, coordinateHelper: BoardCoordinateHelper, sessions: L.Property<UserSessionInfo[]> }
+    { sessions, cursors }: 
+    { cursors: L.Property<UserCursorPosition[]>, sessions: L.Property<UserSessionInfo[]> }
 ) => {
     return <ListView<UserCursorPosition, string>
           observable={cursors}
@@ -13,8 +12,8 @@ export const CursorsView = (
             const style = L.combineTemplate({
               position: "absolute", 
               display: "block", 
-              left: L.view(pos, p => p.x, x => coordinateHelper.getClippedCoordinate(x, 'clientWidth', 0) + "em"),
-              top: L.view(pos, p => p.y, y => coordinateHelper.getClippedCoordinate(y, 'clientHeight', 2) + "em")
+              left: L.view(pos, p => p.x, x => x + "em"),
+              top: L.view(pos, p => p.y, y => y + "em")
             })
             return  <span className="cursor" style={style}>
               <span className="arrow" style={{ 
