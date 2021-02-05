@@ -24,7 +24,7 @@ export const CursorsView = (
                 borderRight: "5px solid transparent", 
                 borderBottom: "10px solid tomato", 
               }}/>
-              <span className="text">{sessions.get().find(s => s.userId === userId)?.nickname || null}</span>
+              <span className="text">{L.view(sessions, sessions => sessions.find(s => s.userId === userId)?.nickname || null)}</span>
             </span>
           } }
           getKey={(c: UserCursorPosition) => c.userId}
