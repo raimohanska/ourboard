@@ -9,9 +9,7 @@ export const CursorsView = (
     return <ListView<UserCursorPosition, string>
           observable={cursors}
           renderObservable={(userId: string, pos: L.Property<UserCursorPosition>) => {
-            const style = L.combineTemplate({
-              position: "absolute", 
-              display: "block", 
+            const style = L.combineTemplate({              
               left: L.view(pos, p => p.x, x => x + "em"),
               top: L.view(pos, p => p.y, y => y + "em")
             })

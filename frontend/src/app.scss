@@ -439,6 +439,8 @@ a {
         .cursor {
             z-index: $z-index-cursors;
             pointer-events: none;
+            position: absolute; 
+            display: block;
             .arrow {
                 transform: rotate(-35deg);
                 display: block; 
