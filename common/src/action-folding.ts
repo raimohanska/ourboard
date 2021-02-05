@@ -1,4 +1,4 @@
-import { AppEvent, BoardHistoryEntry, BringItemToFront, createBoard, getItemIds, isBoardHistoryEntry, isPersistableBoardItemEvent, isSameUser, Item, MoveItem, UpdateItem } from "./domain"
+import { AppEvent, BoardHistoryEntry, BringItemToFront, createBoard, CURSOR_POSITIONS_ACTION_TYPE, getItemIds, isBoardHistoryEntry, isPersistableBoardItemEvent, isSameUser, Item, MoveItem, UpdateItem } from "./domain"
 import { boardReducer, getItem } from "./state"
 /*
 Folding can be done if in any given state S, applying actions A and B consecutively can be replaced with a single action C.
@@ -24,8 +24,14 @@ export function foldActions(a: AppEvent, b: AppEvent): AppEvent | null {
                 }
             }
         }
+    } else if (a.action === CURSOR_POSITIONS_ACTION_TYPE) {
+        if (b.action === CURSOR_POSITIONS_ACTION_TYPE) {
+            return b
+        }
     } else if (a.action === "cursor.move") {
-        if (b.action === "cursor.move" && b.boardId === a.boardId) return b
+        if (b.action === "cursor.move" && b.boardId === a.boardId) {
+            return b
+        }
     }
     else if (a.action === "item.front") {
         if (b.action === "item.front" && b.boardId === a.boardId && everyItemIdMatches(b, a)) return b
@@ -48,4 +54,15 @@ function everyItemMatches(evt: MoveItem | UpdateItem, evt2: MoveItem | UpdateIte
 
 function everyItemIdMatches(evt: BringItemToFront, evt2: BringItemToFront) {
     return evt.itemIds.length === evt2.itemIds.length && evt.itemIds.every((it, ind) => evt2.itemIds[ind] === it)
+}
+
+export function addOrReplaceEvent<E extends AppEvent>(event: E, q: E[]): E[] {
+    for (let i = 0; i < q.length; i++) {
+        let eventInQueue = q[i]
+        const folded = foldActions(eventInQueue, event)
+        if (folded) {
+            return [...q.slice(0, i), folded, ...q.slice(i+1)] as E[]  
+        }
+    }
+    return q.concat(event)
 }

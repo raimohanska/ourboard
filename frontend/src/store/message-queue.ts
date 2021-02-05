@@ -1,7 +1,7 @@
 import * as L from "lonna";
 import io from 'socket.io-client';
 import { AppEvent } from "../../../common/src/domain";
-import { foldActions } from "../../../common/src/action-folding"
+import { addOrReplaceEvent } from "../../../common/src/action-folding"
 
 type QueueState = {
     queue: AppEvent[],
@@ -54,16 +54,4 @@ export default function(socket: Sender) {
         onConnect,
         queueSize: queueSize
     }
-}
-
-
-function addOrReplaceEvent(event: AppEvent, q: AppEvent[]) {
-    for (let i = 0; i < q.length; i++) {
-        let eventInQueue = q[i]
-        const folded = foldActions(eventInQueue, event)
-        if (folded) {
-            return [...q.slice(0, i), folded, ...q.slice(i+1)]    
-        }
-    }
-    return q.concat(event)
 }

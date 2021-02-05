@@ -5,6 +5,7 @@ import { boardHistoryReducer } from "../../../common/src/state";
 import { foldActions } from "../../../common/src/action-folding";
 import MessageQueue from "./message-queue";
 import { buildBoardFromHistory } from "../../../common/src/migration";
+import { addOrReplaceEvent } from "../../../common/src/action-folding"
 
 export type BoardAppState = {
     board: Board | undefined,
@@ -20,10 +21,15 @@ export type BoardStore = ReturnType<typeof boardStore>
 
 export type Dispatch = (e: AppEvent) => void
 
+const SERVER_EVENTS_BUFFERING_MILLIS = 20
+
 export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, localStorage: Storage) {
     const uiEvents = L.bus<AppEvent>()
     const dispatch: Dispatch = uiEvents.push
-    const serverEvents = L.bus<EventFromServer>()    
+    const serverEvents = L.bus<EventFromServer>()
+    const bufferedServerEvents = serverEvents.pipe(L.bufferWithTime(SERVER_EVENTS_BUFFERING_MILLIS), L.flatMap(events => {
+        return L.fromArray(events.reduce((folded, next) => addOrReplaceEvent(next, folded), [] as EventFromServer[]))
+    }, globalScope))
     const messageQueue = MessageQueue(socket)
     const connected = L.atom(false)
     socket.on("connect", () => { 
@@ -53,7 +59,7 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     // uiEvents.log("UI")
     // serverEvents.log("Server")
     
-    const events = L.merge(userTaggedLocalEvents, serverEvents)
+    const events = L.merge(userTaggedLocalEvents, bufferedServerEvents)
     let undoStack: AppEvent[] = []
     let redoStack: AppEvent[] = []
 

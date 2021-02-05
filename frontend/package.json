@@ -15,7 +15,7 @@
     "harmaja": "^0.17",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
-    "lonna": "^0.8",
+    "lonna": "^0.8.2",
     "material-design-icons-iconfont": "^6.1.0",
     "md5": "^2.3.0",
     "pretty-ms": "^7.0.1",

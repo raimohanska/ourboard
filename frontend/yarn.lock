@@ -3812,10 +3812,10 @@ log-symbols@^2.2.0:
   dependencies:
     chalk "^2.0.1"
 
-lonna@^0.8:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.8.0.tgz#324bacbf0fbed28a1121244235887ffd24ec639f"
-  integrity sha512-k89H48Rhsz/rUzVNb4+Xu11BHiRGRzs23PJj6YIjvQHg5a9ylQpj2qujnAU54PUCpF5L5EkUnQDy++ATlTmttA==
+lonna@^0.8.2:
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.8.2.tgz#1a853ff3b8a23d099d133d98f9e6bf5290725b58"
+  integrity sha512-5PrWi5uTlU/YCjf4P5l6wmlv5a5ScvsZ7RCMAykBBoEEeFuCNMzX/26aQrSUQ1xbNQwnXm78vV0oZjAyqKS68A==
   dependencies:
     optics-ts "^1.2.0"
 
