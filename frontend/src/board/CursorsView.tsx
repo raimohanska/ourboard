@@ -16,14 +16,7 @@ export const CursorsView = (
               top: L.view(pos, p => p.y, y => y + "em")
             })
             return  <span className="cursor" style={style}>
-              <span className="arrow" style={{ 
-                transform: "rotate(-35deg)", 
-                display: "block", 
-                width: "0px", height:"0px", 
-                borderLeft: "5px solid transparent", 
-                borderRight: "5px solid transparent", 
-                borderBottom: "10px solid tomato", 
-              }}/>
+              <span className="arrow"/>
               <span className="text">{L.view(sessions, sessions => sessions.find(s => s.userId === userId)?.nickname || null)}</span>
             </span>
           } }

@@ -438,6 +438,16 @@ a {
 
         .cursor {
             z-index: $z-index-cursors;
+            pointer-events: none;
+            .arrow {
+                transform: rotate(-35deg);
+                display: block; 
+                width: 0px; 
+                height:0 px;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-bottom: 10px solid tomato; 
+            }
             .text {
                 font-size: 0.5rem;
                 margin-left: 0.5rem;
