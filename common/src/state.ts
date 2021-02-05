@@ -1,4 +1,4 @@
-import { AppEvent, Board, BoardHistoryEntry, BoardWithHistory, EventFromServer, EventUserInfo, Id, isPersistableBoardItemEvent, Item } from "./domain";
+import { AppEvent, Board, BoardHistoryEntry, BoardWithHistory, EventFromServer, Id, isPersistableBoardItemEvent, Item } from "./domain";
 import _, { max } from "lodash"
 import { foldActions } from "./action-folding";
 
