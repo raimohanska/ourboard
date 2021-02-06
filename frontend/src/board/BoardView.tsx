@@ -134,7 +134,7 @@ export const BoardView = (
     dispatch({ action: "cursor.move", position, boardId })
   })
 
-  const boardDrag = boardDragHandler({...{ board, boardElem: boardElement, coordinateHelper, focus, dispatch }})
+  const selectionRect = boardDragHandler({...{ board, boardElem: boardElement, coordinateHelper, focus, dispatch }})
 
   return (
     <div id="root" className="board-container">      
@@ -148,7 +148,7 @@ export const BoardView = (
               renderObservable={renderItem}
               getKey={(i) => i.id}
             />
-            <RectangularDragSelection {...boardDrag}/>
+            <RectangularDragSelection {...{ rect: selectionRect }}/>
             <CursorsView {...{ cursors, sessions }}/>
             <ContextMenuView {...{latestNote, dispatch, board, focus } } />
           </div>          
