@@ -54,8 +54,10 @@ export const EditableSpan = ( props : EditableSpanProps) => {
                 document.execCommand('italic',false);
                 e.preventDefault();
             }
-        } else if ((e.altKey || e.shiftKey) && e.keyCode === 13) {
-            document.execCommand('insertHTML',false, "<br>");
+        } else if ((e.altKey || e.shiftKey) && e.keyCode === 13) {            
+            const { atEnd } = getSelectionTextInfo(nameElement.get()!)
+            const linebreak = atEnd ? "<br><br>" : "<br>";
+            document.execCommand('insertHTML',false, linebreak);
             e.preventDefault();
         } else {
             if (e.keyCode === 13){ 
@@ -129,4 +131,24 @@ export const If = ({ condition, component }: { condition: L.Property<boolean>, 
 
 export const IfElse = ({ condition, ifTrue, ifFalse }: { condition: L.Property<boolean>, ifTrue: () => H.HarmajaOutput, ifFalse: () => H.HarmajaOutput}) => {
     return condition.pipe(L.map(c => c ? ifTrue() : ifFalse()))
+}
+
+// source: https://stackoverflow.com/questions/7451468/contenteditable-div-how-can-i-determine-if-the-cursor-is-at-the-start-or-end-o/7478420#7478420
+function getSelectionTextInfo(el: HTMLElement) {
+    var atStart = false, atEnd = false;
+    var selRange, testRange;
+    var sel = window.getSelection();
+    if (sel?.rangeCount) {
+        selRange = sel.getRangeAt(0);
+        testRange = selRange.cloneRange();
+
+        testRange.selectNodeContents(el);
+        testRange.setEnd(selRange.startContainer, selRange.startOffset);
+        atStart = (testRange.toString() == "");
+
+        testRange.selectNodeContents(el);
+        testRange.setStart(selRange.endContainer, selRange.endOffset);
+        atEnd = (testRange.toString() == "");
+    }
+    return { atStart: atStart, atEnd: atEnd };
 }
