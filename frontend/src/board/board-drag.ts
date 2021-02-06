@@ -60,7 +60,7 @@ export function boardDragHandler (
 
 
     
-        el.addEventListener("drag", e => {
+        el.addEventListener("drag", _.throttle((e: DragEvent) => {
             const coords = coordinateHelper.currentBoardCoordinates.get()
             current.set(coords)
             const bounds = rect.get()!
@@ -89,7 +89,7 @@ export function boardDragHandler (
                 const c = current.get()
                 s && c && (el.style.transform = `translate(${coordinateHelper.emToPx(s.x - c.x) / 2}px, ${coordinateHelper.emToPx(s.y - c.y) / 2}px)`)
             }
-        })
+        }, 15, { leading: true, trailing: true }))
     
         el.addEventListener("drop", end)
 
