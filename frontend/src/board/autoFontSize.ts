@@ -21,12 +21,16 @@ const defaultOptions = {
     heightTarget: 0.6
 }
 
+const helperElem = document.createElement("span")
+
 export function autoFontSize(item: L.Property<Item>, text: L.Property<string>, focused: L.Property<boolean>, coordinateHelper: BoardCoordinateHelper, element: L.Atom<HTMLElement | null>, options: Partial<AutoFontSizeOptions> = {}) {     
     let fullOptions = { ...defaultOptions, ...options }
   
     return L.view(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), text, focused, coordinateHelper.elementFont(element), (t, w, h, text, f, referenceFont) => {
       if (t !== "note") return "1em";
-      const words = text.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont))
+      helperElem.innerHTML = text
+      const plainText = helperElem.textContent||""
+      const words = plainText.split(/\s/).map(s => s.trim()).filter(s => s).map(s => getTextDimensions(s, referenceFont))
       const spaceCharSize = getTextDimensions("", referenceFont)         
       const widthTarget = coordinateHelper.emToPx(w) * fullOptions.widthTarget
       const heightTarget = coordinateHelper.emToPx(h) * fullOptions.heightTarget

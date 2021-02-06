@@ -20,7 +20,7 @@
   },
   "private": true,
   "engines": {
-    "node": "^13.7"
+    "node": "^14"
   },
   "scripts": {
     "postinstall": "(cd frontend && yarn install --production=false) && (cd backend && yarn install --production=false)",

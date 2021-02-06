@@ -1,7 +1,7 @@
 import * as H from "harmaja";
 import * as L from "lonna";
 import { componentScope, h, HarmajaOutput } from "harmaja";
-import { globalScope } from "lonna";
+import { sanitizeHTML } from "./sanitizeHTML"
 
 export type EditableSpanProps = { 
     value: L.Atom<string>, 
@@ -41,30 +41,64 @@ export const EditableSpan = ( props : EditableSpanProps) => {
     const endEditing = () => {
         editingThis.set(false)
     }
-    const onKeyPress = (e: JSX.KeyboardEvent) => {
-        if (e.keyCode === 13){ 
-            e.preventDefault(); 
-            commit && commit()
-            editingThis.set(false)
-        } else if (e.keyCode === 27) { // esc           
-           cancel && cancel()
-           editingThis.set(false)
-           nameElement.get()!.textContent = value.get()
+    const onKeyPress = (e: JSX.KeyboardEvent) => {        
+        e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
+    }
+    const onKeyDown = (e: JSX.KeyboardEvent) => {
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key === "b") {
+                document.execCommand('bold',false);
+                e.preventDefault();
+            }
+            if (e.key === "i") {
+                document.execCommand('italic',false);
+                e.preventDefault();
+            }
+        } else if ((e.altKey || e.shiftKey) && e.keyCode === 13) {
+            document.execCommand('insertHTML',false, "<br>");
+            e.preventDefault();
+        } else {
+            if (e.keyCode === 13){ 
+                e.preventDefault(); 
+                commit && commit()
+                editingThis.set(false)
+            } else if (e.keyCode === 27) { // esc           
+               cancel && cancel()
+               editingThis.set(false)
+               nameElement.get()!.textContent = value.get()
+            }
         }
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
-    const onKey = (e: JSX.KeyboardEvent) => {
-        e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
-    }
+    const onKeyUp = onKeyPress
     const onInput = (e: JSX.InputEvent<HTMLSpanElement>) => {
-        value.set(e.currentTarget!.textContent || "")
+        value.set(e.currentTarget!.innerHTML || "")
     }    
+    const scoped = value.pipe(L.applyScope(componentScope()))
+    
+    L.combine(scoped, nameElement, (v, e) => ({v, e})).forEach(({v, e }) => {
+        if (!e) return
+        if (e.innerHTML != v) {
+            // TODO: sanitize HTML (here or in data layer)
+            e.innerHTML = sanitizeHTML(v)
+        }
+    })
 
     const onPaste = (e: JSX.ClipboardEvent<HTMLSpanElement>) => {
         e.preventDefault();
         // Paste as plain text, remove formatting.
-        var text = e.clipboardData.getData('text/plain');
-        document.execCommand("insertHTML", false, text);
+        var htmlText = e.clipboardData.getData('text/plain');
+        
+        /*
+        Linkization should be something a bit smarter than this, also how to make them clickable?
+        const linkPattern = /.*:\/\//
+        if (htmlText.match(linkPattern)) {
+            htmlText=`<a href="${htmlText}">${htmlText}</a>`
+        }
+        */
+        
+        const sanitized = sanitizeHTML(htmlText)
+        document.execCommand("insertHTML", false, sanitized);
     }
     return <span 
         onClick={onClick} 
@@ -73,17 +107,18 @@ export const EditableSpan = ( props : EditableSpanProps) => {
     >
         { !!props.showIcon && <span className="icon edit" style={{ marginRight: "0.3em", fontSize: "0.8em" }}/> }
         <span 
+            className="editable"
             onBlur={endEditing}
             contentEditable={editingThis}
             style={L.view(value, v => v ? {} : { display: "inline-block", minWidth: "1em", minHeight:"1em" })}
             ref={ nameElement.set } 
             onKeyPress={onKeyPress}
-            onKeyUp={onKeyPress}
-            onKeyDown={onKey}
+            onKeyUp={onKeyUp}
+            onKeyDown={onKeyDown}
             onInput={onInput}
             onPaste={onPaste}
         >
-            { props.value }
+            
         </span>
     </span>
 }

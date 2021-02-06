@@ -322,6 +322,10 @@ a {
             justify-content: flex-start;            
         } 
 
+        .item .editable {
+            outline: none;
+        }
+
         .container {
             @extend .item;
             cursor: initial;
