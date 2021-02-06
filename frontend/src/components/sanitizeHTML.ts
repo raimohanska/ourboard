@@ -23,3 +23,11 @@ function isURL(str: string) {
 export function sanitizeHTML(html: string) {
     return sh(html, sanitizeConfig)
 }
+
+const helperElem = document.createElement("span")
+
+export function toPlainText(html: string) {
+    helperElem.innerHTML = html.replaceAll("<br>", "\n")
+    return helperElem.textContent || ""    
+}
+ 
