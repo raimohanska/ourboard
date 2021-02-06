@@ -119,12 +119,12 @@ describe("Board functionality", () => {
 
     })
 
-    it("Can select note by dragging on board", () => {
+    it("Can select note by dragging on board with ALT pressed", () => {
         createNote("HELLO", 120, 120)
         
         cy.get(".board").then(board => {
             const { x, y } = board[0].getBoundingClientRect()
-            cy.get(".board").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer, clientX: x + 10, clientY: y + 10 })
+            cy.get(".board").trigger("dragstart", { altKey: true, force: true, dataTransfer: mockDataTransfer, clientX: x + 10, clientY: y + 10 })
             cy.get(".board").trigger("dragover", { force: true, clientX: x + 600, clientY: y + 300 })
             cy.get(".board").trigger("drag", { force: true, clientX: x + 600, clientY: y + 300 })
     
