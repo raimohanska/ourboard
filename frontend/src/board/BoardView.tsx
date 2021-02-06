@@ -27,6 +27,7 @@ import { SyncStatus } from "../store/sync-status-store";
 import { MiniMapView } from "./MiniMapView";
 import { HistoryView } from "./HistoryView";
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
+import { boardDragHandler } from "./board-drag"
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch, syncStatus }: 
@@ -133,6 +134,8 @@ export const BoardView = (
     dispatch({ action: "cursor.move", position, boardId })
   })
 
+  const boardDrag = boardDragHandler({...{ board, boardElem: boardElement, coordinateHelper, focus, dispatch }})
+
   return (
     <div id="root" className="board-container">      
       <div className="scroll-container" ref={scrollElement.set}>
@@ -145,7 +148,7 @@ export const BoardView = (
               renderObservable={renderItem}
               getKey={(i) => i.id}
             />
-            <RectangularDragSelection {...{ board, boardElem: boardElement, coordinateHelper, focus, dispatch }}/>
+            <RectangularDragSelection {...boardDrag}/>
             <CursorsView {...{ cursors, sessions }}/>
             <ContextMenuView {...{latestNote, dispatch, board, focus } } />
           </div>          
