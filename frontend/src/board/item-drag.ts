@@ -3,6 +3,7 @@ import { Board, Item } from "../../../common/src/domain";
 import { getItem } from "../../../common/src/state";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus } from "./board-focus";
+import * as _ from "lodash"
 
 export const DND_GHOST_HIDING_IMAGE = new Image();
 // https://png-pixel.com/
@@ -34,7 +35,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
       dragStart = e;
       dragStartPositions = board.get().items
     })
-    elem.addEventListener("drag", e => {
+    elem.addEventListener("drag", _.throttle((e: DragEvent) => {
       e.stopPropagation()
       const f = focus.get()
       if (f.status !== "dragging") {
@@ -58,7 +59,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
         }        
       })
       doWhileDragging(b, items, xDiff, yDiff)      
-    })
+    }, 16, { leading: true, trailing: true }))
 
     elem.addEventListener("dragend", e => {
       e.stopPropagation()
