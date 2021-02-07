@@ -167,31 +167,64 @@ const LinkMenu = ({ href, text, onInput }: { href: string, text: string, onInpu
     // TODO: implement edit
     // TODO: write about Harmaja integration into vanilla!
     const element = L.atom<HTMLElement | null>(null)
-    const status = L.atom<"linked"|"menu"|"unlinked">("linked")        
+    const status = L.atom<"linked"|"menu"|"edit"|"unlinked">("linked")        
     const onLinkClick = (e: JSX.MouseEvent) => {
         status.modify(s => s == "menu" ? "linked" : "menu")
         e.preventDefault()
     }
     const unlink = () => {
         status.set("unlinked")
-        onInput()
+        onInput() // sync content
     }
-    onClickOutside(element, () => status.modify(s => s == "unlinked" ? s : "linked"))
+    const edit = () => {
+        status.set("edit")
+    }
+    onClickOutside(element, () => {
+        status.modify(s => s == "unlinked" ? s : "linked")
+        onInput() // sync content
+    })
+    const nameEdit = L.atom(text)
+    const hrefEdit = L.atom(href)
 
     return <span className="anchor-container" ref={element.set}>
         {
             L.view(status, s => s == "unlinked"
-                ? text
+                ? nameEdit
                 : <>
-                { s == "menu" && <div className={L.view(status, s => s ? "anchor-menu" : "anchor-menu hidden")}>
-                    <a href={href} target="_blank">{ text }</a>
-                    <a onClick={e => { navigator.clipboard.writeText(href) }} className="icon copy" title="Copy link"/>
-                    <a onClick={e => {}} className="icon edit disabled" title="Edit link"/>
+                { (s == "menu" || s == "edit") && <div className={L.view(status, s => s ? "anchor-menu" : "anchor-menu hidden")}>
+                    <a href={hrefEdit} target="_blank">{ nameEdit }</a>
+                    <a onClick={e => { navigator.clipboard.writeText(hrefEdit.get()) }} className="icon copy" title="Copy link"/>
+                    <a onClick={edit} className="icon edit" title="Edit link"/>
                     <a onClick={unlink} className="icon unlink" title="Unlink"/>
-                </div> } 
-                <a href={href} target="_blank" onClick={onLinkClick}>{ text }</a>
+
+                    { s === "menu"
+                        ? <>
+                        </>
+                        : <div className="anchor-edit" 
+                                onClick={e => e.stopPropagation()} 
+                                onMouseDown={e => e.stopPropagation()}
+                            >
+                            <label>Text <TextInput value={nameEdit}/></label>
+                            <label>URL <TextInput value={hrefEdit}/></label>
+                          </div>
+                    }
+                </div> }                 
+                <a href={hrefEdit} target="_blank" onClick={onLinkClick}>{ nameEdit }</a>
                 </>
             )
         }         
     </span>
 }
+
+
+export const TextInput = (props: { value: L.Atom<string> } & any) => {
+    return <input {...{
+        type: props.type || "text" ,
+        onInput: e => {
+            props.value.set(e.currentTarget.value)
+            e.stopPropagation()
+        },
+        ...props,
+        value: props.value
+    }} />
+};

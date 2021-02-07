@@ -340,6 +340,18 @@ a {
                         font-size: 1em;
                         margin-left: 0.3em;
                     }
+                    .anchor-edit {
+                        label {
+                            display: block;
+                            margin-top: 0.5em;
+                        }
+                        input {
+                            min-width: 30ch;
+                        }
+                        button {
+                            margin: 0.5em;
+                        }
+                    }
                 }
             }
         }
