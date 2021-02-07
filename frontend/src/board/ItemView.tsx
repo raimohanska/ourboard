@@ -1,7 +1,7 @@
 import { h } from "harmaja";
 import * as L from "lonna";
 import { Board, BoardHistoryEntry, getItemIds, Id, Item, ItemType, TextItem } from "../../../common/src/domain";
-import { EditableSpan } from "../components/EditableSpan";
+import { HTMLEditableSpan } from "../components/HTMLEditableSpan";
 import { autoFontSize } from "./autoFontSize";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus, getSelectedIds } from "./board-focus";
@@ -79,7 +79,7 @@ export const ItemView = (
     const color = L.view(item, i => i.type === "note" ? i.color : "white", contrastingColor)
     const fontSize = autoFontSize(item, L.view(item, "text"), focused, coordinateHelper, element)
     return <span className="text" style={ L.combineTemplate({fontSize, color}) }>
-      <EditableSpan {...{
+      <HTMLEditableSpan {...{
         value: textAtom, editingThis: L.atom(
             L.view(itemFocus, f => f === "editing"),
             setEditing
