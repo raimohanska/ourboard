@@ -23,6 +23,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
     const nameElement = L.atom<HTMLSpanElement | null>(null)
     const onClick = (e: JSX.MouseEvent) => {
         if (e.shiftKey) return
+        if (e.target instanceof HTMLAnchorElement) return
         editingThis.set(true)
         e.preventDefault()
         e.stopPropagation()
@@ -81,7 +82,6 @@ export const EditableSpan = ( props : EditableSpanProps) => {
     L.combine(scoped, nameElement, (v, e) => ({v, e})).forEach(({v, e }) => {
         if (!e) return
         if (e.innerHTML != v) {
-            // TODO: sanitize HTML (here or in data layer)
             e.innerHTML = sanitizeHTML(v)
         }
     })
@@ -89,16 +89,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
     const onPaste = (e: JSX.ClipboardEvent<HTMLSpanElement>) => {
         e.preventDefault();
         // Paste as plain text, remove formatting.
-        var htmlText = e.clipboardData.getData('text/plain');
-        
-        /*
-        Linkization should be something a bit smarter than this, also how to make them clickable?
-        const linkPattern = /.*:\/\//
-        if (htmlText.match(linkPattern)) {
-            htmlText=`<a href="${htmlText}">${htmlText}</a>`
-        }
-        */
-        
+        var htmlText = e.clipboardData.getData('text/plain');            
         const sanitized = sanitizeHTML(htmlText)
         document.execCommand("insertHTML", false, sanitized);
     }

@@ -1,9 +1,18 @@
-import sh from 'sanitize-html';
+import sh, { Attributes } from 'sanitize-html';
 
 const sanitizeConfig = {
     allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'br' ],
     allowedAttributes: {
-      'a': [ 'href' ]
+      'a': [ 'href', 'target' ]
+    },
+    transformTags: {
+      'a': (tagName: string, attribs: Attributes) => {
+        console.log(attribs)
+        return {
+          tagName,
+          attribs: { ...attribs, target: "_blank" },
+        }
+      }
     }
   }
 const html = `<h1>HELLO</h1> world <b>BOLD</b> <i>ITALIC</i> <script>alert("LOL")</script>`
@@ -14,14 +23,18 @@ function isURL(str: string) {
     return str.length < 2083 && url.test(str);
 }
 
-//console.log(linkifyUrls("See https://www.npmjs.com/package/sanitize-html"))
-
-//console.log(linkifyUrls(`<h1>HELLO</h1> world https://www.npmjs.com/package/sanitize-html <b>BOLD</b> <i>ITALIC</i> <script>alert("LOL")</script>`))
-
-//const exampleHTML = `Check <i>out</i> the documentation at<br><br><a href="http://localhost:1337/b/b0f61bfc-1807-4fbe-be9b-f4665aa517a6">http://localhost:1337/b/b0f61bfc-1807-4fbe-be9b-f4665aa517a6</a><br><br>BOOM!`
+function linkify(htmlText: string) {
+  // Yeah, currently linkifies only text that consists of a single URL.
+  // Would be great to go deeper, but only linkify parts that are not already
+  // contained in an <a> tag.
+  if (isURL(htmlText)) {
+      return `<a href="${htmlText}">${htmlText}</a>`
+  }
+  return htmlText
+}
 
 export function sanitizeHTML(html: string) {
-    return sh(html, sanitizeConfig)
+    return sh(linkify(html), sanitizeConfig)
 }
 
 const helperElem = document.createElement("span")
