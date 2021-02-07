@@ -9,11 +9,13 @@ $heading-color: $link-color;
 $heading-height: 1.8em;
 $board-border-top: 2.8em;
 $material-design-icons-font-directory-path: '~../node_modules/material-design-icons-iconfont/dist/fonts/';
+$disabled-color: lightgrey;
 $z-index-menu: 400000002;
 $z-index-minimap: 400000001;
 $z-index-cursors: 400000000;
 
 @import '~material-design-icons-iconfont/src/material-design-icons';
+@import 'ui.scss';
 
 * {
     box-sizing: border-box;
@@ -112,7 +114,7 @@ button {
 input[type="submit"] {
     @extend button;
     &[disabled] {
-        background-color: lightgrey;
+        background-color: $disabled-color;
         color: grey;
     }
 }
@@ -324,6 +326,22 @@ a {
 
         .item .editable {
             outline: none;
+            a {
+                white-space: nowrap;
+            }
+            .anchor-container {
+                position: relative;
+                .anchor-menu {
+                    @extend .ui-context-menu;
+                    @extend .context-menu-positioner;                    
+                    white-space: nowrap;
+                    margin-top: 0;
+                    .icon {
+                        font-size: 1em;
+                        margin-left: 0.3em;
+                    }
+                }
+            }
         }
 
         .container {
@@ -494,21 +512,13 @@ a {
     }
     
     .context-menu-positioner {
-        z-index: $z-index-menu;
-        position: absolute;
+        @extend .ui-context-menu-positioner;
 
         .context-menu {
-            $menu-border: #cccccc;
-            padding: 0.5em;
+            @extend .ui-context-menu;
             height: 2em;
             margin-top: -2.5em;
-            border: 1px solid $menu-border;
-            border-radius: 2px;
-            background: white;
             cursor: pointer;
-            &.hidden {
-                display: none;
-            }
             .colors {
                 .color {
                     height: 1em;
@@ -593,6 +603,18 @@ a {
         @extend .material-icons;
         @include material-icon('edit');    
     }
+    &.copy {
+        @extend .material-icons;
+        @include material-icon('content_copy');    
+    }
+    &.link {
+        @extend .material-icons;
+        @include material-icon('link');    
+    }
+    &.unlink {
+        @extend .material-icons;
+        @include material-icon('link_off');    
+    }
     &.redo {
         @extend .material-icons;
         @include material-icon('redo');
@@ -624,6 +646,10 @@ a {
     &.history {
         @extend .material-icons;
         @include material-icon('history');
+    }
+    &.disabled {
+        pointer-events: none;
+        color: $disabled-color;
     }
 }
 

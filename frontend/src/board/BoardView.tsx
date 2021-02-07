@@ -28,6 +28,7 @@ import { MiniMapView } from "./MiniMapView";
 import { HistoryView } from "./HistoryView";
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { boardDragHandler } from "./board-drag"
+import { onClickOutside } from "../components/onClickOutside"
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch, syncStatus }: 
@@ -88,11 +89,9 @@ export const BoardView = (
     }
   })
 
-
+  onClickOutside(boardElement, () => focus.set({ status: "none" }))
 
   const { viewRect } = boardScrollAndZoomHandler(boardElement, scrollElement, zoom, coordinateHelper)
-
-
 
   function onClick(e: JSX.MouseEvent) {
     if (e.target === boardElement.get()) {

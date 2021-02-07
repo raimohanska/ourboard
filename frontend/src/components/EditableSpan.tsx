@@ -1,7 +1,8 @@
 import * as H from "harmaja";
 import * as L from "lonna";
-import { componentScope, h, HarmajaOutput } from "harmaja";
+import { componentScope, h, HarmajaOutput, Fragment } from "harmaja";
 import { sanitizeHTML } from "./sanitizeHTML"
+import { onClickOutside } from "./onClickOutside";
 
 export type EditableSpanProps = { 
     value: L.Atom<string>, 
@@ -21,13 +22,6 @@ function clearSelection(){
 export const EditableSpan = ( props : EditableSpanProps) => {
     let { value, editingThis, commit, cancel, ...rest } = props    
     const nameElement = L.atom<HTMLSpanElement | null>(null)
-    const onClick = (e: JSX.MouseEvent) => {
-        if (e.shiftKey) return
-        if (e.target instanceof HTMLAnchorElement) return
-        editingThis.set(true)
-        e.preventDefault()
-        e.stopPropagation()
-    }  
     editingThis.pipe(L.changes).forEach((editing) =>  { 
         if (editing) {
             setTimeout(() => {
@@ -38,13 +32,38 @@ export const EditableSpan = ( props : EditableSpanProps) => {
             clearSelection()
         }
     })
+    L.combine(value.pipe(L.applyScope(componentScope())), nameElement, (v, e) => ({v, e})).forEach(({v, e }) => {
+        if (!e) return
+        if (e.innerHTML != v) {
+            e.innerHTML = sanitizeHTML(v)
+            createWidgets()
+        }
+    })
 
-    const endEditing = () => {
+    const createWidgets = () => {
+        nameElement.get()!.childNodes.forEach(childNode => {
+            if (childNode instanceof HTMLAnchorElement) {
+                const anchorElement = childNode
+                // replace anchor elem with the component
+                H.mount(<LinkMenu href={anchorElement.href} text={anchorElement.textContent!} onInput={onInput}/>, anchorElement) 
+                // TODO: the mount is never unmounted. However, Harmaja should find this component when unmounting a larger context.                
+            }
+        })
+    }
+
+    const onBlur = () => {
         editingThis.set(false)
     }
     const onKeyPress = (e: JSX.KeyboardEvent) => {        
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
+    const onClick = (e: JSX.MouseEvent) => {
+        if (e.shiftKey) return
+        if (e.target instanceof HTMLAnchorElement) return
+        editingThis.set(true)
+        e.preventDefault()
+        e.stopPropagation()
+    }      
     const onKeyDown = (e: JSX.KeyboardEvent) => {
         if (e.ctrlKey || e.metaKey) {
             if (e.key === "b") {
@@ -74,24 +93,16 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
     const onKeyUp = onKeyPress
-    const onInput = (e: JSX.InputEvent<HTMLSpanElement>) => {
-        value.set(e.currentTarget!.innerHTML || "")
+    const onInput = () => {
+        value.set(nameElement.get()!.innerHTML || "")
     }    
-    const scoped = value.pipe(L.applyScope(componentScope()))
-    
-    L.combine(scoped, nameElement, (v, e) => ({v, e})).forEach(({v, e }) => {
-        if (!e) return
-        if (e.innerHTML != v) {
-            e.innerHTML = sanitizeHTML(v)
-        }
-    })
-
     const onPaste = (e: JSX.ClipboardEvent<HTMLSpanElement>) => {
         e.preventDefault();
         // Paste as plain text, remove formatting.
         var htmlText = e.clipboardData.getData('text/plain');            
-        const sanitized = sanitizeHTML(htmlText)
+        const sanitized = sanitizeHTML(htmlText) // also linkifies, but doesn't add the link menu
         document.execCommand("insertHTML", false, sanitized);
+        createWidgets() // to create the LinkMenu for the new link 
     }
     return <span 
         onClick={onClick} 
@@ -101,7 +112,7 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         { !!props.showIcon && <span className="icon edit" style={{ marginRight: "0.3em", fontSize: "0.8em" }}/> }
         <span 
             className="editable"
-            onBlur={endEditing}
+            onBlur={onBlur}
             contentEditable={editingThis}
             style={L.view(value, v => v ? {} : { display: "inline-block", minWidth: "1em", minHeight:"1em" })}
             ref={ nameElement.set } 
@@ -111,7 +122,6 @@ export const EditableSpan = ( props : EditableSpanProps) => {
             onInput={onInput}
             onPaste={onPaste}
         >
-            
         </span>
     </span>
 }
@@ -142,4 +152,37 @@ function getSelectionTextInfo(el: HTMLElement) {
         atEnd = (testRange.toString() == "");
     }
     return { atStart: atStart, atEnd: atEnd };
+}
+
+const LinkMenu = ({ href, text, onInput }: { href: string, text: string, onInput: () => void}) => {
+    // TODO: implement edit
+    // TODO: write about Harmaja integration into vanilla!
+    const element = L.atom<HTMLElement | null>(null)
+    const status = L.atom<"linked"|"menu"|"unlinked">("linked")        
+    const onLinkClick = (e: JSX.MouseEvent) => {
+        status.modify(s => s == "menu" ? "linked" : "menu")
+        e.preventDefault()
+    }
+    const unlink = () => {
+        status.set("unlinked")
+        onInput()
+    }
+    onClickOutside(element, () => status.modify(s => s == "unlinked" ? s : "linked"))
+
+    return <span className="anchor-container" ref={element.set}>
+        {
+            L.view(status, s => s == "unlinked"
+                ? text
+                : <>
+                { s == "menu" && <div className={L.view(status, s => s ? "anchor-menu" : "anchor-menu hidden")}>
+                    <a href={href} target="_blank">{ text }</a>
+                    <a onClick={e => { navigator.clipboard.writeText(href) }} className="icon copy" title="Copy link"/>
+                    <a onClick={e => {}} className="icon edit disabled" title="Edit link"/>
+                    <a onClick={unlink} className="icon unlink" title="Unlink"/>
+                </div> } 
+                <a href={href} target="_blank" onClick={onLinkClick}>{ text }</a>
+                </>
+            )
+        }         
+    </span>
 }

@@ -1,0 +1,16 @@
+.ui-context-menu-positioner {
+    z-index: $z-index-menu;
+    position: absolute;
+}
+
+.ui-context-menu {
+    $menu-border: #cccccc;
+    padding: 0.5em;
+    margin-top: -2.5em;
+    border: 1px solid $menu-border;
+    border-radius: 2px;
+    background: white;
+    &.hidden {
+        display: none;
+    }    
+}    

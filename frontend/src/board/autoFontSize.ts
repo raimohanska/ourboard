@@ -1,5 +1,5 @@
 import * as L from "lonna";
-import { Item, TextItem } from "../../../common/src/domain";
+import { Item } from "../../../common/src/domain";
 import { toPlainText } from "../components/sanitizeHTML";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { Dimensions } from "./geometry";
