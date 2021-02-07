@@ -51,7 +51,7 @@ export const ContextMenuView = (
       ? []
       : [<div className="colors">
           {NOTE_COLORS.map(color => {
-            return <span className="color" style={{background: color}} onClick={() => setColor(color)}/>            
+            return <span className={"color " + color} style={{background: color}} onClick={() => setColor(color)}/>            
           })}
         </div>
         ]

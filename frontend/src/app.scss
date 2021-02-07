@@ -539,7 +539,10 @@ a {
                     display: inline-block;
                     &:not(:last-child) {
                         margin-right: 0.5em;
-                    }                
+                    }
+                    &.white {
+                        border: 1px solid #eeeeee;
+                    }            
                 }
             }
         }    

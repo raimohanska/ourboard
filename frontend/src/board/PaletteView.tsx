@@ -3,7 +3,7 @@ import * as L from "lonna";
 import { Board, Item, newContainer, newSimilarNote, newText, Note } from "../../../common/src/domain";
 import { Dispatch } from "../store/board-store";
 
-export const NOTE_COLORS = ["#81BAE7", "#A9DEB6", "#F5F18D", "#F3BF71", "#E98AA7", "black", "gray"]
+export const NOTE_COLORS = ["#81BAE7", "#A9DEB6", "#F5F18D", "#F3BF71", "#E98AA7", "black", "gray", "white"]
 
 export const PaletteView = ( { latestNote, onAdd, board, dispatch }: { latestNote: L.Atom<Note>, onAdd: (item: Item) => void, board: L.Property<Board>, dispatch: Dispatch } ) => {
   return <span className="palette">
