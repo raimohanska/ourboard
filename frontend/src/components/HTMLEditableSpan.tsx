@@ -53,24 +53,24 @@ export const HTMLEditableSpan = ( props : EditableSpanProps) => {
             if (childNode instanceof HTMLAnchorElement) {
                 const anchorElement = childNode
                 // replace anchor elem with the component
-                H.mount(<LinkMenu href={anchorElement.href} text={anchorElement.textContent!} onInput={onInput}/>, anchorElement) 
+                H.mount(<LinkMenu href={anchorElement.href} text={anchorElement.textContent!} onInput={onInput} onEdit={() => editingThis.set(true)}/>, anchorElement) 
                 // TODO: the mount is never unmounted. However, Harmaja should find this component when unmounting a larger context.                
             }
         })
     }
 
-    const onBlur = () => {
-        editingThis.set(false)
+    const onBlur = (e: JSX.FocusEvent) => {
+        //editingThis.set(false)
     }
     const onKeyPress = (e: JSX.KeyboardEvent) => {        
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
     const onClick = (e: JSX.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
         if (e.shiftKey) return
         if (e.target instanceof HTMLAnchorElement) return
         editingThis.set(true)
-        e.preventDefault()
-        e.stopPropagation()
     }      
     const onKeyDown = (e: JSX.KeyboardEvent) => {
         if (e.ctrlKey || e.metaKey) {
@@ -118,6 +118,7 @@ export const HTMLEditableSpan = ( props : EditableSpanProps) => {
         style={{ cursor: "pointer" }}
         {...rest }
     >
+        
         { !!props.showIcon && <span className="icon edit" style={{ marginRight: "0.3em", fontSize: "0.8em" }}/> }
         <span 
             className="editable"
@@ -132,6 +133,7 @@ export const HTMLEditableSpan = ( props : EditableSpanProps) => {
             onPaste={onPaste}
         >
         </span>
+        
     </span>
 }
 
@@ -163,13 +165,14 @@ function getSelectionTextInfo(el: HTMLElement) {
     return { atStart: atStart, atEnd: atEnd };
 }
 
-const LinkMenu = ({ href, text, onInput }: { href: string, text: string, onInput: () => void}) => {
+const LinkMenu = ({ href, text, onInput, onEdit }: { href: string, text: string, onInput: () => void, onEdit: () => void}) => {
     // TODO: implement edit
     // TODO: write about Harmaja integration into vanilla!
     const element = L.atom<HTMLElement | null>(null)
     const status = L.atom<"linked"|"menu"|"edit"|"unlinked">("linked")        
     const onLinkClick = (e: JSX.MouseEvent) => {
         status.modify(s => s == "menu" ? "linked" : "menu")
+        onEdit()
         e.preventDefault()
     }
     const unlink = () => {
@@ -186,7 +189,7 @@ const LinkMenu = ({ href, text, onInput }: { href: string, text: string, onInpu
     const nameEdit = L.atom(text)
     const hrefEdit = L.atom(href)
 
-    return <span className="anchor-container" ref={element.set}>
+    return <span className="anchor-container" contentEditable={false} ref={e => { element.set(e); stopEventPropagation(e) }}>
         {
             L.view(status, s => s == "unlinked"
                 ? nameEdit
@@ -216,7 +219,6 @@ const LinkMenu = ({ href, text, onInput }: { href: string, text: string, onInpu
     </span>
 }
 
-
 export const TextInput = (props: { value: L.Atom<string> } & any) => {
     return <input {...{
         type: props.type || "text" ,
@@ -228,3 +230,18 @@ export const TextInput = (props: { value: L.Atom<string> } & any) => {
         value: props.value
     }} />
 };
+
+const stopEventPropagation = (el: HTMLElement) => {
+    ["onclick", "onmousedown", "onmouseup", "onkeydown", "onkeyup", "onkeypress", "ondragstart", "ondrag", "ondragend", "oninput", "onblur"].forEach(name => {
+        (el as any)[name] = (e: Event) => {
+            console.log("BLOCKING", name)
+            e.stopPropagation()
+        }
+    })
+}
+
+const EventBarrier = ({ children }: { children: any }) => {
+    return <span ref={stopEventPropagation}>
+        { children }
+    </span>
+}

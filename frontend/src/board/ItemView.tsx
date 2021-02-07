@@ -46,7 +46,7 @@ export const ItemView = (
       ref={ref}
       data-test={dataTest}
       data-itemid={id}
-      draggable={true}
+      draggable={L.view(itemFocus, f => f !== "editing")}
       onClick={onClick}
       className={L.view(selected, s => s ? type + " selected" : type)}
       style={item.pipe(L.map((p: Item) => ({
