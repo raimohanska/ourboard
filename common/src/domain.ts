@@ -58,6 +58,7 @@ export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: s
 export type Container = ItemProperties & { type: typeof ITEM_TYPES.CONTAINER; text: string; };
 
 export type TextItem = Note | Text | Container
+export type ColoredItem = Item & { color: Color }
 export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id> 
 
@@ -144,6 +145,10 @@ export const isBoardHistoryEntry = (e: AppEvent): e is BoardHistoryEntry => isPe
 
 export function isSameUser(a: EventUserInfo, b: EventUserInfo) {
     return a.userType == b.userType && a.nickname == b.nickname
+}
+
+export function isColoredItem(i: Item): i is ColoredItem {
+    return "color" in i
 }
 
 export function getItemText(i: Item) {
