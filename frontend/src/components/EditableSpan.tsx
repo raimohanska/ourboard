@@ -32,13 +32,21 @@ export const EditableSpan = ( props : EditableSpanProps) => {
             clearSelection()
         }
     })
+
+    const updateContent = () => {
+        const e = nameElement.get()
+        if (!e) return
+        e.innerHTML = sanitizeHTML(value.get(), true)
+        createWidgets()
+    }
+
     L.combine(value.pipe(L.applyScope(componentScope())), nameElement, (v, e) => ({v, e})).forEach(({v, e }) => {
         if (!e) return
         if (e.innerHTML != v) {
-            e.innerHTML = sanitizeHTML(v)
-            createWidgets()
+            updateContent()
         }
     })
+    editingThis.pipe(L.changes, L.filter(e => !e), L.applyScope(componentScope())).forEach(updateContent)
 
     const createWidgets = () => {
         nameElement.get()!.childNodes.forEach(childNode => {
@@ -100,10 +108,11 @@ export const EditableSpan = ( props : EditableSpanProps) => {
         e.preventDefault();
         // Paste as plain text, remove formatting.
         var htmlText = e.clipboardData.getData('text/plain');            
-        const sanitized = sanitizeHTML(htmlText) // also linkifies, but doesn't add the link menu
+        const sanitized = sanitizeHTML(htmlText, true) // also linkifies, but doesn't add the link menu
         document.execCommand("insertHTML", false, sanitized);
         createWidgets() // to create the LinkMenu for the new link 
     }
+
     return <span 
         onClick={onClick} 
         style={{ cursor: "pointer" }}

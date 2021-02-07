@@ -7,7 +7,6 @@ const sanitizeConfig = {
     },
     transformTags: {
       'a': (tagName: string, attribs: Attributes) => {
-        console.log(attribs)
         return {
           tagName,
           attribs: { ...attribs, target: "_blank" },
@@ -24,17 +23,28 @@ function isURL(str: string) {
 }
 
 function linkify(htmlText: string) {
-  // Yeah, currently linkifies only text that consists of a single URL.
-  // Would be great to go deeper, but only linkify parts that are not already
-  // contained in an <a> tag.
-  if (isURL(htmlText)) {
-      return `<a href="${htmlText}">${htmlText}</a>`
+  helperElem.innerHTML = htmlText
+  for (let e of helperElem.childNodes) {
+    if (e instanceof Text) {
+      const urls = e.textContent!.split(" ").filter(isURL)
+      if (urls.length) {
+        const url = urls[0]
+        const [before, after] = e.textContent!.split(url).map(t => new Text(t))
+        const anchorNode = document.createElement("a")
+        anchorNode.textContent = url
+        anchorNode.href = url
+        e.replaceWith(before, anchorNode, after)
+      }
+    }
   }
-  return htmlText
+  return helperElem.innerHTML
 }
 
-export function sanitizeHTML(html: string) {
-    return sh(linkify(html), sanitizeConfig)
+export function sanitizeHTML(html: string, shouldLinkify?: boolean) {
+  if (shouldLinkify) {
+    html = linkify(sh(html, sanitizeConfig));
+  }
+  return sh(html, sanitizeConfig)
 }
 
 const helperElem = document.createElement("span")
