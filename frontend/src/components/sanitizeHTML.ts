@@ -22,6 +22,9 @@ function isURL(str: string) {
     return str.length < 2083 && url.test(str);
 }
 
+const MAX_LINK_LENGTH = 30
+
+
 function linkify(htmlText: string) {
   helperElem.innerHTML = htmlText
   for (let e of helperElem.childNodes) {
@@ -31,7 +34,7 @@ function linkify(htmlText: string) {
         const url = urls[0]
         const [before, after] = e.textContent!.split(url).map(t => new Text(t))
         const anchorNode = document.createElement("a")
-        anchorNode.textContent = url
+        anchorNode.textContent = url.length > MAX_LINK_LENGTH ? url.slice(0, MAX_LINK_LENGTH - 2) + "..." : url
         anchorNode.href = url
         e.replaceWith(before, anchorNode, after)
       }
