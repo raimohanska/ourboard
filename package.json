@@ -6,7 +6,6 @@
   "dependencies": {
     "@types/lodash": "^4.14.164",
     "lodash": "^4.17.20",
-    "pg": "^8.3.3",
     "uuid": "^8.3.0"
   },
   "devDependencies": {
@@ -20,10 +19,14 @@
   },
   "private": true,
   "engines": {
-    "node": "^14"
+    "node": ">=14"
   },
+  "workspaces": [
+    "frontend",
+    "backend",
+    "perf-tester"
+  ],
   "scripts": {
-    "postinstall": "(cd frontend && yarn install --production=false) && (cd backend && yarn install --production=false)",
     "start:dev": "npm-run-all --parallel start:db watch:frontend start:dev:backend",
     "start:dev:no-db": "npm-run-all --parallel watch:frontend start:dev:backend",
     "start:db": "docker-compose up||true",
@@ -35,7 +38,6 @@
     "build": "yarn build:frontend && yarn build:backend",
     "build:frontend": "cd frontend && yarn build",
     "build:backend": "cd backend && yarn build",
-    "tsc": "tsc",
     "test-unit": "npm-run-all --parallel test-unit-fe test-unit-common",
     "test-unit-fe": "TEST_TARGET=frontend jest",
     "test-unit-common": "TEST_TARGET=common jest",
