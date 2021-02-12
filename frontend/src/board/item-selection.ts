@@ -32,7 +32,9 @@ export function itemSelectionHandler(
             focus.set({ status: "selected", ids: new Set([id]) })
         } else if (f.status === "selected" && !f.ids.has(id)) {
             focus.set({ status: "selected", ids: new Set([id]) })
-        }      
+        } else if (f.status === "selected") {
+            focus.set({ status: "editing", id })
+        } 
       }    
 
     return {
