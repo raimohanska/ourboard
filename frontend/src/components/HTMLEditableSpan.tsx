@@ -1,8 +1,7 @@
 import * as H from "harmaja";
 import * as L from "lonna";
 import { componentScope, h, HarmajaOutput, Fragment } from "harmaja";
-import { sanitizeHTML } from "./sanitizeHTML"
-import { onClickOutside } from "./onClickOutside";
+import { isURL, sanitizeHTML, createLinkHTML } from "./sanitizeHTML"
 
 export type EditableSpanProps = { 
     value: L.Atom<string>, 
@@ -95,8 +94,13 @@ export const HTMLEditableSpan = ( props : EditableSpanProps) => {
     const onPaste = (e: JSX.ClipboardEvent<HTMLSpanElement>) => {
         e.preventDefault();
         // Paste as plain text, remove formatting.
-        var htmlText = e.clipboardData.getData('text/plain');            
-        const sanitized = sanitizeHTML(htmlText, true) // also linkifies, that the 'true' :)
+        var htmlText = e.clipboardData.getData('text/plain');
+        if (isURL(htmlText)) {
+
+        }
+        const sanitized = isURL(htmlText) 
+            ? createLinkHTML(htmlText, window.getSelection()!.toString() || undefined)
+            : sanitizeHTML(htmlText)
         document.execCommand("insertHTML", false, sanitized);        
     }
 
