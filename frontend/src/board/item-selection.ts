@@ -2,7 +2,7 @@ import { h } from "harmaja";
 import * as L from "lonna";
 import { Board, Id } from "../../../common/src/domain";
 import { Dispatch } from "../store/board-store";
-import { BoardFocus } from "./board-focus";
+import { BoardFocus, getSelectedIds } from "./board-focus";
 
 export function itemSelectionHandler(
   id: string,
@@ -19,7 +19,7 @@ export function itemSelectionHandler(
 
     const selected = L.view(itemFocus, s => s !== "none")
 
-    function onClick(e: JSX.MouseEvent) {
+    function onClick(e: JSX.MouseEvent) {        
         const f = focus.get()
         
         if (e.shiftKey && f.status === "selected") {
@@ -30,7 +30,7 @@ export function itemSelectionHandler(
             }
         } else if (f.status === "none") {
             focus.set({ status: "selected", ids: new Set([id]) })
-        } else if (f.status === "selected" && !f.ids.has(id)) {
+        } else if ((f.status === "selected" || f.status === "editing") && !getSelectedIds(f).has(id)) {
             focus.set({ status: "selected", ids: new Set([id]) })
         } else if (f.status === "selected") {
             focus.set({ status: "editing", id })
