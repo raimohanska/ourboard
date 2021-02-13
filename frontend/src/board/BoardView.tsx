@@ -29,6 +29,7 @@ import { HistoryView } from "./HistoryView";
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { boardDragHandler } from "./board-drag"
 import { onClickOutside } from "../components/onClickOutside"
+import { itemSelectAllHandler } from "./item-select-all"
 
 export const BoardView = (
   { boardId, cursors, state, assets, dispatch, syncStatus }: 
@@ -81,6 +82,7 @@ export const BoardView = (
   
   itemDeleteHandler(boardId, dispatch, focus)
   itemUndoHandler(dispatch)
+  itemSelectAllHandler(board, focus)
 
   L.fromEvent<JSX.KeyboardEvent>(window, "click").pipe(L.applyScope(componentScope())).forEach(event => {
     if (!boardElement.get()!.contains(event.target as Node)) {
