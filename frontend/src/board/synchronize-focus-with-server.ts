@@ -1,10 +1,9 @@
-
 import * as L from "lonna"
 import * as _ from "lodash"
-import { Board, Id, ItemLocks } from "../../../common/src/domain";
-import { Dispatch } from "../store/board-store";
-import { BoardFocus, getSelectedIds, removeFromSelection, removeNonExistingFromSelection } from "./board-focus";
-  
+import { Board, Id, ItemLocks } from "../../../common/src/domain"
+import { Dispatch } from "../store/board-store"
+import { BoardFocus, getSelectedIds, removeFromSelection, removeNonExistingFromSelection } from "./board-focus"
+
 /*
   Centralized module to handle locking/unlocking items, i.e. disallow operating on
   items on the board when someone else is already doing so.
@@ -19,37 +18,56 @@ import { BoardFocus, getSelectedIds, removeFromSelection, removeNonExistingFromS
   item.lock and item.unlock events can be tycitteld freely because the server decides
   whether to allow the action or not.
 */
-export function synchronizeFocusWithServer(board: L.Property<Board>, locks: L.Property<ItemLocks>, userId: L.Property<string | null>, dispatch: Dispatch): L.Atom<BoardFocus> {   
-  // represents the raw user selection, including possible illegal selections
-  const rawFocus = L.atom<BoardFocus>({ status: "none" })
+export function synchronizeFocusWithServer(
+    board: L.Property<Board>,
+    locks: L.Property<ItemLocks>,
+    userId: L.Property<string | null>,
+    dispatch: Dispatch,
+): L.Atom<BoardFocus> {
+    // represents the raw user selection, including possible illegal selections
+    const rawFocus = L.atom<BoardFocus>({ status: "none" })
 
-  // selection where illegal (locked) items are removed
-  const resolvedFocus = L.pipe(L.combine(locks, rawFocus, userId, board, (locks: ItemLocks, focus: BoardFocus, user: string | null, b: Board): BoardFocus => {
-    if (!user) return { status: "none" }
-    const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter(itemId => locks[itemId] !== user));
-    
-    return removeNonExistingFromSelection(removeFromSelection(focus, itemsWhereSomeoneElseHasLock), new Set(b.items.map(i => i.id)))
-  }), L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope))
-  
-  resolvedFocus.forEach(dispatchLocksIfNecessary)  
+    // selection where illegal (locked) items are removed
+    const resolvedFocus = L.pipe(
+        L.combine(
+            locks,
+            rawFocus,
+            userId,
+            board,
+            (locks: ItemLocks, focus: BoardFocus, user: string | null, b: Board): BoardFocus => {
+                if (!user) return { status: "none" }
+                const itemsWhereSomeoneElseHasLock = new Set(
+                    Object.keys(locks).filter((itemId) => locks[itemId] !== user),
+                )
 
-  // Result atom that allows setting arbitrary focus, but reflects valid selections only
-  return L.atom(resolvedFocus, rawFocus.set)
+                return removeNonExistingFromSelection(
+                    removeFromSelection(focus, itemsWhereSomeoneElseHasLock),
+                    new Set(b.items.map((i) => i.id)),
+                )
+            },
+        ),
+        L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope),
+    )
 
-  function dispatchLocksIfNecessary(f: BoardFocus) {
-    const user = userId.get()
-    if (!user) return
-    const l = locks.get()
-    const locksHeld = Object.keys(l).filter(itemId => l[itemId] === user)
-    const selectedIds = getSelectedIds(f)
-    locksHeld.filter(id => !selectedIds.has(id)).forEach(unlock);
-    [...selectedIds].filter(id => !locksHeld.includes(id)).forEach(lock)
-  }  
+    resolvedFocus.forEach(dispatchLocksIfNecessary)
 
-  function lock(itemId: Id) { 
-    dispatch({ action: "item.lock", boardId: board.get().id, itemId }) 
-  }
-  function unlock(itemId: Id) { 
-    dispatch({ action: "item.unlock", boardId: board.get().id, itemId }) 
-  }
+    // Result atom that allows setting arbitrary focus, but reflects valid selections only
+    return L.atom(resolvedFocus, rawFocus.set)
+
+    function dispatchLocksIfNecessary(f: BoardFocus) {
+        const user = userId.get()
+        if (!user) return
+        const l = locks.get()
+        const locksHeld = Object.keys(l).filter((itemId) => l[itemId] === user)
+        const selectedIds = getSelectedIds(f)
+        locksHeld.filter((id) => !selectedIds.has(id)).forEach(unlock)
+        ;[...selectedIds].filter((id) => !locksHeld.includes(id)).forEach(lock)
+    }
+
+    function lock(itemId: Id) {
+        dispatch({ action: "item.lock", boardId: board.get().id, itemId })
+    }
+    function unlock(itemId: Id) {
+        dispatch({ action: "item.unlock", boardId: board.get().id, itemId })
+    }
 }

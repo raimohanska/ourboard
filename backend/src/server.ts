@@ -12,9 +12,9 @@ import bodyParser from "body-parser"
 import { Board, createBoard } from "../../common/src/domain"
 import { addBoard } from "./board-store"
 
-const app = express();
-let http = new Http.Server(app);
-let io = IO(http);
+const app = express()
+let http = new Http.Server(app)
+let io = IO(http)
 
 app.use("/", express.static("../frontend/dist"))
 app.use("/", express.static("../frontend/public"))
@@ -41,30 +41,30 @@ if (config.STORAGE_BACKEND === "LOCAL") {
 }
 app.get("/assets/external", (req, res) => {
     const src = req.query.src
-    if (typeof src !== "string" || ["http://", "https://"].every(prefix => !src.startsWith(prefix))) return res.send(400)
-    const protocol = src.startsWith("https://") ? Https : Http 
+    if (typeof src !== "string" || ["http://", "https://"].every((prefix) => !src.startsWith(prefix)))
+        return res.send(400)
+    const protocol = src.startsWith("https://") ? Https : Http
 
-    protocol.request(src, upstreamResponse => {
-        res.writeHead(upstreamResponse.statusCode!, upstreamResponse.headers);
-        upstreamResponse
-          .pipe(
-            res,
-            {
-              end: true
-            }
-          )
-          .on("error", err => res.status(500).send(err.message));
-      }).end();
+    protocol
+        .request(src, (upstreamResponse) => {
+            res.writeHead(upstreamResponse.statusCode!, upstreamResponse.headers)
+            upstreamResponse
+                .pipe(res, {
+                    end: true,
+                })
+                .on("error", (err) => res.status(500).send(err.message))
+        })
+        .end()
 })
 
-app.get("/b/:boardId", async (req, res) => {    
+app.get("/b/:boardId", async (req, res) => {
     res.sendFile(path.resolve("../frontend/dist/index.html"))
 })
 
 app.post("/api/v1/board", bodyParser.json(), async (req, res) => {
     let { name } = req.body
     if (!name) {
-        res.status(400).send("Expecting JSON document containing the field \"name\".");
+        res.status(400).send('Expecting JSON document containing the field "name".')
     }
     let board: Board = createBoard(name)
     const boardWithHistory = await addBoard(board)
@@ -73,7 +73,7 @@ app.post("/api/v1/board", bodyParser.json(), async (req, res) => {
 
 io.on("connection", connectionHandler)
 
-const port = process.env.PORT || 1337
+const port = process.env.PORT || 1337
 
 initDB()
     .then(() => {
@@ -81,6 +81,6 @@ initDB()
             console.log("Listening on port " + port)
         })
     })
-    .catch(e => {
+    .catch((e) => {
         console.error(e)
     })

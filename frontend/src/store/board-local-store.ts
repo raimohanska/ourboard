@@ -1,6 +1,4 @@
-
-import { BoardWithHistory, Id, Serial } from "../../../common/src/domain"
-
+import { BoardWithHistory, Id, Serial } from "../../../common/src/domain"
 
 export type LocalStorageBoard = {
     boardWithHistory: BoardWithHistory
@@ -10,9 +8,11 @@ export type LocalStorageBoard = {
 let state: LocalStorageBoard | undefined = undefined
 
 export function getInitialBoardState(boardId: Id) {
-    if (!state || state.boardWithHistory.board.id != boardId) {
+    if (!state || state.boardWithHistory.board.id != boardId) {
         const localStorageKey = getStorageKey(boardId)
-        state = localStorage[localStorageKey] ? JSON.parse(localStorage[localStorageKey]) as LocalStorageBoard : undefined
+        state = localStorage[localStorageKey]
+            ? (JSON.parse(localStorage[localStorageKey]) as LocalStorageBoard)
+            : undefined
     }
     return state
 }

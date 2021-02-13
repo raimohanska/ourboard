@@ -1,47 +1,46 @@
 // Cypress doesn't use a DragEvent but just an Event, so it doesn't have dataTransfer property...
 // https://github.com/cypress-io/cypress/issues/649
 const mockDataTransfer = {
-    setDragImage: () => null
+    setDragImage: () => null,
 }
 
-const BACKSPACE = 8;
-const DELETE = 46;
+const BACKSPACE = 8
+const DELETE = 46
 
-const NotesWithText = text => cy.get(`[data-test^="note"][data-test*="${text}"]`)
+const NotesWithText = (text) => cy.get(`[data-test^="note"][data-test*="${text}"]`)
 const Notes = () => cy.get(`[data-test^="note"]`)
 const SelectedNotes = () => cy.get(`[data-test^="note-selected"] .text`)
 
 const Containers = () => cy.get(`[data-test^="container"]`)
-const TextItemsWithText = text => cy.get(`[data-test^="text"][data-test*="${text}"]`)
+const TextItemsWithText = (text) => cy.get(`[data-test^="text"][data-test*="${text}"]`)
 
-const PaletteNote = color => cy.get(`[data-test^="palette-new-note"]`)
+const PaletteNote = (color) => cy.get(`[data-test^="palette-new-note"]`)
 const PaletteContainer = () => cy.get(`[data-test="palette-new-container"]`)
 const PaletteText = () => cy.get(`[data-test="palette-new-text"]`)
 
 describe("Initial screen", () => {
-    it('Opens correctly', () => {
+    it("Opens correctly", () => {
         cy.visit("http://localhost:1337")
         cy.get('[data-test="app-title"').contains("R-Board").should("be.visible")
     })
 
-    it('Navigating to example board works via link', () => {
+    it("Navigating to example board works via link", () => {
         cy.visit("http://localhost:1337")
         cy.get("a").contains("Example Board").click()
-        
+
         cy.url().should("eq", "http://localhost:1337/b/default")
-        
+
         cy.get('[data-test="board-name"]').contains("Test Board").should("be.visible")
     })
 
-    it('Creating new board works', () => {
+    it("Creating new board works", () => {
         cy.visit("http://localhost:1337")
         cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
         cy.get('[data-test="create-board-submit"]').click()
-        
+
         cy.url().should("contain", "http://localhost:1337/b/")
         cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
     })
-    
 })
 
 describe("Example board", () => {
@@ -51,9 +50,8 @@ describe("Example board", () => {
     })
 })
 
-
 function createNote(text, relX, relY, color = "yellow") {
-    PaletteNote().then(elements => {
+    PaletteNote().then((elements) => {
         const { x, y } = elements[0].getBoundingClientRect()
         PaletteNote().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
         cy.get(".board").trigger("dragover", { force: true, clientX: x + relX, clientY: y + relY })
@@ -71,11 +69,11 @@ function createNote(text, relX, relY, color = "yellow") {
 }
 
 function clickBoard() {
-    cy.get(".board").click({force: true})
+    cy.get(".board").click({ force: true })
 }
 
 function createTextItem(text, relX, relY) {
-    PaletteText().then(elements => {
+    PaletteText().then((elements) => {
         const { x, y } = elements[0].getBoundingClientRect()
         PaletteText().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
         cy.get(".board").trigger("dragover", { force: true, clientX: x + relX, clientY: y + relY })
@@ -92,7 +90,7 @@ function createTextItem(text, relX, relY) {
 }
 
 function createContainer(relX, relY) {
-    PaletteContainer().then(elements => {
+    PaletteContainer().then((elements) => {
         const { x, y } = elements[0].getBoundingClientRect()
 
         PaletteContainer().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
@@ -106,32 +104,36 @@ function createContainer(relX, relY) {
 }
 
 describe("Board functionality", () => {
-    
     beforeEach(() => {
         cy.viewport("macbook-15")
         cy.visit("http://localhost:1337")
         cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
         cy.get('[data-test="create-board-submit"]').click()
-        
-        cy.url().should("contain", "http://localhost:1337/b/")
-        
-        cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
 
+        cy.url().should("contain", "http://localhost:1337/b/")
+
+        cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
     })
 
     it("Can select note by dragging on board with ALT pressed", () => {
         createNote("HELLO", 120, 120)
-        
-        cy.get(".board").then(board => {
+
+        cy.get(".board").then((board) => {
             const { x, y } = board[0].getBoundingClientRect()
-            cy.get(".board").trigger("dragstart", { altKey: true, force: true, dataTransfer: mockDataTransfer, clientX: x + 10, clientY: y + 10 })
+            cy.get(".board").trigger("dragstart", {
+                altKey: true,
+                force: true,
+                dataTransfer: mockDataTransfer,
+                clientX: x + 10,
+                clientY: y + 10,
+            })
             cy.get(".board").trigger("dragover", { force: true, clientX: x + 600, clientY: y + 300 })
             cy.get(".board").trigger("drag", { force: true, clientX: x + 600, clientY: y + 300 })
-    
-            SelectedNotes().then(els => {
+
+            SelectedNotes().then((els) => {
                 expect(els.length, "One note should be selected").to.equal(1)
                 expect(els[0].innerText, "Note 'HELLO' should be selected").to.equal("HELLO")
-            })            
+            })
         })
     })
 
@@ -141,11 +143,10 @@ describe("Board functionality", () => {
         NotesWithText("Item 1").click({ force: true })
         NotesWithText("Item 2").click({ force: true, shiftKey: true })
 
-        SelectedNotes().then(els => {
+        SelectedNotes().then((els) => {
             expect(els.length, "Both notes should be selected when using shift-click").to.equal(2)
         })
     })
-
 
     it("Can create note by dragging from palette", () => {
         createNote("HELLO", 350, 200)
@@ -175,10 +176,10 @@ describe("Board functionality", () => {
     })
 
     it("Can drag note", () => {
-        createNote("Monoids", 350, 200)        
+        createNote("Monoids", 350, 200)
 
         let originalX, originalY
-        NotesWithText("Monoids").then(elements => {
+        NotesWithText("Monoids").then((elements) => {
             const source = elements[0]
             const { x, y } = source.getBoundingClientRect()
             originalX = x
@@ -187,13 +188,14 @@ describe("Board functionality", () => {
             // Since our app logic calculates the new position for a note based on dragstart position and current client mouse position,
             // This test requires the following: 1. dragstart on source element 2. dragover on board to trigger clientCoordinates change 3. drag on source element
             NotesWithText("Monoids")
-                .click({ force: true }).trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
-            
+                .click({ force: true })
+                .trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+
             cy.get(".board").trigger("dragover", { force: true, clientX: x + 100, clientY: y - 100 })
             NotesWithText("Monoids").trigger("drag", { force: true })
         })
 
-        NotesWithText("Monoids").then(elements => {
+        NotesWithText("Monoids").then((elements) => {
             const source = elements[0]
             const { x, y } = source.getBoundingClientRect()
             expect(x, "Note 'Monoids' should have moved to the right").to.be.greaterThan(originalX)
@@ -202,16 +204,16 @@ describe("Board functionality", () => {
     })
 
     it("Can drag multiple notes", () => {
-        createNote("World", 200, 200)    
-        createNote("Monoids", 250, 200)    
-        let originalX, originalY, originalX2, originalY2;
-        NotesWithText("World").then(elements => {
+        createNote("World", 200, 200)
+        createNote("Monoids", 250, 200)
+        let originalX, originalY, originalX2, originalY2
+        NotesWithText("World").then((elements) => {
             const source = elements[0]
             const { x, y } = source.getBoundingClientRect()
             originalX2 = x
             originalY2 = y
         })
-        NotesWithText("Monoids").then(elements => {
+        NotesWithText("Monoids").then((elements) => {
             const source = elements[0]
             const { x, y } = source.getBoundingClientRect()
             originalX = x
@@ -220,7 +222,7 @@ describe("Board functionality", () => {
             NotesWithText("Monoids").click({ force: true, shiftKey: true })
             NotesWithText("World").click({ force: true, shiftKey: true })
 
-            SelectedNotes().then(els => {
+            SelectedNotes().then((els) => {
                 expect(els.length, "Both notes should be selected when using shift-click").to.equal(2)
             })
 
@@ -230,14 +232,14 @@ describe("Board functionality", () => {
             NotesWithText("Monoids").trigger("drag", { force: true })
         })
 
-        NotesWithText("Monoids").then(elements => {
+        NotesWithText("Monoids").then((elements) => {
             const source = elements[0]
             const { x, y } = source.getBoundingClientRect()
             expect(x, "Note 'Monoids' should have moved to the left").to.be.lessThan(originalX)
             expect(y, "Note 'Monoids' should have moved downward").to.be.greaterThan(originalY)
         })
 
-        NotesWithText("World").then(elements => {
+        NotesWithText("World").then((elements) => {
             const source = elements[0]
             const { x, y } = source.getBoundingClientRect()
             expect(x, "Note 'World' should have moved to the left").to.be.lessThan(originalX2)
@@ -246,21 +248,23 @@ describe("Board functionality", () => {
     })
 
     it("Can drag-to-resize note", () => {
-        createNote("Monoids", 250, 200)   
+        createNote("Monoids", 250, 200)
 
         let originalWidth, originalHeight
-        NotesWithText("Monoids").then(elements => {
+        NotesWithText("Monoids").then((elements) => {
             const source = elements[0]
             const { x, y, width, height } = source.getBoundingClientRect()
             originalWidth = width
             originalHeight = height
             NotesWithText("Monoids").click({ force: true })
-            NotesWithText("Monoids").get(".corner-resize-drag.bottom.right").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+            NotesWithText("Monoids")
+                .get(".corner-resize-drag.bottom.right")
+                .trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
             cy.get(".board").trigger("dragover", { force: true, clientX: x + 200, clientY: y + 200 })
             NotesWithText("Monoids").get(".corner-resize-drag.bottom.right").trigger("drag", { force: true })
         })
 
-        NotesWithText("Monoids").then(elements => {
+        NotesWithText("Monoids").then((elements) => {
             const source = elements[0]
             const { width, height } = source.getBoundingClientRect()
             expect(width, "Note 'Monoids' width should have increased").to.be.greaterThan(originalWidth)
@@ -269,60 +273,62 @@ describe("Board functionality", () => {
     })
 
     it("Can change color of existing note from context menu", () => {
-        createNote("HELLO", 250, 200)  
-        let originalColor;
-        NotesWithText("HELLO").then(els => {
+        createNote("HELLO", 250, 200)
+        let originalColor
+        NotesWithText("HELLO").then((els) => {
             originalColor = els[0].style.background
             expect(originalColor).not.to.equal(undefined)
         })
 
         NotesWithText("HELLO").click({ force: true })
         cy.get(".context-menu").scrollIntoView().should("be.visible")
-        cy.get(".colors").find(".color").then(elements => {
-            const templateWithNewColor = [...elements].find(el => el.style.background && el.style.background !== originalColor)
-            const newColor = templateWithNewColor.style.background
+        cy.get(".colors")
+            .find(".color")
+            .then((elements) => {
+                const templateWithNewColor = [...elements].find(
+                    (el) => el.style.background && el.style.background !== originalColor,
+                )
+                const newColor = templateWithNewColor.style.background
 
-            templateWithNewColor.click()
-            NotesWithText("HELLO").then(els => {
-                expect(els[0].style.background, `Note 'HELLO' should have turned ${newColor}`).to.equal(newColor)
+                templateWithNewColor.click()
+                NotesWithText("HELLO").then((els) => {
+                    expect(els[0].style.background, `Note 'HELLO' should have turned ${newColor}`).to.equal(newColor)
+                })
             })
-        })
     })
 
     it.skip("Can cut, copy and paste note -- figure out how to work around native clipboard stuff not working with cypress", () => {
-        createNote("HELLO", 250, 200)  
+        createNote("HELLO", 250, 200)
         NotesWithText("HELLO").click({ force: true }).trigger("cut", { force: true })
 
         cy.contains("HELLO").should("not.exist")
 
         cy.get(".board").trigger("paste", { force: true })
-        
-        NotesWithText("HELLO").then(els => {
+
+        NotesWithText("HELLO").then((els) => {
             expect(els.length, "One note with text 'HELLO' should exist").to.equal(1)
         })
-        
-        SelectedNotes().then(els => {
+
+        SelectedNotes().then((els) => {
             expect(els.length, "One note should be selected after cut").to.equal(1)
             expect(els[0].innerText, "Note 'HELLO' should be selected after cut").to.equal("HELLO")
         })
 
         NotesWithText("HELLO").click({ force: true }).trigger("copy", { force: true }).trigger("paste", { force: true })
 
-        NotesWithText("HELLO").then(els => {
+        NotesWithText("HELLO").then((els) => {
             expect(els.length, "Two notes with text 'HELLO' should exist").to.equal(2)
         })
 
-        SelectedNotes().then(els => {
+        SelectedNotes().then((els) => {
             expect(els.length, "One note should be selected after copy").to.equal(1)
             expect(els[0].innerText, "Note 'HELLO' should be selected after copy").to.equal("HELLO")
         })
-
-
     })
 
     it("Can delete notes with backspace key", () => {
-        createNote("Monoids", 250, 200)  
-        createNote("World", 150, 200)  
+        createNote("Monoids", 250, 200)
+        createNote("World", 150, 200)
         NotesWithText("Monoids").click({ force: true, shiftKey: true })
         NotesWithText("World").click({ force: true, shiftKey: true })
         NotesWithText("World").trigger("keyup", { keyCode: BACKSPACE, which: BACKSPACE, force: true })
@@ -332,8 +338,8 @@ describe("Board functionality", () => {
     })
 
     it("Can delete notes with delete key", () => {
-        createNote("Monoids", 250, 200)  
-        createNote("World", 150, 200)  
+        createNote("Monoids", 250, 200)
+        createNote("World", 150, 200)
         NotesWithText("Monoids").click({ force: true, shiftKey: true })
         NotesWithText("World").click({ force: true, shiftKey: true })
         NotesWithText("World").trigger("keyup", { keyCode: DELETE, which: DELETE, force: true })
@@ -342,4 +348,3 @@ describe("Board functionality", () => {
         NotesWithText("World").should("not.exist")
     })
 })
-

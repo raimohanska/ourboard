@@ -1,10 +1,10 @@
-import * as L from "lonna";
-import io from 'socket.io-client';
-import { AppEvent, Serial } from "../../../common/src/domain";
+import * as L from "lonna"
+import io from "socket.io-client"
+import { AppEvent, Serial } from "../../../common/src/domain"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
 
 type QueueState = {
-    queue: AppEvent[],
+    queue: AppEvent[]
     sent: AppEvent[]
 }
 
@@ -12,49 +12,49 @@ type Sender = {
     send: (...args: any[]) => any
 }
 
-export default function(socket: Sender) {
-    const serialAck = L.bus<Serial>();
+export default function (socket: Sender) {
+    const serialAck = L.bus<Serial>()
     const state = L.atom<QueueState>({
         queue: [],
-        sent: []
+        sent: [],
     })
 
     function sendIfPossible() {
-        state.modify(s => {
+        state.modify((s) => {
             if (s.sent.length > 0 || s.queue.length === 0) return s
             //console.log("Sending", s.queue)
-            socket.send("app-events", s.queue, ack)    
+            socket.send("app-events", s.queue, ack)
             return {
                 queue: [],
-                sent: s.queue
+                sent: s.queue,
             }
         })
     }
 
     function ack(data: (Serial | undefined)[]) {
-        data.forEach(s => s && serialAck.push(s))
-        state.modify(s => ({ ...s, sent: [] }))
+        data.forEach((s) => s && serialAck.push(s))
+        state.modify((s) => ({ ...s, sent: [] }))
         sendIfPossible()
     }
 
     function enqueue(event: AppEvent) {
-        state.modify(s =>({ ...s, queue: addOrReplaceEvent(event, s.queue) }))
+        state.modify((s) => ({ ...s, queue: addOrReplaceEvent(event, s.queue) }))
         sendIfPossible()
     }
 
     function onConnect() {
         // Stop waiting for acks for messages from earlier sessions, no way to know whether they
-        // were received or not. 
-        state.modify(s => ({ ...s, sent: [] }))
-        sendIfPossible() 
+        // were received or not.
+        state.modify((s) => ({ ...s, sent: [] }))
+        sendIfPossible()
     }
 
-    const queueSize = L.view(state, s => s.queue.length + s.sent.length)
+    const queueSize = L.view(state, (s) => s.queue.length + s.sent.length)
 
-    return { 
+    return {
         enqueue,
         onConnect,
         queueSize: queueSize,
-        serialAck: serialAck as L.EventStream<Serial>
+        serialAck: serialAck as L.EventStream<Serial>,
     }
 }

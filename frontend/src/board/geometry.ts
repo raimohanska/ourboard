@@ -1,7 +1,6 @@
-
-export type Coordinates = { x: number, y: number }
-export type Dimensions = { width: number, height: number }
-export type Rect = { x: number, y: number, width: number, height: number }
+export type Coordinates = { x: number; y: number }
+export type Dimensions = { width: number; height: number }
+export type Rect = { x: number; y: number; width: number; height: number }
 
 export function add(a: Coordinates, b: Coordinates) {
     return { x: a.x + b.x, y: a.y + b.y }
@@ -42,5 +41,5 @@ export function rectFromPoints(a: Coordinates, b: Coordinates) {
     const width = Math.abs(a.x - b.x)
     const height = Math.abs(a.y - b.y)
 
-    return {x, y, width, height }    
+    return { x, y, width, height }
 }

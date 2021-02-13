@@ -1,17 +1,30 @@
 import IO from "socket.io"
-import { Board, ItemLocks, BoardItemEvent, CursorPosition, Id, CURSOR_POSITIONS_ACTION_TYPE, SetNickname, BoardWithHistory, EventUserInfo, BoardHistoryEntry, Serial } from "../../common/src/domain"
+import {
+    Board,
+    ItemLocks,
+    BoardItemEvent,
+    CursorPosition,
+    Id,
+    CURSOR_POSITIONS_ACTION_TYPE,
+    SetNickname,
+    BoardWithHistory,
+    EventUserInfo,
+    BoardHistoryEntry,
+    Serial,
+} from "../../common/src/domain"
 import { toCompactBoardHistory } from "../../common/src/migration"
-import { randomProfession } from "./professions"
+import { randomProfession } from "./professions"
 
 type UserSession = {
-    socket: IO.Socket,
-    boards: Id[],
+    socket: IO.Socket
+    boards: Id[]
     nickname: string
 }
 const sessions: Record<string, UserSession> = {}
 
-const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter(s => s.boards.includes(boardId))
-const everyoneElseOnTheSameBoard = (boardId: Id, sender?: IO.Socket) => Object.values(sessions).filter(s => s.socket !== sender && s.boards.includes(boardId))
+const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter((s) => s.boards.includes(boardId))
+const everyoneElseOnTheSameBoard = (boardId: Id, sender?: IO.Socket) =>
+    Object.values(sessions).filter((s) => s.socket !== sender && s.boards.includes(boardId))
 
 export function startSession(socket: IO.Socket, boards: Id[]) {
     sessions[socket.id] = { socket, boards, nickname: "Anonymous " + randomProfession() }
@@ -26,51 +39,68 @@ export function getSessionUserInfo(socket: IO.Socket): EventUserInfo {
 }
 export function addSessionToBoard(board: BoardWithHistory, origin: IO.Socket, initAtSerial?: Serial) {
     Object.values(sessions)
-        .filter(s => s.socket === origin)
-        .forEach(session => {
+        .filter((s) => s.socket === origin)
+        .forEach((session) => {
             session.boards.push(board.board.id)
-            session.socket.send("app-event", { action: "board.init", board: toCompactBoardHistory(board, initAtSerial), initAtSerial })
-            session.socket.send("app-event", { action: "board.join.ack", boardId: board.board.id, userId: session.socket.id, nickname: session.nickname })
-            everyoneOnTheBoard(board.board.id).forEach(s => {
-                session.socket.send("app-event", { action: "board.joined", boardId: board.board.id, userId: s.socket.id, nickname: s.nickname })
+            session.socket.send("app-event", {
+                action: "board.init",
+                board: toCompactBoardHistory(board, initAtSerial),
+                initAtSerial,
             })
-            broadcastJoinEvent(board.board.id, session)    
+            session.socket.send("app-event", {
+                action: "board.join.ack",
+                boardId: board.board.id,
+                userId: session.socket.id,
+                nickname: session.nickname,
+            })
+            everyoneOnTheBoard(board.board.id).forEach((s) => {
+                session.socket.send("app-event", {
+                    action: "board.joined",
+                    boardId: board.board.id,
+                    userId: s.socket.id,
+                    nickname: s.nickname,
+                })
+            })
+            broadcastJoinEvent(board.board.id, session)
         })
 }
 
 export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
     Object.values(sessions)
-        .filter(s => s.socket === origin)
-        .forEach(session => {
+        .filter((s) => s.socket === origin)
+        .forEach((session) => {
             if (session.socket.id !== event.userId) {
                 console.warn("Trying to set nickname for other session")
                 return
             }
             session.nickname = event.nickname
             for (const boardId of session.boards) {
-                everyoneElseOnTheSameBoard(boardId, origin).forEach(s =>
-                    s.socket.send("app-event", event)
-                )
+                everyoneElseOnTheSameBoard(boardId, origin).forEach((s) => s.socket.send("app-event", event))
             }
         })
 }
 
 export function broadcastBoardEvent(event: BoardHistoryEntry, origin?: IO.Socket) {
     //console.log("Broadcast", appEvent)
-    everyoneElseOnTheSameBoard(event.boardId, origin).forEach(s => {
+    everyoneElseOnTheSameBoard(event.boardId, origin).forEach((s) => {
         //console.log("   Sending to", s.socket.id)
         s.socket.send("app-event", event)
     })
 }
 
 export function broadcastJoinEvent(boardId: Id, session: UserSession) {
-    everyoneElseOnTheSameBoard(boardId, session.socket).forEach(s => {
-        s.socket.send("app-event", { action: "board.joined", boardId, userId: session.socket.id, nickname: session.nickname })
+    everyoneElseOnTheSameBoard(boardId, session.socket).forEach((s) => {
+        s.socket.send("app-event", {
+            action: "board.joined",
+            boardId,
+            userId: session.socket.id,
+            nickname: session.nickname,
+        })
     })
 }
 
 export function broadcastCursorPositions(boardId: Id, positions: Record<Id, CursorPosition>) {
-    everyoneOnTheBoard(boardId).forEach(s => {
+    everyoneOnTheBoard(boardId).forEach((s) => {
         s.socket.send("app-event", { action: CURSOR_POSITIONS_ACTION_TYPE, p: positions })
     })
 }
@@ -84,7 +114,7 @@ export const broadcastItemLocks = (() => {
             return
         }
         timeouts[boardId] = setTimeout(() => {
-            everyoneOnTheBoard(boardId).forEach(s => {
+            everyoneOnTheBoard(boardId).forEach((s) => {
                 s.socket.send("app-event", { action: "board.locks", boardId, locks: locks[boardId] || {} })
             })
             timeouts[boardId] = undefined

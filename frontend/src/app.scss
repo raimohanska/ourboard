@@ -8,21 +8,21 @@ $link-color: #35b2dc;
 $heading-color: $link-color;
 $heading-height: 1.8em;
 $board-border-top: 2.8em;
-$material-design-icons-font-directory-path: '~../../node_modules/material-design-icons-iconfont/dist/fonts/';
+$material-design-icons-font-directory-path: "~../../node_modules/material-design-icons-iconfont/dist/fonts/";
 $disabled-color: lightgrey;
 $z-index-menu: 400000002;
 $z-index-minimap: 400000001;
 $z-index-cursors: 400000000;
 
-@import '~material-design-icons-iconfont/src/material-design-icons';
-@import 'ui.scss';
+@import "~material-design-icons-iconfont/src/material-design-icons";
+@import "ui.scss";
 
 * {
     box-sizing: border-box;
     user-select: none;
 }
 
-*[contenteditable=true] {
+*[contenteditable="true"] {
     user-select: initial;
 }
 
@@ -92,7 +92,7 @@ button {
     -moz-osx-font-smoothing: inherit;
 
     /* Corrects inability to style clickable `input` types in iOS */
-    -webkit-appearance: none;    
+    -webkit-appearance: none;
 
     background-color: $heading-color;
     color: white;
@@ -124,14 +124,14 @@ body {
 #root {
     height: 100vh;
     display: flex;
-    flex-direction: column; 
+    flex-direction: column;
 }
 
 .dropshadow {
-    box-shadow: 3px 3px 15px 0px rgba(0,0,0,0.16);
+    box-shadow: 3px 3px 15px 0px rgba(0, 0, 0, 0.16);
 }
 .dropshadow-shallow {
-    box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.16);
+    box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.16);
 }
 
 .textshadow {
@@ -156,8 +156,8 @@ a {
         z-index: $z-index-menu;
         padding: 0.2em $left-padding;
         width: 100%;
-        display: flex;  
-        align-items: center;      
+        display: flex;
+        align-items: center;
         background: #fffffff8;
         color: $black;
 
@@ -170,17 +170,17 @@ a {
             display: flex;
             flex-grow: 1;
             padding-left: $left-padding;
-            align-items: center;      
+            align-items: center;
             .icon {
                 &:not(:first-child) {
-                     margin-left: 0.5em;
+                    margin-left: 0.5em;
                 }
                 cursor: pointer;
-            }            
+            }
             .palette {
                 margin-left: 0.5em;
                 display: inline-flex;
-                align-items: center;      
+                align-items: center;
                 justify-content: center;
                 .item {
                     cursor: pointer;
@@ -200,7 +200,7 @@ a {
                     line-height: 1em;
                     display: inline-block;
                     box-sizing: content-box;
-                    padding: 0.1em 0.2em;                
+                    padding: 0.1em 0.2em;
                 }
                 .text {
                     @extend .item;
@@ -212,7 +212,7 @@ a {
                     box-sizing: content-box;
                 }
             }
-        }        
+        }
 
         .user-info {
             display: flex;
@@ -220,16 +220,16 @@ a {
             .icon.user {
                 font-size: 0.9em;
                 margin-left: 0.5em;
-            }    
+            }
         }
         > * {
-           color: $black;
+            color: $black;
         }
-        
-        > .icon.menu {        
+
+        > .icon.menu {
             cursor: pointer;
 
-            >.menu {
+            > .menu {
                 @extend .dropshadow;
                 font-family: $font-family;
                 position: absolute;
@@ -255,18 +255,18 @@ a {
             }
         }
 
-        .sync-status {   
+        .sync-status {
             display: inline-block;
             height: 16px;
             width: 16px;
             margin: auto 0.3em;
-            background-image: url('img/ajax-loader.gif');         
+            background-image: url("img/ajax-loader.gif");
             transition: opacity 0.5s;
             &.up-to-date {
                 opacity: 0;
             }
-        }      
-    }      
+        }
+    }
 
     > .scroll-container {
         flex-grow: 1;
@@ -278,7 +278,7 @@ a {
         }
     }
 
-    .board {                
+    .board {
         background: white;
         width: 100%;
         height: 100%;
@@ -290,15 +290,15 @@ a {
         }
 
         .item {
-            box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.26);
+            box-shadow: 5px 5px 15px 0px rgba(0, 0, 0, 0.26);
             display: inline-flex;
             align-items: center;
-            justify-content: center;            
+            justify-content: center;
             cursor: pointer;
         }
-    
+
         .note {
-            @extend .item;            
+            @extend .item;
             font-family: $font-family-note;
             text-align: center;
             small {
@@ -317,32 +317,32 @@ a {
                 max-width: 100%;
                 opacity: 0.5;
             }
-        } 
+        }
 
         > .text {
-            @extend .item; 
-            box-shadow: none;           
+            @extend .item;
+            box-shadow: none;
             align-items: flex-start;
-            justify-content: flex-start;            
-        } 
+            justify-content: flex-start;
+        }
 
         .item .editable {
             outline: none;
             a {
                 white-space: nowrap;
-            }            
+            }
         }
 
         .container {
             @extend .item;
             cursor: initial;
             align-items: flex-start;
-            justify-content: flex-start;     
+            justify-content: flex-start;
             .text {
                 margin-left: 0.5em;
                 margin-top: 0.5em;
             }
-            
+
             .edge-drag {
                 background: transparent;
                 cursor: grab;
@@ -355,7 +355,7 @@ a {
                     width: 1em;
 
                     &:hover {
-                        background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, transparent 100%);
+                        background: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
                     }
                 }
                 &.right {
@@ -365,7 +365,7 @@ a {
                     width: 1em;
 
                     &:hover {
-                        background: linear-gradient(270deg, rgba(0,0,0,0.1) 0%, transparent 100%);
+                        background: linear-gradient(270deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
                     }
                 }
                 &.top {
@@ -375,7 +375,7 @@ a {
                     height: 1em;
 
                     &:hover {
-                        background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 100%);
+                        background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
                     }
                 }
                 &.bottom {
@@ -385,12 +385,12 @@ a {
                     height: 1em;
 
                     &:hover {
-                        background: linear-gradient(0deg, rgba(0,0,0,0.1) 0%, transparent 100%);
+                        background: linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
                     }
                 }
             }
         }
-        
+
         .image {
             @extend .item;
             img {
@@ -403,7 +403,7 @@ a {
             position: absolute;
             bottom: 0.1em;
             left: 0.1em;
-        }        
+        }
 
         .selection-control {
             $border-offset: 0.25em;
@@ -427,10 +427,12 @@ a {
                 border: 1px solid #cccccc;
                 $corner-offset: -7px;
 
-                &.left.top, &.right.bottom {
+                &.left.top,
+                &.right.bottom {
                     cursor: nwse-resize;
                 }
-                &.left.bottom, &.right.top {
+                &.left.bottom,
+                &.right.top {
                     cursor: nesw-resize;
                 }
                 &.left {
@@ -451,17 +453,17 @@ a {
         .cursor {
             z-index: $z-index-cursors;
             pointer-events: none;
-            position: absolute; 
+            position: absolute;
             display: block;
             //transition: left 0.1s, top 0.1s;
             .arrow {
                 transform: rotate(-35deg);
-                display: block; 
-                width: 0px; 
-                height:0 px;
+                display: block;
+                width: 0px;
+                height: 0 px;
                 border-left: 5px solid transparent;
                 border-right: 5px solid transparent;
-                border-bottom: 10px solid tomato; 
+                border-bottom: 10px solid tomato;
             }
             .text {
                 font-size: 0.5rem;
@@ -475,7 +477,6 @@ a {
             border: 1px solid $link-color;
             background: #35b2dc33;
         }
-
     }
 
     .minimap {
@@ -499,7 +500,7 @@ a {
             background: #d8d8d8;
         }
     }
-    
+
     .context-menu-positioner {
         @extend .ui-context-menu-positioner;
 
@@ -519,17 +520,16 @@ a {
                     }
                     &.white {
                         border: 1px solid #eeeeee;
-                    }            
+                    }
                 }
             }
-        }    
+        }
     }
-
 
     > .history {
         max-height: 100vh;
         display: flex;
-        flex-direction: column;        
+        flex-direction: column;
         z-index: $z-index-menu;
         background: white;
         padding: $board-border-top 1em 1em 1em;
@@ -545,17 +545,17 @@ a {
         .scroll-container {
             overflow-y: auto;
             table {
-                tr { 
-                    vertical-align: top;           
-                    .timestamp {                
+                tr {
+                    vertical-align: top;
+                    .timestamp {
                         min-width: 5em;
                     }
-                    .action {                
+                    .action {
                         min-width: 8em;
                     }
                 }
             }
-        }        
+        }
     }
 }
 
@@ -575,7 +575,9 @@ a {
         }
     }
     .create-board {
-        button { margin-left: 0.5em }
+        button {
+            margin-left: 0.5em;
+        }
     }
 }
 
@@ -583,56 +585,56 @@ a {
     display: inline-block;
     width: 1em;
     min-width: 1em;
-    height: 1em;    
+    height: 1em;
     background-size: contain;
-    background-repeat: no-repeat; 
+    background-repeat: no-repeat;
     &.edit {
         @extend .material-icons;
-        @include material-icon('edit');    
+        @include material-icon("edit");
     }
     &.copy {
         @extend .material-icons;
-        @include material-icon('content_copy');    
+        @include material-icon("content_copy");
     }
     &.link {
         @extend .material-icons;
-        @include material-icon('link');    
+        @include material-icon("link");
     }
     &.unlink {
         @extend .material-icons;
-        @include material-icon('link_off');    
+        @include material-icon("link_off");
     }
     &.redo {
         @extend .material-icons;
-        @include material-icon('redo');
+        @include material-icon("redo");
     }
     &.undo {
         @extend .material-icons;
-        @include material-icon('undo');
+        @include material-icon("undo");
     }
     &.zoom_in {
         @extend .material-icons;
-        @include material-icon('zoom_in');
+        @include material-icon("zoom_in");
     }
     &.zoom_out {
         @extend .material-icons;
-        @include material-icon('zoom_out');
+        @include material-icon("zoom_out");
     }
     &.back {
         @extend .material-icons;
-        @include material-icon('arrow_back');
+        @include material-icon("arrow_back");
     }
     &.menu {
         @extend .material-icons;
-        @include material-icon('arrow_drop_down');
+        @include material-icon("arrow_drop_down");
     }
     &.user {
         @extend .material-icons;
-        @include material-icon('face');
+        @include material-icon("face");
     }
     &.history {
         @extend .material-icons;
-        @include material-icon('history');
+        @include material-icon("history");
     }
     &.disabled {
         pointer-events: none;
@@ -652,7 +654,7 @@ select {
     border-bottom: 1px solid black;
     font: 0.7em $font-family;
 
-    &:focus{
+    &:focus {
         outline: 0;
     }
 }

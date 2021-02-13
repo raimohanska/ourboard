@@ -10,7 +10,7 @@ const init = () => {
     const mockSocket = {
         send(type: "app-events", events: AppEvent[], ackCallback: Function) {
             mockServer(type, events, ackCallback)
-        }
+        },
     }
 
     const queue = MessageQueue(mockSocket)
@@ -37,17 +37,20 @@ describe("MessageQueue", () => {
         const { queue, mockServer } = init()
 
         // first message sent immediately
-        queue.enqueue({ action: "board.join", boardId: "b1" });
+        queue.enqueue({ action: "board.join", boardId: "b1" })
 
         // rest after ack
-        ["b2", "b3"].forEach(boardId => {
+        ;["b2", "b3"].forEach((boardId) => {
             queue.enqueue({ action: "board.join", boardId })
         })
 
         jest.runAllTimers()
 
         expect(mockServer).toHaveBeenNthCalledWith(1, ...socketPayload([{ action: "board.join", boardId: "b1" }]))
-        expect(mockServer).toHaveBeenNthCalledWith(2, ...socketPayload(["b2", "b3"].map(boardId => ({ action: "board.join", boardId }))))
+        expect(mockServer).toHaveBeenNthCalledWith(
+            2,
+            ...socketPayload(["b2", "b3"].map((boardId) => ({ action: "board.join", boardId }))),
+        )
         expect(mockServer).toHaveBeenCalledTimes(2)
         expect(queue.queueSize.get()).toBe(0)
     })

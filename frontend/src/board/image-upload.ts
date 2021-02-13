@@ -1,23 +1,30 @@
 import { Item, newImage } from "../../../common/src/domain"
 import { AssetStore, AssetURL } from "../store/asset-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus } from "./board-focus";
+import { BoardFocus } from "./board-focus"
 import * as L from "lonna"
 
-export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore, coordinateHelper: BoardCoordinateHelper, focus: L.Atom<BoardFocus>, onAdd: (item: Item) => void, onURL: (id: string, url: AssetURL) => void) {    
+export function imageUploadHandler(
+    boardElement: HTMLElement,
+    assets: AssetStore,
+    coordinateHelper: BoardCoordinateHelper,
+    focus: L.Atom<BoardFocus>,
+    onAdd: (item: Item) => void,
+    onURL: (id: string, url: AssetURL) => void,
+) {
     function preventDefaults(e: any) {
         e.preventDefault()
         e.stopPropagation()
     }
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    ;["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
         boardElement.addEventListener(eventName, preventDefaults, false)
     })
 
-    boardElement.addEventListener('drop', handleDrop, false)
+    boardElement.addEventListener("drop", handleDrop, false)
 
-    document.addEventListener("paste", e => {
+    document.addEventListener("paste", (e) => {
         if (e.clipboardData) {
-            const imageFile = [...e.clipboardData.files].find(file => file.type.startsWith("image/"))
+            const imageFile = [...e.clipboardData.files].find((file) => file.type.startsWith("image/"))
             imageFile && uploadImageFile(imageFile)
         }
     })
@@ -27,12 +34,12 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
             return // was dragging an item
         }
         console.log("Drop")
-        const url = e.dataTransfer?.getData('URL')
+        const url = e.dataTransfer?.getData("URL")
         if (url) {
             // Try direct fetch first, and on CORS error fall back to letting the server request it
             const res = await fetch(url).catch(() => assets.getExternalAssetAsBytes(url))
             const blob = await res.blob()
-            await uploadImageFile(blob as any)    
+            await uploadImageFile(blob as any)
         } else {
             let dt = e.dataTransfer
             let files = dt!.files
@@ -43,16 +50,16 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
                 throw Error("Unexpected number of files: " + files.length)
             }
             const file = files[0]
-            await uploadImageFile(file)    
+            await uploadImageFile(file)
         }
     }
 
     async function uploadImageFile(file: File) {
-        const { width, height } = await imageDimensions(file)
+        const { width, height } = await imageDimensions(file)
         const [assetId, urlPromise] = await assets.uploadAsset(file)
         const maxWidth = 10
         const w = Math.min(width, maxWidth)
-        const h = height * w / width
+        const h = (height * w) / width
         const { x, y } = coordinateHelper.currentBoardCoordinates.get()
         const image = newImage(assetId, x, y, w, h)
         onAdd(image)
@@ -61,7 +68,7 @@ export function imageUploadHandler(boardElement: HTMLElement, assets: AssetStore
     }
 }
 
-function imageDimensions(file: File): Promise<{ width: number, height: number }> {
+function imageDimensions(file: File): Promise<{ width: number; height: number }> {
     return new Promise((resolve, reject) => {
         const img = new Image()
 
@@ -73,7 +80,7 @@ function imageDimensions(file: File): Promise<{ width: number, height: number }>
 
         // and this handler will fire if there was an error with the image (like if it's not really an image or a corrupted one)
         img.onerror = () => {
-            reject('There was some problem with the image.')
+            reject("There was some problem with the image.")
         }
 
         img.src = URL.createObjectURL(file)

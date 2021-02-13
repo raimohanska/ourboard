@@ -14,5 +14,5 @@ if (STORAGE_BACKEND === "LOCAL") {
 
 export default {
     STORAGE_BACKEND,
-    LOCAL_FILES_DIR
+    LOCAL_FILES_DIR,
 }

@@ -1,10 +1,10 @@
-import { Board, Item } from "../../../common/src/domain";
-import { containedBy } from "./geometry";
+import { Board, Item } from "../../../common/src/domain"
+import { containedBy } from "./geometry"
 
 export function maybeChangeContainer(item: Item, b: Board): Item | undefined {
-    const currentContainer = item.containerId && b.items.find(i => i.id === item.containerId)
+    const currentContainer = item.containerId && b.items.find((i) => i.id === item.containerId)
     if (currentContainer && containedBy(item, currentContainer)) return currentContainer
-    return b.items.find(i => i.id !== item.id && containedBy(item, i))
+    return b.items.find((i) => i.id !== item.id && containedBy(item, i))
 }
 
 export function withCurrentContainer(item: Item, b: Board): Item {
