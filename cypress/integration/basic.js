@@ -220,8 +220,11 @@ describe("Board functionality", () => {
             NotesWithText("Monoids").click({ force: true, shiftKey: true })
             NotesWithText("World").click({ force: true, shiftKey: true })
 
-            NotesWithText("Monoids")
-                .click({ force: true }).trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
+            SelectedNotes().then(els => {
+                expect(els.length, "Both notes should be selected when using shift-click").to.equal(2)
+            })
+
+            NotesWithText("Monoids").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
 
             cy.get(".board").trigger("dragover", { force: true, clientX: x - 100, clientY: y + 100 })
             NotesWithText("Monoids").trigger("drag", { force: true })
