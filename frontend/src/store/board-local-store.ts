@@ -21,7 +21,13 @@ function getStorageKey(boardId: string) {
     return `board_${boardId}`
 }
 
+const maxLocalStoredHistory = 1000
+
 export function storeBoardState(newState: LocalStorageBoard) {
     state = newState
+    const history = newState.boardWithHistory.history
+    const recentHistory = history.slice(history.length - maxLocalStoredHistory, history.length)
+    state = { ...newState, boardWithHistory: { ...newState.boardWithHistory, history: recentHistory }}
+    console.log("Storing", JSON.stringify(state).length)
     localStorage[getStorageKey(state.boardWithHistory.board.id)] = JSON.stringify(state)
 }
