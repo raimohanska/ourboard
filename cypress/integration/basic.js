@@ -54,7 +54,7 @@ function createNote(text, relX, relY, color = "yellow") {
     PaletteNote().then((elements) => {
         const { x, y } = elements[0].getBoundingClientRect()
         PaletteNote().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
-        cy.get(".board").trigger("dragover", { force: true, clientX: x + relX, clientY: y + relY })
+        cy.get(".board").trigger("dragover", { force: true, pageX: x + relX, pageY: y + relY })
         // Dragging from palette is not shown in realtime, so the event is different here.
         PaletteNote().trigger("dragend", { force: true })
 
@@ -76,7 +76,7 @@ function createTextItem(text, relX, relY) {
     PaletteText().then((elements) => {
         const { x, y } = elements[0].getBoundingClientRect()
         PaletteText().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
-        cy.get(".board").trigger("dragover", { force: true, clientX: x + relX, clientY: y + relY })
+        cy.get(".board").trigger("dragover", { force: true, pageX: x + relX, pageY: y + relY })
         PaletteText().trigger("dragend", { force: true })
 
         TextItemsWithText("HELLO").should("exist")
@@ -94,7 +94,7 @@ function createContainer(relX, relY) {
         const { x, y } = elements[0].getBoundingClientRect()
 
         PaletteContainer().trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
-        cy.get(".board").trigger("dragover", { force: true, clientX: x + relX, clientY: y + relY })
+        cy.get(".board").trigger("dragover", { force: true, pageX: x + relX, pageY: y + relY })
         PaletteContainer().trigger("dragend", { force: true })
 
         Containers().should("exist")
@@ -124,11 +124,11 @@ describe("Board functionality", () => {
                 altKey: true,
                 force: true,
                 dataTransfer: mockDataTransfer,
-                clientX: x + 10,
-                clientY: y + 10,
+                pageX: x + 10,
+                pageY: y + 10,
             })
-            cy.get(".board").trigger("dragover", { force: true, clientX: x + 600, clientY: y + 300 })
-            cy.get(".board").trigger("drag", { force: true, clientX: x + 600, clientY: y + 300 })
+            cy.get(".board").trigger("dragover", { force: true, pageX: x + 600, pageY: y + 300 })
+            cy.get(".board").trigger("drag", { force: true, pageX: x + 600, pageY: y + 300 })
 
             SelectedNotes().then((els) => {
                 expect(els.length, "One note should be selected").to.equal(1)
@@ -191,7 +191,7 @@ describe("Board functionality", () => {
                 .click({ force: true })
                 .trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
 
-            cy.get(".board").trigger("dragover", { force: true, clientX: x + 100, clientY: y - 100 })
+            cy.get(".board").trigger("dragover", { force: true, pageX: x + 100, pageY: y - 100 })
             NotesWithText("Monoids").trigger("drag", { force: true })
         })
 
@@ -228,7 +228,7 @@ describe("Board functionality", () => {
 
             NotesWithText("Monoids").trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
 
-            cy.get(".board").trigger("dragover", { force: true, clientX: x - 100, clientY: y + 100 })
+            cy.get(".board").trigger("dragover", { force: true, pageX: x - 100, pageY: y + 100 })
             NotesWithText("Monoids").trigger("drag", { force: true })
         })
 
@@ -260,7 +260,7 @@ describe("Board functionality", () => {
             NotesWithText("Monoids")
                 .get(".corner-resize-drag.bottom.right")
                 .trigger("dragstart", { force: true, dataTransfer: mockDataTransfer })
-            cy.get(".board").trigger("dragover", { force: true, clientX: x + 200, clientY: y + 200 })
+            cy.get(".board").trigger("dragover", { force: true, pageX: x + 200, pageY: y + 200 })
             NotesWithText("Monoids").get(".corner-resize-drag.bottom.right").trigger("drag", { force: true })
         })
 
