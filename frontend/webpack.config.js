@@ -7,8 +7,8 @@ const isProd = (argv) => argv.mode === "production"
 const isDev = (argv) => argv.mode === "development"
 
 function* getPlugins(argv) {
-    yield new webpack.DefinePlugin({
-        "process.env.AWS_ASSETS_BUCKET_URL": process.env.AWS_ASSETS_BUCKET_URL,
+    yield new webpack.EnvironmentPlugin({
+        AWS_ASSETS_BUCKET_URL: null,
     })
     yield new HtmlWebpackPlugin({
         template: "src/index.html",
