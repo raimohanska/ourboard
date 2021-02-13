@@ -135,6 +135,17 @@ describe("Board functionality", () => {
         })
     })
 
+    it("Can select multiple notes by clicking with SHIFT key", () => {
+        createNote("Item 1", 120, 120)
+        createNote("Item 2", 150, 150)
+        NotesWithText("Item 1").click({ force: true })
+        NotesWithText("Item 2").click({ force: true, shiftKey: true })
+
+        SelectedNotes().then(els => {
+            expect(els.length, "Both notes should be selected when using shift-click").to.equal(2)
+        })
+    })
+
 
     it("Can create note by dragging from palette", () => {
         createNote("HELLO", 350, 200)
