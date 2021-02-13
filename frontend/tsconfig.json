@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-      "target": "es6",
+      "target": "esnext",
       "lib": [
         "dom",
         "dom.iterable",
@@ -19,9 +19,8 @@
       "jsxFactory": "h",
       "jsxFragmentFactory": "Fragment",
       "allowJs": false,
-      "downlevelIteration": true,
       "outDir": "dist",
-      "declaration": true
+      "sourceMap": true
     },
     "include": [
       "src/index.tsx"
