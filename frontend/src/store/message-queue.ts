@@ -1,6 +1,6 @@
 import * as L from "lonna";
 import io from 'socket.io-client';
-import { AppEvent } from "../../../common/src/domain";
+import { AppEvent, Serial } from "../../../common/src/domain";
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
 
 type QueueState = {
@@ -13,7 +13,8 @@ type Sender = {
 }
 
 export default function(socket: Sender) {
-    let state = L.atom<QueueState>({
+    const serialAck = L.bus<Serial>();
+    const state = L.atom<QueueState>({
         queue: [],
         sent: []
     })
@@ -30,7 +31,8 @@ export default function(socket: Sender) {
         })
     }
 
-    function ack() {
+    function ack(data: (Serial | undefined)[]) {
+        data.forEach(s => s && serialAck.push(s))
         state.modify(s => ({ ...s, sent: [] }))
         sendIfPossible()
     }
@@ -52,6 +54,7 @@ export default function(socket: Sender) {
     return { 
         enqueue,
         onConnect,
-        queueSize: queueSize
+        queueSize: queueSize,
+        serialAck: serialAck as L.EventStream<Serial>
     }
 }

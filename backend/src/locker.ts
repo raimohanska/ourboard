@@ -50,21 +50,19 @@ function renewLease(boardId: Id, itemId: Id) {
     }, LOCK_TTL_SECONDS * 1000))
 }
 
-export function obtainLock(e: BoardItemEvent, socket: IO.Socket, cb: () => any) {
+export function obtainLock(e: BoardItemEvent, socket: IO.Socket) {
     if (isPersistableBoardItemEvent(e)) {        
         const itemIds = getItemIds(e)
         // Since we are operating on multiple items at a time, locking must succeed for all of them
         // for the action to succeed
-        itemIds.every(id => lockItem(e.boardId, id, socket.id)) && cb()
+        return itemIds.every(id => lockItem(e.boardId, id, socket.id))
     } else {
         const { boardId, itemId, action } = e
         switch(action) {
             case "item.lock":
-                lockItem(boardId, itemId, socket.id) && cb()
-                break
+                return lockItem(boardId, itemId, socket.id)
             case "item.unlock":
-                unlockItem(boardId, itemId, socket.id) && cb()
-                break
+                return unlockItem(boardId, itemId, socket.id)
         }
     }
 }

@@ -10,6 +10,7 @@ import { Board, exampleBoard, UserCursorPosition } from "../../common/src/domain
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store";
 import { storeRecentBoard } from "./store/recent-boards"
+import { getInitialBoardState } from "./store/board-local-store";
 
 const App = () => {
     const nicknameFromURL = new URLSearchParams(location.search).get("nickname")
@@ -19,8 +20,11 @@ const App = () => {
         search.delete("nickname")
         document.location.search = search.toString()
     }
-    const socket = io();    
-    const store = boardStore(socket, boardIdFromPath(), localStorage)    
+    const socket = io();
+    
+    const boardId = boardIdFromPath()
+
+    const store = boardStore(socket, boardId, localStorage)    
     const assets = assetStore(socket, store)
     const syncStatus = syncStatusStore(socket, store.queueSize)
     const showingBoardId = store.state.pipe(L.map((s: BoardAppState) => s.board ? s.board.id : undefined))
@@ -34,13 +38,12 @@ const App = () => {
     const title = L.view(store.state, s => s.board ? `${s.board.name} - R-Board` : "R-Board")
     title.forEach(t => document.querySelector("title")!.textContent = t)
 
-    const connectedBoard = L.view(store.boardId, store.connected, (b, c) => c ? b : undefined)
+    const connectedBoard = L.view(store.connected, c => c ? boardId : undefined)
     connectedBoard.forEach(boardId => {
         if (!boardId) {
             // no board in URL or not connected
         } else {
-            console.log("Joining board", boardId)
-            store.dispatch({ action: "board.join", boardId })
+            store.joinBoard(boardId)
         }
     })
     showingBoardId.forEach(boardId => {

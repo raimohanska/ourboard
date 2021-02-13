@@ -10,7 +10,7 @@ export function boardHistoryReducer(board: BoardWithHistory, appEvent: EventFrom
 }
 
 function addToHistory(history: BoardHistoryEntry[], appEvent: EventFromServer): BoardHistoryEntry[] {
-  if (!isPersistableBoardItemEvent(appEvent)) return history
+  if (!isPersistableBoardItemEvent(appEvent)) return history // This narrows the event to BoardHistoryEntry  
   if (history.length === 0) return [appEvent]
   const latest = history[history.length - 1]
   const folded = foldActions(latest, appEvent) as null | BoardHistoryEntry

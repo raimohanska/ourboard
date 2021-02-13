@@ -41,7 +41,7 @@ export function assetStore(socket: typeof io.Socket, store: BoardStore) {
                     if (exists) {
                         return url
                     }
-                    socket.send("app-event", { action: "asset.put.request", assetId })
+                    socket.send("app-events", [{ action: "asset.put.request", assetId }])
                     const signedUrl = await getAssetPutResponse(assetId, store.events)
 
                     const response = await fetch(signedUrl, {

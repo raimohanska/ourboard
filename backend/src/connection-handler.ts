@@ -1,5 +1,5 @@
 import IO from "socket.io"
-import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize, isFullyFormedBoard } from "../../common/src/domain"
+import { AppEvent, isBoardItemEvent, isPersistableBoardItemEvent, BoardCursorPositions, exampleBoard, Id, defaultBoardSize, isFullyFormedBoard, Serial, BoardHistoryEntry } from "../../common/src/domain"
 import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
 import { addSessionToBoard, broadcastBoardEvent, endSession, startSession, broadcastCursorPositions, broadcastItemLocks, setNicknameForSession, getSessionUserInfo } from "./sessions"
 import { getSignedPutUrl } from "./storage"
@@ -8,15 +8,12 @@ import { obtainLock, releaseLocksFor } from "./locker"
 export const connectionHandler = (socket: IO.Socket) => {        
     socket.on("message", async (kind: string, event: any, ackFn) => {
         // console.log("Received", kind, event)
-        if (kind === "app-event") {
-            ackFn?.("ack")
-            return await handleAppEvent(socket, event as AppEvent)  
-        }
-        if (kind === "app-events") {
-            ackFn?.("ack")
+        if (kind === "app-events") {            
+            const serials: (Serial | undefined)[] = []
             for (const e of (event as AppEvent[])) {
-                await handleAppEvent(socket, e)  
+                serials.push(await handleAppEvent(socket, e))
             }   
+            ackFn?.(serials)
             return         
         }
         console.warn("Unhandled message", kind, event)
@@ -51,21 +48,24 @@ setInterval(() => {
     })
 }, 100);
 
-async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent) {
+async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent): Promise<Serial | undefined> {
     if (isBoardItemEvent(appEvent)) {
-        obtainLock(appEvent, socket, async () => {
+        const gotLock = obtainLock(appEvent, socket)
+        if (gotLock) {
             if (isPersistableBoardItemEvent(appEvent)) {
                 const user = getSessionUserInfo(socket)
-                const historyEntry = {...appEvent, user, timestamp: new Date().toISOString() }
-                await updateBoards(historyEntry)
+                let historyEntry: BoardHistoryEntry = {...appEvent, user, timestamp: new Date().toISOString() }
+                const serial = await updateBoards(historyEntry)
+                historyEntry = {...historyEntry, serial }
                 broadcastBoardEvent(historyEntry, socket)
-            }            
-        })
+                return serial
+            }
+        }
     } else {
         switch (appEvent.action) {
-            case "board.join": 
+            case "board.join":                 
                 const board = await getBoard(appEvent.boardId)
-                addSessionToBoard(board, socket)
+                addSessionToBoard(board, socket, appEvent.initAtSerial)
                 return;
             case "board.add": {
                 const { payload } = appEvent

@@ -1,4 +1,4 @@
-import { Board, BoardAttributes, BoardHistoryEntry, BoardWithHistory, CompactBoardHistory, Container, createBoard, defaultBoardSize, EventUserInfo, Item } from "./domain"
+import { Board, BoardAttributes, BoardHistoryEntry, BoardWithHistory, CompactBoardHistory, Container, createBoard, defaultBoardSize, EventUserInfo, Item, Serial } from "./domain"
 import { boardReducer } from "./board-reducer"
 
 export function migrateBoardWithHistory(boardToMigrate: Board, historyToMigrate: BoardHistoryEntry[]): CompactBoardHistory {
@@ -31,9 +31,12 @@ export function buildBoardFromHistory(boardAttributes: BoardAttributes, history:
     return resultBoard
 }
 
-export function toCompactBoardHistory(board: BoardWithHistory) {
+export function toCompactBoardHistory(board: BoardWithHistory, initAtSerial?: Serial) {
     const { items, ...boardAttributes } = board.board
-    return { boardAttributes, history: board.history }    
+    const history = initAtSerial
+        ? board.history.filter(e => (e.serial || 0) > initAtSerial)
+        : board.history
+    return { boardAttributes, history }    
 }
 
 export function migrateBoard(board: Board) {

@@ -36,8 +36,15 @@ function buildBoardFromHistory(boardAttributes: BoardAttributes, history: BoardH
 
 export async function updateBoards(appEvent: BoardHistoryEntry) {
     const boardWithHistory = await getBoard(appEvent.boardId)
-    const updatedBoardWithHistory = boardHistoryReducer(boardWithHistory, appEvent)[0]    
+    const currentSerial = boardWithHistory.history[boardWithHistory.history.length - 1].serial || 0
+    const serial = currentSerial + 1
+    if (appEvent.serial !== undefined) {
+        throw Error("Event already has serial")
+    }
+    const eventWithSerial = { ...appEvent, serial }
+    const updatedBoardWithHistory = boardHistoryReducer(boardWithHistory, eventWithSerial)[0]    
     markForSave(updatedBoardWithHistory)
+    return serial
 }
 
 export async function addBoard(board: Board): Promise<BoardWithHistory> {

@@ -17,7 +17,7 @@ export type Board = BoardAttributes & {
 export type BoardStub = Pick<Board, "id" | "name">
 
 export type EventUserInfo = { nickname: string, userType: "unidentified" | "system" }
-export type BoardHistoryEntry = { user: EventUserInfo, timestamp: ISOTimeStamp } & PersistableBoardItemEvent
+export type BoardHistoryEntry = { user: EventUserInfo, timestamp: ISOTimeStamp, serial?: Serial } & PersistableBoardItemEvent
 export type BoardWithHistory = { board: Board, history: BoardHistoryEntry[] }
 export type CompactBoardHistory = { boardAttributes: BoardAttributes, history: BoardHistoryEntry[] }
 
@@ -62,7 +62,7 @@ export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id>
 
 export type EventFromServer = BoardHistoryEntry | TransientBoardItemEvent | OtherAppEvent
-
+export type Serial = number
 export type AppEvent = BoardItemEvent | OtherAppEvent;
 export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront | BootstrapBoard | RenameBoard
 export type TransientBoardItemEvent = LockItem | UnlockItem
@@ -78,10 +78,10 @@ export type LockItem = { action: "item.lock", boardId: Id, itemId: Id }
 export type UnlockItem = { action: "item.unlock", boardId: Id, itemId: Id }
 export type GotBoardLocks = { action: "board.locks", boardId: Id, locks: ItemLocks }
 export type AddBoard = { action: "board.add", payload: Board | BoardStub }
-export type JoinBoard = { action: "board.join", boardId: Id }
+export type JoinBoard = { action: "board.join", boardId: Id, initAtSerial?: Serial }
 export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessionInfo
 export type JoinedBoard = { action: "board.joined", boardId: Id } & UserSessionInfo
-export type InitBoard = { action: "board.init", board: CompactBoardHistory }
+export type InitBoard = { action: "board.init", board: CompactBoardHistory, initAtSerial?: Serial }
 export type RenameBoard = { action: "board.rename", boardId: Id, name: string }
 export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
 export type SetNickname = { action: "nickname.set", nickname: string, userId: string }

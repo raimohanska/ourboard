@@ -1,11 +1,12 @@
 import * as L from "lonna";
 import { globalScope } from "lonna";
-import { AppEvent, Board, EventFromServer, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, UserCursorPosition, UserSessionInfo, isPersistableBoardItemEvent, BoardHistoryEntry, isBoardItemEvent, PersistableBoardItemEvent } from "../../../common/src/domain";
+import { AppEvent, Board, EventFromServer, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, UserCursorPosition, UserSessionInfo, isPersistableBoardItemEvent, BoardHistoryEntry, isBoardItemEvent, PersistableBoardItemEvent, isBoardHistoryEntry, Serial, BoardWithHistory } from "../../../common/src/domain";
 import { boardHistoryReducer } from "../../../common/src/board-history-reducer";
 import { foldActions } from "../../../common/src/action-folding";
 import MessageQueue from "./message-queue";
 import { buildBoardFromHistory } from "../../../common/src/migration";
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
+import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
 
 export type BoardAppState = {
     board: Board | undefined,
@@ -86,7 +87,20 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
             }
             return { ...state, board, history }
         } else if (event.action === "board.init") {
-            return { ...state, board: buildBoardFromHistory(event.board.boardAttributes, event.board.history), history: event.board.history }
+            let history: BoardHistoryEntry[]
+            if (event.initAtSerial) {
+                console.log("Init at", event.initAtSerial, "with", event.board.history.length + " new events", event.board.history)
+                const boardId = event.board.boardAttributes.id
+                const localState = getInitialBoardState(boardId)
+                if (!localState) throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
+                if (localState.serial != event.initAtSerial) throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localState.serial}`)
+                history = localState.boardWithHistory.history.concat(event.board.history)
+            } else {
+                console.log("Init with new board having", event.board.history.length, "events")
+                history = event.board.history
+            }
+
+            return { ...state, board: buildBoardFromHistory(event.board.boardAttributes, history), history }
         } else if (event.action === "board.join.ack") {
             let nickname = event.nickname
             if (localStorage.nickname && localStorage.nickname !== event.nickname) {
@@ -114,6 +128,22 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     
     const initialState = { board: undefined, history: [], userId: null, nickname: undefined, users: [], cursors: {}, locks: {} }
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
+
+    const serialNumbers = L.merge(serverEvents.pipe(L.filter(isBoardHistoryEntry), L.map((e: BoardHistoryEntry) => e.serial!)), messageQueue.serialAck)    
+    const latestSerial = serialNumbers.pipe(L.scan(0, (prev: Serial, next: Serial) => Math.max(prev, next), L.globalScope))
+    const localBoardToSave: L.EventStream<LocalStorageBoard> = L.combineTemplate({
+        boardWithHistory: {
+            board: L.view(state, "board") as L.Property<Board>,
+            history: L.view(state, "history")
+        },
+        serial: latestSerial
+    }).pipe(L.changes, L.filter((state : LocalStorageBoard) => state.serial > 0), L.debounce(1000, L.globalScope))
+    localBoardToSave.forEach(storeBoardState)
+
+    function joinBoard(boardId: Id) {
+        console.log("Joining board", boardId)
+        dispatch({ action: "board.join", boardId, initAtSerial: getInitialBoardState(boardId)?.serial })        
+    }
     
     return {
         state,
@@ -121,7 +151,8 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
         connected,
         events,    
         queueSize: messageQueue.queueSize,
-        boardId: L.constant(boardId)
+        boardId: L.constant(boardId),
+        joinBoard
     }
 
     function storeNickName(nickname: string) {
