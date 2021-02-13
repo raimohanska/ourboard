@@ -8,7 +8,6 @@ This function should return that composite action or null if folding is not poss
 export function foldActions(a: AppEvent, b: AppEvent): AppEvent | null {
     if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
         if (!isSameUser(a.user, b.user)) return null
-        if (a.serial || b.serial) return null // Never fold events that have a serial number, i.e. are persisted on server
     }
     if (a.action === "item.add") {
         if (isPersistableBoardItemEvent(b) && b.action !== "item.delete" && a.boardId === b.boardId) {
