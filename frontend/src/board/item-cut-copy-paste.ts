@@ -1,8 +1,7 @@
 import _ from "lodash";
 import * as L from "lonna";
 import * as uuid from "uuid";
-import { Board, Id, Item } from "../../../common/src/domain";
-import { findItemsRecursively } from "../../../common/src/state";
+import { Board, Item, findItemsRecursively } from "../../../common/src/domain";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus, getSelectedIds } from "./board-focus";
 import { Dispatch } from "../store/board-store";

@@ -1,24 +1,4 @@
-import { AppEvent, Board, BoardHistoryEntry, BoardWithHistory, EventFromServer, Id, isPersistableBoardItemEvent, Item } from "./domain";
-import _, { max } from "lodash"
-import { foldActions } from "./action-folding";
-
-export function boardHistoryReducer(board: BoardWithHistory, appEvent: EventFromServer): [BoardWithHistory, AppEvent | null] {
-  const [updatedBoard, undoAction] = boardReducer(board.board, appEvent)
-  const history = updatedBoard !== board.board ? addToHistory(board.history, appEvent) : board.history
-  const updatedBoardWithHistory = { board: updatedBoard, history }
-  return [updatedBoardWithHistory, undoAction]
-}
-
-function addToHistory(history: BoardHistoryEntry[], appEvent: EventFromServer): BoardHistoryEntry[] {
-  if (!isPersistableBoardItemEvent(appEvent)) return history
-  if (history.length === 0) return [appEvent]
-  const latest = history[history.length - 1]
-  const folded = foldActions(latest, appEvent) as null | BoardHistoryEntry
-  if (folded) {
-      return [...history.slice(0, history.length - 1), folded]
-  }
-  return [...history, appEvent]
-}
+import { AppEvent, Board, Id, Item, getItem, findItem, findItemIdsRecursively } from "./domain";
 
 export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | null] {
     switch (event.action) {
@@ -106,33 +86,6 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
         console.warn("Unknown event", event);
         return [board, null]
     }
-  }
-
-  export const getItem = (board: Board | Item[]) => (id: Id) => {    
-    const item = findItem(board)(id)
-    if (!item) throw Error("Item not found: " + id)
-    return item
-  }
-
-  export const findItem = (board: Board | Item[]) => (id: Id) => {
-    const items: Item[] = board instanceof Array ? board : board.items
-    const item = items.find(i => i.id === id)    
-    return item || null
-  }
-
-  export function findItemIdsRecursively(ids: Id[], board: Board): Set<Id> {
-    const recursiveIds = new Set<Id>()
-    const addIdRecursively = (id: Id) => {
-      recursiveIds.add(id)
-      board.items.forEach(i => i.containerId === id && addIdRecursively(i.id))          
-    }
-    ids.forEach(addIdRecursively)
-    return recursiveIds
-  }
-
-  export function findItemsRecursively(ids: Id[], board: Board): Item[] {
-    const recursiveIds = findItemIdsRecursively(ids, board)
-    return [...recursiveIds].map(getItem(board))
   }
 
   const moveItemWithChildren = (itemsOnBoard: Item[], id: Id, x: number, y: number, containerId: Id | undefined) => {

@@ -1,5 +1,6 @@
-import { AppEvent, BoardHistoryEntry, BringItemToFront, createBoard, CURSOR_POSITIONS_ACTION_TYPE, getItemIds, isBoardHistoryEntry, isPersistableBoardItemEvent, isSameUser, Item, MoveItem, UpdateItem } from "./domain"
-import { boardReducer, getItem } from "./state"
+import { AppEvent, BringItemToFront, createBoard, CURSOR_POSITIONS_ACTION_TYPE, getItemIds, isBoardHistoryEntry, isPersistableBoardItemEvent, isSameUser, Item, MoveItem, UpdateItem } from "./domain"
+import { boardReducer } from "./board-reducer"
+import { getItem } from "./domain"
 /*
 Folding can be done if in any given state S, applying actions A and B consecutively can be replaced with a single action C.
 This function should return that composite action or null if folding is not possible.

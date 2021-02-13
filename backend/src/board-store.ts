@@ -1,9 +1,8 @@
-import { Item, Board, BoardHistoryEntry, BoardWithHistory, exampleBoard, Id, BoardAttributes } from "../../common/src/domain"
+import { boardHistoryReducer } from "../../common/src/board-history-reducer"
+import { boardReducer } from "../../common/src/board-reducer"
+import { Board, BoardAttributes, BoardHistoryEntry, BoardWithHistory, exampleBoard, Id, Item } from "../../common/src/domain"
 import { migrateBoardWithHistory } from "../../common/src/migration"
-import { boardHistoryReducer, boardReducer } from "../../common/src/state"
 import { withDBClient } from "./db"
-import _ from "lodash"
-import JsonDiff from "json-diff"
 
 let updateQueue: Set<Id> = new Set()
 

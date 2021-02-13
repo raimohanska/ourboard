@@ -1,5 +1,4 @@
 import * as uuid from "uuid";
-import { boardReducer } from "./state";
 
 export type Id = string
 export type ISOTimeStamp = string
@@ -17,10 +16,10 @@ export type Board = BoardAttributes & {
 
 export type BoardStub = Pick<Board, "id" | "name">
 
-export type EventUserInfo = { nickname: string, userType: "unidentified" | "system" }
+export type EventUserInfo = { nickname: string, userType: "unidentified" | "system" }
 export type BoardHistoryEntry = { user: EventUserInfo, timestamp: ISOTimeStamp } & PersistableBoardItemEvent
 export type BoardWithHistory = { board: Board, history: BoardHistoryEntry[] }
-export type CompactBoardHistory = { boardAttributes: BoardAttributes, history: BoardHistoryEntry[] }
+export type CompactBoardHistory = { boardAttributes: BoardAttributes, history: BoardHistoryEntry[] }
 
 export function isFullyFormedBoard(b: Board | BoardStub): b is Board {
     return !!b.id && !!b.name && ["width", "height", "items"].every(prop => prop in b)
@@ -60,38 +59,38 @@ export type Container = ItemProperties & { type: typeof ITEM_TYPES.CONTAINER; te
 export type TextItem = Note | Text | Container
 export type ColoredItem = Item & { color: Color }
 export type Item = TextItem | Image
-export type ItemLocks = Record<Id, Id> 
+export type ItemLocks = Record<Id, Id>
 
-export type EventFromServer = BoardHistoryEntry | TransientBoardItemEvent | OtherAppEvent
+export type EventFromServer = BoardHistoryEntry | TransientBoardItemEvent | OtherAppEvent
 
 export type AppEvent = BoardItemEvent | OtherAppEvent;
 export type PersistableBoardItemEvent = AddItem | UpdateItem | MoveItem | DeleteItem | BringItemToFront | BootstrapBoard | RenameBoard
 export type TransientBoardItemEvent = LockItem | UnlockItem
-export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
-export type OtherAppEvent = AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks | Undo | Redo
+export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
+export type OtherAppEvent = AddBoard | JoinBoard | AckJoinBoard | JoinedBoard | InitBoard | CursorMove | SetNickname | CursorPositions | AssetPutUrlRequest | AssetPutUrlResponse | GotBoardLocks | Undo | Redo
 export type AddItem = { action: "item.add", boardId: Id, items: Item[] };
 export type UpdateItem = { action: "item.update", boardId: Id, items: Item[] };
-export type MoveItem = { action: "item.move", boardId: Id, items: {id: Id, x: number, y: number, containerId?: Id | undefined}[] };
+export type MoveItem = { action: "item.move", boardId: Id, items: { id: Id, x: number, y: number, containerId?: Id | undefined }[] };
 export type BringItemToFront = { action: "item.front", boardId: Id, itemIds: Id[] };
 export type DeleteItem = { action: "item.delete", boardId: Id, itemIds: Id[] };
-export type BootstrapBoard = { action: "item.bootstrap", boardId: Id, items: Item[] }
+export type BootstrapBoard = { action: "item.bootstrap", boardId: Id, items: Item[] }
 export type LockItem = { action: "item.lock", boardId: Id, itemId: Id }
 export type UnlockItem = { action: "item.unlock", boardId: Id, itemId: Id }
 export type GotBoardLocks = { action: "board.locks", boardId: Id, locks: ItemLocks }
-export type AddBoard = { action: "board.add", payload: Board | BoardStub }
+export type AddBoard = { action: "board.add", payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join", boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack", boardId: Id } & UserSessionInfo
 export type JoinedBoard = { action: "board.joined", boardId: Id } & UserSessionInfo
-export type InitBoard = { action: "board.init", board: CompactBoardHistory }
-export type RenameBoard = { action: "board.rename", boardId: Id, name: string }
+export type InitBoard = { action: "board.init", board: CompactBoardHistory }
+export type RenameBoard = { action: "board.rename", boardId: Id, name: string }
 export type CursorMove = { action: "cursor.move", position: CursorPosition, boardId: Id }
 export type SetNickname = { action: "nickname.set", nickname: string, userId: string }
 export type AssetPutUrlRequest = { "action": "asset.put.request", assetId: string }
 export type AssetPutUrlResponse = { "action": "asset.put.response", assetId: string, signedUrl: string }
-export type Undo = { action: "undo" }
+export type Undo = { action: "undo" }
 export type Redo = { action: "redo" }
 
-export type UserSessionInfo = { userId: string, nickname: string }
+export type UserSessionInfo = { userId: string, nickname: string }
 
 export const CURSOR_POSITIONS_ACTION_TYPE = "c" as const;
 export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE, p: Record<Id, UserCursorPosition> }
@@ -110,11 +109,11 @@ export const exampleBoard: Board = {
 
 export function createBoard(name: string): Board {
     const id = uuid.v4()
-    return { id: uuid.v4(), name, items: [], ...defaultBoardSize } 
+    return { id: uuid.v4(), name, items: [], ...defaultBoardSize }
 }
 
 export function newNote(text: string, color: Color = "#F5F18D", x: number = 20, y: number = 20, width: number = 5, height: number = 5, z: number = 0): Note {
-    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z }    
+    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z }
 }
 
 export function newSimilarNote(note: Note) {
@@ -122,11 +121,11 @@ export function newSimilarNote(note: Note) {
 }
 
 export function newText(text: string, x: number = 20, y: number = 20, width: number = 5, height: number = 2, z: number = 0): Text {
-    return { id: uuid.v4(), type: "text", text, x, y, width, height, z }    
+    return { id: uuid.v4(), type: "text", text, x, y, width, height, z }
 }
 
 export function newContainer(x: number = 20, y: number = 20, width: number = 30, height: number = 20, z: number = 0): Container {
-    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height, z }    
+    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height, z }
 }
 
 export function newImage(assetId: string, x: number = 20, y: number = 20, width: number = 5, height: number = 5, z: number = 0): Image {
@@ -137,7 +136,7 @@ export function getCurrentTime(): ISOTimeStamp {
     return new Date().toISOString()
 }
 
-export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent => a.action.startsWith("item.") || a.action === "board.rename"
+export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent => a.action.startsWith("item.") || a.action === "board.rename"
 
 export const isPersistableBoardItemEvent = (e: AppEvent): e is PersistableBoardItemEvent => isBoardItemEvent(e) && !["item.lock", "item.unlock"].includes(e.action)
 
@@ -166,4 +165,31 @@ export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id
         case "item.bootstrap": return e.items.map(i => i.id)
         case "board.rename": return []
     }
+}
+
+export const getItem = (board: Board | Item[]) => (id: Id) => {
+    const item = findItem(board)(id)
+    if (!item) throw Error("Item not found: " + id)
+    return item
+}
+
+export const findItem = (board: Board | Item[]) => (id: Id) => {
+    const items: Item[] = board instanceof Array ? board : board.items
+    const item = items.find(i => i.id === id)
+    return item || null
+}
+
+export function findItemIdsRecursively(ids: Id[], board: Board): Set<Id> {
+    const recursiveIds = new Set<Id>()
+    const addIdRecursively = (id: Id) => {
+        recursiveIds.add(id)
+        board.items.forEach(i => i.containerId === id && addIdRecursively(i.id))
+    }
+    ids.forEach(addIdRecursively)
+    return recursiveIds
+}
+
+export function findItemsRecursively(ids: Id[], board: Board): Item[] {
+    const recursiveIds = findItemIdsRecursively(ids, board)
+    return [...recursiveIds].map(getItem(board))
 }

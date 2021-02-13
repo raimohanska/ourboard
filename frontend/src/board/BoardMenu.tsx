@@ -2,7 +2,6 @@ import { h, Fragment } from "harmaja";
 import * as L from "lonna";
 import { EditableSpan } from "../components/EditableSpan";
 import { BoardAppState, Dispatch } from "../store/board-store";
-import { SaveAsTemplate } from "./SaveAsTemplate";
 
 export const BoardMenu = ({ boardId, state, dispatch }: { boardId: string, state: L.Property<BoardAppState>, dispatch: Dispatch }) => {
     const editingAtom = L.atom(false)

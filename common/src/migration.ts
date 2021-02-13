@@ -1,5 +1,5 @@
 import { Board, BoardAttributes, BoardHistoryEntry, BoardWithHistory, CompactBoardHistory, Container, createBoard, defaultBoardSize, EventUserInfo, Item } from "./domain"
-import { boardReducer } from "./state"
+import { boardReducer } from "./board-reducer"
 
 export function migrateBoardWithHistory(boardToMigrate: Board, historyToMigrate: BoardHistoryEntry[]): CompactBoardHistory {
     const board = migrateBoard(boardToMigrate)

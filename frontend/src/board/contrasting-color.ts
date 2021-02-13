@@ -1,4 +1,3 @@
-
 interface RGB {
     b: number;
     g: number;

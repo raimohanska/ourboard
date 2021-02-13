@@ -1,5 +1,5 @@
 import { Board, Id, Item } from "../../../common/src/domain";
-import { getItem } from "../../../common/src/state";
+import { getItem } from "../../../common/src/domain";
 
 export type BoardFocus = 
   { status: "none" } | 

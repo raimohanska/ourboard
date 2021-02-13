@@ -1,6 +1,6 @@
 import * as L from "lonna";
 import { Board, Item } from "../../../common/src/domain";
-import { getItem } from "../../../common/src/state";
+import { getItem } from "../../../common/src/domain";
 import { BoardCoordinateHelper } from "./board-coordinates";
 import { BoardFocus } from "./board-focus";
 

@@ -1,7 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import { Rect } from "./geometry"
-import { DragAction } from "./board-drag"
 
 export const RectangularDragSelection = (
     { rect }: 

@@ -4,7 +4,8 @@ import { Board, BoardHistoryEntry, Id, Item, createBoard, getItemIds, getItemTex
 import prettyMs from "pretty-ms"
 import _ from "lodash";
 import { ISODate } from "../store/recent-boards";
-import { boardReducer, getItem } from "../../../common/src/state";
+import { boardReducer } from "../../../common/src/board-reducer";
+import { getItem } from "../../../common/src/domain";
 import { BoardFocus, getSelectedIds, getSelectedItems } from "./board-focus";
 import { Checkbox } from "../components/components";
 

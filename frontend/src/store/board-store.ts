@@ -1,7 +1,7 @@
 import * as L from "lonna";
 import { globalScope } from "lonna";
 import { AppEvent, Board, EventFromServer, CURSOR_POSITIONS_ACTION_TYPE, Id, ItemLocks, UserCursorPosition, UserSessionInfo, isPersistableBoardItemEvent, BoardHistoryEntry, isBoardItemEvent, PersistableBoardItemEvent } from "../../../common/src/domain";
-import { boardHistoryReducer } from "../../../common/src/state";
+import { boardHistoryReducer } from "../../../common/src/board-history-reducer";
 import { foldActions } from "../../../common/src/action-folding";
 import MessageQueue from "./message-queue";
 import { buildBoardFromHistory } from "../../../common/src/migration";
