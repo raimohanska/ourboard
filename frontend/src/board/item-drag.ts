@@ -41,7 +41,7 @@ export function onBoardItemDrag(elem: HTMLElement, id: string, board: L.Property
         e.preventDefault()
         return
       }
-      const newPos = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.clientX, y: dragStart!.clientY })
+      const newPos = coordinateHelper.boardCoordDiffFromThisClientPoint({x: dragStart!.pageX, y: dragStart!.pageY })
       if (currentPos && currentPos.x == newPos.x && currentPos.y === newPos.y) {
         return 
       }

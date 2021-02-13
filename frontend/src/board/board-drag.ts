@@ -4,7 +4,6 @@ import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { BoardFocus } from "./board-focus";
 import { Rect, overlaps, rectFromPoints } from "./geometry"
-import { Dispatch } from "../store/board-store"
 import * as _ from "lodash"
 import { componentScope } from "harmaja";
 
@@ -17,9 +16,8 @@ export type DragAction =
     | { action: "none" }
 
 export function boardDragHandler (
-    { boardElem, coordinateHelper, board, focus, dispatch }: 
-    { boardElem: L.Property<HTMLElement | null>, coordinateHelper: BoardCoordinateHelper, board: L.Property<Board>, focus: L.Atom<BoardFocus>,
-      dispatch: Dispatch
+    { boardElem, coordinateHelper, board, focus }: 
+    { boardElem: L.Property<HTMLElement | null>, coordinateHelper: BoardCoordinateHelper, board: L.Property<Board>, focus: L.Atom<BoardFocus>
     }
 ) {
     let start: L.Atom<BoardCoordinates | null> = L.atom(null)
@@ -42,7 +40,8 @@ export function boardDragHandler (
         el.addEventListener("dragstart", e => {
             dragAction.set(!e.altKey ? { action: "move" } : { action: "select", selectedAtStart: new Set(), dragStartedOn: null })
             e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0);
-            const pos = coordinateHelper.clientToBoardCoordinates({ x: e.clientX, y: e.clientY })
+
+            const pos = coordinateHelper.pageToBoardCoordinates({ x: e.pageX, y: e.pageY })
             start.set(pos)
             current.set(pos)
 
@@ -87,7 +86,7 @@ export function boardDragHandler (
             else if (da.action === "move") {
                 const s = start.get()
                 const c = current.get()
-                s && c && (el.style.transform = `translate(${coordinateHelper.emToPx(c.x - s.x) / 2}px, ${coordinateHelper.emToPx(c.y - s.y) / 2}px)`)
+                s && c && (el.style.transform = `translate(${coordinateHelper.emToPx(c.x - s.x)}px, ${coordinateHelper.emToPx(c.y - s.y)}px)`)
             }
         }, 15, { leading: true, trailing: true }))
     
@@ -103,8 +102,8 @@ export function boardDragHandler (
                 const s = document.querySelector(".scroll-container")!
                 const { x: startX, y: startY } = start.get()!
                 const { x, y } = current.get()!
-                const xDiff = coordinateHelper.emToPx(startX - x) / 2
-                const yDiff = coordinateHelper.emToPx(startY - y) / 2
+                const xDiff = coordinateHelper.emToPx(startX - x)
+                const yDiff = coordinateHelper.emToPx(startY - y)
                 s.scrollBy(xDiff, yDiff)
             }
             dragAction.set({ action: "none" })
