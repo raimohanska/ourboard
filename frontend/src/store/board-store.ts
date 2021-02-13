@@ -128,16 +128,20 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     
     const initialState = { board: undefined, history: [], userId: null, nickname: undefined, users: [], cursors: {}, locks: {} }
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
-
-    const serialNumbers = L.merge(serverEvents.pipe(L.filter(isBoardHistoryEntry), L.map((e: BoardHistoryEntry) => e.serial!)), messageQueue.serialAck)    
+    const board = L.view(state, "board") as L.Property<Board>
+    const history = L.view(state, "history")
+    const serialNumbers = L.merge(
+        L.view(history, h => h[h.length - 1]?.serial || 0).pipe(L.changes), 
+        messageQueue.serialAck
+    )    
     const latestSerial = serialNumbers.pipe(L.scan(0, (prev: Serial, next: Serial) => Math.max(prev, next), L.globalScope))
-    const localBoardToSave: L.EventStream<LocalStorageBoard> = L.combineTemplate({
+    const localBoardToSave = L.combineTemplate({
         boardWithHistory: {
-            board: L.view(state, "board") as L.Property<Board>,
+            board,
             history: L.view(state, "history")
         },
         serial: latestSerial
-    }).pipe(L.changes, L.filter((state : LocalStorageBoard) => state.serial > 0), L.debounce(1000, L.globalScope))
+    }).pipe(L.changes, L.filter((state : LocalStorageBoard) => state.serial > 0), L.debounce(1000))
     localBoardToSave.forEach(storeBoardState)
 
     function joinBoard(boardId: Id) {

@@ -13,7 +13,6 @@ export function getInitialBoardState(boardId: Id) {
     if (!state || state.boardWithHistory.board.id != boardId) {
         const localStorageKey = getStorageKey(boardId)
         state = localStorage[localStorageKey] ? JSON.parse(localStorage[localStorageKey]) as LocalStorageBoard : undefined
-        console.log("Initial local board", state)
     }
     return state
 }
