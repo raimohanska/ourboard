@@ -21,16 +21,17 @@ export function itemSelectionHandler(
 
     function onClick(e: JSX.MouseEvent) {        
         const f = focus.get()
-        
-        if (e.shiftKey && f.status === "selected") {
-            if (f.ids.has(id) ) {
-                focus.set({ status: "selected", ids: new Set([...f.ids].filter(i => i !== id))})
+        const selectedIds = getSelectedIds(f)
+        if (e.shiftKey && (f.status === "selected" || f.status === "editing")) {
+            
+            if (selectedIds.has(id) ) {
+                focus.set({ status: "selected", ids: new Set([...selectedIds].filter(i => i !== id))})
             } else {
-                focus.set({ status: "selected", ids: new Set([...f.ids].concat(id))})
+                focus.set({ status: "selected", ids: new Set([...selectedIds].concat(id))})
             }
         } else if (f.status === "none") {
             focus.set({ status: "selected", ids: new Set([id]) })
-        } else if ((f.status === "selected" || f.status === "editing") && !getSelectedIds(f).has(id)) {
+        } else if ((f.status === "selected" || f.status === "editing") && !selectedIds.has(id)) {
             focus.set({ status: "selected", ids: new Set([id]) })
         } else if (f.status === "selected") {
             focus.set({ status: "editing", id })

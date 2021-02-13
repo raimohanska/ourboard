@@ -53,10 +53,10 @@ export const HTMLEditableSpan = ( props : EditableSpanProps) => {
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
     const onClick = (e: JSX.MouseEvent) => {
+        if (e.shiftKey) return // Don't mess with multi-select
         e.stopPropagation()
         if (e.target instanceof HTMLAnchorElement) return // Allow links to work
         e.preventDefault()
-        if (e.shiftKey) return
         editingThis.set(true)
     }      
     const onKeyDown = (e: JSX.KeyboardEvent) => {
