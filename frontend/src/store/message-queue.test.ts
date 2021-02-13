@@ -5,7 +5,7 @@ jest.useFakeTimers()
 
 const init = () => {
     const mockServer = jest.fn((type: "app-events", events: AppEvent[], ackCallback: Function) => {
-        setTimeout(ackCallback, 100)
+        setTimeout(() => ackCallback([]), 100)
     })
     const mockSocket = {
         send(type: "app-events", events: AppEvent[], ackCallback: Function) {
