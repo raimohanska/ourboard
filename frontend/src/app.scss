@@ -97,7 +97,7 @@ button {
     background-color: $heading-color;
     color: white;
 
-    padding: 0.3em 2em;
+    padding: 0.2em 2em;
     max-height: 2em;
 
     &.mini {
@@ -109,11 +109,8 @@ button {
     &:hover {
         text-decoration: none;
     }
-}
 
-input[type="submit"] {
-    @extend button;
-    &[disabled] {
+    &:disabled {
         background-color: $disabled-color;
         color: grey;
     }
@@ -328,33 +325,7 @@ a {
             outline: none;
             a {
                 white-space: nowrap;
-            }
-            .anchor-container {
-                position: relative;
-                .anchor-menu {
-                    @extend .ui-context-menu;
-                    @extend .context-menu-positioner;                    
-                    white-space: nowrap;
-                    margin-top: 0;
-                    .icon {
-                        font-size: 1em;
-                        margin-left: 0.3em;
-                    }
-                    .anchor-edit {
-                        label {
-                            display: block;
-                            margin-top: 0.5em;
-                            font-size: 1rem;
-                        }
-                        input {
-                            min-width: 30ch;
-                        }
-                        button {
-                            margin: 0.5em;
-                        }
-                    }
-                }
-            }
+            }            
         }
 
         .container {
@@ -599,13 +570,7 @@ a {
         }
     }
     .create-board {
-        width: 50%;
-        display: flex;
-        flex-direction: column;
-        * {
-             margin-right: 1em;
-             margin-bottom: 1em;
-        }
+        button { margin-left: 0.5em }
     }
 }
 
@@ -684,14 +649,6 @@ select {
 
     &:focus{
         outline: 0;
-    }
-}
-
-@media screen and (max-width: 800px) {
-    .dashboard {
-        .create-board {
-            width: 100%;
-        }
     }
 }
 

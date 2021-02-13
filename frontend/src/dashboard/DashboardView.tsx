@@ -12,6 +12,9 @@ export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppS
     <h1 id="app-title" data-test="app-title">
     R-Board         
     </h1>
+    <p>
+      Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
+    </p>
     <RecentBoards/>
     <CreateBoard dispatch={dispatch}/>
   </div>
@@ -77,6 +80,6 @@ const CreateBoard = ({ dispatch }: {dispatch: Dispatch }) => {
         </select>      
         </>
       }      
-      <input data-test="create-board-submit"type="submit" value="Create" disabled={ disabled } />
+      <button data-test="create-board-submit"type="submit" disabled={ disabled }>Create</button>
   </form>    
 }
