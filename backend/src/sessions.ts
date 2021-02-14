@@ -128,13 +128,15 @@ export function broadcastCursorPositions(boardId: Id, positions: Record<Id, Curs
 }
 
 const BROADCAST_DEBOUNCE_MS = 20
+
 // Debounce by 20ms per board id, otherwise every item interaction (e.g. drag on 10 items, one event each) broadcasts locks
 export const broadcastItemLocks = (() => {
     let timeouts: Record<Id, NodeJS.Timeout | undefined> = {}
+    const hasActiveTimer = (boardId: string) => timeouts[boardId] !== undefined
+
     return function _broadcastItemLocks(state: ServerSideBoardState) {
         const boardId = state.board.id
-        if (typeof timeouts[boardId] === "number") {
-            // <- WTF?
+        if (hasActiveTimer(boardId)) {
             return
         }
         timeouts[boardId] = setTimeout(() => {
