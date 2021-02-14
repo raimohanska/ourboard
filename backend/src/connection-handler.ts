@@ -84,13 +84,13 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent): Promise<Se
         switch (appEvent.action) {
             case "board.join":
                 const board = await getBoard(appEvent.boardId)
-                addSessionToBoard(board, socket, appEvent.initAtSerial)
+                await addSessionToBoard(board, socket, appEvent.initAtSerial)
                 return
             case "board.add": {
                 const { payload } = appEvent
                 const board = !isFullyFormedBoard(payload) ? { ...defaultBoardSize, ...payload, items: [] } : payload
                 const boardWithHistory = await addBoard(board)
-                addSessionToBoard(boardWithHistory, socket)
+                await addSessionToBoard(boardWithHistory, socket)
                 return
             }
             case "cursor.move": {

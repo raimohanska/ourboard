@@ -12,8 +12,9 @@ import {
     BoardHistoryEntry,
     Serial,
 } from "../../common/src/domain"
-import { toCompactBoardHistory } from "../../common/src/migration"
+import { InitBoardNew, InitBoardDiff } from "../../common/src/domain"
 import { randomProfession } from "./professions"
+import { getBoardHistory, ServerSideBoardState } from "./board-store"
 
 type UserSession = {
     socket: IO.Socket
@@ -37,32 +38,45 @@ export function getSessionUserInfo(socket: IO.Socket): EventUserInfo {
     const nickname = sessions[socket.id].nickname
     return { userType: "unidentified", nickname }
 }
-export function addSessionToBoard(board: BoardWithHistory, origin: IO.Socket, initAtSerial?: Serial) {
-    Object.values(sessions)
-        .filter((s) => s.socket === origin)
-        .forEach((session) => {
-            session.boards.push(board.board.id)
-            session.socket.send("app-event", {
-                action: "board.init",
-                board: toCompactBoardHistory(board, initAtSerial),
-                initAtSerial,
-            })
-            session.socket.send("app-event", {
-                action: "board.join.ack",
-                boardId: board.board.id,
-                userId: session.socket.id,
-                nickname: session.nickname,
-            })
-            everyoneOnTheBoard(board.board.id).forEach((s) => {
-                session.socket.send("app-event", {
-                    action: "board.joined",
-                    boardId: board.board.id,
-                    userId: s.socket.id,
-                    nickname: s.nickname,
-                })
-            })
-            broadcastJoinEvent(board.board.id, session)
+
+async function createBoardInit(boardState: ServerSideBoardState, initAtSerial?: Serial): Promise<InitBoardNew | InitBoardDiff> {
+    if (initAtSerial) {
+        const { items, ...boardAttributes } = boardState.board
+        const recentEvents = await getBoardHistory(boardState.board.id, initAtSerial)
+        return {
+            action: "board.init",
+            boardAttributes,
+            recentEvents,
+            initAtSerial,
+        }
+    } else {
+        return {
+            action: "board.init",
+            board: boardState.board,
+        }
+    }
+}
+
+export async function addSessionToBoard(boardState: ServerSideBoardState, origin: IO.Socket, initAtSerial?: Serial) {
+    const session = sessions[origin.id]
+    if (!session) throw new Error("No session found for socket " + origin.id)
+    session.boards.push(boardState.board.id)
+    session.socket.send("app-event", await createBoardInit(boardState, initAtSerial))
+    session.socket.send("app-event", {
+        action: "board.join.ack",
+        boardId: boardState.board.id,
+        userId: session.socket.id,
+        nickname: session.nickname,
+    })
+    everyoneOnTheBoard(boardState.board.id).forEach((s) => {
+        session.socket.send("app-event", {
+            action: "board.joined",
+            boardId: boardState.board.id,
+            userId: s.socket.id,
+            nickname: s.nickname,
         })
+    })
+    broadcastJoinEvent(boardState.board.id, session)
 }
 
 export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {

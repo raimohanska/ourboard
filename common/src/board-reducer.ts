@@ -5,7 +5,7 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
         case "board.rename":
             return [{ ...board, name: event.name }, null]
         case "item.bootstrap":
-            if (board.items.length > 0) throw Error("Trying to bootstrap non-empty board")
+            //if (board.items.length > 0) throw Error("Trying to bootstrap non-empty board")
             return [{ ...board, items: event.items }, null]
         case "item.add":
             if (board.items.find((i) => event.items.some((a) => a.id === i.id))) {

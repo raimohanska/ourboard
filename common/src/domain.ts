@@ -83,7 +83,8 @@ export type OtherAppEvent =
     | JoinBoard
     | AckJoinBoard
     | JoinedBoard
-    | InitBoard
+    | InitBoardNew
+    | InitBoardDiff
     | CursorMove
     | SetNickname
     | CursorPositions
@@ -109,7 +110,8 @@ export type AddBoard = { action: "board.add"; payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Serial }
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
-export type InitBoard = { action: "board.init"; board: CompactBoardHistory; initAtSerial?: Serial }
+export type InitBoardNew = { action: "board.init"; board: Board }
+export type InitBoardDiff = { action: "board.init"; recentEvents: BoardHistoryEntry[]; boardAttributes: BoardAttributes; initAtSerial: Serial }
 export type RenameBoard = { action: "board.rename"; boardId: Id; name: string }
 export type CursorMove = { action: "cursor.move"; position: CursorPosition; boardId: Id }
 export type SetNickname = { action: "nickname.set"; nickname: string; userId: string }

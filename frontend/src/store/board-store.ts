@@ -126,27 +126,24 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
             return { ...state, board, history }
         } else if (event.action === "board.init") {
             
-            if (event.initAtSerial) {
+            if ("initAtSerial" in event) {
                 console.log(
                     "Init at",
                     event.initAtSerial,
                     "with",
-                    event.board.history.length + " new events",
-                    event.board.history,
+                    event.recentEvents.length + " new events"
                 )
-                const boardId = event.board.boardAttributes.id
+                const boardId = event.boardAttributes.id
                 const localState = getInitialBoardState(boardId)
                 if (!localState) throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
                 if (localState.serial != event.initAtSerial) throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localState.serial}`)
                 
-                const history = event.board.history
-                const initialBoard = { ...localState.boardWithHistory.board, ...event.board.boardAttributes } as Board
-                const board = history.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
-                return { ...state, board, history }            
+                const initialBoard = { ...localState.boardWithHistory.board, ...event.boardAttributes } as Board
+                const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
+                return { ...state, board, history: localState.boardWithHistory.history.concat(event.recentEvents) }            
             } else {
-                console.log("Init with new board having", event.board.history.length, "events")
-                const history = event.board.history
-                return { ...state, board: buildBoardFromHistory(event.board.boardAttributes, history), history }
+                console.log("Init as new board")
+                return { ...state, board: event.board, history: [] }
 
             }
         } else if (event.action === "board.join.ack") {
