@@ -85,4 +85,8 @@ async function saveBoards() {
     setTimeout(saveBoards, 1000)
 }
 
+setInterval(() => {
+    console.log("Number of active boards: " + boards.size)
+}, 60000)
+
 saveBoards()
