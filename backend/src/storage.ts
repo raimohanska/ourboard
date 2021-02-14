@@ -5,4 +5,5 @@ function localFSGetSignedPutUrl(Key: string): string {
     return "/assets/" + Key
 }
 
-export const getSignedPutUrl = config.STORAGE_BACKEND === "AWS" ? s3GetSignedPutUrl : localFSGetSignedPutUrl
+export const getSignedPutUrl: (key: string) => string =
+    config.STORAGE_BACKEND === "AWS" ? s3GetSignedPutUrl : localFSGetSignedPutUrl
