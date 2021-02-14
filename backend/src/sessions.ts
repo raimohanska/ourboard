@@ -1,21 +1,13 @@
 import IO from "socket.io"
 import {
-    Board,
-    ItemLocks,
-    BoardItemEvent,
-    CursorPosition,
-    Id,
+    BoardHistoryEntry, CursorPosition,
     CURSOR_POSITIONS_ACTION_TYPE,
-    SetNickname,
-    BoardWithHistory,
-    EventUserInfo,
-    BoardHistoryEntry,
-    Serial,
+    EventUserInfo, Id, InitBoardDiff, InitBoardNew, ItemLocks,
+    Serial, SetNickname
 } from "../../common/src/domain"
-import { InitBoardNew, InitBoardDiff } from "../../common/src/domain"
+import { deactivateBoard, ServerSideBoardState } from "./board-state"
+import { getBoardHistory } from "./board-store"
 import { randomProfession } from "./professions"
-import { deactivateBoard, ServerSideBoardState } from "./board-state"
-import { getBoardHistory } from "./board-store"
 
 type UserSession = {
     socket: IO.Socket
@@ -133,13 +125,14 @@ const BROADCAST_DEBOUNCE_MS = 20
 // Debounce by 20ms per board id, otherwise every item interaction (e.g. drag on 10 items, one event each) broadcasts locks
 export const broadcastItemLocks = (() => {
     let timeouts: Record<Id, NodeJS.Timeout | undefined> = {}
-    return function _broadcastItemLocks(boardId: Id, locks: Record<Id, ItemLocks>) {
-        if (typeof timeouts[boardId] === "number") {
+    return function _broadcastItemLocks(state: ServerSideBoardState) {
+        const boardId = state.board.id
+        if (typeof timeouts[boardId] === "number") { // <- WTF?
             return
         }
         timeouts[boardId] = setTimeout(() => {
             everyoneOnTheBoard(boardId).forEach((s) => {
-                s.socket.send("app-event", { action: "board.locks", boardId, locks: locks[boardId] || {} })
+                s.socket.send("app-event", { action: "board.locks", boardId, locks: state.locks })
             })
             timeouts[boardId] = undefined
         }, BROADCAST_DEBOUNCE_MS)

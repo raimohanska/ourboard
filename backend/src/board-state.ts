@@ -1,8 +1,10 @@
 import { boardReducer } from "../../common/src/board-reducer"
 import {
     Board,
+    BoardCursorPositions,
     BoardHistoryEntry,
     Id,
+    ItemLocks,
     Serial
 } from "../../common/src/domain"
 import { createBoard, fetchBoard, saveRecentEvents } from "./board-store"
@@ -11,19 +13,27 @@ import { createBoard, fetchBoard, saveRecentEvents } from "./board-store"
 export type ServerSideBoardState = {
     board: Board,
     serial: Serial,
-    recentEvents: BoardHistoryEntry[]
+    recentEvents: BoardHistoryEntry[],
+    locks: ItemLocks,
+    cursorsMoved: boolean,
+    cursorPositions: BoardCursorPositions
 }
 
 let boards: Map<Id, ServerSideBoardState> = new Map()
 
 export async function getBoard(id: Id): Promise<ServerSideBoardState> {
-    let board = boards.get(id)
-    if (!board) {
+    let state = boards.get(id)
+    if (!state) {
         console.log(`Loading board ${id} into memory`)
-        board = await fetchBoard(id)
-        boards.set(board.board.id, board)
+        const board = await fetchBoard(id)
+        state = { board, serial: board.serial, recentEvents: [], locks: {}, cursorsMoved: false, cursorPositions: {} }
+        boards.set(board.id, state)
     }
-    return board    
+    return state    
+}
+
+export function maybeGetBoard(id: Id): ServerSideBoardState | undefined {
+    return boards.get(id)
 }
 
 export async function updateBoards(appEvent: BoardHistoryEntry) {
@@ -45,7 +55,7 @@ export async function updateBoards(appEvent: BoardHistoryEntry) {
 
 export async function addBoard(board: Board): Promise<ServerSideBoardState> {
     await createBoard(board)
-    const boardState = { board, serial: 0, recentEvents: [] }
+    const boardState = { board, serial: 0, recentEvents: [], locks: {}, cursorsMoved: false, cursorPositions: {} }
     boards.set(board.id, boardState)
     return boardState
 }

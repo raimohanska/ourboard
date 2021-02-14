@@ -7,16 +7,15 @@ import {
     Id,
     Serial
 } from "../../common/src/domain"
-import { ServerSideBoardState } from "./board-state"
 import { inTransaction, withDBClient } from "./db"
 
-export async function fetchBoard(id: Id): Promise<ServerSideBoardState> {
+export async function fetchBoard(id: Id): Promise<BoardSnapshot> {
     return await inTransaction(async client => {
         const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id]);
         if (result.rows.length == 0) {
             if (id === exampleBoard.id) {
                 // Example board is a special case: it is automatically created if not in DB yet.
-                return { board: exampleBoard, recentEvents: [], serial: 0 }
+                return { ...exampleBoard, serial: 0 }
             } else {
                 throw Error(`Board ${id} not found`)
             }
@@ -42,8 +41,7 @@ export async function fetchBoard(id: Id): Promise<ServerSideBoardState> {
             if (history.length > 1000) {                
                 await saveBoardSnapshot(mkSnapshot(board, serial), client)
             }
-            const boardState = { board, recentEvents: [], serial }            
-            return boardState
+            return { ...board, serial }
         }
     })        
 }

@@ -3,34 +3,23 @@ import {
     AppEvent,
     isBoardItemEvent,
     isPersistableBoardItemEvent,
-    BoardCursorPositions,
-    exampleBoard,
-    Id,
     defaultBoardSize,
     isFullyFormedBoard,
     Serial,
     BoardHistoryEntry,
 } from "../../common/src/domain"
-import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-state"
+import { addBoard, getActiveBoards, getBoard, maybeGetBoard, updateBoards } from "./board-state"
 import {
     addSessionToBoard,
     broadcastBoardEvent,
     endSession,
     startSession,
     broadcastCursorPositions,
-    broadcastItemLocks,
     setNicknameForSession,
     getSessionUserInfo,
 } from "./sessions"
 import { getSignedPutUrl } from "./storage"
 import { obtainLock, releaseLocksFor } from "./locker"
-
-// TODO: purge these as well
-const positionShouldBeFlushedToClients = new Set()
-const cursorPositions: Record<Id, BoardCursorPositions> = {
-    [exampleBoard.id]: {},
-}
-
 
 export const connectionHandler = (socket: IO.Socket) => {
     socket.on("message", async (kind: string, event: any, ackFn) => {
@@ -50,9 +39,9 @@ export const connectionHandler = (socket: IO.Socket) => {
 
     socket.on("disconnect", () => {
         endSession(socket)
-        Object.keys(cursorPositions).forEach((boardId) => {
-            delete cursorPositions[boardId][socket.id]
-            positionShouldBeFlushedToClients.add(boardId)
+        getActiveBoards().forEach(state => {
+            delete state.cursorPositions[socket.id]
+            state.cursorsMoved = true
         })
         releaseLocksFor(socket)
     })
@@ -60,12 +49,10 @@ export const connectionHandler = (socket: IO.Socket) => {
 
 setInterval(() => {
     getActiveBoards().forEach((bh) => {
-        const b = bh.board
-        if (!cursorPositions[b.id] || !positionShouldBeFlushedToClients.has(b.id)) {
-            return
+        if (bh.cursorsMoved) {
+            broadcastCursorPositions(bh.board.id, bh.cursorPositions)
+            bh.cursorsMoved = false;
         }
-        broadcastCursorPositions(b.id, cursorPositions[b.id])
-        positionShouldBeFlushedToClients.delete(b.id)
     })
 }, 100)
 
@@ -98,9 +85,11 @@ async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent): Promise<Se
             case "cursor.move": {
                 const { boardId, position } = appEvent
                 const { x, y } = position
-                cursorPositions[boardId] = cursorPositions[boardId] || {}
-                cursorPositions[boardId][socket.id] = { x, y, userId: socket.id }
-                positionShouldBeFlushedToClients.add(boardId)
+                const state = maybeGetBoard(boardId)
+                if (state) {
+                    state.cursorPositions[socket.id] = { x, y, userId: socket.id }
+                    state.cursorsMoved = true
+                }
                 return
             }
             case "nickname.set": {

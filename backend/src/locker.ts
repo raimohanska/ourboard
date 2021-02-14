@@ -7,27 +7,24 @@ import {
     isPersistableBoardItemEvent,
     getItemIds,
 } from "../../common/src/domain"
+import { getActiveBoards, maybeGetBoard } from "./board-state"
 import { broadcastItemLocks } from "./sessions"
-
-
-// TODO: purge
-const locks: Record<Id, ItemLocks> = {
-    [exampleBoard.id]: {},
-}
 
 const LOCK_TTL_SECONDS = 10
 const lockTTL = new Map()
 
 function lockItem(boardId: Id, itemId: Id, userId: Id) {
-    locks[boardId] = locks[boardId] || {}
+    const state = maybeGetBoard(boardId)
+    if (!state) return false
+    const locks = state.locks
 
-    if (locks[boardId][itemId] && locks[boardId][itemId] !== userId) {
+    if (locks[itemId] && locks[itemId] !== userId) {
         return false
     }
 
-    if (!locks[boardId][itemId]) {
-        locks[boardId][itemId] = userId
-        broadcastItemLocks(boardId, locks)
+    if (!locks[itemId]) {
+        locks[itemId] = userId
+        broadcastItemLocks(state)
     }
 
     renewLease(boardId, itemId)
@@ -36,11 +33,13 @@ function lockItem(boardId: Id, itemId: Id, userId: Id) {
 }
 
 function unlockItem(boardId: Id, itemId: Id, userId: Id) {
-    locks[boardId] = locks[boardId] || {}
+    const state = maybeGetBoard(boardId)
+    if (!state) return false
+    const locks = state.locks
 
-    if (locks[boardId][itemId] === userId) {
-        delete locks[boardId][itemId]
-        broadcastItemLocks(boardId, locks)
+    if (locks[itemId] === userId) {
+        delete locks[itemId]
+        broadcastItemLocks(state)
         return true
     }
 
@@ -55,9 +54,14 @@ function renewLease(boardId: Id, itemId: Id) {
     lockTTL.set(
         itemId,
         setTimeout(() => {
-            locks[boardId] = locks[boardId] || {}
-            delete locks[boardId][itemId]
-            broadcastItemLocks(boardId, locks)
+            lockTTL.delete(itemId)
+            const state = maybeGetBoard(boardId)
+            if (!state) return false
+            const locks = state.locks
+            if (locks[boardId]) {
+                delete locks[itemId];
+            }
+            broadcastItemLocks(state);            
         }, LOCK_TTL_SECONDS * 1000),
     )
 }
@@ -80,12 +84,13 @@ export function obtainLock(e: BoardItemEvent, socket: IO.Socket) {
 }
 
 export function releaseLocksFor(socket: IO.Socket) {
-    Object.keys(locks).forEach((boardId) => {
-        for (const [itemId, userId] of Object.entries(locks[boardId])) {
+    getActiveBoards().forEach(state => {
+        const locks = state.locks
+        for (const [itemId, userId] of Object.entries(locks)) {
             if (socket.id === userId) {
-                delete locks[boardId][itemId]
+                delete locks[itemId]
             }
         }
-        broadcastItemLocks(boardId, locks)
+        broadcastItemLocks(state)
     })
 }
