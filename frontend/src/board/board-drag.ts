@@ -6,6 +6,7 @@ import { BoardFocus } from "./board-focus"
 import { Rect, overlaps, rectFromPoints } from "./geometry"
 import * as _ from "lodash"
 import { componentScope } from "harmaja"
+import { ControlMode } from "./BoardView"
 
 const ELSEWHERE = { type: "OTHER" } as const
 type Elsewhere = typeof ELSEWHERE
@@ -19,11 +20,13 @@ export function boardDragHandler({
     boardElem,
     coordinateHelper,
     board,
+    controlMode,
     focus,
 }: {
     boardElem: L.Property<HTMLElement | null>
     coordinateHelper: BoardCoordinateHelper
     board: L.Property<Board>
+    controlMode: L.Property<ControlMode>
     focus: L.Atom<BoardFocus>
 }) {
     let start: L.Atom<BoardCoordinates | null> = L.atom(null)
@@ -44,8 +47,12 @@ export function boardDragHandler({
     boardElem.forEach((el) => {
         if (!el) return
         el.addEventListener("dragstart", (e) => {
+            const mode = controlMode.get()
+            const shouldDragSelect = mode === "mouse" ? !!e.altKey : true
             dragAction.set(
-                !e.altKey ? { action: "move" } : { action: "select", selectedAtStart: new Set(), dragStartedOn: null },
+                !shouldDragSelect
+                    ? { action: "move" }
+                    : { action: "select", selectedAtStart: new Set(), dragStartedOn: null },
             )
             e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
 

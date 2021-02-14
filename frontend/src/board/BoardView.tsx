@@ -31,6 +31,12 @@ import { boardDragHandler } from "./board-drag"
 import { onClickOutside } from "../components/onClickOutside"
 import { itemSelectAllHandler } from "./item-select-all"
 
+export type ControlMode = "mouse" | "trackpad"
+export type ControlSettings = {
+    mode: ControlMode
+    hasUserManuallySetMode: boolean
+}
+
 export const BoardView = ({
     boardId,
     cursors,
@@ -62,6 +68,7 @@ export const BoardView = ({
     const latestNote = L.atom(newNote("Hello"))
     const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
     const coordinateHelper = boardCoordinateHelper(boardElement, scrollElement, zoom)
+    const controlSettings = L.atom<ControlSettings>({ mode: "mouse", hasUserManuallySetMode: false })
 
     focus.forEach((f) => {
         const itemIds = [...getSelectedIds(f)]
@@ -103,7 +110,7 @@ export const BoardView = ({
 
     onClickOutside(boardElement, () => focus.set({ status: "none" }))
 
-    const { viewRect } = boardScrollAndZoomHandler(boardElement, scrollElement, zoom, coordinateHelper)
+    const { viewRect } = boardScrollAndZoomHandler(boardElement, scrollElement, zoom, coordinateHelper, controlSettings)
 
     function onClick(e: JSX.MouseEvent) {
         if (e.target === boardElement.get()) {
@@ -147,12 +154,27 @@ export const BoardView = ({
         dispatch({ action: "cursor.move", position, boardId })
     })
 
-    const selectionRect = boardDragHandler({ ...{ board, boardElem: boardElement, coordinateHelper, focus, dispatch } })
+    const selectionRect = boardDragHandler({
+        ...{
+            board,
+            boardElem: boardElement,
+            coordinateHelper,
+            focus,
+            controlMode: L.view(controlSettings, (c) => c.mode),
+            dispatch,
+        },
+    })
 
     return (
         <div id="root" className="board-container">
             <div className="scroll-container" ref={scrollElement.set}>
-                <BoardViewHeader boardId={boardId} state={state} dispatch={dispatch} syncStatus={syncStatus} />
+                <BoardViewHeader
+                    boardId={boardId}
+                    state={state}
+                    dispatch={dispatch}
+                    syncStatus={syncStatus}
+                    controlSettings={controlSettings}
+                />
 
                 <div className="border-container" style={style}>
                     <div className="board" draggable={true} ref={boardRef} onClick={onClick}>
@@ -187,6 +209,7 @@ export const BoardView = ({
         boardId: string
         syncStatus: L.Property<SyncStatus>
         state: L.Property<BoardAppState>
+        controlSettings: L.Atom<ControlSettings>
         dispatch: Dispatch
     }) {
         return (
@@ -202,6 +225,27 @@ export const BoardView = ({
                     <PaletteView {...{ latestNote, onAdd, board, dispatch }} />
                     <span className="icon undo" title="Undo" onClick={() => dispatch({ action: "undo" })} />
                     <span className="icon redo" title="Redo" onClick={() => dispatch({ action: "redo" })} />
+                    {L.view(controlSettings, (settings) => (
+                        <div
+                            title="Trackpad mode: left click to select items, two-finger drag to move. Mouse mode: alt + left click to select items, left click to move."
+                            className="trackpad-mode-switch"
+                        >
+                            <label className="switch">
+                                <input
+                                    onChange={(e) =>
+                                        controlSettings.set({
+                                            mode: e.target.checked ? "trackpad" : "mouse",
+                                            hasUserManuallySetMode: true,
+                                        })
+                                    }
+                                    checked={settings.mode === "trackpad"}
+                                    type="checkbox"
+                                ></input>
+                                <span className="slider"></span>
+                            </label>
+                            <small>Trackpad mode</small>
+                        </div>
+                    ))}
                 </div>
 
                 <UserInfoView state={state} dispatch={dispatch} />

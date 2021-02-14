@@ -4,12 +4,14 @@ import _ from "lodash"
 import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import * as G from "./geometry"
+import { ControlSettings } from "./BoardView"
 
 export function boardScrollAndZoomHandler(
     boardElement: L.Property<HTMLElement | null>,
     scrollElement: L.Property<HTMLElement | null>,
     zoom: L.Atom<number>,
     coordinateHelper: BoardCoordinateHelper,
+    controlSettings: L.Atom<ControlSettings>,
 ) {
     const scrollEvent = scrollElement.pipe(
         L.changes,
@@ -62,12 +64,33 @@ export function boardScrollAndZoomHandler(
     function wheelZoomHandler(event: WheelEvent) {
         if (event.target === boardElement.get() || boardElement.get()!.contains(event.target as Node)) {
             const ctrlOrCmd = event.ctrlKey || event.metaKey
-            if (!event.deltaY || !ctrlOrCmd) return
-            event.preventDefault()
-            const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
-            const step = 1.04
-            zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 10))
-            coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
+
+            // Wheel-zoom, or two finger zoom gesture on trackpad
+            if (ctrlOrCmd && event.deltaY !== 0) {
+                event.preventDefault()
+                const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
+                const step = 1.04
+                zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 10))
+                coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
+            } else {
+                // If the user seems to be using a trackpad, and they haven't manually configured their control mode yet,
+                // Let's set the mode to 'trackpad' as a best-effort "works like you'd expect" UX thing
+                const settings = controlSettings.get()
+                if (settings.hasUserManuallySetMode || settings.mode === "trackpad") {
+                    // Don't automatically make decisions for user if they have already set mode manually,
+                    // Or if the mode is already trackpad
+                    return
+                }
+
+                // On Firefox event.deltaMode is 0 on trackpad, 1 on mouse. Other browsers always 0.
+                // So we guess that user using trackpad if deltaMode == 0 and both deltaY/deltaX are sufficiently small (mousewheel is more coarse)
+                const isTrackpad =
+                    event.deltaMode === 0 && Math.max(Math.abs(event.deltaX), Math.abs(event.deltaY)) <= 3
+
+                if (isTrackpad) {
+                    controlSettings.set({ ...settings, mode: "trackpad" })
+                }
+            }
         }
     }
     H.onMount(() => {
