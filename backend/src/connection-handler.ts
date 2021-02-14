@@ -18,16 +18,19 @@ import {
     setNicknameForSession,
     getSessionUserInfo,
 } from "./sessions"
-import { getSignedPutUrl } from "./storage"
 import { obtainLock, releaseLocksFor } from "./locker"
 
-export const connectionHandler = (socket: IO.Socket) => {
+export type ConnectionHandlerParams = Readonly<{
+    getSignedPutUrl: (key: string) => string
+}>
+
+export const connectionHandler = ({ getSignedPutUrl }: ConnectionHandlerParams) => (socket: IO.Socket) => {
     socket.on("message", async (kind: string, event: any, ackFn) => {
         // console.log("Received", kind, event)
         if (kind === "app-events") {
             const serials: (Serial | undefined)[] = []
             for (const e of event as AppEvent[]) {
-                serials.push(await handleAppEvent(socket, e))
+                serials.push(await handleAppEvent(socket, e, getSignedPutUrl))
             }
             ackFn?.(serials)
             return
@@ -56,7 +59,11 @@ setInterval(() => {
     })
 }, 100)
 
-async function handleAppEvent(socket: IO.Socket, appEvent: AppEvent): Promise<Serial | undefined> {
+async function handleAppEvent(
+    socket: IO.Socket,
+    appEvent: AppEvent,
+    getSignedPutUrl: (key: string) => string,
+): Promise<Serial | undefined> {
     if (isBoardItemEvent(appEvent)) {
         const gotLock = obtainLock(appEvent, socket)
         if (gotLock) {

@@ -7,13 +7,16 @@ import { connectionHandler } from "./connection-handler"
 import { initDB } from "./db"
 import fs from "fs"
 import path from "path"
-import * as config from "./config"
+import { getConfig } from "./config"
 import bodyParser from "body-parser"
 import { Board, createBoard } from "../../common/src/domain"
 import { addBoard } from "./board-state"
+import { createGetSignedPutUrl } from "./storage"
 
 const configureServer = () => {
     dotenv.config()
+
+    const config = getConfig()
 
     const app = express()
     let http = new Http.Server(app)
@@ -22,8 +25,8 @@ const configureServer = () => {
     app.use("/", express.static("../frontend/dist"))
     app.use("/", express.static("../frontend/public"))
 
-    if (config.STORAGE_BACKEND.type === "LOCAL") {
-        const localDirectory = config.STORAGE_BACKEND.directory
+    if (config.storageBackend.type === "LOCAL") {
+        const localDirectory = config.storageBackend.directory
         app.put("/assets/:id", (req, res) => {
             if (!req.params.id) {
                 return res.sendStatus(400)
@@ -75,7 +78,7 @@ const configureServer = () => {
         res.json(boardWithHistory.board)
     })
 
-    io.on("connection", connectionHandler)
+    io.on("connection", connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) }))
 
     return http
 }
