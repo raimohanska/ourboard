@@ -7,7 +7,7 @@ import { connectionHandler } from "./connection-handler"
 import { initDB } from "./db"
 import fs from "fs"
 import path from "path"
-import config from "./config"
+import * as config from "./config"
 import bodyParser from "body-parser"
 import { Board, createBoard } from "../../common/src/domain"
 import { addBoard } from "./board-state"
@@ -21,13 +21,14 @@ let io = IO(http)
 app.use("/", express.static("../frontend/dist"))
 app.use("/", express.static("../frontend/public"))
 
-if (config.STORAGE_BACKEND === "LOCAL") {
+if (config.STORAGE_BACKEND.type === "LOCAL") {
+    const localDirectory = config.STORAGE_BACKEND.directory
     app.put("/assets/:id", (req, res) => {
         if (!req.params.id) {
             return res.sendStatus(400)
         }
 
-        const w = fs.createWriteStream(config.LOCAL_FILES_DIR + "/" + req.params.id)
+        const w = fs.createWriteStream(localDirectory + "/" + req.params.id)
 
         req.pipe(w)
 
@@ -39,7 +40,7 @@ if (config.STORAGE_BACKEND === "LOCAL") {
             res.sendStatus(500)
         })
     })
-    app.use("/assets", express.static(config.LOCAL_FILES_DIR))
+    app.use("/assets", express.static(localDirectory))
 }
 app.get("/assets/external", (req, res) => {
     const src = req.query.src
