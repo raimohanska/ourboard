@@ -12,74 +12,79 @@ import bodyParser from "body-parser"
 import { Board, createBoard } from "../../common/src/domain"
 import { addBoard } from "./board-state"
 
-dotenv.config()
+const configureServer = () => {
+    dotenv.config()
 
-const app = express()
-let http = new Http.Server(app)
-let io = IO(http)
+    const app = express()
+    let http = new Http.Server(app)
+    let io = IO(http)
 
-app.use("/", express.static("../frontend/dist"))
-app.use("/", express.static("../frontend/public"))
+    app.use("/", express.static("../frontend/dist"))
+    app.use("/", express.static("../frontend/public"))
 
-if (config.STORAGE_BACKEND.type === "LOCAL") {
-    const localDirectory = config.STORAGE_BACKEND.directory
-    app.put("/assets/:id", (req, res) => {
-        if (!req.params.id) {
-            return res.sendStatus(400)
-        }
+    if (config.STORAGE_BACKEND.type === "LOCAL") {
+        const localDirectory = config.STORAGE_BACKEND.directory
+        app.put("/assets/:id", (req, res) => {
+            if (!req.params.id) {
+                return res.sendStatus(400)
+            }
 
-        const w = fs.createWriteStream(localDirectory + "/" + req.params.id)
+            const w = fs.createWriteStream(localDirectory + "/" + req.params.id)
 
-        req.pipe(w)
+            req.pipe(w)
 
-        req.on("end", () => {
-            !res.headersSent && res.sendStatus(200)
+            req.on("end", () => {
+                !res.headersSent && res.sendStatus(200)
+            })
+
+            w.on("error", () => {
+                res.sendStatus(500)
+            })
         })
-
-        w.on("error", () => {
-            res.sendStatus(500)
-        })
-    })
-    app.use("/assets", express.static(localDirectory))
-}
-app.get("/assets/external", (req, res) => {
-    const src = req.query.src
-    if (typeof src !== "string" || ["http://", "https://"].every((prefix) => !src.startsWith(prefix)))
-        return res.send(400)
-    const protocol = src.startsWith("https://") ? Https : Http
-
-    protocol
-        .request(src, (upstreamResponse) => {
-            res.writeHead(upstreamResponse.statusCode!, upstreamResponse.headers)
-            upstreamResponse
-                .pipe(res, {
-                    end: true,
-                })
-                .on("error", (err) => res.status(500).send(err.message))
-        })
-        .end()
-})
-
-app.get("/b/:boardId", async (req, res) => {
-    res.sendFile(path.resolve("../frontend/dist/index.html"))
-})
-
-app.post("/api/v1/board", bodyParser.json(), async (req, res) => {
-    let { name } = req.body
-    if (!name) {
-        res.status(400).send('Expecting JSON document containing the field "name".')
+        app.use("/assets", express.static(localDirectory))
     }
-    let board: Board = createBoard(name)
-    const boardWithHistory = await addBoard(board)
-    res.json(boardWithHistory.board)
-})
+    app.get("/assets/external", (req, res) => {
+        const src = req.query.src
+        if (typeof src !== "string" || ["http://", "https://"].every((prefix) => !src.startsWith(prefix)))
+            return res.send(400)
+        const protocol = src.startsWith("https://") ? Https : Http
 
-io.on("connection", connectionHandler)
+        protocol
+            .request(src, (upstreamResponse) => {
+                res.writeHead(upstreamResponse.statusCode!, upstreamResponse.headers)
+                upstreamResponse
+                    .pipe(res, {
+                        end: true,
+                    })
+                    .on("error", (err) => res.status(500).send(err.message))
+            })
+            .end()
+    })
+
+    app.get("/b/:boardId", async (req, res) => {
+        res.sendFile(path.resolve("../frontend/dist/index.html"))
+    })
+
+    app.post("/api/v1/board", bodyParser.json(), async (req, res) => {
+        let { name } = req.body
+        if (!name) {
+            res.status(400).send('Expecting JSON document containing the field "name".')
+        }
+        let board: Board = createBoard(name)
+        const boardWithHistory = await addBoard(board)
+        res.json(boardWithHistory.board)
+    })
+
+    io.on("connection", connectionHandler)
+
+    return http
+}
 
 const port = process.env.PORT || 1337
 
 initDB()
     .then(() => {
+        const http = configureServer()
         http.listen(port, () => {
             console.log("Listening on port " + port)
         })
