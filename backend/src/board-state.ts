@@ -8,6 +8,7 @@ import {
     Serial
 } from "../../common/src/domain"
 import { createBoard, fetchBoard, saveRecentEvents } from "./board-store"
+import { getBoardSessionCount } from "./sessions"
 
 // A mutable state object for server side state
 export type ServerSideBoardState = {
@@ -60,29 +61,32 @@ export async function addBoard(board: Board): Promise<ServerSideBoardState> {
     return boardState
 }
 
-export function deactivateBoard(id: Id) {
-    console.log(`Purging board ${id} from memory`)
-    boards.delete(id)
-}
-
 export function getActiveBoards() {
     return boards
 }
 
 async function saveBoards() {
     for (let state of boards.values()) {
-        if (state.recentEvents.length > 0) {
-            const eventsToSave = state.recentEvents.splice(0)
-            try {
-                await saveRecentEvents(state.board.id, eventsToSave)
-            } catch (e) {
-                // Push event back to the head of save list for retrying later
-                state.recentEvents = [...eventsToSave, ...state.recentEvents]
-                console.error("Board save failed for board", state.board.id, e)
-            }
-        }
+        await saveBoardChanges(state)
     }
     setTimeout(saveBoards, 1000)
+}
+
+async function saveBoardChanges(state: ServerSideBoardState) {
+    if (state.recentEvents.length > 0) {
+        const eventsToSave = state.recentEvents.splice(0)
+        try {
+            await saveRecentEvents(state.board.id, eventsToSave)
+        } catch (e) {
+            // Push event back to the head of save list for retrying later
+            state.recentEvents = [...eventsToSave, ...state.recentEvents]
+            console.error("Board save failed for board", state.board.id, e)
+        }    
+    }
+    if (getBoardSessionCount(state.board.id) == 0) {
+        console.log(`Purging board ${state.board.id} from memory`)
+        boards.delete(state.board.id)
+    }
 }
 
 setInterval(() => {

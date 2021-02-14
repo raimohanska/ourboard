@@ -5,7 +5,7 @@ import {
     EventUserInfo, Id, InitBoardDiff, InitBoardNew, ItemLocks,
     Serial, SetNickname
 } from "../../common/src/domain"
-import { deactivateBoard, ServerSideBoardState } from "./board-state"
+import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory } from "./board-store"
 import { randomProfession } from "./professions"
 
@@ -29,12 +29,9 @@ export function startSession(socket: IO.Socket) {
 export function endSession(socket: IO.Socket) {
     const boards = sessions[socket.id].boards
     delete sessions[socket.id]
-
-    boards.forEach(b => {
-        if (everyoneOnTheBoard(b).length === 0) {
-            deactivateBoard(b)
-        }
-    })
+}
+export function getBoardSessionCount(id: Id) {
+    return everyoneOnTheBoard(id).length
 }
 export function getSessionUserInfo(socket: IO.Socket): EventUserInfo {
     const nickname = sessions[socket.id].nickname
