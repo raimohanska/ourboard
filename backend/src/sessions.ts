@@ -14,14 +14,17 @@ import {
 } from "../../common/src/domain"
 import { InitBoardNew, InitBoardDiff } from "../../common/src/domain"
 import { randomProfession } from "./professions"
-import { getBoardHistory, ServerSideBoardState } from "./board-store"
+import { deactivateBoard, getBoardHistory, ServerSideBoardState } from "./board-store"
 
 type UserSession = {
     socket: IO.Socket
     boards: Id[]
     nickname: string
 }
-const sessions: Record<string, UserSession> = {}
+
+export type SocketId = string;
+
+const sessions: Record<SocketId, UserSession> = {}
 
 const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter((s) => s.boards.includes(boardId))
 const everyoneElseOnTheSameBoard = (boardId: Id, sender?: IO.Socket) =>
@@ -33,6 +36,12 @@ export function startSession(socket: IO.Socket) {
 export function endSession(socket: IO.Socket) {
     const boards = sessions[socket.id].boards
     delete sessions[socket.id]
+
+    boards.forEach(b => {
+        if (everyoneOnTheBoard(b).length === 0) {
+            deactivateBoard(b)
+        }
+    })
 }
 export function getSessionUserInfo(socket: IO.Socket): EventUserInfo {
     const nickname = sessions[socket.id].nickname

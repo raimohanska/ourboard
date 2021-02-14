@@ -13,19 +13,19 @@ import {
 import { migrateBoardWithHistory } from "../../common/src/migration"
 import { inTransaction, withDBClient } from "./db"
 
-let updateQueue: Set<Id> = new Set()
 export type ServerSideBoardState = {
     board: Board,
     serial: Serial,
     recentEvents: BoardHistoryEntry[]
 }
 
+let updateQueue: Set<Id> = new Set()
 let boards: Map<Id, ServerSideBoardState> = new Map()
 
 export async function getBoard(id: Id): Promise<ServerSideBoardState> {
     let board = boards.get(id)
     if (board) return board
-    console.log("GET BOARD " + id)
+    console.log(`Loading board ${id} into memory`)
     return await inTransaction(async client => {
         const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id]);
         if (result.rows.length == 0) {
@@ -62,6 +62,12 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
             return boardState
         }
     })        
+}
+
+export function deactivateBoard(id: Id) {
+    console.log(`Purging board ${id} from memory`)
+    boards.delete(id)
+    updateQueue.delete(id)
 }
 
 async function migrateLegacyHistory(id: Id, history: BoardHistoryEntry[], client: PoolClient) {
