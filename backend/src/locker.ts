@@ -9,6 +9,8 @@ import {
 } from "../../common/src/domain"
 import { broadcastItemLocks } from "./sessions"
 
+
+// TODO: purge
 const locks: Record<Id, ItemLocks> = {
     [exampleBoard.id]: {},
 }

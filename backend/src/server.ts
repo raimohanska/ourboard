@@ -10,7 +10,7 @@ import path from "path"
 import config from "./config"
 import bodyParser from "body-parser"
 import { Board, createBoard } from "../../common/src/domain"
-import { addBoard } from "./board-store"
+import { addBoard } from "./board-state"
 
 const app = express()
 let http = new Http.Server(app)

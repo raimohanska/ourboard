@@ -11,7 +11,7 @@ import {
     Serial,
     BoardHistoryEntry,
 } from "../../common/src/domain"
-import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-store"
+import { addBoard, getActiveBoards, getBoard, updateBoards } from "./board-state"
 import {
     addSessionToBoard,
     broadcastBoardEvent,
@@ -24,6 +24,13 @@ import {
 } from "./sessions"
 import { getSignedPutUrl } from "./storage"
 import { obtainLock, releaseLocksFor } from "./locker"
+
+// TODO: purge these as well
+const positionShouldBeFlushedToClients = new Set()
+const cursorPositions: Record<Id, BoardCursorPositions> = {
+    [exampleBoard.id]: {},
+}
+
 
 export const connectionHandler = (socket: IO.Socket) => {
     socket.on("message", async (kind: string, event: any, ackFn) => {
@@ -49,11 +56,6 @@ export const connectionHandler = (socket: IO.Socket) => {
         })
         releaseLocksFor(socket)
     })
-}
-
-const positionShouldBeFlushedToClients = new Set()
-const cursorPositions: Record<Id, BoardCursorPositions> = {
-    [exampleBoard.id]: {},
 }
 
 setInterval(() => {

@@ -1,31 +1,16 @@
 import { PoolClient } from "pg"
-import { boardHistoryReducer } from "../../common/src/board-history-reducer"
 import { boardReducer } from "../../common/src/board-reducer"
 import {
     Board,
-    BoardAttributes,
     BoardHistoryEntry,
     exampleBoard,
     Id,
-    Item,
-    Serial,
+    Serial
 } from "../../common/src/domain"
-import { migrateBoardWithHistory } from "../../common/src/migration"
+import { ServerSideBoardState } from "./board-state"
 import { inTransaction, withDBClient } from "./db"
 
-export type ServerSideBoardState = {
-    board: Board,
-    serial: Serial,
-    recentEvents: BoardHistoryEntry[]
-}
-
-let updateQueue: Set<Id> = new Set()
-let boards: Map<Id, ServerSideBoardState> = new Map()
-
-export async function getBoard(id: Id): Promise<ServerSideBoardState> {
-    let board = boards.get(id)
-    if (board) return board
-    console.log(`Loading board ${id} into memory`)
+export async function fetchBoard(id: Id): Promise<ServerSideBoardState> {
     return await inTransaction(async client => {
         const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id]);
         if (result.rows.length == 0) {
@@ -57,17 +42,25 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
             if (history.length > 1000) {                
                 await saveBoardSnapshot(mkSnapshot(board, serial), client)
             }
-            const boardState = { board, recentEvents: [], serial }
-            boards.set(boardState.board.id, boardState)
+            const boardState = { board, recentEvents: [], serial }            
             return boardState
         }
     })        
 }
 
-export function deactivateBoard(id: Id) {
-    console.log(`Purging board ${id} from memory`)
-    boards.delete(id)
-    updateQueue.delete(id)
+export async function createBoard(board: Board): Promise<void> {
+    await withDBClient(async client => {
+        const result = await client.query("SELECT id FROM board WHERE id=$1", [board.id])
+        if (result.rows.length > 0) throw Error("Board already exists: " + board.id)
+        client.query(
+            `INSERT INTO board(id, name, content) VALUES ($1, $2, $3)`,
+            [board.id, board.name, mkSnapshot(board, 0)],
+        )
+    })
+}
+
+export async function saveRecentEvents(id: Id, recentEvents: BoardHistoryEntry[] ) {    
+    await inTransaction(async (client) => storeEventHistoryBundle(id, recentEvents, client))
 }
 
 async function migrateLegacyHistory(id: Id, history: BoardHistoryEntry[], client: PoolClient) {
@@ -94,9 +87,6 @@ export async function getFullBoardHistory(id: Id, client: PoolClient): Promise<B
 
 export async function getBoardHistory(id: Id, afterSerial: Serial): Promise<BoardHistoryEntry[]> {
     return withDBClient(async client => {
-        // TODO: still fails when there are no more recent events. This should be recognized, maybe by a serial field in board table?
-
-
         const historyEvents = (await client.query(
             `SELECT events FROM board_event WHERE board_id=$1 AND last_serial > $2 ORDER BY last_serial`,
             [id, afterSerial]
@@ -116,75 +106,7 @@ export async function getBoardHistory(id: Id, afterSerial: Serial): Promise<Boar
     })
 }
 
-function buildBoardFromHistory(boardAttributes: BoardAttributes, history: BoardHistoryEntry[]): Board {
-    const emptyBoard = { ...boardAttributes, items: [] as Item[] } as Board
-    const resultBoard = history.reduce((b, e) => boardReducer(b, e)[0], emptyBoard)
-    return resultBoard
-}
-
-export async function updateBoards(appEvent: BoardHistoryEntry) {
-    const boardState = await getBoard(appEvent.boardId)
-    const currentSerial = boardState.serial
-    const serial = currentSerial + 1
-    if (appEvent.serial !== undefined) {
-        throw Error("Event already has serial")
-    }
-    const eventWithSerial = { ...appEvent, serial }
-    const updatedBoard = boardReducer(boardState.board, eventWithSerial)[0]
-    const updatedBoardState = { board: updatedBoard, recentEvents: boardState.recentEvents.concat([eventWithSerial]), serial }
-    markForSave(updatedBoardState)
-    return serial
-}
-
-export async function addBoard(board: Board): Promise<ServerSideBoardState> {
-    const result = await withDBClient((client) => client.query("SELECT id FROM board WHERE id=$1", [board.id]))
-    if (result.rows.length > 0) throw Error("Board already exists: " + board.id)
-    const boardState = { board, serial: 0, recentEvents: [] }
-    markForSave(boardState)
-    return boardState
-}
-
-export function getActiveBoards() {
-    return boards
-}
-
-function markForSave(board: ServerSideBoardState) {
-    const id = board.board.id
-    boards.set(id, board)
-    updateQueue.add(id)
-}
-
-setInterval(saveBoards, 1000)
-
-async function saveBoards() {
-    while (updateQueue.size > 0) {
-        const id = updateQueue.values().next().value
-        updateQueue.delete(id)
-        await saveBoard(boards.get(id)!)
-    }
-}
-
 type BoardSnapshot = Board & { serial: Serial }
-
-async function saveBoard(boardState: ServerSideBoardState) {
-    const { serial, board, recentEvents } = boardState
-    try {
-        await inTransaction(async (client) => {
-            console.log(`Save board ${board.id} at serial ${serial}`)
-            if (serial === 0) {
-                client.query(
-                    `INSERT INTO board(id, name, content) VALUES ($1, $2, $3)`,
-                    [board.id, board.name, mkSnapshot(board, serial)],
-                )
-            } else {
-                await storeEventHistoryBundle(board.id, recentEvents, client)
-            }
-        })
-        boards.set( board.id, { ...boardState, recentEvents: [] } )
-    } catch (e) {
-        console.error("Board save failed for board", board.id, e)
-    }
-}
 
 function mkSnapshot(board: Board, serial: Serial) {
     return { ...board, serial }

@@ -14,7 +14,8 @@ import {
 } from "../../common/src/domain"
 import { InitBoardNew, InitBoardDiff } from "../../common/src/domain"
 import { randomProfession } from "./professions"
-import { deactivateBoard, getBoardHistory, ServerSideBoardState } from "./board-store"
+import { deactivateBoard, ServerSideBoardState } from "./board-state"
+import { getBoardHistory } from "./board-store"
 
 type UserSession = {
     socket: IO.Socket
