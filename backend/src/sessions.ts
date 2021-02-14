@@ -27,8 +27,8 @@ const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter((
 const everyoneElseOnTheSameBoard = (boardId: Id, sender?: IO.Socket) =>
     Object.values(sessions).filter((s) => s.socket !== sender && s.boards.includes(boardId))
 
-export function startSession(socket: IO.Socket, boards: Id[]) {
-    sessions[socket.id] = { socket, boards, nickname: "Anonymous " + randomProfession() }
+export function startSession(socket: IO.Socket) {
+    sessions[socket.id] = { socket, boards: [], nickname: "Anonymous " + randomProfession() }
 }
 export function endSession(socket: IO.Socket) {
     const boards = sessions[socket.id].boards

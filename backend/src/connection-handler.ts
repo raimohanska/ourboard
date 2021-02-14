@@ -39,7 +39,7 @@ export const connectionHandler = (socket: IO.Socket) => {
         console.warn("Unhandled message", kind, event)
     })
 
-    startSession(socket, [])
+    startSession(socket)
 
     socket.on("disconnect", () => {
         endSession(socket)
