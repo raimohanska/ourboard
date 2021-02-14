@@ -111,7 +111,12 @@ export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Seri
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
 export type InitBoardNew = { action: "board.init"; board: Board }
-export type InitBoardDiff = { action: "board.init"; recentEvents: BoardHistoryEntry[]; boardAttributes: BoardAttributes; initAtSerial: Serial }
+export type InitBoardDiff = {
+    action: "board.init"
+    recentEvents: BoardHistoryEntry[]
+    boardAttributes: BoardAttributes
+    initAtSerial: Serial
+}
 export type RenameBoard = { action: "board.rename"; boardId: Id; name: string }
 export type CursorMove = { action: "cursor.move"; position: CursorPosition; boardId: Id }
 export type SetNickname = { action: "nickname.set"; nickname: string; userId: string }

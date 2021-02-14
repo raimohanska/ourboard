@@ -39,7 +39,7 @@ export const connectionHandler = (socket: IO.Socket) => {
 
     socket.on("disconnect", () => {
         endSession(socket)
-        getActiveBoards().forEach(state => {
+        getActiveBoards().forEach((state) => {
             delete state.cursorPositions[socket.id]
             state.cursorsMoved = true
         })
@@ -51,7 +51,7 @@ setInterval(() => {
     getActiveBoards().forEach((bh) => {
         if (bh.cursorsMoved) {
             broadcastCursorPositions(bh.board.id, bh.cursorPositions)
-            bh.cursorsMoved = false;
+            bh.cursorsMoved = false
         }
     })
 }, 100)

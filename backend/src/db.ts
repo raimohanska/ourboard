@@ -37,10 +37,10 @@ export async function initDB() {
 export async function withDBClient<T>(f: (client: PoolClient) => Promise<T>): Promise<T> {
     const client = await connectionPool.connect()
     try {
-        await client.query('BEGIN;SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;');
+        await client.query("BEGIN;SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;")
         return f(client)
     } finally {
-        await client.query("ROLLBACK;");
+        await client.query("ROLLBACK;")
         client.release()
     }
 }
@@ -51,12 +51,12 @@ export async function inTransaction<T>(f: (client: PoolClient) => Promise<T>): P
         await client.query(`
             BEGIN;
             SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE;
-        `);
+        `)
         const result = await f(client)
-        await client.query("COMMIT;");
+        await client.query("COMMIT;")
         return result
     } catch (e) {
-        await client.query("ROLLBACK;");
+        await client.query("ROLLBACK;")
         throw e
     } finally {
         client.release()

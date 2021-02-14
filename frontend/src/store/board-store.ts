@@ -22,8 +22,8 @@ import { foldActions } from "../../../common/src/action-folding"
 import MessageQueue from "./message-queue"
 import { buildBoardFromHistory } from "../../../common/src/migration"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
-import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
-import { boardReducer } from "../../../common/src/board-reducer";
+import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
+import { boardReducer } from "../../../common/src/board-reducer"
 
 export type BoardAppState = {
     board: Board | undefined
@@ -125,26 +125,22 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
             }
             return { ...state, board, history }
         } else if (event.action === "board.init") {
-            
             if ("initAtSerial" in event) {
-                console.log(
-                    "Init at",
-                    event.initAtSerial,
-                    "with",
-                    event.recentEvents.length + " new events"
-                )
+                console.log("Init at", event.initAtSerial, "with", event.recentEvents.length + " new events")
                 const boardId = event.boardAttributes.id
                 const localState = getInitialBoardState(boardId)
                 if (!localState) throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
-                if (localState.serial != event.initAtSerial) throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localState.serial}`)
-                
+                if (localState.serial != event.initAtSerial)
+                    throw Error(
+                        `Trying to init at ${event.initAtSerial} with local board state at ${localState.serial}`,
+                    )
+
                 const initialBoard = { ...localState.boardWithHistory.board, ...event.boardAttributes } as Board
                 const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
-                return { ...state, board, history: localState.boardWithHistory.history.concat(event.recentEvents) }            
+                return { ...state, board, history: localState.boardWithHistory.history.concat(event.recentEvents) }
             } else {
                 console.log("Init as new board")
                 return { ...state, board: event.board, history: [] }
-
             }
         } else if (event.action === "board.join.ack") {
             let nickname = event.nickname

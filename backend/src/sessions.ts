@@ -1,9 +1,15 @@
 import IO from "socket.io"
 import {
-    BoardHistoryEntry, CursorPosition,
+    BoardHistoryEntry,
+    CursorPosition,
     CURSOR_POSITIONS_ACTION_TYPE,
-    EventUserInfo, Id, InitBoardDiff, InitBoardNew, ItemLocks,
-    Serial, SetNickname
+    EventUserInfo,
+    Id,
+    InitBoardDiff,
+    InitBoardNew,
+    ItemLocks,
+    Serial,
+    SetNickname,
 } from "../../common/src/domain"
 import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory } from "./board-store"
@@ -15,7 +21,7 @@ type UserSession = {
     nickname: string
 }
 
-export type SocketId = string;
+export type SocketId = string
 
 const sessions: Record<SocketId, UserSession> = {}
 
@@ -38,7 +44,10 @@ export function getSessionUserInfo(socket: IO.Socket): EventUserInfo {
     return { userType: "unidentified", nickname }
 }
 
-async function createBoardInit(boardState: ServerSideBoardState, initAtSerial?: Serial): Promise<InitBoardNew | InitBoardDiff> {
+async function createBoardInit(
+    boardState: ServerSideBoardState,
+    initAtSerial?: Serial,
+): Promise<InitBoardNew | InitBoardDiff> {
     if (initAtSerial) {
         const { items, ...boardAttributes } = boardState.board
         const recentEvents = await getBoardHistory(boardState.board.id, initAtSerial)
@@ -124,7 +133,8 @@ export const broadcastItemLocks = (() => {
     let timeouts: Record<Id, NodeJS.Timeout | undefined> = {}
     return function _broadcastItemLocks(state: ServerSideBoardState) {
         const boardId = state.board.id
-        if (typeof timeouts[boardId] === "number") { // <- WTF?
+        if (typeof timeouts[boardId] === "number") {
+            // <- WTF?
             return
         }
         timeouts[boardId] = setTimeout(() => {

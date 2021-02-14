@@ -59,9 +59,9 @@ function renewLease(boardId: Id, itemId: Id) {
             if (!state) return false
             const locks = state.locks
             if (locks[boardId]) {
-                delete locks[itemId];
+                delete locks[itemId]
             }
-            broadcastItemLocks(state);            
+            broadcastItemLocks(state)
         }, LOCK_TTL_SECONDS * 1000),
     )
 }
@@ -84,7 +84,7 @@ export function obtainLock(e: BoardItemEvent, socket: IO.Socket) {
 }
 
 export function releaseLocksFor(socket: IO.Socket) {
-    getActiveBoards().forEach(state => {
+    getActiveBoards().forEach((state) => {
         const locks = state.locks
         for (const [itemId, userId] of Object.entries(locks)) {
             if (socket.id === userId) {

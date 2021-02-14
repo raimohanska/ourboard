@@ -1,22 +1,15 @@
 import { boardReducer } from "../../common/src/board-reducer"
-import {
-    Board,
-    BoardCursorPositions,
-    BoardHistoryEntry,
-    Id,
-    ItemLocks,
-    Serial
-} from "../../common/src/domain"
+import { Board, BoardCursorPositions, BoardHistoryEntry, Id, ItemLocks, Serial } from "../../common/src/domain"
 import { createBoard, fetchBoard, saveRecentEvents } from "./board-store"
 import { getBoardSessionCount } from "./sessions"
 
 // A mutable state object for server side state
 export type ServerSideBoardState = {
-    board: Board,
-    serial: Serial,
-    recentEvents: BoardHistoryEntry[],
-    locks: ItemLocks,
-    cursorsMoved: boolean,
+    board: Board
+    serial: Serial
+    recentEvents: BoardHistoryEntry[]
+    locks: ItemLocks
+    cursorsMoved: boolean
     cursorPositions: BoardCursorPositions
 }
 
@@ -27,10 +20,10 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
     if (!state) {
         console.log(`Loading board ${id} into memory`)
         const board = await fetchBoard(id)
-        state = { board, serial: board.serial, recentEvents: [], locks: {}, cursorsMoved: false, cursorPositions: {} }
+        state = { board, serial: board.serial, recentEvents: [], locks: {}, cursorsMoved: false, cursorPositions: {} }
         boards.set(board.id, state)
     }
-    return state    
+    return state
 }
 
 export function maybeGetBoard(id: Id): ServerSideBoardState | undefined {
@@ -46,7 +39,6 @@ export async function updateBoards(appEvent: BoardHistoryEntry) {
     }
     const eventWithSerial = { ...appEvent, serial }
     const updatedBoard = boardReducer(boardState.board, eventWithSerial)[0]
-
 
     boardState.board = updatedBoard
     boardState.recentEvents.push(eventWithSerial)
@@ -81,7 +73,7 @@ async function saveBoardChanges(state: ServerSideBoardState) {
             // Push event back to the head of save list for retrying later
             state.recentEvents = [...eventsToSave, ...state.recentEvents]
             console.error("Board save failed for board", state.board.id, e)
-        }    
+        }
     }
     if (getBoardSessionCount(state.board.id) == 0) {
         console.log(`Purging board ${state.board.id} from memory`)
