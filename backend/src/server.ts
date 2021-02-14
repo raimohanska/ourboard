@@ -1,4 +1,4 @@
-require("dotenv").config()
+import dotenv from "dotenv"
 import express from "express"
 import * as Http from "http"
 import * as Https from "https"
@@ -11,6 +11,8 @@ import config from "./config"
 import bodyParser from "body-parser"
 import { Board, createBoard } from "../../common/src/domain"
 import { addBoard } from "./board-state"
+
+dotenv.config()
 
 const app = express()
 let http = new Http.Server(app)
