@@ -25,8 +25,8 @@
     "uuid4": "^2.0.2"
   },
   "scripts": {
-    "start": "node .",
-    "start:dev": "tsc-watch --onSuccess \"node .\" --preserveWatchOutput",
+    "start": "node --enable-source-maps .",
+    "start:dev": "tsc-watch --onSuccess \"node --enable-source-maps .\" --preserveWatchOutput",
     "build": "tsc"
   },
   "engines": {
