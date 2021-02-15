@@ -225,27 +225,8 @@ export const BoardView = ({
                     <PaletteView {...{ latestNote, onAdd, board, dispatch }} />
                     <span className="icon undo" title="Undo" onClick={() => dispatch({ action: "undo" })} />
                     <span className="icon redo" title="Redo" onClick={() => dispatch({ action: "redo" })} />
-                    {L.view(controlSettings, (settings) => (
-                        <div
-                            title="Trackpad mode: left click to select items, two-finger drag to move. Mouse mode: alt + left click to select items, left click to move."
-                            className="trackpad-mode-switch"
-                        >
-                            <label className="switch">
-                                <input
-                                    onChange={(e) =>
-                                        controlSettings.set({
-                                            mode: e.target.checked ? "trackpad" : "mouse",
-                                            hasUserManuallySetMode: true,
-                                        })
-                                    }
-                                    checked={settings.mode === "trackpad"}
-                                    type="checkbox"
-                                ></input>
-                                <span className="slider"></span>
-                            </label>
-                            <small>Trackpad mode</small>
-                        </div>
-                    ))}
+                    <span className={L.view(controlSettings, s => s.mode === "trackpad" ? "icon cursor-arrow active" : "icon cursor-arrow")} title="Select tool" onClick={() => controlSettings.set({ mode: "trackpad" , hasUserManuallySetMode: true })} />
+                    <span className={L.view(controlSettings, s => s.mode === "mouse" ? "icon pan active" : "icon pan")} title="Pan tool" onClick={() => controlSettings.set({ mode: "mouse", hasUserManuallySetMode: true })} />                    
                 </div>
 
                 <UserInfoView state={state} dispatch={dispatch} />

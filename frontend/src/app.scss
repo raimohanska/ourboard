@@ -176,6 +176,21 @@ a {
                     margin-left: 0.5em;
                 }
                 cursor: pointer;
+                position: relative;
+                &.active {
+                    &:after {
+                        content: "";
+                        position: absolute;
+                        pointer-events: none;
+                        border-bottom: 2px solid black;
+                        top: 0;
+                        margin-bottom: -4px;
+                        z-index: -1;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                    }                    
+                }
             }
             .palette {
                 margin-left: 0.5em;
@@ -705,6 +720,14 @@ a {
     &.history {
         @extend .material-icons;
         @include material-icon("history");
+    }
+    &.pan {
+        @extend .material-icons;
+        @include material-icon("pan_tool");
+        font-size: 0.9em;
+    }
+    &.cursor-arrow {
+        background-image: url(img/cursor-arrow.svg);
     }
     &.disabled {
         pointer-events: none;
