@@ -30,6 +30,7 @@ import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { boardDragHandler } from "./board-drag"
 import { onClickOutside } from "../components/onClickOutside"
 import { itemSelectAllHandler } from "./item-select-all"
+import { localStorageAtom } from "./local-storage-atom"
 
 export type ControlMode = "mouse" | "trackpad"
 export type ControlSettings = {
@@ -68,7 +69,7 @@ export const BoardView = ({
     const latestNote = L.atom(newNote("Hello"))
     const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
     const coordinateHelper = boardCoordinateHelper(boardElement, scrollElement, zoom)
-    const controlSettings = L.atom<ControlSettings>({ mode: "mouse", hasUserManuallySetMode: false })
+    const controlSettings = localStorageAtom<ControlSettings>("controlSettings", { mode: "mouse", hasUserManuallySetMode: false })
 
     focus.forEach((f) => {
         const itemIds = [...getSelectedIds(f)]
