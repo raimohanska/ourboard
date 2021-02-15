@@ -25,34 +25,46 @@ export function synchronizeFocusWithServer(
     dispatch: Dispatch,
 ): L.Atom<BoardFocus> {
     // represents the raw user selection, including possible illegal selections
-    const rawFocus = L.atom<BoardFocus>({ status: "none" })
+    const focusRequest = L.bus<BoardFocus>()
+    type CircumStances = { locks: ItemLocks, userId: string | null, board: Board }
 
-    // selection where illegal (locked) items are removed
-    const resolvedFocus = L.pipe(
-        L.combine(
-            locks,
-            rawFocus,
-            userId,
-            board,
-            (locks: ItemLocks, focus: BoardFocus, user: string | null, b: Board): BoardFocus => {
-                if (!user) return { status: "none" }
-                const itemsWhereSomeoneElseHasLock = new Set(
-                    Object.keys(locks).filter((itemId) => locks[itemId] !== user),
-                )
+    // Circumstances that limit the possible focused selection set
+    const circumstances: L.Property<CircumStances> = L.combineTemplate({
+        locks,
+        userId,
+        board
+    })
 
-                return removeNonExistingFromSelection(
-                    removeFromSelection(focus, itemsWhereSomeoneElseHasLock),
-                    new Set(b.items.map((i) => i.id)),
-                )
-            },
-        ),
-        L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope),
+    // update focus on new request as well as change to circumstances
+    const events = L.merge(
+        focusRequest,
+        circumstances.pipe(L.changes)
     )
+    
+    // selection where illegal (locked) items are removed
+    const resolvedFocus = events.pipe(
+        L.scan({ status: "none" } as BoardFocus, (currentFocus, event) => {
+            return narrowFocus("status" in event ? event : currentFocus, circumstances.get())
+        }),
+        L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope)
+    );
+
+    function narrowFocus(focus: BoardFocus, { locks, userId, board }: CircumStances): BoardFocus {
+        if (!userId) return { status: "none" }
+        const itemsWhereSomeoneElseHasLock = new Set(
+            Object.keys(locks).filter((itemId) => locks[itemId] !== userId),
+        )
+
+        return removeNonExistingFromSelection(
+            removeFromSelection(focus, itemsWhereSomeoneElseHasLock),
+            new Set(board.items.map((i) => i.id)),
+        )
+    }   
 
     resolvedFocus.forEach(dispatchLocksIfNecessary)
 
     // Result atom that allows setting arbitrary focus, but reflects valid selections only
-    return L.atom(resolvedFocus, rawFocus.set)
+    return L.atom(resolvedFocus, focusRequest.push)
 
     function dispatchLocksIfNecessary(f: BoardFocus) {
         const user = userId.get()
