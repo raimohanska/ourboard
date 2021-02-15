@@ -26,40 +26,35 @@ export function synchronizeFocusWithServer(
 ): L.Atom<BoardFocus> {
     // represents the raw user selection, including possible illegal selections
     const focusRequest = L.bus<BoardFocus>()
-    type CircumStances = { locks: ItemLocks, userId: string | null, board: Board }
+    type CircumStances = { locks: ItemLocks; userId: string | null; board: Board }
 
     // Circumstances that limit the possible focused selection set
     const circumstances: L.Property<CircumStances> = L.combineTemplate({
         locks,
         userId,
-        board
+        board,
     })
 
     // update focus on new request as well as change to circumstances
-    const events = L.merge(
-        focusRequest,
-        circumstances.pipe(L.changes)
-    )
-    
+    const events = L.merge(focusRequest, circumstances.pipe(L.changes))
+
     // selection where illegal (locked) items are removed
     const resolvedFocus = events.pipe(
         L.scan({ status: "none" } as BoardFocus, (currentFocus, event) => {
             return narrowFocus("status" in event ? event : currentFocus, circumstances.get())
         }),
-        L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope)
-    );
+        L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope),
+    )
 
     function narrowFocus(focus: BoardFocus, { locks, userId, board }: CircumStances): BoardFocus {
         if (!userId) return { status: "none" }
-        const itemsWhereSomeoneElseHasLock = new Set(
-            Object.keys(locks).filter((itemId) => locks[itemId] !== userId),
-        )
+        const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter((itemId) => locks[itemId] !== userId))
 
         return removeNonExistingFromSelection(
             removeFromSelection(focus, itemsWhereSomeoneElseHasLock),
             new Set(board.items.map((i) => i.id)),
         )
-    }   
+    }
 
     resolvedFocus.forEach(dispatchLocksIfNecessary)
 

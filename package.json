@@ -45,6 +45,7 @@
     "test-unit-common": "TEST_TARGET=common jest",
     "test-e2e:dev": "cypress run --headed || true",
     "cypress": "cypress open",
-    "prettier:check": "prettier --check ."
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write ."
   }
 }

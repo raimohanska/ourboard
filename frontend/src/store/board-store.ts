@@ -119,7 +119,8 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
                 { board: state.board!, history: state.history },
                 event,
             )
-            if (reverse && isPersistableBoardItemEvent(event) && event.serial == undefined) { // No serial == is local event. TODO: maybe a nicer way to recognize this?
+            if (reverse && isPersistableBoardItemEvent(event) && event.serial == undefined) {
+                // No serial == is local event. TODO: maybe a nicer way to recognize this?
                 redoStack = []
                 undoStack = addToStack(reverse, undoStack)
             }

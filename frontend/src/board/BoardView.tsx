@@ -30,7 +30,7 @@ import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { boardDragHandler } from "./board-drag"
 import { onClickOutside } from "../components/onClickOutside"
 import { itemSelectAllHandler } from "./item-select-all"
-import { localStorageAtom } from "./local-storage-atom"
+import { localStorageAtom } from "./local-storage-atom"
 
 export type ControlMode = "mouse" | "trackpad"
 export type ControlSettings = {
@@ -69,7 +69,10 @@ export const BoardView = ({
     const latestNote = L.atom(newNote("Hello"))
     const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
     const coordinateHelper = boardCoordinateHelper(boardElement, scrollElement, zoom)
-    const controlSettings = localStorageAtom<ControlSettings>("controlSettings", { mode: "mouse", hasUserManuallySetMode: false })
+    const controlSettings = localStorageAtom<ControlSettings>("controlSettings", {
+        mode: "mouse",
+        hasUserManuallySetMode: false,
+    })
 
     focus.forEach((f) => {
         const itemIds = [...getSelectedIds(f)]
@@ -178,7 +181,12 @@ export const BoardView = ({
                 />
 
                 <div className="border-container" style={style}>
-                    <div className={L.view(controlSettings, s => "board " + s.mode)} draggable={true} ref={boardRef} onClick={onClick}>
+                    <div
+                        className={L.view(controlSettings, (s) => "board " + s.mode)}
+                        draggable={true}
+                        ref={boardRef}
+                        onClick={onClick}
+                    >
                         <ListView
                             observable={L.view(board, "items")}
                             renderObservable={renderItem}
@@ -226,8 +234,20 @@ export const BoardView = ({
                     <PaletteView {...{ latestNote, onAdd, board, dispatch }} />
                     <span className="icon undo" title="Undo" onClick={() => dispatch({ action: "undo" })} />
                     <span className="icon redo" title="Redo" onClick={() => dispatch({ action: "redo" })} />
-                    <span className={L.view(controlSettings, s => s.mode === "trackpad" ? "icon cursor-arrow active" : "icon cursor-arrow")} title="Select tool" onClick={() => controlSettings.set({ mode: "trackpad" , hasUserManuallySetMode: true })} />
-                    <span className={L.view(controlSettings, s => s.mode === "mouse" ? "icon pan active" : "icon pan")} title="Pan tool" onClick={() => controlSettings.set({ mode: "mouse", hasUserManuallySetMode: true })} />                    
+                    <span
+                        className={L.view(controlSettings, (s) =>
+                            s.mode === "trackpad" ? "icon cursor-arrow active" : "icon cursor-arrow",
+                        )}
+                        title="Select tool"
+                        onClick={() => controlSettings.set({ mode: "trackpad", hasUserManuallySetMode: true })}
+                    />
+                    <span
+                        className={L.view(controlSettings, (s) =>
+                            s.mode === "mouse" ? "icon pan active" : "icon pan",
+                        )}
+                        title="Pan tool"
+                        onClick={() => controlSettings.set({ mode: "mouse", hasUserManuallySetMode: true })}
+                    />
                 </div>
 
                 <UserInfoView state={state} dispatch={dispatch} />
