@@ -1,20 +1,18 @@
-type Key = string | number | symbol
-
 export function AutoExpiringMap<V extends any>(ttlSeconds: number) {
-    const timers = new Map<Key, NodeJS.Timeout | undefined>()
-    const data: Record<Key, V> = {}
-    const listeners: ((v: Record<Key, V>) => any)[] = []
+    const timers = new Map<string | number, NodeJS.Timeout | undefined>()
+    const data: Record<string, V> = {}
+    const listeners: ((v: Record<string, V>) => any)[] = []
     const proxy = new Proxy(data, {
         set(target, key, value) {
-            const k = key as string
-            target[k] = value
-            setExpiryTimer(k)
+            if (typeof key === "symbol") return false
+            target[key] = value
+            setExpiryTimer(key)
             listeners.forEach((l) => l(target))
             return true
         },
         deleteProperty(target, key) {
-            const k = key as string
-            const didDelete = delete target[k]
+            if (typeof key === "symbol") return false
+            const didDelete = delete target[key]
             if (!didDelete) {
                 return false
             }
@@ -23,7 +21,7 @@ export function AutoExpiringMap<V extends any>(ttlSeconds: number) {
         },
     })
 
-    const setExpiryTimer = (key: string) => {
+    const setExpiryTimer = (key: string | number) => {
         if (timers.has(key)) {
             clearTimeout(timers.get(key)!)
         }
