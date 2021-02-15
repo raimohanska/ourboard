@@ -134,14 +134,13 @@ export const broadcastItemLocks = (() => {
     let timeouts: Record<Id, NodeJS.Timeout | undefined> = {}
     const hasActiveTimer = (boardId: string) => timeouts[boardId] !== undefined
 
-    return function _broadcastItemLocks(state: ServerSideBoardState) {
-        const boardId = state.board.id
+    return function _broadcastItemLocks(boardId: string, locks: ItemLocks) {
         if (hasActiveTimer(boardId)) {
             return
         }
         timeouts[boardId] = setTimeout(() => {
             everyoneOnTheBoard(boardId).forEach((s) => {
-                s.socket.send("app-event", { action: "board.locks", boardId, locks: state.locks })
+                s.socket.send("app-event", { action: "board.locks", boardId, locks })
             })
             timeouts[boardId] = undefined
         }, BROADCAST_DEBOUNCE_MS)

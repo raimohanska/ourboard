@@ -65,7 +65,8 @@ async function handleAppEvent(
     getSignedPutUrl: (key: string) => string,
 ): Promise<Serial | undefined> {
     if (isBoardItemEvent(appEvent)) {
-        const gotLock = obtainLock(appEvent, socket)
+        const state = await getBoard(appEvent.boardId)
+        const gotLock = obtainLock(state.locks, appEvent, socket)
         if (gotLock) {
             if (isPersistableBoardItemEvent(appEvent)) {
                 const user = getSessionUserInfo(socket)

@@ -1,14 +1,15 @@
 import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardCursorPositions, BoardHistoryEntry, Id, ItemLocks, Serial } from "../../common/src/domain"
+import { Locks } from "./locker"
 import { createBoard, fetchBoard, saveRecentEvents } from "./board-store"
-import { getBoardSessionCount } from "./sessions"
+import { broadcastItemLocks, getBoardSessionCount } from "./sessions"
 
 // A mutable state object for server side state
 export type ServerSideBoardState = {
     board: Board
     serial: Serial
     recentEvents: BoardHistoryEntry[]
-    locks: ItemLocks
+    locks: ReturnType<typeof Locks>
     cursorsMoved: boolean
     cursorPositions: BoardCursorPositions
 }
@@ -20,7 +21,14 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
     if (!state) {
         console.log(`Loading board ${id} into memory`)
         const board = await fetchBoard(id)
-        state = { board, serial: board.serial, recentEvents: [], locks: {}, cursorsMoved: false, cursorPositions: {} }
+        state = {
+            board,
+            serial: board.serial,
+            recentEvents: [],
+            locks: Locks((changedLocks) => broadcastItemLocks(id, changedLocks)),
+            cursorsMoved: false,
+            cursorPositions: {},
+        }
         boards.set(board.id, state)
     }
     return state
@@ -48,7 +56,14 @@ export async function updateBoards(appEvent: BoardHistoryEntry) {
 
 export async function addBoard(board: Board): Promise<ServerSideBoardState> {
     await createBoard(board)
-    const boardState = { board, serial: 0, recentEvents: [], locks: {}, cursorsMoved: false, cursorPositions: {} }
+    const boardState = {
+        board,
+        serial: 0,
+        recentEvents: [],
+        locks: Locks((changedLocks) => broadcastItemLocks(board.id, changedLocks)),
+        cursorsMoved: false,
+        cursorPositions: {},
+    }
     boards.set(board.id, boardState)
     return boardState
 }
