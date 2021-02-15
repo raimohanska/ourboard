@@ -177,7 +177,7 @@ export const BoardView = ({
                 />
 
                 <div className="border-container" style={style}>
-                    <div className="board" draggable={true} ref={boardRef} onClick={onClick}>
+                    <div className={L.view(controlSettings, s => "board " + s.mode)} draggable={true} ref={boardRef} onClick={onClick}>
                         <ListView
                             observable={L.view(board, "items")}
                             renderObservable={renderItem}

@@ -351,10 +351,12 @@ a {
         width: 100%;
         height: 100%;
         position: relative;
-        cursor: grab;
+        &.mouse {
+            cursor: grab;
 
-        &:active {
-            cursor: grabbing; /* FIXME: doesnt work on chrome even with vendor prefixing */
+            &:active {
+                cursor: grabbing; /* FIXME: doesnt work on chrome even with vendor prefixing */
+            }
         }
 
         .item {
