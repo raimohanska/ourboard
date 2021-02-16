@@ -56,24 +56,20 @@ export function synchronizeFocusWithServer(
         )
     }
 
-    resolvedFocus.forEach(dispatchLocksIfNecessary)
+    resolvedFocus.forEach(unlockUnselectedItems)
 
     // Result atom that allows setting arbitrary focus, but reflects valid selections only
     return L.atom(resolvedFocus, focusRequest.push)
 
-    function dispatchLocksIfNecessary(f: BoardFocus) {
+    function unlockUnselectedItems(f: BoardFocus) {
         const user = userId.get()
         if (!user) return
         const l = locks.get()
         const locksHeld = Object.keys(l).filter((itemId) => l[itemId] === user)
         const selectedIds = getSelectedIds(f)
         locksHeld.filter((id) => !selectedIds.has(id)).forEach(unlock)
-        ;[...selectedIds].filter((id) => !locksHeld.includes(id)).forEach(lock)
     }
 
-    function lock(itemId: Id) {
-        dispatch({ action: "item.lock", boardId: board.get().id, itemId })
-    }
     function unlock(itemId: Id) {
         dispatch({ action: "item.unlock", boardId: board.get().id, itemId })
     }

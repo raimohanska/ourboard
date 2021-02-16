@@ -74,8 +74,10 @@ export const BoardView = ({
         hasUserManuallySetMode: false,
     })
 
+    let previousFocus: BoardFocus | null = null
     focus.forEach((f) => {
-        const itemIds = [...getSelectedIds(f)]
+        const itemIds = [...getSelectedIds(f)].filter((id) => !previousFocus || !getSelectedIds(previousFocus).has(id))
+        previousFocus = f
         if (itemIds.length > 0) {
             dispatch({ action: "item.front", boardId: board.get().id, itemIds })
             const item = getSelectedElement(f)
