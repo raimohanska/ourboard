@@ -69,7 +69,7 @@ export const ItemView = ({
                     height: p.height + "em",
                     width: p.width + "em",
                     zIndex: p.z,
-                    background: p.type === "note" ? p.color : "none",
+                    background: p.type === "note" ? p.color : p.type === "container" ? "white" : "none",
                     position: "absolute",
                 })),
             )}
