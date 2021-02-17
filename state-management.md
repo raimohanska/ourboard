@@ -13,6 +13,7 @@
 -   Events as discriminated union in TypeScript { action: "item.move" ... }
 -   Reducer on all clients and server
 -   Server reducer validates actions, then broadcasts
+-   Non-shared state using local Atoms and localStorage
 
 ## Using Lonna / FRP
 
