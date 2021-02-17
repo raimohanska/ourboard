@@ -9,11 +9,22 @@ import fs from "fs"
 import path from "path"
 import { getConfig } from "./config"
 import bodyParser from "body-parser"
-import { Board, createBoard, EventUserInfo, BoardHistoryEntry, AppEvent, newNote, Note } from "../../common/src/domain"
+import {
+    Board,
+    createBoard,
+    EventUserInfo,
+    BoardHistoryEntry,
+    AppEvent,
+    newNote,
+    Note,
+    Color,
+    PersistableBoardItemEvent,
+} from "../../common/src/domain"
 import { addBoard, getBoard, maybeGetBoard, updateBoards } from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
 import { broadcastBoardEvent } from "./sessions"
 import { encode as htmlEncode } from "html-entities"
+import { item } from "lonna"
 
 const configureServer = () => {
     dotenv.config()
@@ -103,12 +114,19 @@ const configureServer = () => {
                         const linkHTML = `${linkStart}${htmlEncode(number)}</a> ${htmlEncode(title)}`
                         const existingItem = board.board.items.find(
                             (i) => i.type === "note" && i.text.includes(linkStart),
-                        )
+                        ) as Note | undefined
+                        const isBug = body.issue.labels.includes("bug")
+                        const color = isBug ? "#E98AA7" : "#81BAE7"
                         if (!existingItem) {
-                            return await addItem(boardId, "note", linkHTML, "New issues", res)
                             console.log(`Github webhook call board ${boardId}: New item`)
+                            return await addItem(boardId, "note", linkHTML, color, "New issues", res)
                         } else {
                             console.log(`Github webhook call board ${boardId}: Item exists`)
+                            const updatedItem: Note = { ...existingItem, color }
+                            return await dispatchSystemAppEvent(
+                                { action: "item.update", boardId, items: [updatedItem] },
+                                res,
+                            )
                         }
                     }
                 } else {
@@ -132,16 +150,23 @@ const configureServer = () => {
             if (!boardId) {
                 return res.sendStatus(400)
             }
-            const { type, text, container } = req.body
+            const { type, text, color, container } = req.body
             console.log(`POST item for board ${boardId}: ${JSON.stringify(req.body)}`)
-            await addItem(boardId, type, text, container, res)
+            await addItem(boardId, type, text, color, container, res)
         } catch (e) {
             console.error(e)
             res.sendStatus(500)
         }
     })
 
-    async function addItem(boardId: string, type: "note", text: string, container: string, res: express.Response) {
+    async function addItem(
+        boardId: string,
+        type: "note",
+        text: string,
+        color: Color,
+        container: string,
+        res: express.Response,
+    ) {
         const board = await getBoard(boardId)
         if (!board) {
             return res.sendStatus(404)
@@ -172,9 +197,13 @@ const configureServer = () => {
             itemAttributes = {}
         }
 
-        const user: EventUserInfo = { userType: "system", nickname: "Github webhook" }
-        const item: Note = { ...newNote(text), ...itemAttributes }
+        const item: Note = { ...newNote(text, color || "#F5F18D"), ...itemAttributes }
         const appEvent: AppEvent = { action: "item.add", boardId: boardId, items: [item] }
+        dispatchSystemAppEvent(appEvent, res)
+    }
+
+    async function dispatchSystemAppEvent(appEvent: PersistableBoardItemEvent, res: express.Response) {
+        const user: EventUserInfo = { userType: "system", nickname: "Github webhook" }
         let historyEntry: BoardHistoryEntry = { ...appEvent, user, timestamp: new Date().toISOString() }
         console.log(JSON.stringify(historyEntry))
         // TODO: refactor, this is the same sequence as done in connection-handler for messages from clients
