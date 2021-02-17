@@ -10,7 +10,7 @@ import path from "path"
 import { getConfig } from "./config"
 import bodyParser from "body-parser"
 import { Board, createBoard } from "../../common/src/domain"
-import { addBoard } from "./board-state"
+import { addBoard, maybeGetBoard } from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
 
 const configureServer = () => {
@@ -76,6 +76,20 @@ const configureServer = () => {
         let board: Board = createBoard(name)
         const boardWithHistory = await addBoard(board)
         res.json(boardWithHistory.board)
+    })
+
+    app.post("/api/v1/webhook/github/:boardId", async (req, res) => {
+        const boardId = req.params.boardId
+        if (!boardId) {
+            return res.sendStatus(400)
+        }
+        let body = req.body
+        const board = maybeGetBoard(boardId)
+        if (board) {
+            console.log(`Github webhook call board ${boardId}: ${JSON.stringify(body, null, 2)}`)
+        } else {
+            console.warn(`Github webhook call for unknown board ${boardId}`)
+        }
     })
 
     io.on("connection", connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) }))
