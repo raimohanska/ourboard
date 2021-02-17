@@ -113,7 +113,7 @@ const configureServer = () => {
                         const linkStart = `<a href=${url}>`
                         const linkHTML = `${linkStart}${htmlEncode(number)}</a> ${htmlEncode(title)}`
                         const existingItem = board.board.items.find(
-                            (i) => i.type === "note" && i.text.includes(linkStart),
+                            (i) => i.type === "note" && i.text.includes(url),
                         ) as Note | undefined
                         const isBug = body.issue.labels.some((l: any) => l.name === "bug")
                         const color = isBug ? "#E98AA7" : "#81BAE7"
