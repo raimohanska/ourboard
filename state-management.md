@@ -25,6 +25,8 @@
 -   Read-write Atoms are created for client-local state:
     -   [`const zoom = L.atom(1)`](https://github.com/raimohanska/r-board/blob/master/frontend/src/board/BoardView.tsx#L61)
     -   [`focus`](https://github.com/raimohanska/r-board/blob/master/frontend/src/board/BoardView.tsx#L70) is a dependent atom, allows you to set "select these items" but only the actually selectable ones end up selected and the selection can be further narrowed when circumstances (locks for instance) change
+-   [Server-side connection handler](https://github.com/raimohanska/r-board/blob/master/backend/src/connection-handler.ts)
+
 
 ## More
 
