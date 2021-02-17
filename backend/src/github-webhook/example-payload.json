@@ -31,7 +31,17 @@
             "type": "User",
             "site_admin": false
         },
-        "labels": ["boog"],
+        "labels": [
+            {
+                "id": 2438308116,
+                "node_id": "MDU6TGFiZWwyNDM4MzA4MTE2",
+                "url": "https://api.github.com/repos/raimohanska/r-board/labels/enhancement",
+                "name": "bug",
+                "color": "a2eeef",
+                "default": true,
+                "description": "Bug"
+            }
+        ],
         "state": "open",
         "locked": false,
         "assignee": {

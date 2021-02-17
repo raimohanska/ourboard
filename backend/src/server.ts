@@ -115,7 +115,7 @@ const configureServer = () => {
                         const existingItem = board.board.items.find(
                             (i) => i.type === "note" && i.text.includes(linkStart),
                         ) as Note | undefined
-                        const isBug = body.issue.labels.includes("bug")
+                        const isBug = body.issue.labels.some((l: any) => l.name === "bug")
                         const color = isBug ? "#E98AA7" : "#81BAE7"
                         if (!existingItem) {
                             console.log(`Github webhook call board ${boardId}: New item`)
