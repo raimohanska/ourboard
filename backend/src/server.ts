@@ -78,7 +78,7 @@ const configureServer = () => {
         res.json(boardWithHistory.board)
     })
 
-    app.post("/api/v1/webhook/github/:boardId", async (req, res) => {
+    app.post("/api/v1/webhook/github/:boardId", bodyParser.json(), async (req, res) => {
         const boardId = req.params.boardId
         if (!boardId) {
             return res.sendStatus(400)
