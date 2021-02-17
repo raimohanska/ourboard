@@ -85,12 +85,13 @@ const configureServer = () => {
             return res.sendStatus(400)
         }
         let body = req.body
-        const board = maybeGetBoard(boardId)
+        const board = await getBoard(boardId)
         if (board) {
             console.log(`Github webhook call board ${boardId}: ${JSON.stringify(body, null, 2)}`)
         } else {
             console.warn(`Github webhook call for unknown board ${boardId}`)
         }
+        res.sendStatus(200)
     })
 
     app.post("/api/v1/board/:boardId/item", bodyParser.json(), async (req, res) => {
