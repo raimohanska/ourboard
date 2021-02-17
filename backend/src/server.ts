@@ -9,9 +9,10 @@ import fs from "fs"
 import path from "path"
 import { getConfig } from "./config"
 import bodyParser from "body-parser"
-import { Board, createBoard } from "../../common/src/domain"
-import { addBoard, maybeGetBoard } from "./board-state"
+import { Board, createBoard, EventUserInfo, BoardHistoryEntry, AppEvent, newNote, Note } from "../../common/src/domain"
+import { addBoard, getBoard, maybeGetBoard, updateBoards } from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
+import { broadcastBoardEvent } from "./sessions"
 
 const configureServer = () => {
     dotenv.config()
@@ -89,6 +90,61 @@ const configureServer = () => {
             console.log(`Github webhook call board ${boardId}: ${JSON.stringify(body, null, 2)}`)
         } else {
             console.warn(`Github webhook call for unknown board ${boardId}`)
+        }
+    })
+
+    app.post("/api/v1/board/:boardId/item", bodyParser.json(), async (req, res) => {
+        try {
+            const boardId = req.params.boardId
+            if (!boardId) {
+                return res.sendStatus(400)
+            }
+            const board = await getBoard(boardId)
+            if (!board) {
+                return res.sendStatus(404)
+            }
+            const { type, text, container } = req.body
+            console.log(`POST item for board ${boardId}: ${JSON.stringify(req.body)}`)
+            if (type !== "note") return res.status(400).send("Expecting type: note")
+            if (typeof text !== "string" || text.length === 0)
+                return res.status(400).send("Expecting non zero-length text")
+            let containerItem
+            let itemAttributes
+            if (container !== undefined) {
+                if (typeof container !== "string") {
+                    return res
+                        .status(400)
+                        .send("Expecting container to be undefined, or an id or name of an Container item")
+                }
+                containerItem = board.board.items.find(
+                    (i) =>
+                        i.type === "container" &&
+                        (i.text.toLowerCase() === container.toLowerCase() || i.id === container),
+                )
+                if (!containerItem) {
+                    return res.status(400).send(`Container "${container}" not found by id or name`)
+                }
+                itemAttributes = {
+                    containedId: containerItem.id,
+                    x: containerItem.x + 2,
+                    y: containerItem.y + 2,
+                }
+            } else {
+                itemAttributes = {}
+            }
+
+            const user: EventUserInfo = { userType: "system", nickname: "Github webhook" }
+            const item: Note = { ...newNote(text), ...itemAttributes }
+            const appEvent: AppEvent = { action: "item.add", boardId: boardId, items: [item] }
+            let historyEntry: BoardHistoryEntry = { ...appEvent, user, timestamp: new Date().toISOString() }
+            console.log(JSON.stringify(historyEntry))
+            const serial = await updateBoards(historyEntry)
+            historyEntry = { ...historyEntry, serial }
+            broadcastBoardEvent(historyEntry)
+            res.status(200).json({ ok: true })
+        } catch (e) {
+            console.error(e)
+            res.sendStatus(500)
         }
     })
 
