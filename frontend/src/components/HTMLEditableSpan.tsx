@@ -102,9 +102,7 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
     const onPaste = (e: JSX.ClipboardEvent<HTMLSpanElement>) => {
         e.preventDefault()
         // Paste as plain text, remove formatting.
-        var htmlText = e.clipboardData.getData("text/plain")
-        if (isURL(htmlText)) {
-        }
+        var htmlText = e.clipboardData.getData("text/html") || e.clipboardData.getData("text/plain")
         const sanitized = isURL(htmlText)
             ? createLinkHTML(htmlText, window.getSelection()!.toString() || undefined)
             : sanitizeHTML(htmlText)

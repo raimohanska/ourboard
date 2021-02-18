@@ -1,7 +1,7 @@
 import sh, { Attributes } from "sanitize-html"
 
 const sanitizeConfig = {
-    allowedTags: ["b", "i", "em", "strong", "a", "br"],
+    allowedTags: ["b", "i", "em", "strong", "a", "br", "p", "ul", "li", "ol", "h1", "h2", "h3", "h4", "h5"],
     allowedAttributes: {
         a: ["href", "target"],
     },
