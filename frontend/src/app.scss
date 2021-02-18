@@ -7,7 +7,7 @@ $font-family-note: Montserrat, sans-serif;
 $link-color: #35b2dc;
 $heading-color: $link-color;
 $heading-height: 1.8em;
-$board-border-top: 2.8em;
+$board-border-top: 2.8rem;
 $material-design-icons-font-directory-path: "~../../node_modules/material-design-icons-iconfont/dist/fonts/";
 $disabled-color: lightgrey;
 $z-index-menu: 400000002;
@@ -357,7 +357,7 @@ a {
         background: $off-board-color;
         .border-container {
             box-sizing: content-box;
-            padding: $board-border-top 1em 1em 1em;
+            padding: $board-border-top 1rem 1rem 1rem;
         }
     }
 
@@ -617,7 +617,7 @@ a {
         flex-direction: column;
         z-index: $z-index-menu;
         background: white;
-        padding: $board-border-top 1em 1em 1em;
+        padding: $board-border-top 1rem 1rem 1rem;
         border-left: 1px solid #cccccc;
         > .selection {
             margin-top: -1rem;
