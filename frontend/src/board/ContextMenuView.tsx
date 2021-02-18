@@ -4,7 +4,7 @@ import _ from "lodash"
 import { Board, Color, findItem, isColoredItem, Note } from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
 import { NOTE_COLORS } from "./PaletteView"
-import { BoardFocus } from "./board-focus"
+import { BoardFocus, getSelectedItems } from "./board-focus"
 import { getItem } from "../../../common/src/domain"
 
 export const ContextMenuView = ({

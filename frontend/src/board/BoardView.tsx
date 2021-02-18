@@ -17,7 +17,7 @@ import { RectangularDragSelection } from "./RectangularDragSelection"
 import * as G from "./geometry"
 import { withCurrentContainer } from "./item-setcontainer"
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
-import { BoardFocus, getSelectedIds } from "./board-focus"
+import { BoardFocus, getSelectedIds, getSelectedItem, getSelectedItems } from "./board-focus"
 import { itemDeleteHandler } from "./item-delete"
 import { itemUndoHandler } from "./item-undo-redo"
 import { BoardMenu } from "./BoardMenu"
@@ -82,7 +82,7 @@ export const BoardView = ({
         previousFocus = f
         if (itemIds.length > 0) {
             dispatch({ action: "item.front", boardId: board.get().id, itemIds })
-            const item = getSelectedElement(f)
+            const item = getSelectedItem(board.get())(f)
             if (item && item.type === "note") {
                 latestNote.set(item)
             }
@@ -126,17 +126,12 @@ export const BoardView = ({
         }
     }
 
-    function getSelectedElement(f: BoardFocus): Item | null {
-        if (f.status !== "selected" || f.ids.size !== 1) return null
-        return board.get().items.find((i) => i.id === [...f.ids][0]) || null
-    }
-
     L.fromEvent<JSX.KeyboardEvent>(window, "dblclick")
         .pipe(L.applyScope(componentScope()))
         .forEach((event) => {
             if (event.target === boardElement.get()! || boardElement.get()!.contains(event.target as Node)) {
                 const f = focus.get()
-                const selectedElement = getSelectedElement(focus.get())
+                const selectedElement = getSelectedItem(board.get())(focus.get())
                 if (f.status === "none" || (selectedElement && selectedElement.type === "container")) {
                     const newItem = newSimilarNote(latestNote.get())
                     onAdd(newItem)

@@ -125,6 +125,9 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
                 onKeyDown={onKeyDown}
                 onInput={onInput}
                 onPaste={onPaste}
+                onDoubleClick={(e) => {
+                    e.stopPropagation()
+                }}
             ></span>
         </span>
     )

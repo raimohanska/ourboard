@@ -1,4 +1,4 @@
-import { Board, Id, Item } from "../../../common/src/domain"
+import { Board, findItem, Id, Item } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
 
 export type BoardFocus =
@@ -20,7 +20,11 @@ export function getSelectedIds(f: BoardFocus): Set<Id> {
 }
 
 export const getSelectedItems = (b: Board) => (f: BoardFocus): Item[] => {
-    return [...getSelectedIds(f)].map(getItem(b))
+    return [...getSelectedIds(f)].flatMap((id) => findItem(b)(id) || [])
+}
+
+export const getSelectedItem = (b: Board) => (f: BoardFocus): Item | null => {
+    return getSelectedItems(b)(f)[0] || null
 }
 
 export function removeFromSelection(selection: BoardFocus, toRemove: Set<Id>): BoardFocus {
