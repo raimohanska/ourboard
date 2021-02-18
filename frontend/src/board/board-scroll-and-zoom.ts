@@ -98,16 +98,29 @@ export function boardScrollAndZoomHandler(
     // Galaxy brain hack: disable this in cypress tests because I'm too lazy to make it work
     // @ts-ignore
     if (!window.IS_CYPRESS) {
-        boardElement.forEach((el) => {
+        // Assume that when viewRect "stabilizes" for a while,
+        // the app initialization is done and then we try to autocenter the board
+        let autoCenterTimeout: NodeJS.Timeout | null = null
+        let hasBeenAutocentered = false
+        viewRect.forEach(() => {
+            if (hasBeenAutocentered) {
+                return
+            }
+            const el = boardElement.get()
             if (!el) return
             const MAGIC_NUMBER = 10 // it's not a hack if it's in CONSTANT_CASE
-            setTimeout(() => {
+
+            if (autoCenterTimeout !== null) {
+                clearTimeout(autoCenterTimeout)
+            }
+            autoCenterTimeout = setTimeout(() => {
                 const { offsetWidth, offsetHeight } = el
                 const scrollContainer = scrollElement.get()!
 
                 const scrollToX = offsetWidth / 2 - scrollContainer.clientWidth / 2
                 const scrollToY = offsetHeight / 2 - scrollContainer.clientHeight / 2
                 scrollContainer.scrollTo(scrollToX, scrollToY)
+                hasBeenAutocentered = true
             }, MAGIC_NUMBER)
         })
     }
