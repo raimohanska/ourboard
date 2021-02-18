@@ -1,7 +1,7 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import _ from "lodash"
-import { Board, Color, isColoredItem, Note } from "../../../common/src/domain"
+import { Board, Color, findItem, isColoredItem, Note } from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
 import { NOTE_COLORS } from "./PaletteView"
 import { BoardFocus } from "./board-focus"
@@ -33,7 +33,7 @@ export const ContextMenuView = ({
 
     const focusedItems = L.view(focus, board, (f, b) => {
         const itemIds = itemIdsForContextMenu(f)
-        return itemIds.map(getItem(board.get()))
+        return itemIds.flatMap((id) => findItem(board.get())(id) || [])
     })
 
     const focusItem = L.view(focusedItems, (items) => {
