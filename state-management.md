@@ -28,7 +28,6 @@
     -   [`focus`](https://github.com/raimohanska/r-board/blob/master/frontend/src/board/BoardView.tsx#L70) is a dependent atom, allows you to set "select these items" but only the actually selectable ones end up selected and the selection can be further narrowed when circumstances (locks for instance) change
 -   [Server-side connection handler](https://github.com/raimohanska/r-board/blob/master/backend/src/connection-handler.ts)
 
-
 ## More
 
 -   Undo/redo: boardReducer returns a possible "undo action" that is put to undo stack
