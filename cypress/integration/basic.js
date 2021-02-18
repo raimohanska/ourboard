@@ -281,6 +281,7 @@ describe("Board functionality", () => {
         })
 
         NotesWithText("HELLO").click({ force: true })
+        cy.get(".text").contains("HELLO").type("Monoids")
         cy.get(".context-menu").scrollIntoView().should("be.visible")
         cy.get(".colors")
             .find(".color")
@@ -291,7 +292,7 @@ describe("Board functionality", () => {
                 const newColor = templateWithNewColor.style.background
 
                 templateWithNewColor.click()
-                NotesWithText("HELLO").then((els) => {
+                NotesWithText("Monoids").then((els) => {
                     expect(els[0].style.background, `Note 'HELLO' should have turned ${newColor}`).to.equal(newColor)
                 })
             })

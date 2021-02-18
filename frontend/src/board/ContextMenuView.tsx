@@ -18,22 +18,23 @@ export const ContextMenuView = ({
     board: L.Property<Board>
     focus: L.Property<BoardFocus>
 }) => {
-    const focusedItems = L.view(
-        focus,
-        (f) => {
-            switch (f.status) {
-                case "dragging":
-                    return []
-                case "editing":
-                    return [f.id]
-                case "none":
-                    return []
-                case "selected":
-                    return [...f.ids]
-            }
-        },
-        (ids) => ids.map(getItem(board.get())),
-    )
+    function itemIdsForContextMenu(f: BoardFocus) {
+        switch (f.status) {
+            case "dragging":
+                return []
+            case "editing":
+                return [f.id]
+            case "none":
+                return []
+            case "selected":
+                return [...f.ids]
+        }
+    }
+
+    const focusedItems = L.view(focus, board, (f, b) => {
+        const itemIds = itemIdsForContextMenu(f)
+        return itemIds.map(getItem(board.get()))
+    })
 
     const focusItem = L.view(focusedItems, (items) => {
         if (items.length === 0) return null
