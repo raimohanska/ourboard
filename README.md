@@ -10,9 +10,9 @@ TODO
 
 1. Create an r-board and an Area named "new issues" (case insensitive) on the board.
 2. Add a webhook to a git repo, namely
-   2.1. Use URL https://r-board.herokuapp.com/api/v1/webhook/github/{board-id}, with board-id from the URL of you board.
-   2.2. Use content type to application/json
-   2.3. Select "Let me select individual events" and pick Issues only.
+    2.1. Use URL https://r-board.herokuapp.com/api/v1/webhook/github/{board-id}, with board-id from the URL of you board.
+    2.2. Use content type to application/json
+    2.3. Select "Let me select individual events" and pick Issues only.
 3. Create a new issue or change labels of an existing issue.
 4. You should see new notes appear on your board
 
