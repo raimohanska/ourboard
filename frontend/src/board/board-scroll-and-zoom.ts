@@ -100,6 +100,7 @@ export function boardScrollAndZoomHandler(
     if (!window.IS_CYPRESS) {
         boardElement.forEach((el) => {
             if (!el) return
+            const MAGIC_NUMBER = 10 // it's not a hack if it's in CONSTANT_CASE
             setTimeout(() => {
                 const { offsetWidth, offsetHeight } = el
                 const scrollContainer = scrollElement.get()!
@@ -107,7 +108,7 @@ export function boardScrollAndZoomHandler(
                 const scrollToX = offsetWidth / 2 - scrollContainer.clientWidth / 2
                 const scrollToY = offsetHeight / 2 - scrollContainer.clientHeight / 2
                 scrollContainer.scrollTo(scrollToX, scrollToY)
-            }, 0)
+            }, MAGIC_NUMBER)
         })
     }
 
