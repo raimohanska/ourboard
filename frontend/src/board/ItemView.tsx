@@ -1,6 +1,15 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { Board, BoardHistoryEntry, getItemIds, Id, Item, ItemType, TextItem } from "../../../common/src/domain"
+import {
+    Board,
+    BoardHistoryEntry,
+    getItemIds,
+    Id,
+    Item,
+    ItemType,
+    TextItem,
+    getItemBackground,
+} from "../../../common/src/domain"
 import { HTMLEditableSpan } from "../components/HTMLEditableSpan"
 import { autoFontSize } from "./autoFontSize"
 import { BoardCoordinateHelper } from "./board-coordinates"
@@ -69,7 +78,7 @@ export const ItemView = ({
                     height: p.height + "em",
                     width: p.width + "em",
                     zIndex: p.z,
-                    background: p.type === "note" ? p.color : p.type === "container" ? "white" : "none",
+                    background: getItemBackground(p),
                     position: "absolute",
                 })),
             )}
@@ -98,7 +107,7 @@ export const ItemView = ({
             dispatch({ action: "item.front", boardId: board.get().id, itemIds: [id] })
             focus.set(e ? { status: "editing", id } : { status: "selected", ids: new Set([id]) })
         }
-        const color = L.view(item, (i) => (i.type === "note" ? i.color : "white"), contrastingColor)
+        const color = L.view(item, getItemBackground, contrastingColor)
         const fontSize = autoFontSize(item, L.view(item, "text"), focused, coordinateHelper, element)
         return (
             <span className="text" style={L.combineTemplate({ fontSize, color })}>

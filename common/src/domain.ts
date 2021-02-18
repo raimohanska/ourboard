@@ -58,7 +58,7 @@ export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
 export type Note = ItemProperties & { type: typeof ITEM_TYPES.NOTE; text: string; color: Color }
 export type Text = ItemProperties & { type: typeof ITEM_TYPES.TEXT; text: string }
 export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string }
-export type Container = ItemProperties & { type: typeof ITEM_TYPES.CONTAINER; text: string }
+export type Container = ItemProperties & { type: typeof ITEM_TYPES.CONTAINER; text: string; color: Color }
 
 export type TextItem = Note | Text | Container
 export type ColoredItem = Item & { color: Color }
@@ -176,7 +176,7 @@ export function newContainer(
     height: number = 20,
     z: number = 0,
 ): Container {
-    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height, z }
+    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height, z, color: "white" }
 }
 
 export function newImage(
@@ -208,12 +208,19 @@ export function isSameUser(a: EventUserInfo, b: EventUserInfo) {
 }
 
 export function isColoredItem(i: Item): i is ColoredItem {
-    return "color" in i
+    return i.type === "note" || i.type === "container"
 }
 
 export function getItemText(i: Item) {
     if (i.type === "image") return ""
     return i.text
+}
+
+export function getItemBackground(i: Item) {
+    if (isColoredItem(i)) {
+        return i.color || "white" // Default for legacy containers
+    }
+    return "none"
 }
 
 export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id[] {
