@@ -1,7 +1,7 @@
 import * as H from "harmaja"
 import * as L from "lonna"
-import { componentScope, h, HarmajaOutput } from "harmaja"
-import { globalScope } from "lonna"
+import { h, HarmajaOutput } from "harmaja"
+import { isFirefox } from "./browser"
 
 export type EditableSpanProps = {
     value: L.Atom<string>
@@ -11,7 +11,6 @@ export type EditableSpanProps = {
     cancel?: () => void
 } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>
 
-const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1
 function clearSelection() {
     if (!isFirefox) {
         // Don't clear selection on Firefox, because for an unknown reason, the "selectAll" functionality below breaks after first clearSelection call.

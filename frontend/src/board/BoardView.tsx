@@ -31,6 +31,7 @@ import { boardDragHandler } from "./board-drag"
 import { onClickOutside } from "../components/onClickOutside"
 import { itemSelectAllHandler } from "./item-select-all"
 import { localStorageAtom } from "./local-storage-atom"
+import { isFirefox } from "../components/browser"
 
 export type ControlMode = "mouse" | "trackpad"
 export type ControlSettings = {
@@ -186,7 +187,7 @@ export const BoardView = ({
                 <div className="border-container" style={style}>
                     <div
                         className={L.view(controlSettings, (s) => "board " + s.mode)}
-                        draggable={true}
+                        draggable={isFirefox ? L.view(focus, (f) => f.status !== "editing") : true}
                         ref={boardRef}
                         onClick={onClick}
                     >
