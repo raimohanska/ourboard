@@ -70,7 +70,7 @@ export function boardScrollAndZoomHandler(
                 event.preventDefault()
                 const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
                 const step = 1.04
-                zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 10))
+                zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.04, 10))
                 coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
             } else {
                 // If the user seems to be using a trackpad, and they haven't manually configured their control mode yet,
@@ -93,6 +93,24 @@ export function boardScrollAndZoomHandler(
             }
         }
     }
+
+    // Scroll to approximately the middle when the board first renders
+    // Galaxy brain hack: disable this in cypress tests because I'm too lazy to make it work
+    // @ts-ignore
+    if (!window.IS_CYPRESS) {
+        boardElement.forEach((el) => {
+            if (!el) return
+            setTimeout(() => {
+                const { offsetWidth, offsetHeight } = el
+                const scrollContainer = scrollElement.get()!
+
+                const scrollToX = offsetWidth / 2 - scrollContainer.clientWidth / 2
+                const scrollToY = offsetHeight / 2 - scrollContainer.clientHeight / 2
+                scrollContainer.scrollTo(scrollToX, scrollToY)
+            }, 0)
+        })
+    }
+
     H.onMount(() => {
         // have to use this for chrome: https://stackoverflow.com/questions/42101723/unable-to-preventdefault-inside-passive-event-listener
         window.addEventListener("wheel", wheelZoomHandler, { passive: false })

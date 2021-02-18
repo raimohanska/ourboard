@@ -1,5 +1,6 @@
 // Cypress doesn't use a DragEvent but just an Event, so it doesn't have dataTransfer property...
 // https://github.com/cypress-io/cypress/issues/649
+
 const mockDataTransfer = {
     setDragImage: () => null,
 }
@@ -103,14 +104,28 @@ function createContainer(relX, relY) {
     })
 }
 
+function applyCypressWorkarounds() {
+    cy.window().then((w) => {
+        // Mega hack, too lazy to figure out how to make these tests work with board auto-centering
+        // ref. board-scroll-and-zoom.ts
+        w.IS_CYPRESS = true
+    })
+}
+
+function reload() {
+    cy.reload()
+    applyCypressWorkarounds()
+}
+
 describe("Board functionality", () => {
     beforeEach(() => {
-        cy.viewport("macbook-15")
+        cy.viewport("macbook-16")
         cy.visit("http://localhost:1337")
         cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
         cy.get('[data-test="create-board-submit"]').click()
 
         cy.url().should("contain", "http://localhost:1337/b/")
+        applyCypressWorkarounds()
 
         cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
     })
@@ -170,7 +185,7 @@ describe("Board functionality", () => {
     it("Persists changes", () => {
         createNote("Hello", 350, 200)
         cy.get(".text").contains("Hello").type("Monoids")
-        cy.reload()
+        applyCypressWorkarounds()
         cy.get(".note").contains("Monoids").should("be.visible")
         cy.get(".note").contains("Hello").should("not.be.visible")
     })
