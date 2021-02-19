@@ -2,7 +2,7 @@ import { componentScope } from "harmaja"
 import * as L from "lonna"
 import { Id } from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
-import { BoardFocus } from "./board-focus"
+import { BoardFocus, getSelectedIds } from "./board-focus"
 
 export function itemDeleteHandler(boardId: Id, dispatch: Dispatch, focus: L.Property<BoardFocus>) {
     ;["keydown", "keyup", "keypress"].forEach((eventName) => {
@@ -14,9 +14,9 @@ export function itemDeleteHandler(boardId: Id, dispatch: Dispatch, focus: L.Prop
                     // del or backspace
                     e.preventDefault()
                     if (eventName === "keyup") {
-                        const s = focus.get()
-                        if (s.status === "selected") {
-                            dispatch({ action: "item.delete", boardId, itemIds: [...s.ids] })
+                        const itemIds = [...getSelectedIds(focus.get())]
+                        if (itemIds.length) {
+                            dispatch({ action: "item.delete", boardId, itemIds })
                         }
                     }
                 }
