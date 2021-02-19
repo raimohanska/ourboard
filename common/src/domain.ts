@@ -29,7 +29,7 @@ export function isFullyFormedBoard(b: Board | BoardStub): b is Board {
     return !!b.id && !!b.name && ["width", "height", "items"].every((prop) => prop in b)
 }
 
-export const defaultBoardSize = { width: 10000, height: 8000 }
+export const defaultBoardSize = { width: 800, height: 600 }
 
 export interface CursorPosition {
     x: number
