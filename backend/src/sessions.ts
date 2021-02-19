@@ -11,6 +11,7 @@ import {
     Serial,
     SetNickname,
     AuthLogin,
+    AuthLogout,
 } from "../../common/src/domain"
 import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory } from "./board-store"
@@ -126,6 +127,15 @@ export function setVerifiedUserForSession(event: AuthLogin, origin: IO.Socket) {
                 s.socket.send("app-event", { ...event, token: "********" }),
             )
         }
+    }
+}
+
+export function logoutUser(event: AuthLogout, origin: IO.Socket) {
+    const session = Object.values(sessions).find((s) => s.socket === origin)
+    if (!session) {
+        console.warn("Session not found for socket " + origin.id)
+    } else {
+        session.userInfo = { userType: "unidentified", nickname: session.userInfo.nickname }        
     }
 }
 

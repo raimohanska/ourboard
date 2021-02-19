@@ -18,6 +18,7 @@ import {
     setNicknameForSession,
     getSessionUserInfo,
     setVerifiedUserForSession,
+    logoutUser,
 } from "./sessions"
 import { obtainLock, releaseLocksFor } from "./locker"
 import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
@@ -105,8 +106,16 @@ async function handleAppEvent(
             case "auth.login": {
                 const loginSuccess = await verifyGoogleTokenAndUserInfo(appEvent)
                 if (loginSuccess) {
-                    console.log(`${appEvent.name} logged in`)
                     setVerifiedUserForSession(appEvent, socket)
+                    console.log(`${appEvent.name} logged in`)
+                }
+                return
+            }
+            case "auth.logout": {
+                const user = getSessionUserInfo(socket)
+                if (user.userType === "authenticated") {
+                    logoutUser(appEvent, socket)                
+                    console.log(`${user.name} logged out`)
                 }
                 return
             }
