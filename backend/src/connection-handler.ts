@@ -17,8 +17,10 @@ import {
     broadcastCursorPositions,
     setNicknameForSession,
     getSessionUserInfo,
+    setVerifiedUserForSession,
 } from "./sessions"
 import { obtainLock, releaseLocksFor } from "./locker"
+import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
 
 export type ConnectionHandlerParams = Readonly<{
     getSignedPutUrl: (key: string) => string
@@ -97,6 +99,14 @@ async function handleAppEvent(
                 if (state) {
                     state.cursorPositions[socket.id] = { x, y, userId: socket.id }
                     state.cursorsMoved = true
+                }
+                return
+            }
+            case "auth.login": {
+                const loginSuccess = await verifyGoogleTokenAndUserInfo(appEvent)
+                if (loginSuccess) {
+                    console.log(`${appEvent.name} logged in`)
+                    setVerifiedUserForSession(appEvent, socket)
                 }
                 return
             }

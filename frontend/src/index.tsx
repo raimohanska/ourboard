@@ -11,6 +11,7 @@ import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
 import { storeRecentBoard } from "./store/recent-boards"
 import { getInitialBoardState } from "./store/board-local-store"
+import { userInfo } from "./google-auth"
 
 const App = () => {
     const nicknameFromURL = new URLSearchParams(location.search).get("nickname")
@@ -39,11 +40,29 @@ const App = () => {
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
     const connectedBoard = L.view(store.connected, (c) => (c ? boardId : undefined))
+
     connectedBoard.forEach((boardId) => {
         if (!boardId) {
             // no board in URL or not connected
         } else {
             store.joinBoard(boardId)
+        }
+    })
+    L.merge(
+        store.connected.pipe(
+            L.changes,
+            L.filter((c: boolean) => c),
+        ),
+        userInfo.pipe(L.changes),
+    ).forEach(() => {
+        const user = userInfo.get()
+        switch (user.status) {
+            case "signed-in":
+                store.dispatch({ action: "nickname.set", nickname: user.name, userId: state.get().userId! })
+                store.dispatch({ action: "auth.login", name: user.name, email: user.email, token: user.token })
+                return
+            case "signed-out":
+                return store.dispatch({ action: "auth.logout" })
         }
     })
     showingBoardId.forEach((boardId) => {

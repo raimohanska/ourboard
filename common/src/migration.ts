@@ -42,13 +42,7 @@ export function migrateBoardWithHistory(
 }
 
 function migrateHistory(historyToMigrate: BoardHistoryEntry[]) {
-    return historyToMigrate.map((entry) => {
-        const user = {
-            ...entry.user,
-            userType: entry.user.userType || (entry.user.nickname === "admin" ? "system" : "unidentified"),
-        } as EventUserInfo
-        return { ...entry, user }
-    })
+    return historyToMigrate
 }
 
 export function buildBoardFromHistory(boardAttributes: BoardAttributes, history: BoardHistoryEntry[]): Board {

@@ -135,6 +135,7 @@ a {
         position: fixed;
         z-index: $z-index-menu;
         padding: 0.2em $left-padding;
+        padding-right: 2em;
         width: 100%;
         display: flex;
         align-items: center;
@@ -280,9 +281,10 @@ a {
         .user-info {
             display: flex;
             align-items: center;
-            .icon.user {
-                font-size: 0.9em;
+            a.login,
+            a.logout {
                 margin-left: 0.5em;
+                font-size: 0.6em;
             }
         }
         > * {

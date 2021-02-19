@@ -2,9 +2,13 @@ const webpack = require("webpack")
 const path = require("path")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
-
+const DotEnvPlugin = require("dotenv-webpack")
+const dotenv = require("dotenv")
+dotenv.config()
 const isProd = (argv) => argv.mode === "production"
 const isDev = (argv) => argv.mode === "development"
+process.env.GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || ""
+process.env.GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || ""
 
 function* getPlugins(argv) {
     yield new webpack.EnvironmentPlugin({
@@ -13,6 +17,7 @@ function* getPlugins(argv) {
     yield new HtmlWebpackPlugin({
         template: "src/index.html",
     })
+    yield new webpack.EnvironmentPlugin(["GOOGLE_API_KEY", "GOOGLE_CLIENT_ID"])
 
     if (isProd(argv)) {
         yield new MiniCssExtractPlugin({

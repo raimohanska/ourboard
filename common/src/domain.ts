@@ -16,7 +16,11 @@ export type Board = BoardAttributes & {
 
 export type BoardStub = Pick<Board, "id" | "name">
 
-export type EventUserInfo = { nickname: string; userType: "unidentified" | "system" }
+export type EventUserInfo =
+    | { nickname: string; userType: "unidentified" }
+    | { nickname: string; userType: "system" }
+    | { nickname: string; userType: "authenticated"; name: string; email: string }
+
 export type BoardHistoryEntry = {
     user: EventUserInfo
     timestamp: ISOTimeStamp
@@ -37,7 +41,7 @@ export interface CursorPosition {
 }
 
 export type UserCursorPosition = CursorPosition & {
-    userId: Id
+    userId: Id // TODO: userId should be replaced globally with sessionId or socketId
 }
 
 export type BoardCursorPositions = Record<Id, UserCursorPosition>
@@ -93,6 +97,10 @@ export type OtherAppEvent =
     | GotBoardLocks
     | Undo
     | Redo
+    | AuthLogin
+    | AuthLogout
+export type AuthLogin = { action: "auth.login"; name: string; email: string; token: string }
+export type AuthLogout = { action: "auth.logout" }
 export type AddItem = { action: "item.add"; boardId: Id; items: Item[] }
 export type UpdateItem = { action: "item.update"; boardId: Id; items: Item[] }
 export type MoveItem = {

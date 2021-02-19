@@ -4,8 +4,9 @@ import { exampleBoard } from "../../../common/src/domain"
 import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components"
 import { BoardAppState, Dispatch } from "../store/board-store"
-import { getRecentBoards, RecentBoard, removeRecentBoard } from "../store/recent-boards"
-import { remove } from "lodash"
+import { getRecentBoards, removeRecentBoard } from "../store/recent-boards"
+
+import { signIn, signOut, userInfo } from "../google-auth"
 
 export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppState>; dispatch: Dispatch }) => {
     return (
@@ -18,6 +19,28 @@ export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppS
             </p>
             <RecentBoards />
             <CreateBoard dispatch={dispatch} />
+            <GoogleLoginArea />
+        </div>
+    )
+}
+
+const GoogleLoginArea = () => {
+    return (
+        <div className="user-auth">
+            {L.view(userInfo, (user) => {
+                switch (user.status) {
+                    case "signed-in":
+                        return (
+                            <span>
+                                You're signed in as {user.name} <button onClick={signOut}>Sign out</button>
+                            </span>
+                        )
+                    case "in-progress":
+                        return ""
+                    case "signed-out":
+                        return <button onClick={signIn}>Sign in</button>
+                }
+            })}
         </div>
     )
 }

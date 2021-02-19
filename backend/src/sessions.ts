@@ -10,6 +10,7 @@ import {
     ItemLocks,
     Serial,
     SetNickname,
+    AuthLogin,
 } from "../../common/src/domain"
 import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory } from "./board-store"
@@ -18,7 +19,7 @@ import { randomProfession } from "./professions"
 type UserSession = {
     socket: IO.Socket
     boards: Id[]
-    nickname: string
+    userInfo: EventUserInfo
 }
 
 export type SocketId = string
@@ -30,8 +31,13 @@ const everyoneElseOnTheSameBoard = (boardId: Id, sender?: IO.Socket) =>
     Object.values(sessions).filter((s) => s.socket !== sender && s.boards.includes(boardId))
 
 export function startSession(socket: IO.Socket) {
-    sessions[socket.id] = { socket, boards: [], nickname: "Anonymous " + randomProfession() }
+    sessions[socket.id] = { socket, boards: [], userInfo: anonymousUser("Anonymous " + randomProfession()) }
 }
+
+function anonymousUser(nickname: string): EventUserInfo {
+    return { userType: "unidentified", nickname }
+}
+
 export function endSession(socket: IO.Socket) {
     const boards = sessions[socket.id].boards
     delete sessions[socket.id]
@@ -40,8 +46,7 @@ export function getBoardSessionCount(id: Id) {
     return everyoneOnTheBoard(id).length
 }
 export function getSessionUserInfo(socket: IO.Socket): EventUserInfo {
-    const nickname = sessions[socket.id].nickname
-    return { userType: "unidentified", nickname }
+    return sessions[socket.id].userInfo
 }
 
 async function createBoardInit(
@@ -69,19 +74,22 @@ export async function addSessionToBoard(boardState: ServerSideBoardState, origin
     const session = sessions[origin.id]
     if (!session) throw new Error("No session found for socket " + origin.id)
     session.boards.push(boardState.board.id)
+
+    // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
+    // TODO: what to include in joined events? Not just nickname, as we want to show who's identified (beside the cursor)
     session.socket.send("app-event", await createBoardInit(boardState, initAtSerial))
     session.socket.send("app-event", {
         action: "board.join.ack",
         boardId: boardState.board.id,
         userId: session.socket.id,
-        nickname: session.nickname,
+        nickname: session.userInfo.nickname,
     })
     everyoneOnTheBoard(boardState.board.id).forEach((s) => {
         session.socket.send("app-event", {
             action: "board.joined",
             boardId: boardState.board.id,
             userId: s.socket.id,
-            nickname: s.nickname,
+            nickname: s.userInfo.nickname,
         })
     })
     broadcastJoinEvent(boardState.board.id, session)
@@ -95,11 +103,30 @@ export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
                 console.warn("Trying to set nickname for other session")
                 return
             }
-            session.nickname = event.nickname
+
+            session.userInfo =
+                session.userInfo.userType === "unidentified"
+                    ? anonymousUser(event.nickname)
+                    : { ...session.userInfo, nickname: event.nickname }
             for (const boardId of session.boards) {
                 everyoneElseOnTheSameBoard(boardId, origin).forEach((s) => s.socket.send("app-event", event))
             }
         })
+}
+
+export function setVerifiedUserForSession(event: AuthLogin, origin: IO.Socket) {
+    const session = Object.values(sessions).find((s) => s.socket === origin)
+    if (!session) {
+        console.warn("Session not found for socket " + origin.id)
+    } else {
+        session.userInfo = { userType: "authenticated", nickname: event.name, name: event.name, email: event.email }
+        for (const boardId of session.boards) {
+            // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
+            everyoneElseOnTheSameBoard(boardId, origin).forEach((s) =>
+                s.socket.send("app-event", { ...event, token: "********" }),
+            )
+        }
+    }
 }
 
 export function broadcastBoardEvent(event: BoardHistoryEntry, origin?: IO.Socket) {
@@ -116,7 +143,7 @@ export function broadcastJoinEvent(boardId: Id, session: UserSession) {
             action: "board.joined",
             boardId,
             userId: session.socket.id,
-            nickname: session.nickname,
+            nickname: session.userInfo,
         })
     })
 }

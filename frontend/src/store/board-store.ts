@@ -16,6 +16,7 @@ import {
     isBoardHistoryEntry,
     Serial,
     BoardWithHistory,
+    EventUserInfo,
 } from "../../../common/src/domain"
 import { boardHistoryReducer } from "../../../common/src/board-history-reducer"
 import { foldActions } from "../../../common/src/action-folding"
@@ -24,6 +25,7 @@ import { buildBoardFromHistory } from "../../../common/src/migration"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
 import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
 import { boardReducer } from "../../../common/src/board-reducer"
+import { userInfo } from "../google-auth"
 
 export type BoardAppState = {
     board: Board | undefined
@@ -79,9 +81,19 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
         return isPersistableBoardItemEvent(e) ? getUserFromState(e) : e
     }
     function getUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
+        const googleUser = userInfo.get()
+        const user: EventUserInfo =
+            googleUser.status === "signed-in" // The user info will actually be overridden by the server!
+                ? {
+                      userType: "authenticated",
+                      nickname: googleUser.name,
+                      name: googleUser.name,
+                      email: googleUser.email,
+                  }
+                : { userType: "unidentified", nickname: state.get().nickname || "UNKNOWN" }
         return {
             ...e,
-            user: { userType: "unidentified", nickname: state.get().nickname || "UNKNOWN" },
+            user,
             timestamp: new Date().toISOString(),
         }
     }

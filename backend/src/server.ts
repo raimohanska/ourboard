@@ -1,4 +1,5 @@
 import dotenv from "dotenv"
+dotenv.config()
 import express from "express"
 import * as Http from "http"
 import * as Https from "https"
@@ -27,8 +28,6 @@ import { encode as htmlEncode } from "html-entities"
 import { item } from "lonna"
 
 const configureServer = () => {
-    dotenv.config()
-
     const config = getConfig()
 
     const app = express()
