@@ -135,7 +135,7 @@ export function logoutUser(event: AuthLogout, origin: IO.Socket) {
     if (!session) {
         console.warn("Session not found for socket " + origin.id)
     } else {
-        session.userInfo = { userType: "unidentified", nickname: session.userInfo.nickname }        
+        session.userInfo = { userType: "unidentified", nickname: session.userInfo.nickname }
     }
 }
 

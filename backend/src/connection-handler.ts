@@ -114,7 +114,7 @@ async function handleAppEvent(
             case "auth.logout": {
                 const user = getSessionUserInfo(socket)
                 if (user.userType === "authenticated") {
-                    logoutUser(appEvent, socket)                
+                    logoutUser(appEvent, socket)
                     console.log(`${user.name} logged out`)
                 }
                 return
