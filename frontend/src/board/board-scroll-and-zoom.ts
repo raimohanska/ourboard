@@ -70,7 +70,7 @@ export function boardScrollAndZoomHandler(
                 event.preventDefault()
                 const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
                 const step = 1.04
-                zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.04, 10))
+                zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 10))
                 coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
             } else {
                 // If the user seems to be using a trackpad, and they haven't manually configured their control mode yet,
@@ -92,37 +92,6 @@ export function boardScrollAndZoomHandler(
                 }
             }
         }
-    }
-
-    // Scroll to approximately the middle when the board first renders
-    // Galaxy brain hack: disable this in cypress tests because I'm too lazy to make it work
-    // @ts-ignore
-    if (!window.IS_CYPRESS) {
-        // Assume that when viewRect "stabilizes" for a while,
-        // the app initialization is done and then we try to autocenter the board
-        let autoCenterTimeout: NodeJS.Timeout | null = null
-        let hasBeenAutocentered = false
-        viewRect.forEach(() => {
-            if (hasBeenAutocentered) {
-                return
-            }
-            const el = boardElement.get()
-            if (!el) return
-            const MAGIC_NUMBER = 10 // it's not a hack if it's in CONSTANT_CASE
-
-            if (autoCenterTimeout !== null) {
-                clearTimeout(autoCenterTimeout)
-            }
-            autoCenterTimeout = setTimeout(() => {
-                const { offsetWidth, offsetHeight } = el
-                const scrollContainer = scrollElement.get()!
-
-                const scrollToX = offsetWidth / 2 - scrollContainer.clientWidth / 2
-                const scrollToY = offsetHeight / 2 - scrollContainer.clientHeight / 2
-                scrollContainer.scrollTo(scrollToX, scrollToY)
-                hasBeenAutocentered = true
-            }, MAGIC_NUMBER)
-        })
     }
 
     H.onMount(() => {

@@ -17,7 +17,6 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Property<Rect>; b
             height: (vr.height * mm.height) / b.height + "em",
             left: Math.max(0, (vr.x * mm.width) / b.width) + "em",
             top: Math.max(0, (vr.y * mm.height) / b.height) + "em",
-            border: "1px solid red",
         }
     })
     return (
