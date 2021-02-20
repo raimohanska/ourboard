@@ -3,15 +3,18 @@ import * as L from "lonna"
 import { h } from "harmaja"
 
 import "./app.scss"
-import { BoardAppState, stateStore } from "./store/state-store"
+import { PartialState, stateStore } from "./store/state-store"
 import { BoardView } from "./board/BoardView"
 import { syncStatusStore } from "./store/sync-status-store"
-import { UserCursorPosition } from "../../common/src/domain"
+import { BoardHistoryEntry, Id, ItemLocks, UserCursorPosition, UserSessionInfo } from "../../common/src/domain"
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
 import { storeRecentBoard } from "./store/recent-boards"
 import { userInfo } from "./google-auth"
 import { serverConnection } from "./store/server-connection"
+import { boardStore, BoardState } from "./store/board-store"
+
+export type BoardAppState = BoardState & PartialState
 
 const App = () => {
     const nicknameFromURL = new URLSearchParams(location.search).get("nickname")
@@ -25,17 +28,13 @@ const App = () => {
     const boardId = boardIdFromPath()
     const connection = serverConnection()
     const store = stateStore(connection, boardId, localStorage)
-    const assets = assetStore(connection.socket, store)
+    const bs = boardStore(connection.bufferedServerEvents, connection.uiEvents, connection.messageQueue, store.userInfo, store.userId)
+    const assets = assetStore(connection.socket, L.view(bs.state, "board"), store.events)
     const syncStatus = syncStatusStore(connection.socket, connection.queueSize)
-    const showingBoardId = store.state.pipe(L.map((s: BoardAppState) => (s.board ? s.board.id : undefined)))
-    const cursors: L.Property<UserCursorPosition[]> = L.view(store.state, (s) => {
-        const otherCursors = { ...s.cursors }
-        s.userId && delete otherCursors[s.userId]
-        return Object.values(otherCursors)
-    })
-    const state = store.state
+    const showingBoardId = bs.state.pipe(L.map((s: BoardState) => (s.board ? s.board.id : undefined)))
+    
 
-    const title = L.view(store.state, (s) => (s.board ? `${s.board.name} - R-Board` : "R-Board"))
+    const title = L.view(bs.state, (s) => (s.board ? `${s.board.name} - R-Board` : "R-Board"))
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
     const connectedBoard = L.view(connection.connected, (c) => (c ? boardId : undefined))
@@ -57,7 +56,7 @@ const App = () => {
         const user = userInfo.get()
         switch (user.status) {
             case "signed-in":
-                store.dispatch({ action: "nickname.set", nickname: user.name, userId: state.get().userId! })
+                store.dispatch({ action: "nickname.set", nickname: user.name, userId: store.userId.get()! })
                 store.dispatch({ action: "auth.login", name: user.name, email: user.email, token: user.token })
                 return
             case "signed-out":
@@ -70,9 +69,11 @@ const App = () => {
         }
     })
 
-    L.view(store.state, "board").forEach((b) => {
+    L.view(bs.state, "board").forEach((b) => {
         b && storeRecentBoard(b)
     })
+
+    const state = L.view(store.state, bs.state, (s, bs) => ({ ...s, ...bs }))
 
     return L.view(store.boardId, (boardId) =>
         boardId ? (
@@ -83,7 +84,7 @@ const App = () => {
                         <BoardView
                             {...{
                                 boardId,
-                                cursors,
+                                cursors: L.view(bs.state, "cursors"),
                                 assets,
                                 state,
                                 dispatch: store.dispatch,

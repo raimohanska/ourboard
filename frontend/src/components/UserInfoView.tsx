@@ -1,8 +1,9 @@
 import { h, Fragment } from "harmaja"
 import * as L from "lonna"
-import { BoardAppState, Dispatch } from "../store/state-store"
+import { Dispatch } from "../store/state-store"
 import { EditableSpan } from "./EditableSpan"
 import { signIn, signOut, userInfo } from "../google-auth"
+import { BoardAppState } from ".."
 
 export const UserInfoView = ({ state, dispatch }: { state: L.Property<BoardAppState>; dispatch: Dispatch }) => {
     return (

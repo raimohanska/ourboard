@@ -1,17 +1,18 @@
 import * as L from "lonna"
-import { AppEvent, AssetPutUrlResponse } from "../../../common/src/domain"
+import { AppEvent, AssetPutUrlResponse, Board } from "../../../common/src/domain"
 import { StateStore } from "./state-store"
 import md5 from "md5"
+import { BoardStore } from "./board-store"
 
 export type AssetId = string
 export type AssetURL = string
 
-export function assetStore(socket: typeof io.Socket, store: StateStore) {
+export function assetStore(socket: typeof io.Socket, board: L.Property<Board | undefined>, events: L.EventStream<AppEvent>) {
     let dataURLs: Record<AssetId, AssetURL> = {}
 
     function assetExists(assetId: string): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            if (store.state.get().board!.items.find((i) => i.type === "image" && i.assetId === assetId && i.src)) {
+            if (board.get()!.items.find((i) => i.type === "image" && i.assetId === assetId && i.src)) {
                 resolve(true)
             }
             const img = new Image()
@@ -42,7 +43,7 @@ export function assetStore(socket: typeof io.Socket, store: StateStore) {
                             return url
                         }
                         socket.send("app-events", [{ action: "asset.put.request", assetId }])
-                        const signedUrl = await getAssetPutResponse(assetId, store.events)
+                        const signedUrl = await getAssetPutResponse(assetId, events)
 
                         const response = await fetch(signedUrl, {
                             method: "PUT",

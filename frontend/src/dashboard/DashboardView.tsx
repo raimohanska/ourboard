@@ -3,10 +3,11 @@ import * as L from "lonna"
 import { exampleBoard } from "../../../common/src/domain"
 import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components"
-import { BoardAppState, Dispatch } from "../store/state-store"
+import { Dispatch } from "../store/state-store"
 import { getRecentBoards, removeRecentBoard } from "../store/recent-boards"
 
 import { signIn, signOut, userInfo } from "../google-auth"
+import { BoardAppState } from ".."
 
 export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppState>; dispatch: Dispatch }) => {
     return (

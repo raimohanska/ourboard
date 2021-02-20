@@ -28,12 +28,20 @@ import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./boar
 import MessageQueue from "./message-queue"
 
 export type BoardStore = ReturnType<typeof boardStore>
+export type BoardState = {
+    board: Board | undefined
+    history: BoardHistoryEntry[]
+    cursors: UserCursorPosition[]
+    locks: ItemLocks
+    users: UserSessionInfo[]
+}
 
 export function boardStore(
     bufferedServerEvents: L.EventStream<EventFromServer>,
     uiEvents: L.EventStream<UIEvent>,
     messageQueue: ReturnType<typeof MessageQueue>,
     userInfo: L.Property<EventUserInfo>,
+    sessionId: L.Property<string | null>
 ) {
     type BoardStoreEvent =
         | BoardHistoryEntry
@@ -41,13 +49,6 @@ export function boardStore(
         | BoardStateSyncEvent
         | LocalUIEvent
         | ClientToServerRequest
-    type BoardState = {
-        board: Board | undefined
-        history: BoardHistoryEntry[]
-        cursors: Record<Id, UserCursorPosition>
-        locks: ItemLocks
-        users: UserSessionInfo[]
-    }
     let undoStack: PersistableBoardItemEvent[] = []
     let redoStack: PersistableBoardItemEvent[] = []
 
@@ -114,7 +115,12 @@ export function boardStore(
         } else if (event.action === "board.locks") {
             return { ...state, locks: event.locks }
         } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
-            return { ...state, cursors: event.p }
+
+            const otherCursors = { ...event.p }
+            const session = sessionId.get()
+            session && delete otherCursors[session]
+            const cursors = Object.values(otherCursors)
+            return { ...state, cursors }
         } else if (event.action === "board.joined") {
             return { ...state, users: state.users.concat({ userId: event.userId, nickname: event.nickname }) }
         } else if (event.action === "nickname.set") {
@@ -129,7 +135,7 @@ export function boardStore(
     const initialState = {
         board: undefined,
         history: [],
-        cursors: {},
+        cursors: [],
         locks: {},
         users: [],
     }
