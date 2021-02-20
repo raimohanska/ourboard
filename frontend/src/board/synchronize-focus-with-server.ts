@@ -24,8 +24,7 @@ export function synchronizeFocusWithServer(
     userId: L.Property<string | null>,
     dispatch: Dispatch,
 ): L.Atom<BoardFocus> {
-
-    // TODO: not sure if good: item.lock is never dispatched. Instead locker.ts locks items based on 
+    // TODO: not sure if good: item.lock is never dispatched. Instead locker.ts locks items based on
     // PersistableBoardItemEvents, i.e. relies on the client to send an item.front or similar on selection
 
     // represents the raw user selection, including possible illegal selections

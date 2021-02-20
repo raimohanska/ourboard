@@ -1,6 +1,13 @@
 import { foldActions } from "./action-folding"
 import { boardReducer } from "./board-reducer"
-import { AppEvent, BoardHistoryEntry, BoardWithHistory, EventFromServer, isPersistableBoardItemEvent, PersistableBoardItemEvent } from "./domain"
+import {
+    AppEvent,
+    BoardHistoryEntry,
+    BoardWithHistory,
+    EventFromServer,
+    isPersistableBoardItemEvent,
+    PersistableBoardItemEvent,
+} from "./domain"
 
 export function boardHistoryReducer(
     board: BoardWithHistory,

@@ -71,20 +71,11 @@ export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id>
 export type BoardEvent = { boardId: Id }
 // TODO: Undo, Redo at least shouldn't be EventFromServer!
-export type UIEvent = 
-    | BoardItemEvent 
-    | ClientToServerRequest 
-    | LocalUIEvent
-export type LocalUIEvent = Undo | Redo
-export type EventFromServer = 
-    | BoardHistoryEntry 
-    | BoardStateSyncEvent 
+export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
+export type LocalUIEvent = Undo | Redo
+export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent
 export type Serial = number
-export type AppEvent = 
-    BoardItemEvent 
-    | BoardStateSyncEvent 
-    | LocalUIEvent 
-    | ClientToServerRequest
+export type AppEvent = BoardItemEvent | BoardStateSyncEvent | LocalUIEvent | ClientToServerRequest
 export type PersistableBoardItemEvent =
     | AddItem
     | UpdateItem
@@ -95,13 +86,11 @@ export type PersistableBoardItemEvent =
     | RenameBoard
 export type BoardInit = InitBoardNew | InitBoardDiff
 export type TransientBoardItemEvent = LockItem | UnlockItem
-export type BoardItemEvent = 
-    PersistableBoardItemEvent 
-    | TransientBoardItemEvent
-export type BoardStateSyncEvent = 
-    | BoardInit 
-    | BoardSerialAck 
-    | GotBoardLocks 
+export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
+export type BoardStateSyncEvent =
+    | BoardInit
+    | BoardSerialAck
+    | GotBoardLocks
     | CursorPositions
     | JoinedBoard
     | AckJoinBoard
@@ -109,7 +98,7 @@ export type BoardStateSyncEvent =
 export type ClientToServerRequest =
     | CursorMove
     | AddBoard
-    | LockItem 
+    | LockItem
     | UnlockItem
     | JoinBoard
     | SetNickname // TODO: Not just a request

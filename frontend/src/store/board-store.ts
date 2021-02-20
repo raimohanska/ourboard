@@ -35,7 +35,12 @@ export function boardStore(
     messageQueue: ReturnType<typeof MessageQueue>,
     userInfo: L.Property<EventUserInfo>,
 ) {
-    type BoardStoreEvent = BoardHistoryEntry | TransientBoardItemEvent | BoardStateSyncEvent | LocalUIEvent | ClientToServerRequest
+    type BoardStoreEvent =
+        | BoardHistoryEntry
+        | TransientBoardItemEvent
+        | BoardStateSyncEvent
+        | LocalUIEvent
+        | ClientToServerRequest
     type BoardState = {
         board: Board | undefined
         history: BoardHistoryEntry[]
@@ -114,7 +119,7 @@ export function boardStore(
             return { ...state, users: state.users.concat({ userId: event.userId, nickname: event.nickname }) }
         } else if (event.action === "nickname.set") {
             const users = state.users.map((u) => (u.userId === event.userId ? { ...u, nickname: event.nickname } : u))
-            return { ...state, users }            
+            return { ...state, users }
         } else {
             // Ignore other events
             return state
@@ -126,7 +131,7 @@ export function boardStore(
         history: [],
         cursors: {},
         locks: {},
-        users: [],        
+        users: [],
     }
 
     function tagWithUser(e: UIEvent): BoardHistoryEntry | ClientToServerRequest | LocalUIEvent {

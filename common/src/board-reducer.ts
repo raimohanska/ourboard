@@ -1,6 +1,19 @@
-import { AppEvent, Board, Id, Item, getItem, findItem, findItemIdsRecursively, isBoardHistoryEntry, PersistableBoardItemEvent } from "./domain"
+import {
+    AppEvent,
+    Board,
+    Id,
+    Item,
+    getItem,
+    findItem,
+    findItemIdsRecursively,
+    isBoardHistoryEntry,
+    PersistableBoardItemEvent,
+} from "./domain"
 
-export function boardReducer(board: Board, event: PersistableBoardItemEvent): [Board, PersistableBoardItemEvent | null] {
+export function boardReducer(
+    board: Board,
+    event: PersistableBoardItemEvent,
+): [Board, PersistableBoardItemEvent | null] {
     if (isBoardHistoryEntry(event) && event.serial && event.serial > board.serial) {
         board = { ...board, serial: event.serial }
     }

@@ -2,21 +2,14 @@ import * as L from "lonna"
 import { globalScope } from "lonna"
 import {
     AppEvent,
-
     Board,
     BoardHistoryEntry,
-
     EventUserInfo,
     Id,
-    ItemLocks, UIEvent,
-
-
-
-
-
-
+    ItemLocks,
+    UIEvent,
     UserCursorPosition,
-    UserSessionInfo
+    UserSessionInfo,
 } from "../../../common/src/domain"
 import { userInfo as googleUser } from "../google-auth"
 import { getInitialBoardState } from "./board-local-store"
@@ -36,7 +29,6 @@ export type BoardAppState = {
 export type StateStore = ReturnType<typeof stateStore>
 
 export type Dispatch = (e: UIEvent) => void
-
 
 export function stateStore(connection: ServerConnection, boardId: Id | undefined, localStorage: Storage) {
     const { uiEvents, bufferedServerEvents, dispatch, messageQueue } = connection

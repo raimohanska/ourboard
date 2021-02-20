@@ -2,9 +2,7 @@ import * as L from "lonna"
 import { globalScope } from "lonna"
 import io from "socket.io-client"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
-import {
-    EventFromServer, UIEvent
-} from "../../../common/src/domain"
+import { EventFromServer, UIEvent } from "../../../common/src/domain"
 import MessageQueue from "./message-queue"
 
 export type Dispatch = (e: UIEvent) => void
@@ -52,7 +50,6 @@ export function serverConnection() {
 
     const events = L.merge(uiEvents, bufferedServerEvents)
 
-
     return {
         uiEvents,
         messageQueue,
@@ -61,6 +58,6 @@ export function serverConnection() {
         connected,
         events,
         queueSize: messageQueue.queueSize,
-        socket
+        socket,
     }
 }

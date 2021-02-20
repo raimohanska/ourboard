@@ -21,7 +21,6 @@ const App = () => {
         search.delete("nickname")
         document.location.search = search.toString()
     }
-    
 
     const boardId = boardIdFromPath()
     const connection = serverConnection()
