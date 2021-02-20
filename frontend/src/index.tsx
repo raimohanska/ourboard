@@ -1,7 +1,7 @@
 import * as H from "harmaja"
 import * as L from "lonna"
 import { h } from "harmaja"
-import io from "socket.io-client"
+
 import "./app.scss"
 import { BoardAppState, stateStore } from "./store/state-store"
 import { BoardView } from "./board/BoardView"
@@ -11,6 +11,7 @@ import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
 import { storeRecentBoard } from "./store/recent-boards"
 import { userInfo } from "./google-auth"
+import { serverConnection } from "./store/server-connection"
 
 const App = () => {
     const nicknameFromURL = new URLSearchParams(location.search).get("nickname")
@@ -20,13 +21,13 @@ const App = () => {
         search.delete("nickname")
         document.location.search = search.toString()
     }
-    const socket = io()
+    
 
     const boardId = boardIdFromPath()
-
-    const store = stateStore(socket, boardId, localStorage)
-    const assets = assetStore(socket, store)
-    const syncStatus = syncStatusStore(socket, store.queueSize)
+    const connection = serverConnection()
+    const store = stateStore(connection, boardId, localStorage)
+    const assets = assetStore(connection.socket, store)
+    const syncStatus = syncStatusStore(connection.socket, connection.queueSize)
     const showingBoardId = store.state.pipe(L.map((s: BoardAppState) => (s.board ? s.board.id : undefined)))
     const cursors: L.Property<UserCursorPosition[]> = L.view(store.state, (s) => {
         const otherCursors = { ...s.cursors }
@@ -38,7 +39,7 @@ const App = () => {
     const title = L.view(store.state, (s) => (s.board ? `${s.board.name} - R-Board` : "R-Board"))
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
-    const connectedBoard = L.view(store.connected, (c) => (c ? boardId : undefined))
+    const connectedBoard = L.view(connection.connected, (c) => (c ? boardId : undefined))
 
     connectedBoard.forEach((boardId) => {
         if (!boardId) {
@@ -48,7 +49,7 @@ const App = () => {
         }
     })
     L.merge(
-        store.connected.pipe(
+        connection.connected.pipe(
             L.changes,
             L.filter((c: boolean) => c),
         ),

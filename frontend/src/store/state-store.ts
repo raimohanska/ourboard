@@ -1,22 +1,27 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
-import { addOrReplaceEvent } from "../../../common/src/action-folding"
 import {
     AppEvent,
-    UIEvent,
+
     Board,
     BoardHistoryEntry,
-    EventFromServer,
+
     EventUserInfo,
     Id,
-    ItemLocks,
+    ItemLocks, UIEvent,
+
+
+
+
+
+
     UserCursorPosition,
-    UserSessionInfo,
+    UserSessionInfo
 } from "../../../common/src/domain"
 import { userInfo as googleUser } from "../google-auth"
 import { getInitialBoardState } from "./board-local-store"
 import { boardStore } from "./board-store"
-import MessageQueue from "./message-queue"
+import { ServerConnection } from "./server-connection"
 
 export type BoardAppState = {
     board: Board | undefined
@@ -32,44 +37,9 @@ export type StateStore = ReturnType<typeof stateStore>
 
 export type Dispatch = (e: UIEvent) => void
 
-const SERVER_EVENTS_BUFFERING_MILLIS = 20
 
-export function stateStore(socket: typeof io.Socket, boardId: Id | undefined, localStorage: Storage) {
-    const uiEvents = L.bus<UIEvent>()
-    const dispatch: Dispatch = uiEvents.push
-    const serverEvents = L.bus<EventFromServer>()
-    const bufferedServerEvents = serverEvents.pipe(
-        L.bufferWithTime(SERVER_EVENTS_BUFFERING_MILLIS),
-        L.flatMap((events) => {
-            return L.fromArray(
-                events.reduce((folded, next) => addOrReplaceEvent(next, folded), [] as EventFromServer[]),
-            )
-        }, globalScope),
-    )
-    const messageQueue = MessageQueue(socket)
-    const connected = L.atom(false)
-    socket.on("connect", () => {
-        console.log("Socket connected")
-        messageQueue.onConnect()
-        connected.set(true)
-    })
-    socket.on("disconnect", () => {
-        console.log("Socket disconnected")
-        connected.set(false)
-    })
-    socket.on("message", function (kind: string, event: EventFromServer) {
-        if (kind === "app-event") {
-            serverEvents.push(event)
-        }
-    })
-    L.pipe(
-        uiEvents,
-        L.filter((e: UIEvent) => e.action !== "ui.undo" && e.action !== "ui.redo"),
-    ).forEach(messageQueue.enqueue)
-
-    // uiEvents.log("UI")
-    // serverEvents.log("Server")
-
+export function stateStore(connection: ServerConnection, boardId: Id | undefined, localStorage: Storage) {
+    const { uiEvents, bufferedServerEvents, dispatch, messageQueue } = connection
     const events = L.merge(uiEvents, bufferedServerEvents)
 
     type PartialState = {
@@ -137,9 +107,7 @@ export function stateStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     return {
         state,
         dispatch,
-        connected,
         events,
-        queueSize: messageQueue.queueSize,
         boardId: L.constant(boardId),
         joinBoard,
     }
