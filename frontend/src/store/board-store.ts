@@ -1,93 +1,47 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
+import { foldActions } from "../../../common/src/action-folding"
+import { boardHistoryReducer } from "../../../common/src/board-history-reducer"
+import { boardReducer } from "../../../common/src/board-reducer"
 import {
     AppEvent,
     Board,
-    EventFromServer,
-    CURSOR_POSITIONS_ACTION_TYPE,
-    Id,
-    ItemLocks,
-    UserCursorPosition,
-    UserSessionInfo,
-    isPersistableBoardItemEvent,
     BoardHistoryEntry,
-    isBoardItemEvent,
-    PersistableBoardItemEvent,
-    Serial,
+    CURSOR_POSITIONS_ACTION_TYPE,
+    EventFromServer,
     EventUserInfo,
+    Id,
+    isBoardItemEvent,
+    isPersistableBoardItemEvent,
+    ItemLocks,
+    PersistableBoardItemEvent,
+    UserCursorPosition,
 } from "../../../common/src/domain"
-import { boardHistoryReducer } from "../../../common/src/board-history-reducer"
-import { foldActions } from "../../../common/src/action-folding"
-import MessageQueue from "./message-queue"
-import { addOrReplaceEvent } from "../../../common/src/action-folding"
 import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
-import { boardReducer } from "../../../common/src/board-reducer"
-import { userInfo } from "../google-auth"
-
-export type BoardAppState = {
-    board: Board | undefined
-    history: BoardHistoryEntry[]
-    userId: Id | null
-    nickname: string | undefined
-    users: UserSessionInfo[]
-    cursors: Record<Id, UserCursorPosition>
-    locks: ItemLocks
-}
+import MessageQueue from "./message-queue"
 
 export type BoardStore = ReturnType<typeof boardStore>
 
-export type Dispatch = (e: AppEvent) => void
-
-const SERVER_EVENTS_BUFFERING_MILLIS = 20
-
-export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, localStorage: Storage) {
-    const uiEvents = L.bus<AppEvent>()
-    const dispatch: Dispatch = uiEvents.push
-    const serverEvents = L.bus<EventFromServer>()
-    const bufferedServerEvents = serverEvents.pipe(
-        L.bufferWithTime(SERVER_EVENTS_BUFFERING_MILLIS),
-        L.flatMap((events) => {
-            return L.fromArray(
-                events.reduce((folded, next) => addOrReplaceEvent(next, folded), [] as EventFromServer[]),
-            )
-        }, globalScope),
-    )
-    const messageQueue = MessageQueue(socket)
-    const connected = L.atom(false)
-    socket.on("connect", () => {
-        console.log("Socket connected")
-        messageQueue.onConnect()
-        connected.set(true)
-    })
-    socket.on("disconnect", () => {
-        console.log("Socket disconnected")
-        connected.set(false)
-    })
-    socket.on("message", function (kind: string, event: EventFromServer) {
-        if (kind === "app-event") {
-            serverEvents.push(event)
-        }
-    })
-    L.pipe(
-        uiEvents,
-        L.filter((e: AppEvent) => e.action !== "undo" && e.action !== "redo"),
-    ).forEach(messageQueue.enqueue)
-    const userTaggedLocalEvents = L.view(uiEvents, tagWithUser)
+export function boardStore(
+    bufferedServerEvents: L.EventStream<EventFromServer>,
+    uiEvents: L.EventStream<AppEvent>,
+    messageQueue: ReturnType<typeof MessageQueue>,
+    userInfo: L.Property<EventUserInfo>,
+) {
+    type BoardState = { 
+        board: Board | undefined
+        history: BoardHistoryEntry[] 
+        cursors: Record<Id, UserCursorPosition>
+        locks: ItemLocks
+    }
+    let undoStack: AppEvent[] = []
+    let redoStack: AppEvent[] = []
 
     function tagWithUser(e: AppEvent): EventFromServer {
-        return isPersistableBoardItemEvent(e) ? getUserFromState(e) : e
+        return isPersistableBoardItemEvent(e) ? tagWithUserFromState(e) : e
     }
-    function getUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
-        const googleUser = userInfo.get()
-        const user: EventUserInfo =
-            googleUser.status === "signed-in" // The user info will actually be overridden by the server!
-                ? {
-                      userType: "authenticated",
-                      nickname: googleUser.name,
-                      name: googleUser.name,
-                      email: googleUser.email,
-                  }
-                : { userType: "unidentified", nickname: state.get().nickname || "UNKNOWN" }
+    function tagWithUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
+        const user: EventUserInfo = userInfo.get()
         return {
             ...e,
             user,
@@ -95,14 +49,7 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
         }
     }
 
-    // uiEvents.log("UI")
-    // serverEvents.log("Server")
-
-    const events = L.merge(userTaggedLocalEvents, bufferedServerEvents)
-    let undoStack: AppEvent[] = []
-    let redoStack: AppEvent[] = []
-    // TODO: there's currently no checking of boardId match - if client has multiple boards, this needs to be improved
-    const eventsReducer = (state: BoardAppState, event: EventFromServer): BoardAppState => {
+    const eventsReducer = (state: BoardState, event: EventFromServer): BoardState => {
         if (event.action === "undo") {
             if (!undoStack.length) return state
             const undoOperation = undoStack.pop()!
@@ -151,29 +98,14 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
                 console.log("Init as new board")
                 return { ...state, board: event.board, history: [] }
             }
-        } else if (event.action === "board.join.ack") {
-            let nickname = event.nickname
-            if (localStorage.nickname && localStorage.nickname !== event.nickname) {
-                nickname = localStorage.nickname
-                dispatch({ action: "nickname.set", userId: event.userId, nickname })
-            }
-            return { ...state, userId: event.userId, nickname }
         } else if (event.action === "board.serial.ack") {
             return { ...state, board: state.board ? { ...state.board, serial: event.serial } : state.board }
-        } else if (event.action === "board.joined") {
-            return { ...state, users: state.users.concat({ userId: event.userId, nickname: event.nickname }) }
         } else if (event.action === "board.locks") {
             return { ...state, locks: event.locks }
         } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
             return { ...state, cursors: event.p }
-        } else if (event.action === "cursor.move") {
-            return state
-        } else if (event.action === "nickname.set") {
-            const nickname = event.userId === state.userId ? storeNickName(event.nickname) : state.nickname
-            const users = state.users.map((u) => (u.userId === event.userId ? { ...u, nickname: event.nickname } : u))
-            return { ...state, users, nickname }
         } else {
-            console.warn("Unhandled event", event)
+            // Ignore other events
             return state
         }
     }
@@ -181,12 +113,12 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     const initialState = {
         board: undefined,
         history: [],
-        userId: null,
-        nickname: undefined,
-        users: [],
         cursors: {},
         locks: {},
     }
+
+    const userTaggedLocalEvents = L.view(uiEvents, tagWithUser)
+    const events = L.merge(userTaggedLocalEvents, bufferedServerEvents)
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
     const board = L.view(state, "board") as L.Property<Board>
 
@@ -202,32 +134,12 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     )
     localBoardToSave.forEach(storeBoardState)
 
-    function joinBoard(boardId: Id) {
-        console.log("Joining board", boardId)
-        dispatch({
-            action: "board.join",
-            boardId,
-            initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
-        })
-    }
-
     return {
         state,
-        dispatch,
-        connected,
-        events,
-        queueSize: messageQueue.queueSize,
-        boardId: L.constant(boardId),
-        joinBoard,
-    }
-
-    function storeNickName(nickname: string) {
-        localStorage.nickname = nickname
-        return nickname
     }
 }
 
-export function addToStack(event: AppEvent, b: AppEvent[]) {
+function addToStack(event: AppEvent, b: AppEvent[]) {
     const latest = b[b.length - 1]
     if (latest) {
         const folded = foldActions(event, latest) // The order is like this, because when applied the new event would be applied before the one in the stack

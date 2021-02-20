@@ -1,6 +1,6 @@
 import { h, Fragment } from "harmaja"
 import * as L from "lonna"
-import { BoardAppState, Dispatch } from "../store/board-store"
+import { BoardAppState, Dispatch } from "../store/state-store"
 import { EditableSpan } from "./EditableSpan"
 import { signIn, signOut, userInfo } from "../google-auth"
 

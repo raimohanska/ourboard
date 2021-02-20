@@ -3,14 +3,13 @@ import * as L from "lonna"
 import { h } from "harmaja"
 import io from "socket.io-client"
 import "./app.scss"
-import { BoardAppState, boardStore } from "./store/board-store"
+import { BoardAppState, stateStore } from "./store/state-store"
 import { BoardView } from "./board/BoardView"
 import { syncStatusStore } from "./store/sync-status-store"
-import { Board, exampleBoard, UserCursorPosition } from "../../common/src/domain"
+import { UserCursorPosition } from "../../common/src/domain"
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
 import { storeRecentBoard } from "./store/recent-boards"
-import { getInitialBoardState } from "./store/board-local-store"
 import { userInfo } from "./google-auth"
 
 const App = () => {
@@ -25,7 +24,7 @@ const App = () => {
 
     const boardId = boardIdFromPath()
 
-    const store = boardStore(socket, boardId, localStorage)
+    const store = stateStore(socket, boardId, localStorage)
     const assets = assetStore(socket, store)
     const syncStatus = syncStatusStore(socket, store.queueSize)
     const showingBoardId = store.state.pipe(L.map((s: BoardAppState) => (s.board ? s.board.id : undefined)))

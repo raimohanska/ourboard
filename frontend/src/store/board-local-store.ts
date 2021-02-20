@@ -1,4 +1,4 @@
-import { BoardWithHistory, Id, Serial } from "../../../common/src/domain"
+import { BoardWithHistory, Id } from "../../../common/src/domain"
 
 export type LocalStorageBoard = {
     boardWithHistory: BoardWithHistory

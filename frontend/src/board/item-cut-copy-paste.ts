@@ -4,7 +4,7 @@ import * as uuid from "uuid"
 import { Board, Item, findItemsRecursively } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedIds } from "./board-focus"
-import { Dispatch } from "../store/board-store"
+import { Dispatch } from "../store/state-store"
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 

@@ -1,7 +1,7 @@
 import { h, Fragment } from "harmaja"
 import * as L from "lonna"
 import { EditableSpan } from "../components/EditableSpan"
-import { BoardAppState, Dispatch } from "../store/board-store"
+import { BoardAppState, Dispatch } from "../store/state-store"
 
 export const BoardMenu = ({
     boardId,

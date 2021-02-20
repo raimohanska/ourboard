@@ -70,6 +70,7 @@ export type ColoredItem = Item & { color: Color }
 export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id>
 
+// TODO: Undo, Redo at least shouldn't be EventFromServer!
 export type EventFromServer = BoardHistoryEntry | TransientBoardItemEvent | OtherAppEvent
 export type Serial = number
 export type AppEvent = BoardItemEvent | OtherAppEvent

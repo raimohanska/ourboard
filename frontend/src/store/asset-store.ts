@@ -1,12 +1,12 @@
 import * as L from "lonna"
 import { AppEvent, AssetPutUrlResponse } from "../../../common/src/domain"
-import { BoardStore } from "./board-store"
+import { StateStore } from "./state-store"
 import md5 from "md5"
 
 export type AssetId = string
 export type AssetURL = string
 
-export function assetStore(socket: typeof io.Socket, store: BoardStore) {
+export function assetStore(socket: typeof io.Socket, store: StateStore) {
     let dataURLs: Record<AssetId, AssetURL> = {}
 
     function assetExists(assetId: string): Promise<boolean> {

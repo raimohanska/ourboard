@@ -1,7 +1,7 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import { Board } from "../../../common/src/domain"
-import { Dispatch } from "../store/board-store"
+import { Dispatch } from "../store/state-store"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 
 export function itemSelectionHandler(
