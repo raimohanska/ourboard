@@ -80,7 +80,9 @@ export function stateStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     // TODO: there's currently no checking of boardId match - if client has multiple boards, this needs to be improved
     // TODO: get event types right, can we?
     const eventsReducer = (state: PartialState, event: AppEvent): PartialState => {
-        if (event.action === "board.join.ack") {
+        if (event.action === "board.joined") {
+            return { ...state, users: state.users.concat({ userId: event.userId, nickname: event.nickname }) }
+        } else if (event.action === "board.join.ack") {
             let nickname = event.nickname
             if (localStorage.nickname && localStorage.nickname !== event.nickname) {
                 nickname = localStorage.nickname
