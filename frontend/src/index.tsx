@@ -52,12 +52,17 @@ const App = () => {
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
     // Join current board on connection
-    connection.connected.pipe(L.changes, L.filter((c : boolean) => c)).forEach(() => {        
-        const bid = boardId.get()
-        if (bid) {
-            joinBoard(bid)
-        }
-    })
+    connection.connected
+        .pipe(
+            L.changes,
+            L.filter((c: boolean) => c),
+        )
+        .forEach(() => {
+            const bid = boardId.get()
+            if (bid) {
+                joinBoard(bid)
+            }
+        })
     L.merge(
         connection.connected.pipe(
             L.changes,
@@ -107,7 +112,7 @@ const App = () => {
                                 state,
                                 dispatch: connection.dispatch,
                                 syncStatus,
-                                navigateToBoard
+                                navigateToBoard,
                             }}
                         />
                     ),

@@ -47,7 +47,7 @@ export const BoardView = ({
     assets,
     dispatch,
     syncStatus,
-    navigateToBoard
+    navigateToBoard,
 }: {
     boardId: string
     cursors: L.Property<UserCursorPosition[]>
@@ -225,7 +225,13 @@ export const BoardView = ({
     }) {
         return (
             <header>
-                <a href="/" onClick={e => { navigateToBoard(undefined); e.preventDefault(); }}>
+                <a
+                    href="/"
+                    onClick={(e) => {
+                        navigateToBoard(undefined)
+                        e.preventDefault()
+                    }}
+                >
                     <span className="icon back" />
                 </a>
                 <BoardMenu boardId={boardId} state={state} dispatch={dispatch} />

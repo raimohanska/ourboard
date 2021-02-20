@@ -1,14 +1,6 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
-import {
-    AppEvent,
-
-
-    EventUserInfo,
-    Id,
-
-    UIEvent
-} from "../../../common/src/domain"
+import { AppEvent, EventUserInfo, Id, UIEvent } from "../../../common/src/domain"
 import { userInfo as googleUser } from "../google-auth"
 import { ServerConnection } from "./server-connection"
 
