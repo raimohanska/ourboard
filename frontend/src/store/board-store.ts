@@ -118,6 +118,7 @@ export function boardStore(
         } else if (event.action === "board.locks") {
             return { ...state, locks: event.locks }
         } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
+            // TODO when switching board, the cursor is not removed from previous board.
             const otherCursors = { ...event.p }
             const session = sessionId.get() // TODO: this should be done by the server indeed
             session && delete otherCursors[session]
