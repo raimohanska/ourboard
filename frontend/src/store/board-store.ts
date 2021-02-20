@@ -4,31 +4,29 @@ import { foldActions } from "../../../common/src/action-folding"
 import { boardHistoryReducer } from "../../../common/src/board-history-reducer"
 import { boardReducer } from "../../../common/src/board-reducer"
 import {
-    AppEvent,
     Board,
     BoardHistoryEntry,
-    BoardInit,
     BoardStateSyncEvent,
+    ClientToServerRequest,
     CURSOR_POSITIONS_ACTION_TYPE,
+    defaultBoardSize,
     EventFromServer,
     EventUserInfo,
-    Id,
-    isBoardItemEvent,
     isPersistableBoardItemEvent,
     ItemLocks,
     LocalUIEvent,
-    UIEvent,
     PersistableBoardItemEvent,
     TransientBoardItemEvent,
+    UIEvent,
     UserCursorPosition,
     UserSessionInfo,
-    ClientToServerRequest,
 } from "../../../common/src/domain"
 import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
 import MessageQueue from "./message-queue"
 
 export type BoardStore = ReturnType<typeof boardStore>
 export type BoardState = {
+    status: "none" | "loading" | "ready"
     board: Board | undefined
     history: BoardHistoryEntry[]
     cursors: UserCursorPosition[]
@@ -105,10 +103,15 @@ export function boardStore(
 
                 const initialBoard = { ...localState.boardWithHistory.board, ...event.boardAttributes } as Board
                 const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
-                return { ...state, board, history: localState.boardWithHistory.history.concat(event.recentEvents) }
+                return {
+                    ...state,
+                    status: "ready",
+                    board,
+                    history: localState.boardWithHistory.history.concat(event.recentEvents),
+                }
             } else {
                 console.log("Init as new board")
-                return { ...state, board: event.board, history: [] }
+                return { ...state, status: "ready", board: event.board, history: [] }
             }
         } else if (event.action === "board.serial.ack") {
             return { ...state, board: state.board ? { ...state.board, serial: event.serial } : state.board }
@@ -125,6 +128,12 @@ export function boardStore(
         } else if (event.action === "nickname.set") {
             const users = state.users.map((u) => (u.userId === event.userId ? { ...u, nickname: event.nickname } : u))
             return { ...state, users }
+        } else if (event.action === "board.join") {
+            return {
+                ...initialState,
+                status: "loading",
+                board: { id: event.boardId, name: "", ...defaultBoardSize, items: [], serial: 0 },
+            }
         } else {
             // Ignore other events
             return state
@@ -132,6 +141,7 @@ export function boardStore(
     }
 
     const initialState = {
+        status: "none" as const,
         board: undefined,
         history: [],
         cursors: [],

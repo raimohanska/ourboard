@@ -128,6 +128,10 @@ a {
     height: 100%;
     display: flex;
     flex-direction: row;
+    &.loading {
+        opacity: 0.3;
+        pointer-events: none;
+    }
 
     header {
         @extend .dropshadow;

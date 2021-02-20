@@ -92,6 +92,7 @@ async function handleAppEvent(
     } else {
         switch (appEvent.action) {
             case "board.join":
+                //await sleep(3000) // simulate latency
                 const board = await getBoard(appEvent.boardId)
                 await addSessionToBoard(board, socket, appEvent.initAtSerial)
                 return
@@ -145,4 +146,8 @@ async function handleAppEvent(
             }
         }
     }
+}
+
+function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(() => resolve(undefined), ms))
 }

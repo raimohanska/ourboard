@@ -172,7 +172,14 @@ export const BoardView = ({
     })
 
     return (
-        <div id="root" className="board-container">
+        <div
+            id="root"
+            className={L.view(
+                state,
+                (s) => s.status,
+                (status) => `board-container ${status}`,
+            )}
+        >
             <div className="scroll-container" ref={scrollElement.set}>
                 <BoardViewHeader
                     boardId={boardId}
