@@ -60,7 +60,7 @@ export const BoardView = ({
     const board = L.view(state, (s) => s.board!)
     const history = L.view(state, "history")
     const locks = L.view(state, (s) => s.locks)
-    const userId = L.view(state, (s) => s.userId)
+    const sessionId = L.view(state, (s) => s.sessionId)
     const sessions = L.view(state, (s) => s.users)
     const zoom = L.atom(1)
     const style = L.combineTemplate({
@@ -71,7 +71,7 @@ export const BoardView = ({
     const boardElement = L.atom<HTMLElement | null>(null)
     const scrollElement = L.atom<HTMLElement | null>(null)
     const latestNote = L.atom(newNote("Hello"))
-    const focus = synchronizeFocusWithServer(board, locks, userId, dispatch)
+    const focus = synchronizeFocusWithServer(board, locks, sessionId, dispatch)
     const coordinateHelper = boardCoordinateHelper(boardElement, scrollElement, zoom)
     const controlSettings = localStorageAtom<ControlSettings>("controlSettings", {
         mode: "mouse",
@@ -272,8 +272,8 @@ export const BoardView = ({
     }
 
     function renderItem(id: string, item: L.Property<Item>) {
-        const isLocked = L.combineTemplate({ locks, userId }).pipe(
-            L.map(({ locks, userId }) => !!locks[id] && locks[id] !== userId),
+        const isLocked = L.combineTemplate({ locks, sessionId }).pipe(
+            L.map(({ locks, sessionId }) => !!locks[id] && locks[id] !== sessionId),
         )
         return L.view(L.view(item, "type"), (t) => {
             switch (t) {

@@ -45,11 +45,9 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<BoardAppSt
 const NicknameEditor = ({ state, dispatch }: { state: L.Property<BoardAppState>; dispatch: Dispatch }) => {
     const editingThis = L.atom(false)
 
-    const nicknameAtom = L.atom(L.view(state, "nickname"), (nickname) => {
-        const userId = state.get().userId
-        if (!userId) throw Error("User id missing")
+    const nicknameAtom = L.atom(L.view(state, "nickname"), (nickname) => {            
         if (nickname === undefined) throw Error("Cannot set nickname to undefined")
-        dispatch({ action: "nickname.set", nickname, userId })
+        dispatch({ action: "nickname.set", nickname })
     })
 
     return L.view(

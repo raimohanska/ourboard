@@ -21,7 +21,7 @@ import { BoardFocus, getSelectedIds, removeFromSelection, removeNonExistingFromS
 export function synchronizeFocusWithServer(
     board: L.Property<Board>,
     locks: L.Property<ItemLocks>,
-    userId: L.Property<string | null>,
+    sessionId: L.Property<string | null>,
     dispatch: Dispatch,
 ): L.Atom<BoardFocus> {
     // TODO: not sure if good: item.lock is never dispatched. Instead locker.ts locks items based on
@@ -29,12 +29,12 @@ export function synchronizeFocusWithServer(
 
     // represents the raw user selection, including possible illegal selections
     const focusRequest = L.bus<BoardFocus>()
-    type CircumStances = { locks: ItemLocks; userId: string | null; board: Board }
+    type CircumStances = { locks: ItemLocks; sessionId: string | null; board: Board }
 
     // Circumstances that limit the possible focused selection set
     const circumstances: L.Property<CircumStances> = L.combineTemplate({
         locks,
-        userId,
+        sessionId,
         board,
     })
 
@@ -49,9 +49,9 @@ export function synchronizeFocusWithServer(
         L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope),
     )
 
-    function narrowFocus(focus: BoardFocus, { locks, userId, board }: CircumStances): BoardFocus {
-        if (!userId) return { status: "none" }
-        const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter((itemId) => locks[itemId] !== userId))
+    function narrowFocus(focus: BoardFocus, { locks, sessionId: sessionId, board }: CircumStances): BoardFocus {
+        if (!sessionId) return { status: "none" }
+        const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter((itemId) => locks[itemId] !== sessionId))
 
         return removeNonExistingFromSelection(
             removeFromSelection(focus, itemsWhereSomeoneElseHasLock),
@@ -65,7 +65,7 @@ export function synchronizeFocusWithServer(
     return L.atom(resolvedFocus, focusRequest.push)
 
     function unlockUnselectedItems(f: BoardFocus) {
-        const user = userId.get()
+        const user = sessionId.get()
         if (!user) return
         const l = locks.get()
         const locksHeld = Object.keys(l).filter((itemId) => l[itemId] === user)

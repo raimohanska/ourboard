@@ -12,7 +12,7 @@ export const CursorsView = ({
     return (
         <ListView<UserCursorPosition, string>
             observable={cursors}
-            renderObservable={(userId: string, pos: L.Property<UserCursorPosition>) => {
+            renderObservable={(sessionId: string, pos: L.Property<UserCursorPosition>) => {
                 const style = L.combineTemplate({
                     left: L.view(
                         pos,
@@ -31,13 +31,13 @@ export const CursorsView = ({
                         <span className="text">
                             {L.view(
                                 sessions,
-                                (sessions) => sessions.find((s) => s.userId === userId)?.nickname || null,
+                                (sessions) => sessions.find((s) => s.sessionId === sessionId)?.nickname || null,
                             )}
                         </span>
                     </span>
                 )
             }}
-            getKey={(c: UserCursorPosition) => c.userId}
+            getKey={(c: UserCursorPosition) => c.sessionId}
         />
     )
 }

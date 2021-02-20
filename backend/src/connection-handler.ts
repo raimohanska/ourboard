@@ -110,7 +110,7 @@ async function handleAppEvent(
                 const { x, y } = position
                 const state = maybeGetBoard(boardId)
                 if (state) {
-                    state.cursorPositions[socket.id] = { x, y, userId: socket.id }
+                    state.cursorPositions[socket.id] = { x, y, sessionId: socket.id }
                     state.cursorsMoved = true
                 }
                 return

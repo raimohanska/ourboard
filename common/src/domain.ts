@@ -22,6 +22,10 @@ export type EventUserInfo =
     | { nickname: string; userType: "system" }
     | { nickname: string; userType: "authenticated"; name: string; email: string }
 
+export type UserSessionInfo = EventUserInfo & {
+    sessionId: Id
+}
+
 export type BoardHistoryEntry = {
     user: EventUserInfo
     timestamp: ISOTimeStamp
@@ -42,7 +46,7 @@ export interface CursorPosition {
 }
 
 export type UserCursorPosition = CursorPosition & {
-    userId: Id // TODO: userId should be replaced globally with sessionId or socketId
+    sessionId: Id
 }
 
 export type BoardCursorPositions = Record<Id, UserCursorPosition>
@@ -94,6 +98,7 @@ export type BoardStateSyncEvent =
     | CursorPositions
     | JoinedBoard
     | AckJoinBoard
+    | UserInfoUpdate
 
 export type ClientToServerRequest =
     | CursorMove
@@ -101,7 +106,7 @@ export type ClientToServerRequest =
     | LockItem
     | UnlockItem
     | JoinBoard
-    | SetNickname // TODO: Not just a request
+    | SetNickname
     | AssetPutUrlRequest
     | AssetPutUrlResponse
     | AuthLogin
@@ -126,6 +131,7 @@ export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Seri
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
 export type BoardSerialAck = { action: "board.serial.ack"; boardId: Id; serial: Serial }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
+export type UserInfoUpdate = { action: "userinfo.set"; } & UserSessionInfo
 export type InitBoardNew = { action: "board.init"; board: Board }
 export type InitBoardDiff = {
     action: "board.init"
@@ -135,13 +141,11 @@ export type InitBoardDiff = {
 }
 export type RenameBoard = { action: "board.rename"; boardId: Id; name: string }
 export type CursorMove = { action: "cursor.move"; position: CursorPosition; boardId: Id }
-export type SetNickname = { action: "nickname.set"; nickname: string; userId: string }
+export type SetNickname = { action: "nickname.set"; nickname: string }
 export type AssetPutUrlRequest = { action: "asset.put.request"; assetId: string }
 export type AssetPutUrlResponse = { action: "asset.put.response"; assetId: string; signedUrl: string }
 export type Undo = { action: "ui.undo" }
 export type Redo = { action: "ui.redo" }
-
-export type UserSessionInfo = { userId: string; nickname: string }
 
 export const CURSOR_POSITIONS_ACTION_TYPE = "c" as const
 export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE; p: Record<Id, UserCursorPosition> }

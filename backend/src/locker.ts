@@ -9,16 +9,16 @@ export function Locks(onChange: (locks: ItemLocks) => any) {
     const locks = AutoExpiringMap<string>(LOCK_TTL_SECONDS).onChange(onChange)
 
     return {
-        lockItem: (itemId: Id, userId: Id) => {
-            if (locks.has(itemId) && locks.get(itemId) !== userId) {
+        lockItem: (itemId: Id, sessionId: Id) => {
+            if (locks.has(itemId) && locks.get(itemId) !== sessionId) {
                 return false
             }
 
-            locks.set(itemId, userId)
+            locks.set(itemId, sessionId)
             return true
         },
-        unlockItem: (itemId: Id, userId: Id) => {
-            if (locks.get(itemId) === userId) {
+        unlockItem: (itemId: Id, sessionId: Id) => {
+            if (locks.get(itemId) === sessionId) {
                 return locks.delete(itemId)
             }
 
@@ -49,8 +49,8 @@ export function obtainLock(locks: ServerSideBoardState["locks"], e: BoardItemEve
 export function releaseLocksFor(socket: IO.Socket) {
     getActiveBoards().forEach((state) => {
         const locks = state.locks
-        for (const [itemId, userId] of locks.entries()) {
-            if (socket.id === userId) {
+        for (const [itemId, sessionId] of locks.entries()) {
+            if (socket.id === sessionId) {
                 locks.delete(itemId)
             }
         }

@@ -12,6 +12,9 @@ import {
     SetNickname,
     AuthLogin,
     AuthLogout,
+    UserInfoUpdate,
+    JoinedBoard,
+    AckJoinBoard
 } from "../../common/src/domain"
 import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory } from "./board-store"
@@ -82,16 +85,16 @@ export async function addSessionToBoard(boardState: ServerSideBoardState, origin
     session.socket.send("app-event", {
         action: "board.join.ack",
         boardId: boardState.board.id,
-        userId: session.socket.id,
+        sessionId: session.socket.id,
         nickname: session.userInfo.nickname,
-    })
+    } as AckJoinBoard)
     everyoneOnTheBoard(boardState.board.id).forEach((s) => {
         session.socket.send("app-event", {
             action: "board.joined",
             boardId: boardState.board.id,
-            userId: s.socket.id,
-            nickname: s.userInfo.nickname,
-        })
+            sessionId: s.socket.id,
+            ...s.userInfo,
+        } as JoinedBoard)
     })
     broadcastJoinEvent(boardState.board.id, session)
 }
@@ -100,17 +103,13 @@ export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
     Object.values(sessions)
         .filter((s) => s.socket === origin)
         .forEach((session) => {
-            if (session.socket.id !== event.userId) {
-                console.warn("Trying to set nickname for other session")
-                return
-            }
-
             session.userInfo =
                 session.userInfo.userType === "unidentified"
                     ? anonymousUser(event.nickname)
                     : { ...session.userInfo, nickname: event.nickname }
+            const updateInfo: UserInfoUpdate = { action: "userinfo.set", sessionId: session.socket.id, ... session.userInfo }
             for (const boardId of session.boards) {
-                everyoneElseOnTheSameBoard(boardId, origin).forEach((s) => s.socket.send("app-event", event))
+                everyoneElseOnTheSameBoard(boardId, origin).forEach((s) => s.socket.send("app-event", updateInfo))
             }
         })
 }
@@ -152,7 +151,7 @@ export function broadcastJoinEvent(boardId: Id, session: UserSession) {
         s.socket.send("app-event", {
             action: "board.joined",
             boardId,
-            userId: session.socket.id,
+            sessionId: session.socket.id,
             nickname: session.userInfo,
         })
     })

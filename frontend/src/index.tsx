@@ -63,23 +63,7 @@ const App = () => {
                 joinBoard(bid)
             }
         })
-    L.merge(
-        connection.connected.pipe(
-            L.changes,
-            L.filter((c: boolean) => c),
-        ),
-        userInfo.pipe(L.changes),
-    ).forEach(() => {
-        const user = userInfo.get()
-        switch (user.status) {
-            case "signed-in":
-                connection.dispatch({ action: "nickname.set", nickname: user.name, userId: store.sessionId.get()! })
-                connection.dispatch({ action: "auth.login", name: user.name, email: user.email, token: user.token })
-                return
-            case "signed-out":
-                return connection.dispatch({ action: "auth.logout" })
-        }
-    })
+
     // React to board id changes from server (when creating new board at least)
     showingBoardId.onChange(adjustURL)
 

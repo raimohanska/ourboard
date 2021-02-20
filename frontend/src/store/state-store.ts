@@ -5,7 +5,7 @@ import { userInfo as googleUser } from "../google-auth"
 import { ServerConnection } from "./server-connection"
 
 export type PartialState = {
-    userId: Id | null
+    sessionId: Id | null
     nickname: string | undefined
 }
 
@@ -22,13 +22,13 @@ export function stateStore(connection: ServerConnection, localStorage: Storage) 
     const eventsReducer = (state: PartialState, event: AppEvent): PartialState => {
         if (event.action === "board.join.ack") {
             let nickname = event.nickname
-            if (localStorage.nickname && localStorage.nickname !== event.nickname) {
+            if (localStorage.nickname) { // TODO: send nickname OR login, and do that ON CONNECTION
                 nickname = localStorage.nickname
-                dispatch({ action: "nickname.set", userId: event.userId, nickname })
+                dispatch({ action: "nickname.set", nickname })
             }
-            return { ...state, userId: event.userId, nickname }
+            return { ...state, sessionId: event.sessionId, nickname }
         } else if (event.action === "nickname.set") {
-            const nickname = event.userId === state.userId ? storeNickName(event.nickname) : state.nickname
+            const nickname = storeNickName(event.nickname)
             return { ...state, nickname }
         } else {
             // Ignore other events
@@ -37,7 +37,7 @@ export function stateStore(connection: ServerConnection, localStorage: Storage) 
     }
 
     const initialState: PartialState = {
-        userId: null,
+        sessionId: null,
         nickname: undefined,
     }
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
@@ -57,10 +57,29 @@ export function stateStore(connection: ServerConnection, localStorage: Storage) 
         },
     )
 
+    const sessionId = L.view(state, "sessionId")
+    L.merge(
+        connection.connected.pipe(
+            L.changes,
+            L.filter((c: boolean) => c),
+        ),
+        userInfo.pipe(L.changes),
+    ).forEach(() => {
+        const user = googleUser.get()
+        switch (user.status) {
+            case "signed-in":
+                connection.dispatch({ action: "nickname.set", nickname: user.name })
+                connection.dispatch({ action: "auth.login", name: user.name, email: user.email, token: user.token })
+                return
+            case "signed-out":
+                return connection.dispatch({ action: "auth.logout" })
+        }
+    })
+
     return {
         state,
         userInfo,
-        sessionId: L.view(state, "userId"),
+        sessionId,
     }
 
     function storeNickName(nickname: string) {

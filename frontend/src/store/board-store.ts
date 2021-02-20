@@ -119,14 +119,15 @@ export function boardStore(
             return { ...state, locks: event.locks }
         } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
             const otherCursors = { ...event.p }
-            const session = sessionId.get()
+            const session = sessionId.get() // TODO: this should be done by the server indeed
             session && delete otherCursors[session]
+            console.log(session)
             const cursors = Object.values(otherCursors)
             return { ...state, cursors }
         } else if (event.action === "board.joined") {
-            return { ...state, users: state.users.concat({ userId: event.userId, nickname: event.nickname }) }
-        } else if (event.action === "nickname.set") {
-            const users = state.users.map((u) => (u.userId === event.userId ? { ...u, nickname: event.nickname } : u))
+            return { ...state, users: state.users.concat(event) }
+        } else if (event.action === "userinfo.set") {
+            const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
             return { ...state, users }
         } else if (event.action === "board.join") {
             return {

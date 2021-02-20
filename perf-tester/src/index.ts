@@ -40,7 +40,7 @@ function createTester(nickname: string) {
                 }, 1000 / fps)
             }
             if (e.action === "board.join.ack") {
-                messageQueue.enqueue({ action: "nickname.set", userId: e.userId, nickname })
+                messageQueue.enqueue({ action: "nickname.set", nickname })
             }
         }
     })
