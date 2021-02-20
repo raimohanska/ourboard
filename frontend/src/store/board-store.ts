@@ -121,7 +121,6 @@ export function boardStore(
             const otherCursors = { ...event.p }
             const session = sessionId.get() // TODO: this should be done by the server indeed
             session && delete otherCursors[session]
-            console.log(session)
             const cursors = Object.values(otherCursors)
             return { ...state, cursors }
         } else if (event.action === "board.joined") {

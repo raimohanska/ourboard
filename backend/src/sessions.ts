@@ -14,7 +14,7 @@ import {
     AuthLogout,
     UserInfoUpdate,
     JoinedBoard,
-    AckJoinBoard
+    AckJoinBoard,
 } from "../../common/src/domain"
 import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory } from "./board-store"
@@ -107,7 +107,11 @@ export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
                 session.userInfo.userType === "unidentified"
                     ? anonymousUser(event.nickname)
                     : { ...session.userInfo, nickname: event.nickname }
-            const updateInfo: UserInfoUpdate = { action: "userinfo.set", sessionId: session.socket.id, ... session.userInfo }
+            const updateInfo: UserInfoUpdate = {
+                action: "userinfo.set",
+                sessionId: session.socket.id,
+                ...session.userInfo,
+            }
             for (const boardId of session.boards) {
                 everyoneElseOnTheSameBoard(boardId, origin).forEach((s) => s.socket.send("app-event", updateInfo))
             }
@@ -152,8 +156,8 @@ export function broadcastJoinEvent(boardId: Id, session: UserSession) {
             action: "board.joined",
             boardId,
             sessionId: session.socket.id,
-            nickname: session.userInfo,
-        })
+            ...session.userInfo,
+        } as JoinedBoard)
     })
 }
 

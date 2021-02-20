@@ -9,7 +9,6 @@ declare global {
 
 let GoogleAuth: any
 var SCOPE = "email"
-console.log(SUPPORTED)
 const userInfoAtom: L.Atom<GoogleAuthUserInfo> = L.atom({ status: SUPPORTED ? "in-progress" : "not-supported" })
 
 export const userInfo = L.view(userInfoAtom, (x) => x) // read-only view

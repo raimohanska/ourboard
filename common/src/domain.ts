@@ -131,7 +131,7 @@ export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Seri
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
 export type BoardSerialAck = { action: "board.serial.ack"; boardId: Id; serial: Serial }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
-export type UserInfoUpdate = { action: "userinfo.set"; } & UserSessionInfo
+export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo
 export type InitBoardNew = { action: "board.init"; board: Board }
 export type InitBoardDiff = {
     action: "board.init"

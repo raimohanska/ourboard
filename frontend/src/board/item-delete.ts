@@ -1,7 +1,7 @@
 import { componentScope } from "harmaja"
 import * as L from "lonna"
 import { Id } from "../../../common/src/domain"
-import { Dispatch } from "../store/state-store"
+import { Dispatch } from "../store/user-session-store"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 
 export function itemDeleteHandler(boardId: Id, dispatch: Dispatch, focus: L.Property<BoardFocus>) {

@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { h } from "harmaja"
 
 import "./app.scss"
-import { PartialState, stateStore } from "./store/state-store"
+import { UserSessionState, userSessionStore } from "./store/user-session-store"
 import { BoardView } from "./board/BoardView"
 import { syncStatusStore } from "./store/sync-status-store"
 import { BoardHistoryEntry, Id, ItemLocks, UserCursorPosition, UserSessionInfo } from "../../common/src/domain"
@@ -16,7 +16,7 @@ import { boardStore, BoardState } from "./store/board-store"
 import { getInitialBoardState } from "./store/board-local-store"
 import { globalScope } from "lonna"
 
-export type BoardAppState = BoardState & PartialState
+export type BoardAppState = BoardState & UserSessionState
 
 const App = () => {
     const nicknameFromURL = new URLSearchParams(location.search).get("nickname")
@@ -28,7 +28,7 @@ const App = () => {
     }
     const initialBoardId = boardIdFromPath()
     const connection = serverConnection()
-    const store = stateStore(connection, localStorage)
+    const store = userSessionStore(connection, localStorage)
     const bs = boardStore(
         connection.bufferedServerEvents,
         connection.uiEvents,

@@ -4,29 +4,21 @@ import { AppEvent, EventUserInfo, Id, UIEvent } from "../../../common/src/domain
 import { userInfo as googleUser } from "../google-auth"
 import { ServerConnection } from "./server-connection"
 
-export type PartialState = {
+export type UserSessionState = {
     sessionId: Id | null
     nickname: string | undefined
 }
 
-export type StateStore = ReturnType<typeof stateStore>
+export type UserSessionStore = ReturnType<typeof userSessionStore>
 
 export type Dispatch = (e: UIEvent) => void
 
-export function stateStore(connection: ServerConnection, localStorage: Storage) {
-    const { uiEvents, bufferedServerEvents, dispatch, messageQueue, events } = connection
+export function userSessionStore(connection: ServerConnection, localStorage: Storage) {
+    const { events } = connection
 
-    // TODO: there's currently no checking of boardId match - if client has multiple boards, this needs to be improved
-    // TODO: get event types right, can we?
-    // TODO: move the local user stuff to separate store
-    const eventsReducer = (state: PartialState, event: AppEvent): PartialState => {
+    const eventsReducer = (state: UserSessionState, event: AppEvent): UserSessionState => {
         if (event.action === "board.join.ack") {
-            let nickname = event.nickname
-            if (localStorage.nickname) { // TODO: send nickname OR login, and do that ON CONNECTION
-                nickname = localStorage.nickname
-                dispatch({ action: "nickname.set", nickname })
-            }
-            return { ...state, sessionId: event.sessionId, nickname }
+            return { ...state, sessionId: event.sessionId, nickname: state.nickname || event.nickname }
         } else if (event.action === "nickname.set") {
             const nickname = storeNickName(event.nickname)
             return { ...state, nickname }
@@ -36,9 +28,9 @@ export function stateStore(connection: ServerConnection, localStorage: Storage) 
         }
     }
 
-    const initialState: PartialState = {
+    const initialState: UserSessionState = {
         sessionId: null,
-        nickname: undefined,
+        nickname: localStorage.nickname || undefined,
     }
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
 
@@ -53,7 +45,7 @@ export function stateStore(connection: ServerConnection, localStorage: Storage) 
                       name: g.name,
                       email: g.email,
                   }
-                : { userType: "unidentified", nickname: n || "UNKNOWN" }
+                : { userType: "unidentified", nickname: n || "" }
         },
     )
 
@@ -65,13 +57,15 @@ export function stateStore(connection: ServerConnection, localStorage: Storage) 
         ),
         userInfo.pipe(L.changes),
     ).forEach(() => {
-        const user = googleUser.get()
-        switch (user.status) {
+        const gu = googleUser.get()
+        switch (gu.status) {
             case "signed-in":
-                connection.dispatch({ action: "nickname.set", nickname: user.name })
-                connection.dispatch({ action: "auth.login", name: user.name, email: user.email, token: user.token })
+                connection.dispatch({ action: "nickname.set", nickname: gu.name })
+                connection.dispatch({ action: "auth.login", name: gu.name, email: gu.email, token: gu.token })
                 return
             case "signed-out":
+                const u = userInfo.get()
+                connection.dispatch({ action: "nickname.set", nickname: u.nickname })
                 return connection.dispatch({ action: "auth.logout" })
         }
     })

@@ -4,7 +4,7 @@ import { Board } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainer } from "./item-setcontainer"
-import { Dispatch } from "../store/state-store"
+import { Dispatch } from "../store/user-session-store"
 
 export function itemDragToMove(
     id: string,

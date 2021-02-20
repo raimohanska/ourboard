@@ -7,7 +7,7 @@ import { SelectionBorder } from "./SelectionBorder"
 import { AssetStore } from "../store/asset-store"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
-import { Dispatch } from "../store/state-store"
+import { Dispatch } from "../store/user-session-store"
 
 export const ImageView = ({
     id,

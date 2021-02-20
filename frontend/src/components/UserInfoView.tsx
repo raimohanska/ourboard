@@ -1,6 +1,6 @@
 import { h, Fragment } from "harmaja"
 import * as L from "lonna"
-import { Dispatch } from "../store/state-store"
+import { Dispatch } from "../store/user-session-store"
 import { EditableSpan } from "./EditableSpan"
 import { signIn, signOut, userInfo } from "../google-auth"
 import { BoardAppState } from ".."
@@ -45,7 +45,7 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<BoardAppSt
 const NicknameEditor = ({ state, dispatch }: { state: L.Property<BoardAppState>; dispatch: Dispatch }) => {
     const editingThis = L.atom(false)
 
-    const nicknameAtom = L.atom(L.view(state, "nickname"), (nickname) => {            
+    const nicknameAtom = L.atom(L.view(state, "nickname"), (nickname) => {
         if (nickname === undefined) throw Error("Cannot set nickname to undefined")
         dispatch({ action: "nickname.set", nickname })
     })

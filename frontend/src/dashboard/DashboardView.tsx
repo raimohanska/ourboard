@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { exampleBoard, Id } from "../../../common/src/domain"
 import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components"
-import { Dispatch } from "../store/state-store"
+import { Dispatch } from "../store/user-session-store"
 import { getRecentBoards, removeRecentBoard } from "../store/recent-boards"
 
 import { signIn, signOut, userInfo } from "../google-auth"

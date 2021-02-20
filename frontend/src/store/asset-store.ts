@@ -1,6 +1,6 @@
 import * as L from "lonna"
 import { AppEvent, AssetPutUrlResponse, Board } from "../../../common/src/domain"
-import { StateStore } from "./state-store"
+import { UserSessionStore } from "./user-session-store"
 import md5 from "md5"
 import { BoardStore } from "./board-store"
 
