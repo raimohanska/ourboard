@@ -2,7 +2,6 @@ import { BoardWithHistory, Id, Serial } from "../../../common/src/domain"
 
 export type LocalStorageBoard = {
     boardWithHistory: BoardWithHistory
-    serial: Serial
 }
 
 let state: LocalStorageBoard | undefined = undefined
@@ -13,6 +12,9 @@ export function getInitialBoardState(boardId: Id) {
         state = localStorage[localStorageKey]
             ? (JSON.parse(localStorage[localStorageKey]) as LocalStorageBoard)
             : undefined
+        if (state && !state.boardWithHistory.board.serial) {
+            state = undefined // Discard earlier stored versions where serial was not part of Board
+        }
     }
     return state
 }

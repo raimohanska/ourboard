@@ -12,6 +12,7 @@ export type BoardAttributes = {
 
 export type Board = BoardAttributes & {
     items: Item[]
+    serial: Serial
 }
 
 export type BoardStub = Pick<Board, "id" | "name">
@@ -86,6 +87,7 @@ export type OtherAppEvent =
     | AddBoard
     | JoinBoard
     | AckJoinBoard
+    | BoardSerialAck
     | JoinedBoard
     | InitBoardNew
     | InitBoardDiff
@@ -117,6 +119,7 @@ export type GotBoardLocks = { action: "board.locks"; boardId: Id; locks: ItemLoc
 export type AddBoard = { action: "board.add"; payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Serial }
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
+export type BoardSerialAck = { action: "board.serial.ack"; boardId: Id; serial: Serial }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
 export type InitBoardNew = { action: "board.init"; board: Board }
 export type InitBoardDiff = {
@@ -143,11 +146,12 @@ export const exampleBoard: Board = {
     name: "Test Board",
     items: [newNote("Hello", "pink", 10, 5), newNote("World", "cyan", 20, 10), newNote("Welcome", "cyan", 5, 14)],
     ...defaultBoardSize,
+    serial: 0,
 }
 
 export function createBoard(name: string): Board {
     const id = uuid.v4()
-    return { id: uuid.v4(), name, items: [], ...defaultBoardSize }
+    return { id: uuid.v4(), name, items: [], ...defaultBoardSize, serial: 0 }
 }
 
 export function newNote(

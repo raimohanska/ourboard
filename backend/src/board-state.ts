@@ -7,7 +7,6 @@ import { broadcastItemLocks, getBoardSessionCount } from "./sessions"
 // A mutable state object for server side state
 export type ServerSideBoardState = {
     board: Board
-    serial: Serial
     recentEvents: BoardHistoryEntry[]
     locks: ReturnType<typeof Locks>
     cursorsMoved: boolean
@@ -23,7 +22,6 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
         const board = await fetchBoard(id)
         state = {
             board,
-            serial: board.serial,
             recentEvents: [],
             locks: Locks((changedLocks) => broadcastItemLocks(id, changedLocks)),
             cursorsMoved: false,
@@ -40,7 +38,7 @@ export function maybeGetBoard(id: Id): ServerSideBoardState | undefined {
 
 export async function updateBoards(appEvent: BoardHistoryEntry) {
     const boardState = await getBoard(appEvent.boardId)
-    const currentSerial = boardState.serial
+    const currentSerial = boardState.board.serial
     const serial = currentSerial + 1
     if (appEvent.serial !== undefined) {
         throw Error("Event already has serial")
@@ -50,7 +48,6 @@ export async function updateBoards(appEvent: BoardHistoryEntry) {
 
     boardState.board = updatedBoard
     boardState.recentEvents.push(eventWithSerial)
-    boardState.serial = serial
     return serial
 }
 

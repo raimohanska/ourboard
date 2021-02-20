@@ -13,15 +13,12 @@ import {
     BoardHistoryEntry,
     isBoardItemEvent,
     PersistableBoardItemEvent,
-    isBoardHistoryEntry,
     Serial,
-    BoardWithHistory,
     EventUserInfo,
 } from "../../../common/src/domain"
 import { boardHistoryReducer } from "../../../common/src/board-history-reducer"
 import { foldActions } from "../../../common/src/action-folding"
 import MessageQueue from "./message-queue"
-import { buildBoardFromHistory } from "../../../common/src/migration"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
 import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
 import { boardReducer } from "../../../common/src/board-reducer"
@@ -104,8 +101,8 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     const events = L.merge(userTaggedLocalEvents, bufferedServerEvents)
     let undoStack: AppEvent[] = []
     let redoStack: AppEvent[] = []
-
-    const eventsReducer = (state: BoardAppState, event: EventFromServer) => {
+    // TODO: there's currently no checking of boardId match - if client has multiple boards, this needs to be improved
+    const eventsReducer = (state: BoardAppState, event: EventFromServer): BoardAppState => {
         if (event.action === "undo") {
             if (!undoStack.length) return state
             const undoOperation = undoStack.pop()!
@@ -143,10 +140,9 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
                 const boardId = event.boardAttributes.id
                 const localState = getInitialBoardState(boardId)
                 if (!localState) throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
-                if (localState.serial != event.initAtSerial)
-                    throw Error(
-                        `Trying to init at ${event.initAtSerial} with local board state at ${localState.serial}`,
-                    )
+                const localSerial = localState.boardWithHistory.board.serial
+                if (localSerial != event.initAtSerial)
+                    throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
 
                 const initialBoard = { ...localState.boardWithHistory.board, ...event.boardAttributes } as Board
                 const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
@@ -162,6 +158,8 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
                 dispatch({ action: "nickname.set", userId: event.userId, nickname })
             }
             return { ...state, userId: event.userId, nickname }
+        } else if (event.action === "board.serial.ack") {
+            return { ...state, board: state.board ? { ...state.board, serial: event.serial } : state.board }
         } else if (event.action === "board.joined") {
             return { ...state, users: state.users.concat({ userId: event.userId, nickname: event.nickname }) }
         } else if (event.action === "board.locks") {
@@ -191,30 +189,26 @@ export function boardStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     }
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
     const board = L.view(state, "board") as L.Property<Board>
-    const history = L.view(state, "history")
-    const serialNumbers = L.merge(
-        L.view(history, (h) => h[h.length - 1]?.serial || 0).pipe(L.changes),
-        messageQueue.serialAck,
-    )
-    const latestSerial = serialNumbers.pipe(
-        L.scan(0, (prev: Serial, next: Serial) => Math.max(prev, next), L.globalScope),
-    )
+
     const localBoardToSave = L.combineTemplate({
         boardWithHistory: {
             board,
             history: L.view(state, "history"),
         },
-        serial: latestSerial,
     }).pipe(
         L.changes,
-        L.filter((state: LocalStorageBoard) => state.serial > 0),
+        L.filter((state: LocalStorageBoard) => state.boardWithHistory.board !== undefined),
         L.debounce(1000),
     )
     localBoardToSave.forEach(storeBoardState)
 
     function joinBoard(boardId: Id) {
         console.log("Joining board", boardId)
-        dispatch({ action: "board.join", boardId, initAtSerial: getInitialBoardState(boardId)?.serial })
+        dispatch({
+            action: "board.join",
+            boardId,
+            initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
+        })
     }
 
     return {

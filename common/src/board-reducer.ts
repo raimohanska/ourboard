@@ -1,6 +1,9 @@
-import { AppEvent, Board, Id, Item, getItem, findItem, findItemIdsRecursively } from "./domain"
+import { AppEvent, Board, Id, Item, getItem, findItem, findItemIdsRecursively, isBoardHistoryEntry } from "./domain"
 
 export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | null] {
+    if (isBoardHistoryEntry(event) && event.serial && event.serial > board.serial) {
+        board = { ...board, serial: event.serial }
+    }
     switch (event.action) {
         case "board.rename":
             return [{ ...board, name: event.name }, null]

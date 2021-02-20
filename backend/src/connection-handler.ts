@@ -7,6 +7,8 @@ import {
     isFullyFormedBoard,
     Serial,
     BoardHistoryEntry,
+    Id,
+    BoardSerialAck,
 } from "../../common/src/domain"
 import { addBoard, getActiveBoards, getBoard, maybeGetBoard, updateBoards } from "./board-state"
 import {
@@ -31,11 +33,17 @@ export const connectionHandler = ({ getSignedPutUrl }: ConnectionHandlerParams) 
     socket.on("message", async (kind: string, event: any, ackFn) => {
         // console.log("Received", kind, event)
         if (kind === "app-events") {
-            const serials: (Serial | undefined)[] = []
+            let serialsToAck: Record<Id, Serial> = {}
             for (const e of event as AppEvent[]) {
-                serials.push(await handleAppEvent(socket, e, getSignedPutUrl))
+                const serialAck = await handleAppEvent(socket, e, getSignedPutUrl)
+                if (serialAck) {
+                    serialsToAck[serialAck.boardId] = serialAck.serial
+                }
             }
-            ackFn?.(serials)
+            Object.entries(serialsToAck).forEach(([boardId, serial]) => {
+                socket.send("app-event", { action: "board.serial.ack", boardId, serial } as BoardSerialAck)
+            })
+            ackFn?.("ack")
             return
         }
         console.warn("Unhandled message", kind, event)
@@ -66,9 +74,10 @@ async function handleAppEvent(
     socket: IO.Socket,
     appEvent: AppEvent,
     getSignedPutUrl: (key: string) => string,
-): Promise<Serial | undefined> {
+): Promise<{ boardId: Id; serial: Serial } | undefined> {
     if (isBoardItemEvent(appEvent)) {
-        const state = await getBoard(appEvent.boardId)
+        const boardId = appEvent.boardId
+        const state = await getBoard(boardId)
         const gotLock = obtainLock(state.locks, appEvent, socket)
         if (gotLock) {
             if (isPersistableBoardItemEvent(appEvent)) {
@@ -77,7 +86,7 @@ async function handleAppEvent(
                 const serial = await updateBoards(historyEntry)
                 historyEntry = { ...historyEntry, serial }
                 broadcastBoardEvent(historyEntry, socket)
-                return serial
+                return { boardId, serial }
             }
         }
     } else {
@@ -88,7 +97,9 @@ async function handleAppEvent(
                 return
             case "board.add": {
                 const { payload } = appEvent
-                const board = !isFullyFormedBoard(payload) ? { ...defaultBoardSize, ...payload, items: [] } : payload
+                const board = !isFullyFormedBoard(payload)
+                    ? { ...defaultBoardSize, ...payload, items: [], serial: 0 }
+                    : payload
                 const boardWithHistory = await addBoard(board)
                 await addSessionToBoard(boardWithHistory, socket)
                 return

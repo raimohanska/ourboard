@@ -3,7 +3,7 @@ import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardHistoryEntry, exampleBoard, Id, Serial } from "../../common/src/domain"
 import { inTransaction, withDBClient } from "./db"
 
-export async function fetchBoard(id: Id): Promise<BoardSnapshot> {
+export async function fetchBoard(id: Id): Promise<Board> {
     return await inTransaction(async (client) => {
         const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id])
         if (result.rows.length == 0) {
@@ -14,7 +14,7 @@ export async function fetchBoard(id: Id): Promise<BoardSnapshot> {
                 throw Error(`Board ${id} not found`)
             }
         } else {
-            const snapshot = result.rows[0].content as BoardSnapshot
+            const snapshot = result.rows[0].content as Board
             const legacyHistory = result.rows[0].history.history || []
             if (legacyHistory.length) {
                 await migrateLegacyHistory(id, legacyHistory, client)
@@ -107,13 +107,11 @@ export async function getBoardHistory(id: Id, afterSerial: Serial): Promise<Boar
     })
 }
 
-type BoardSnapshot = Board & { serial: Serial }
-
 function mkSnapshot(board: Board, serial: Serial) {
     return { ...board, serial }
 }
 
-async function saveBoardSnapshot(board: BoardSnapshot, client: PoolClient) {
+async function saveBoardSnapshot(board: Board, client: PoolClient) {
     console.log(`Save board snapshot ${board.id} at serial ${board.serial}`)
     client.query(`UPDATE board set name=$2, content=$3 WHERE id=$1`, [board.id, board.name, board])
 }
