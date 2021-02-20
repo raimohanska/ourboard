@@ -7,7 +7,11 @@ import { BoardStore } from "./board-store"
 export type AssetId = string
 export type AssetURL = string
 
-export function assetStore(socket: typeof io.Socket, board: L.Property<Board | undefined>, events: L.EventStream<AppEvent>) {
+export function assetStore(
+    socket: typeof io.Socket,
+    board: L.Property<Board | undefined>,
+    events: L.EventStream<AppEvent>,
+) {
     let dataURLs: Record<AssetId, AssetURL> = {}
 
     function assetExists(assetId: string): Promise<boolean> {

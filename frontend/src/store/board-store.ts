@@ -41,7 +41,7 @@ export function boardStore(
     uiEvents: L.EventStream<UIEvent>,
     messageQueue: ReturnType<typeof MessageQueue>,
     userInfo: L.Property<EventUserInfo>,
-    sessionId: L.Property<string | null>
+    sessionId: L.Property<string | null>,
 ) {
     type BoardStoreEvent =
         | BoardHistoryEntry
@@ -115,7 +115,6 @@ export function boardStore(
         } else if (event.action === "board.locks") {
             return { ...state, locks: event.locks }
         } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
-
             const otherCursors = { ...event.p }
             const session = sessionId.get()
             session && delete otherCursors[session]

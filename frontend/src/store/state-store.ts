@@ -24,10 +24,8 @@ export type StateStore = ReturnType<typeof stateStore>
 
 export type Dispatch = (e: UIEvent) => void
 
-export function stateStore(connection: ServerConnection, boardId: Id | undefined, localStorage: Storage) {
-    const { uiEvents, bufferedServerEvents, dispatch, messageQueue } = connection
-    const events = L.merge(uiEvents, bufferedServerEvents)
-
+export function stateStore(connection: ServerConnection, localStorage: Storage) {
+    const { uiEvents, bufferedServerEvents, dispatch, messageQueue, events } = connection
 
     // TODO: there's currently no checking of boardId match - if client has multiple boards, this needs to be improved
     // TODO: get event types right, can we?
@@ -68,25 +66,12 @@ export function stateStore(connection: ServerConnection, boardId: Id | undefined
                   }
                 : { userType: "unidentified", nickname: n || "UNKNOWN" }
         },
-    )    
-
-    function joinBoard(boardId: Id) {
-        console.log("Joining board", boardId)
-        dispatch({
-            action: "board.join",
-            boardId,
-            initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
-        })
-    }
+    )
 
     return {
         state,
-        dispatch,
-        events,
-        boardId: L.constant(boardId),
-        joinBoard,
         userInfo,
-        userId: L.view(state, "userId")
+        sessionId: L.view(state, "userId"),
     }
 
     function storeNickName(nickname: string) {

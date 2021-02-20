@@ -13,6 +13,7 @@ import { storeRecentBoard } from "./store/recent-boards"
 import { userInfo } from "./google-auth"
 import { serverConnection } from "./store/server-connection"
 import { boardStore, BoardState } from "./store/board-store"
+import { getInitialBoardState } from "./store/board-local-store"
 
 export type BoardAppState = BoardState & PartialState
 
@@ -25,25 +26,30 @@ const App = () => {
         document.location.search = search.toString()
     }
 
-    const boardId = boardIdFromPath()
+    const boardId = L.constant(boardIdFromPath())
     const connection = serverConnection()
-    const store = stateStore(connection, boardId, localStorage)
-    const bs = boardStore(connection.bufferedServerEvents, connection.uiEvents, connection.messageQueue, store.userInfo, store.userId)
-    const assets = assetStore(connection.socket, L.view(bs.state, "board"), store.events)
+    const store = stateStore(connection, localStorage)
+    const bs = boardStore(
+        connection.bufferedServerEvents,
+        connection.uiEvents,
+        connection.messageQueue,
+        store.userInfo,
+        store.sessionId,
+    )
+    const assets = assetStore(connection.socket, L.view(bs.state, "board"), connection.events)
     const syncStatus = syncStatusStore(connection.socket, connection.queueSize)
     const showingBoardId = bs.state.pipe(L.map((s: BoardState) => (s.board ? s.board.id : undefined)))
-    
 
     const title = L.view(bs.state, (s) => (s.board ? `${s.board.name} - R-Board` : "R-Board"))
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
-    const connectedBoard = L.view(connection.connected, (c) => (c ? boardId : undefined))
+    const connectedBoard = L.view(connection.connected, (c) => (c ? boardId.get() : undefined))
 
     connectedBoard.forEach((boardId) => {
         if (!boardId) {
             // no board in URL or not connected
         } else {
-            store.joinBoard(boardId)
+            joinBoard(boardId)
         }
     })
     L.merge(
@@ -56,16 +62,16 @@ const App = () => {
         const user = userInfo.get()
         switch (user.status) {
             case "signed-in":
-                store.dispatch({ action: "nickname.set", nickname: user.name, userId: store.userId.get()! })
-                store.dispatch({ action: "auth.login", name: user.name, email: user.email, token: user.token })
+                connection.dispatch({ action: "nickname.set", nickname: user.name, userId: store.sessionId.get()! })
+                connection.dispatch({ action: "auth.login", name: user.name, email: user.email, token: user.token })
                 return
             case "signed-out":
-                return store.dispatch({ action: "auth.logout" })
+                return connection.dispatch({ action: "auth.logout" })
         }
     })
-    showingBoardId.forEach((boardId) => {
-        if (boardId && boardId !== store.boardId.get()) {
-            document.location.replace("/b/" + boardId)
+    showingBoardId.forEach((bid) => {
+        if (bid && bid !== boardId.get()) {
+            document.location.replace("/b/" + bid)
         }
     })
 
@@ -75,7 +81,7 @@ const App = () => {
 
     const state = L.view(store.state, bs.state, (s, bs) => ({ ...s, ...bs }))
 
-    return L.view(store.boardId, (boardId) =>
+    return L.view(boardId, (boardId) =>
         boardId ? (
             L.view(
                 showingBoardId,
@@ -87,16 +93,25 @@ const App = () => {
                                 cursors: L.view(bs.state, "cursors"),
                                 assets,
                                 state,
-                                dispatch: store.dispatch,
+                                dispatch: connection.dispatch,
                                 syncStatus,
                             }}
                         />
                     ),
             )
         ) : (
-            <DashboardView {...{ dispatch: store.dispatch, state }} />
+            <DashboardView {...{ dispatch: connection.dispatch, state }} />
         ),
     )
+
+    function joinBoard(boardId: Id) {
+        console.log("Joining board", boardId)
+        connection.dispatch({
+            action: "board.join",
+            boardId,
+            initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
+        })
+    }
 }
 
 H.mount(<App />, document.getElementById("root")!)
