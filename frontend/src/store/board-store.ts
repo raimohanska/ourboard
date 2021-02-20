@@ -28,9 +28,9 @@ export function boardStore(
     messageQueue: ReturnType<typeof MessageQueue>,
     userInfo: L.Property<EventUserInfo>,
 ) {
-    type BoardState = { 
+    type BoardState = {
         board: Board | undefined
-        history: BoardHistoryEntry[] 
+        history: BoardHistoryEntry[]
         cursors: Record<Id, UserCursorPosition>
         locks: ItemLocks
     }

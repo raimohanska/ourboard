@@ -102,7 +102,7 @@ export function stateStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     const initialState: PartialState = {
         userId: null,
         nickname: undefined,
-        users: []
+        users: [],
     }
     const partialState = events.pipe(L.scan(initialState, eventsReducer, globalScope))
 
