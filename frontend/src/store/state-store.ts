@@ -3,6 +3,7 @@ import { globalScope } from "lonna"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
 import {
     AppEvent,
+    UIEvent,
     Board,
     BoardHistoryEntry,
     EventFromServer,
@@ -29,12 +30,12 @@ export type BoardAppState = {
 
 export type StateStore = ReturnType<typeof stateStore>
 
-export type Dispatch = (e: AppEvent) => void
+export type Dispatch = (e: UIEvent) => void
 
 const SERVER_EVENTS_BUFFERING_MILLIS = 20
 
 export function stateStore(socket: typeof io.Socket, boardId: Id | undefined, localStorage: Storage) {
-    const uiEvents = L.bus<AppEvent>()
+    const uiEvents = L.bus<UIEvent>()
     const dispatch: Dispatch = uiEvents.push
     const serverEvents = L.bus<EventFromServer>()
     const bufferedServerEvents = serverEvents.pipe(
@@ -63,7 +64,7 @@ export function stateStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     })
     L.pipe(
         uiEvents,
-        L.filter((e: AppEvent) => e.action !== "undo" && e.action !== "redo"),
+        L.filter((e: UIEvent) => e.action !== "ui.undo" && e.action !== "ui.redo"),
     ).forEach(messageQueue.enqueue)
 
     // uiEvents.log("UI")
@@ -74,15 +75,13 @@ export function stateStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     type PartialState = {
         userId: Id | null
         nickname: string | undefined
-        users: UserSessionInfo[]
     }
 
     // TODO: there's currently no checking of boardId match - if client has multiple boards, this needs to be improved
     // TODO: get event types right, can we?
+    // TODO: move the local user stuff to separate store
     const eventsReducer = (state: PartialState, event: AppEvent): PartialState => {
-        if (event.action === "board.joined") {
-            return { ...state, users: state.users.concat({ userId: event.userId, nickname: event.nickname }) }
-        } else if (event.action === "board.join.ack") {
+        if (event.action === "board.join.ack") {
             let nickname = event.nickname
             if (localStorage.nickname && localStorage.nickname !== event.nickname) {
                 nickname = localStorage.nickname
@@ -91,8 +90,7 @@ export function stateStore(socket: typeof io.Socket, boardId: Id | undefined, lo
             return { ...state, userId: event.userId, nickname }
         } else if (event.action === "nickname.set") {
             const nickname = event.userId === state.userId ? storeNickName(event.nickname) : state.nickname
-            const users = state.users.map((u) => (u.userId === event.userId ? { ...u, nickname: event.nickname } : u))
-            return { ...state, users, nickname }
+            return { ...state, nickname }
         } else {
             // Ignore other events
             return state
@@ -102,7 +100,6 @@ export function stateStore(socket: typeof io.Socket, boardId: Id | undefined, lo
     const initialState: PartialState = {
         userId: null,
         nickname: undefined,
-        users: [],
     }
     const partialState = events.pipe(L.scan(initialState, eventsReducer, globalScope))
 

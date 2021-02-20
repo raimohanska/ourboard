@@ -45,6 +45,7 @@ export function foldActions(a: AppEvent, b: AppEvent): AppEvent | null {
         if (b.action === "cursor.move" && b.boardId === a.boardId) {
             return b
         }
+        // TODO: maybe folding for CURSOR_POSITIONS_ACTION_TYPE as well
     } else if (a.action === "item.front") {
         if (b.action === "item.front" && b.boardId === a.boardId && everyItemIdMatches(b, a)) return b
     } else if (a.action === "item.move") {

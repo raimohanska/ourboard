@@ -1,11 +1,11 @@
 import { foldActions } from "./action-folding"
 import { boardReducer } from "./board-reducer"
-import { AppEvent, BoardHistoryEntry, BoardWithHistory, EventFromServer, isPersistableBoardItemEvent } from "./domain"
+import { AppEvent, BoardHistoryEntry, BoardWithHistory, EventFromServer, isPersistableBoardItemEvent, PersistableBoardItemEvent } from "./domain"
 
 export function boardHistoryReducer(
     board: BoardWithHistory,
-    appEvent: EventFromServer,
-): [BoardWithHistory, AppEvent | null] {
+    appEvent: BoardHistoryEntry,
+): [BoardWithHistory, PersistableBoardItemEvent | null] {
     const [updatedBoard, undoAction] = boardReducer(board.board, appEvent)
     const history = updatedBoard !== board.board ? addToHistory(board.history, appEvent) : board.history
     const updatedBoardWithHistory = { board: updatedBoard, history }

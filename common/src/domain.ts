@@ -69,11 +69,22 @@ export type TextItem = Note | Text | Container
 export type ColoredItem = Item & { color: Color }
 export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id>
-
+export type BoardEvent = { boardId: Id }
 // TODO: Undo, Redo at least shouldn't be EventFromServer!
-export type EventFromServer = BoardHistoryEntry | TransientBoardItemEvent | OtherAppEvent
+export type UIEvent = 
+    | BoardItemEvent 
+    | ClientToServerRequest 
+    | LocalUIEvent
+export type LocalUIEvent = Undo | Redo
+export type EventFromServer = 
+    | BoardHistoryEntry 
+    | BoardStateSyncEvent 
 export type Serial = number
-export type AppEvent = BoardItemEvent | OtherAppEvent
+export type AppEvent = 
+    BoardItemEvent 
+    | BoardStateSyncEvent 
+    | LocalUIEvent 
+    | ClientToServerRequest
 export type PersistableBoardItemEvent =
     | AddItem
     | UpdateItem
@@ -82,24 +93,28 @@ export type PersistableBoardItemEvent =
     | BringItemToFront
     | BootstrapBoard
     | RenameBoard
+export type BoardInit = InitBoardNew | InitBoardDiff
 export type TransientBoardItemEvent = LockItem | UnlockItem
-export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
-export type OtherAppEvent =
-    | AddBoard
-    | JoinBoard
-    | AckJoinBoard
-    | BoardSerialAck
-    | JoinedBoard
-    | InitBoardNew
-    | InitBoardDiff
-    | CursorMove
-    | SetNickname
+export type BoardItemEvent = 
+    PersistableBoardItemEvent 
+    | TransientBoardItemEvent
+export type BoardStateSyncEvent = 
+    | BoardInit 
+    | BoardSerialAck 
+    | GotBoardLocks 
     | CursorPositions
+    | JoinedBoard
+    | AckJoinBoard
+
+export type ClientToServerRequest =
+    | CursorMove
+    | AddBoard
+    | LockItem 
+    | UnlockItem
+    | JoinBoard
+    | SetNickname // TODO: Not just a request
     | AssetPutUrlRequest
     | AssetPutUrlResponse
-    | GotBoardLocks
-    | Undo
-    | Redo
     | AuthLogin
     | AuthLogout
 export type AuthLogin = { action: "auth.login"; name: string; email: string; token: string }
@@ -134,8 +149,8 @@ export type CursorMove = { action: "cursor.move"; position: CursorPosition; boar
 export type SetNickname = { action: "nickname.set"; nickname: string; userId: string }
 export type AssetPutUrlRequest = { action: "asset.put.request"; assetId: string }
 export type AssetPutUrlResponse = { action: "asset.put.response"; assetId: string; signedUrl: string }
-export type Undo = { action: "undo" }
-export type Redo = { action: "redo" }
+export type Undo = { action: "ui.undo" }
+export type Redo = { action: "ui.redo" }
 
 export type UserSessionInfo = { userId: string; nickname: string }
 

@@ -231,8 +231,8 @@ export const BoardView = ({
                     <span className="icon zoom_in" title="Zoom in" onClick={() => zoom.modify((z) => z * 1.1)}></span>
                     <span className="icon zoom_out" title="Zoom out" onClick={() => zoom.modify((z) => z / 1.1)}></span>
                     <PaletteView {...{ latestNote, onAdd, board, dispatch }} />
-                    <span className="icon undo" title="Undo" onClick={() => dispatch({ action: "undo" })} />
-                    <span className="icon redo" title="Redo" onClick={() => dispatch({ action: "redo" })} />
+                    <span className="icon undo" title="Undo" onClick={() => dispatch({ action: "ui.undo" })} />
+                    <span className="icon redo" title="Redo" onClick={() => dispatch({ action: "ui.redo" })} />
                     <span
                         className={L.view(controlSettings, (s) =>
                             s.mode === "trackpad" ? "icon cursor-arrow active" : "icon cursor-arrow",

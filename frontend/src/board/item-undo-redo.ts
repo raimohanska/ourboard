@@ -12,9 +12,9 @@ export function itemUndoHandler(dispatch: Dispatch) {
                     if (eventName === "keydown") {
                         e.preventDefault()
                         if (e.shiftKey) {
-                            dispatch({ action: "redo" })
+                            dispatch({ action: "ui.redo" })
                         } else {
-                            dispatch({ action: "undo" })
+                            dispatch({ action: "ui.undo" })
                         }
                     }
                 }

@@ -1,6 +1,6 @@
-import { AppEvent, Board, Id, Item, getItem, findItem, findItemIdsRecursively, isBoardHistoryEntry } from "./domain"
+import { AppEvent, Board, Id, Item, getItem, findItem, findItemIdsRecursively, isBoardHistoryEntry, PersistableBoardItemEvent } from "./domain"
 
-export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | null] {
+export function boardReducer(board: Board, event: PersistableBoardItemEvent): [Board, PersistableBoardItemEvent | null] {
     if (isBoardHistoryEntry(event) && event.serial && event.serial > board.serial) {
         board = { ...board, serial: event.serial }
     }
@@ -93,9 +93,6 @@ export function boardReducer(board: Board, event: AppEvent): [Board, AppEvent | 
                 },
                 null,
             ] // TODO: return item.back
-        case "item.lock":
-        case "item.unlock":
-            return [board, null]
         default:
             console.warn("Unknown event", event)
             return [board, null]
