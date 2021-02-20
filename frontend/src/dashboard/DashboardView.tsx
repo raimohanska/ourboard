@@ -39,6 +39,8 @@ const GoogleLoginArea = () => {
                         return ""
                     case "signed-out":
                         return <button onClick={signIn}>Sign in</button>
+                    case "not-supported": 
+                        return null
                 }
             })}
         </div>
