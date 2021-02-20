@@ -163,16 +163,16 @@ describe("Board functionality", () => {
     it("Can edit note text", () => {
         createNote("Hello", 350, 200)
         cy.get(".text").contains("Hello").type("Monoids")
-        cy.get(".note").contains("Monoids").should("be.visible")
-        cy.get(".note").contains("Hello").should("not.be.visible")
+        cy.get(".board .note").contains("Monoids").should("be.visible")
+        cy.get(".board .note").contains("Hello").should("not.be.visible")
     })
 
     it("Persists changes", () => {
         createNote("Hello", 350, 200)
         cy.get(".text").contains("Hello").type("Monoids")
         cy.reload()
-        cy.get(".note").contains("Monoids").should("be.visible")
-        cy.get(".note").contains("Hello").should("not.be.visible")
+        cy.get(".board .note").contains("Monoids").should("be.visible")
+        cy.get(".board .note").contains("Hello").should("not.be.visible")
     })
 
     it("Can drag note", () => {
