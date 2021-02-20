@@ -14,6 +14,7 @@ import { userInfo } from "./google-auth"
 import { serverConnection } from "./store/server-connection"
 import { boardStore, BoardState } from "./store/board-store"
 import { getInitialBoardState } from "./store/board-local-store"
+import { globalScope } from "lonna"
 
 export type BoardAppState = BoardState & PartialState
 
@@ -25,8 +26,7 @@ const App = () => {
         search.delete("nickname")
         document.location.search = search.toString()
     }
-
-    const boardId = L.constant(boardIdFromPath())
+    const initialBoardId = boardIdFromPath()
     const connection = serverConnection()
     const store = stateStore(connection, localStorage)
     const bs = boardStore(
@@ -39,17 +39,23 @@ const App = () => {
     const assets = assetStore(connection.socket, L.view(bs.state, "board"), connection.events)
     const syncStatus = syncStatusStore(connection.socket, connection.queueSize)
     const showingBoardId = bs.state.pipe(L.map((s: BoardState) => (s.board ? s.board.id : undefined)))
-
+    const boardIdFromPopState = L.fromEvent(window, "popstate").pipe(L.map(() => boardIdFromPath()))
+    const boardIdNavigationRequests = L.bus<Id | undefined>()
+    const boardIdChanges = L.merge(boardIdFromPopState, boardIdNavigationRequests, showingBoardId.pipe(L.changes))
+    const boardId = boardIdChanges.pipe(L.scan(initialBoardId, (prev, next) => next, globalScope))
+    const navigateToBoard = (id: Id | undefined) => {
+        adjustURL(id)
+        boardIdNavigationRequests.push(id)
+        if (id) joinBoard(id)
+    }
     const title = L.view(bs.state, (s) => (s.board ? `${s.board.name} - R-Board` : "R-Board"))
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
-    const connectedBoard = L.view(connection.connected, (c) => (c ? boardId.get() : undefined))
-
-    connectedBoard.forEach((boardId) => {
-        if (!boardId) {
-            // no board in URL or not connected
-        } else {
-            joinBoard(boardId)
+    // Join current board on connection
+    connection.connected.pipe(L.changes, L.filter((c : boolean) => c)).forEach(() => {        
+        const bid = boardId.get()
+        if (bid) {
+            joinBoard(bid)
         }
     })
     L.merge(
@@ -69,11 +75,17 @@ const App = () => {
                 return connection.dispatch({ action: "auth.logout" })
         }
     })
-    showingBoardId.forEach((bid) => {
-        if (bid && bid !== boardId.get()) {
-            document.location.replace("/b/" + bid)
+    // React to board id changes from server (when creating new board at least)
+    showingBoardId.onChange(adjustURL)
+
+    function adjustURL(bid: Id | undefined) {
+        if (boardIdFromPath() === bid) return
+        if (bid) {
+            history.pushState({}, "", "/b/" + bid)
+        } else {
+            history.pushState({}, "", "/")
         }
-    })
+    }
 
     L.view(bs.state, "board").forEach((b) => {
         b && storeRecentBoard(b)
@@ -95,12 +107,13 @@ const App = () => {
                                 state,
                                 dispatch: connection.dispatch,
                                 syncStatus,
+                                navigateToBoard
                             }}
                         />
                     ),
             )
         ) : (
-            <DashboardView {...{ dispatch: connection.dispatch, state }} />
+            <DashboardView {...{ dispatch: connection.dispatch, state, navigateToBoard }} />
         ),
     )
 

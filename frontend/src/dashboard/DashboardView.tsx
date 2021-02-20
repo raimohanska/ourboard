@@ -1,6 +1,6 @@
 import { h, Fragment, ListView } from "harmaja"
 import * as L from "lonna"
-import { exampleBoard } from "../../../common/src/domain"
+import { exampleBoard, Id } from "../../../common/src/domain"
 import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components"
 import { Dispatch } from "../store/state-store"
@@ -9,7 +9,7 @@ import { getRecentBoards, removeRecentBoard } from "../store/recent-boards"
 import { signIn, signOut, userInfo } from "../google-auth"
 import { BoardAppState } from ".."
 
-export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppState>; dispatch: Dispatch }) => {
+export const DashboardView = ({ state, dispatch, navigateToBoard }: { state: L.Property<BoardAppState>; dispatch: Dispatch; navigateToBoard: (boardId: Id | undefined) => void }) => {
     return (
         <div id="root" className="dashboard">
             <h1 id="app-title" data-test="app-title">
@@ -18,7 +18,7 @@ export const DashboardView = ({ state, dispatch }: { state: L.Property<BoardAppS
             <p>
                 Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
             </p>
-            <RecentBoards />
+            <RecentBoards {...{navigateToBoard}} />
             <CreateBoard dispatch={dispatch} />
             <GoogleLoginArea />
         </div>
@@ -48,7 +48,7 @@ const GoogleLoginArea = () => {
     )
 }
 
-const RecentBoards = () => {
+const RecentBoards = ({navigateToBoard}: {navigateToBoard: (boardId: Id | undefined) => void}) => {
     const recentBoardsAtom = L.view(getRecentBoards(), (bs) => bs.slice(0, 10))
     return L.view(
         recentBoardsAtom,
@@ -64,7 +64,7 @@ const RecentBoards = () => {
                             observable={recentBoardsAtom}
                             renderItem={(b) => (
                                 <li>
-                                    <a href={`/b/${b.id}`}>{b.name}</a>
+                                    <a onClick={e => { navigateToBoard(b.id); e.preventDefault()}} href={`/b/${b.id}`}>{b.name}</a>
                                     <a className="remove" onClick={() => removeRecentBoard(b)}>
                                         remove
                                     </a>

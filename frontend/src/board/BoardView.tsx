@@ -3,7 +3,7 @@ import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
 import _ from "lodash"
 import { boardCoordinateHelper } from "./board-coordinates"
-import { Image, Item, newNote, newSimilarNote, Note, UserCursorPosition } from "../../../common/src/domain"
+import { Id, Image, Item, newNote, newSimilarNote, Note, UserCursorPosition } from "../../../common/src/domain"
 import { ItemView } from "./ItemView"
 import { Dispatch } from "../store/state-store"
 import { ContextMenuView } from "./ContextMenuView"
@@ -47,6 +47,7 @@ export const BoardView = ({
     assets,
     dispatch,
     syncStatus,
+    navigateToBoard
 }: {
     boardId: string
     cursors: L.Property<UserCursorPosition[]>
@@ -54,6 +55,7 @@ export const BoardView = ({
     assets: AssetStore
     dispatch: Dispatch
     syncStatus: L.Property<SyncStatus>
+    navigateToBoard: (boardId: Id | undefined) => void
 }) => {
     const board = L.view(state, (s) => s.board!)
     const history = L.view(state, "history")
@@ -223,7 +225,7 @@ export const BoardView = ({
     }) {
         return (
             <header>
-                <a href="/">
+                <a href="/" onClick={e => { navigateToBoard(undefined); e.preventDefault(); }}>
                     <span className="icon back" />
                 </a>
                 <BoardMenu boardId={boardId} state={state} dispatch={dispatch} />

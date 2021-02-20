@@ -2,17 +2,14 @@ import * as L from "lonna"
 import { globalScope } from "lonna"
 import {
     AppEvent,
-    Board,
-    BoardHistoryEntry,
+
+
     EventUserInfo,
     Id,
-    ItemLocks,
-    UIEvent,
-    UserCursorPosition,
-    UserSessionInfo,
+
+    UIEvent
 } from "../../../common/src/domain"
 import { userInfo as googleUser } from "../google-auth"
-import { getInitialBoardState } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 
 export type PartialState = {
