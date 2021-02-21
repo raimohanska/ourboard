@@ -92,7 +92,7 @@ export const BoardView = ({
         }
     })
 
-    cutCopyPasteHandler(board, focus, coordinateHelper, dispatch)
+    const unregisterCutCopyPasteListeners = cutCopyPasteHandler(board, focus, coordinateHelper, dispatch)
 
     const boardRef = (el: HTMLElement) => {
         boardElement.set(el)
@@ -169,6 +169,10 @@ export const BoardView = ({
             controlMode: L.view(controlSettings, (c) => c.mode),
             dispatch,
         },
+    })
+
+    H.onUnmount(() => {
+        unregisterCutCopyPasteListeners()
     })
 
     return (

@@ -41,44 +41,52 @@ export function cutCopyPasteHandler(
         }
     }
 
-    CLIPBOARD_EVENTS.forEach((eventType) => {
-        document.addEventListener(eventType, (e) => {
-            const currentFocus = focus.get()
-            const currentBoard = board.get()
-            switch (eventType) {
-                case "cut": {
-                    if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
-                    const itemsToCut = findItemsRecursively([...currentFocus.ids], currentBoard)
-                    dispatch({ action: "item.delete", boardId: currentBoard.id, itemIds: itemsToCut.map((i) => i.id) })
-                    e.clipboardData!.setData("application/rboard", JSON.stringify(itemsToCut))
-                    e.preventDefault()
-                    break
-                }
-                case "copy": {
-                    if (currentFocus.status !== "selected") return
-                    const selectedIds = getSelectedIds(currentFocus)
-                    const clipboard = findItemsRecursively([...selectedIds], currentBoard)
-                    e.clipboardData!.setData("application/rboard", JSON.stringify(clipboard))
-                    e.preventDefault()
-                    break
-                }
-                case "paste": {
-                    if (currentFocus.status === "editing") return
-                    const rboardData = e.clipboardData?.getData("application/rboard")
-                    if (!rboardData) return
-                    const clipboard = JSON.parse(rboardData) as Item[]
-                    const xCenterOld = _.sum(clipboard.map((i) => i.x + i.width / 2)) / clipboard.length
-                    const yCenterOld = _.sum(clipboard.map((i) => i.y + i.height / 2)) / clipboard.length
-                    const currentCenter = coordinateHelper.currentBoardCoordinates.get()
-                    const xDiff = currentCenter.x - xCenterOld
-                    const yDiff = currentCenter.y - yCenterOld
-                    const { toCreate, toSelect } = makeCopies(clipboard, xDiff, yDiff)
-                    dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate })
-                    focus.set({ status: "selected", ids: new Set(toSelect.map((it) => it.id)) })
-                    e.preventDefault()
-                    break
-                }
+    const clipboardEventHandler = (e: ClipboardEvent) => {
+        const currentFocus = focus.get()
+        const currentBoard = board.get()
+        switch (e.type) {
+            case "cut": {
+                if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
+                const itemsToCut = findItemsRecursively([...currentFocus.ids], currentBoard)
+                dispatch({ action: "item.delete", boardId: currentBoard.id, itemIds: itemsToCut.map((i) => i.id) })
+                e.clipboardData!.setData("application/rboard", JSON.stringify(itemsToCut))
+                e.preventDefault()
+                break
             }
-        })
+            case "copy": {
+                if (currentFocus.status !== "selected") return
+                const selectedIds = getSelectedIds(currentFocus)
+                const clipboard = findItemsRecursively([...selectedIds], currentBoard)
+                e.clipboardData!.setData("application/rboard", JSON.stringify(clipboard))
+                e.preventDefault()
+                break
+            }
+            case "paste": {
+                if (currentFocus.status === "editing") return
+                const rboardData = e.clipboardData?.getData("application/rboard")
+                if (!rboardData) return
+                const clipboard = JSON.parse(rboardData) as Item[]
+                const xCenterOld = _.sum(clipboard.map((i) => i.x + i.width / 2)) / clipboard.length
+                const yCenterOld = _.sum(clipboard.map((i) => i.y + i.height / 2)) / clipboard.length
+                const currentCenter = coordinateHelper.currentBoardCoordinates.get()
+                const xDiff = currentCenter.x - xCenterOld
+                const yDiff = currentCenter.y - yCenterOld
+                const { toCreate, toSelect } = makeCopies(clipboard, xDiff, yDiff)
+                dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate })
+                focus.set({ status: "selected", ids: new Set(toSelect.map((it) => it.id)) })
+                e.preventDefault()
+                break
+            }
+        }
+    }
+
+    CLIPBOARD_EVENTS.forEach((eventType) => {
+        document.addEventListener(eventType, clipboardEventHandler)
     })
+
+    return () => {
+        CLIPBOARD_EVENTS.forEach((eventType) => {
+            document.removeEventListener(eventType, clipboardEventHandler)
+        })
+    }
 }
