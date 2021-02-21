@@ -106,25 +106,31 @@ export async function addSessionToBoard(boardState: ServerSideBoardState, origin
     const boardId = boardState.board.id
     if (initAtSerial) {
         const entry = { boardId, status: "buffering", bufferedEvents: [] } as UserSessionBoardEntry
+        // 1. Add session to the board with "buffering" status, to collect all events that were meant to be sent during this async initialization
         session.boards.push(entry)
         const { items, serial, ...boardAttributes } = boardState.board
         
         //console.log(`Starting session at ${initAtSerial}`)
+        // 2. capture all board events that haven't yet been flushed to the DB
         const inMemoryEvents = boardState.storingEvents.concat(boardState.recentEvents).filter(e => e.serial! > initAtSerial)
+        
+        // 3. Fetch events from DB
+        // IMPORTANT NOTE: this is the only await here and must remain so, as the logic here depends on everything else being synchronous.
         const dbEvents = await getBoardHistory(boardState.board.id, initAtSerial)
-        const historyEvents = dbEvents.concat(inMemoryEvents)
 
-        //console.log(`Got history from DB: ${describeRange(dbEvents)} and in-memory: ${describeRange(inMemoryEvents)}, total ${describeRange(historyEvents)}`)
-        verifyContinuity(initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)
-        entry.status = "ready"
+        //console.log(`Got history from DB: ${describeRange(dbEvents)} and in-memory: ${describeRange(inMemoryEvents)}`)
+        // 4. Verify that all this makes for a consistent timeline
+        verifyContinuity(initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)        
+        // 5. Send the initialization event containing all these events.
         session.sendEvent({
             action: "board.init",
             boardAttributes,
-            recentEvents: historyEvents,
+            recentEvents: [...dbEvents, ...inMemoryEvents, ...entry.bufferedEvents],
             initAtSerial,
         })
         //console.log(`Sending buffered events: ${describeRange(entry.bufferedEvents)}`)
-        entry.bufferedEvents.forEach(e => session.sendEvent(e))
+        // 6. Set the client to "ready" status so that new events will be flushed
+        entry.status = "ready"
         entry.bufferedEvents = []
     } else {
         session.boards.push({ boardId, status: "ready", bufferedEvents: [] })
