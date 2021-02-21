@@ -18,7 +18,7 @@ import {
     startSession,
     broadcastCursorPositions,
     setNicknameForSession,
-    getSessionUserInfo,
+    getSession,
     setVerifiedUserForSession,
     logoutUser,
 } from "./sessions"
@@ -81,11 +81,11 @@ async function handleAppEvent(
         const gotLock = obtainLock(state.locks, appEvent, socket)
         if (gotLock) {
             if (isPersistableBoardItemEvent(appEvent)) {
-                const user = getSessionUserInfo(socket)
-                let historyEntry: BoardHistoryEntry = { ...appEvent, user, timestamp: new Date().toISOString() }
+                const session = getSession(socket)
+                let historyEntry: BoardHistoryEntry = { ...appEvent, user: session.userInfo, timestamp: new Date().toISOString() }
                 const serial = await updateBoards(historyEntry)
                 historyEntry = { ...historyEntry, serial }
-                broadcastBoardEvent(historyEntry, socket)
+                broadcastBoardEvent(historyEntry, session)
                 return { boardId, serial }
             }
         }
@@ -124,10 +124,10 @@ async function handleAppEvent(
                 return
             }
             case "auth.logout": {
-                const user = getSessionUserInfo(socket)
-                if (user.userType === "authenticated") {
+                const session = getSession(socket)
+                if (session.userInfo.userType === "authenticated") {
                     logoutUser(appEvent, socket)
-                    console.log(`${user.name} logged out`)
+                    console.log(`${session.userInfo.name} logged out`)
                 }
                 return
             }
@@ -146,8 +146,4 @@ async function handleAppEvent(
             }
         }
     }
-}
-
-function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(() => resolve(undefined), ms))
 }
