@@ -42,7 +42,7 @@ export function boardStore(
     messageQueue: ReturnType<typeof MessageQueue>,
     userInfo: L.Property<EventUserInfo>,
     sessionId: L.Property<string | null>,
-    dispatch: Dispatch
+    dispatch: Dispatch,
 ) {
     type BoardStoreEvent =
         | BoardHistoryEntry
@@ -168,7 +168,10 @@ export function boardStore(
         },
     }).pipe(
         L.changes,
-        L.filter((state: LocalStorageBoard) => state.boardWithHistory.board !== undefined && state.boardWithHistory.board.serial > 0),
+        L.filter(
+            (state: LocalStorageBoard) =>
+                state.boardWithHistory.board !== undefined && state.boardWithHistory.board.serial > 0,
+        ),
         L.debounce(1000),
     )
     localBoardToSave.forEach(storeBoardState)
@@ -184,7 +187,7 @@ export function boardStore(
 
     return {
         state,
-        joinBoard
+        joinBoard,
     }
 }
 

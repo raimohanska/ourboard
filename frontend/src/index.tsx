@@ -35,7 +35,7 @@ const App = () => {
         connection.messageQueue,
         store.userInfo,
         store.sessionId,
-        connection.dispatch
+        connection.dispatch,
     )
     const assets = assetStore(connection.socket, L.view(bs.state, "board"), connection.events)
     const syncStatus = syncStatusStore(connection.socket, connection.queueSize)

@@ -59,7 +59,7 @@ async function createBoardInit(
 ): Promise<InitBoardNew | InitBoardDiff> {
     if (initAtSerial) {
         const { items, ...boardAttributes } = boardState.board
-        // TODO: Related to #142, in case of a re-join, events may be missed / sent out of order here. 
+        // TODO: Related to #142, in case of a re-join, events may be missed / sent out of order here.
         // The history is fetched asynchronously from the DB and may not contain latest events in memory. Also,
         // events occurring during the `await` will be sent to the client before the initialization here.
         const recentEvents = await getBoardHistory(boardState.board.id, initAtSerial)
@@ -80,7 +80,7 @@ async function createBoardInit(
 export async function addSessionToBoard(boardState: ServerSideBoardState, origin: IO.Socket, initAtSerial?: Serial) {
     const session = sessions[origin.id]
     if (!session) throw new Error("No session found for socket " + origin.id)
-    session.boards.push(boardState.board.id)    
+    session.boards.push(boardState.board.id)
 
     // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
     // TODO: what to include in joined events? Not just nickname, as we want to show who's identified (beside the cursor)
