@@ -92,7 +92,9 @@ export const BoardView = ({
         }
     })
 
-    const unregisterCutCopyPasteListeners = cutCopyPasteHandler(board, focus, coordinateHelper, dispatch)
+    const doOnUnmount: Function[] = []
+
+    doOnUnmount.push(cutCopyPasteHandler(board, focus, coordinateHelper, dispatch))
 
     const boardRef = (el: HTMLElement) => {
         boardElement.set(el)
@@ -103,7 +105,7 @@ export const BoardView = ({
                 }
             })
         }
-        imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL)
+        doOnUnmount.push(imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL))
     }
 
     itemDeleteHandler(boardId, dispatch, focus)
@@ -172,7 +174,7 @@ export const BoardView = ({
     })
 
     H.onUnmount(() => {
-        unregisterCutCopyPasteListeners()
+        doOnUnmount.forEach((fn) => fn())
     })
 
     return (

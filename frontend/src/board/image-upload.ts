@@ -22,12 +22,14 @@ export function imageUploadHandler(
 
     boardElement.addEventListener("drop", handleDrop, false)
 
-    document.addEventListener("paste", (e) => {
+    const pasteHandler = (e: ClipboardEvent) => {
         if (e.clipboardData) {
             const imageFile = [...e.clipboardData.files].find((file) => file.type.startsWith("image/"))
             imageFile && uploadImageFile(imageFile)
         }
-    })
+    }
+
+    document.addEventListener("paste", pasteHandler)
 
     async function handleDrop(e: DragEvent) {
         if (focus.get().status === "dragging") {
@@ -65,6 +67,10 @@ export function imageUploadHandler(
         onAdd(image)
         const finalUrl = await urlPromise
         onURL(assetId, finalUrl)
+    }
+
+    return () => {
+        document.removeEventListener("paste", pasteHandler)
     }
 }
 
