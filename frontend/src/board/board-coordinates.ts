@@ -1,5 +1,6 @@
 import { componentScope } from "harmaja"
 import * as L from "lonna"
+import * as _ from "lodash"
 import { Coordinates, subtract } from "./geometry"
 
 const COORDINATES_PROTOTYPE = {
@@ -88,14 +89,27 @@ export function boardCoordinateHelper(
     }
 
     boardElem.forEach((elem) => {
-        if (!elem) return
-        elem.addEventListener("dragover", (e) => {
-            currentClientPos.set({ x: e.pageX, y: e.pageY })
-            e.preventDefault() // To disable Safari slow animation
-        })
-        elem.addEventListener("mousemove", (e) => {
-            currentClientPos.set({ x: e.pageX, y: e.pageY })
-        })
+        elem.addEventListener(
+            "dragover",
+            _.throttle(
+                (e) => {
+                    currentClientPos.set({ x: e.pageX, y: e.pageY })
+                    e.preventDefault() // To disable Safari slow animation
+                },
+                16,
+                { leading: true, trailing: true },
+            ),
+        )
+        elem.addEventListener(
+            "mousemove",
+            _.throttle(
+                (e) => {
+                    currentClientPos.set({ x: e.pageX, y: e.pageY })
+                },
+                16,
+                { leading: true, trailing: true },
+            ),
+        )
     })
 
     function scrollCursorToBoardCoordinates(coords: Coordinates) {
