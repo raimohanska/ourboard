@@ -8,6 +8,7 @@ import { broadcastItemLocks, getBoardSessionCount } from "./sessions"
 export type ServerSideBoardState = {
     board: Board
     recentEvents: BoardHistoryEntry[]
+    storingEvents: BoardHistoryEntry[]
     locks: ReturnType<typeof Locks>
     cursorsMoved: boolean
     cursorPositions: BoardCursorPositions
@@ -23,6 +24,7 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
         state = {
             board,
             recentEvents: [],
+            storingEvents: [],
             locks: Locks((changedLocks) => broadcastItemLocks(id, changedLocks)),
             cursorsMoved: false,
             cursorPositions: {},
@@ -57,6 +59,7 @@ export async function addBoard(board: Board): Promise<ServerSideBoardState> {
         board,
         serial: 0,
         recentEvents: [],
+        storingEvents: [],
         locks: Locks((changedLocks) => broadcastItemLocks(board.id, changedLocks)),
         cursorsMoved: false,
         cursorPositions: {},
@@ -78,14 +81,18 @@ async function saveBoards() {
 
 async function saveBoardChanges(state: ServerSideBoardState) {
     if (state.recentEvents.length > 0) {
-        const eventsToSave = state.recentEvents.splice(0)
+        if (state.storingEvents.length > 0) {
+            throw Error("Invariant failed: storingEvents not empty")
+        }
+        state.storingEvents = state.recentEvents.splice(0)
         try {
-            await saveRecentEvents(state.board.id, eventsToSave)
+            await saveRecentEvents(state.board.id, state.storingEvents)            
         } catch (e) {
             // Push event back to the head of save list for retrying later
-            state.recentEvents = [...eventsToSave, ...state.recentEvents]
+            state.recentEvents = [...state.storingEvents, ...state.recentEvents]
             console.error("Board save failed for board", state.board.id, e)
         }
+        state.storingEvents = []
     }
     if (getBoardSessionCount(state.board.id) == 0) {
         console.log(`Purging board ${state.board.id} from memory`)

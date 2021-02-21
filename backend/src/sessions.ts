@@ -17,6 +17,9 @@ import {
     AckJoinBoard,
     AppEvent,
     UserCursorPosition,
+    PersistableBoardItemEvent,
+    isPersistableBoardItemEvent,
+    isBoardHistoryEntry,
 } from "../../common/src/domain"
 import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory } from "./board-store"
@@ -24,9 +27,15 @@ import { randomProfession } from "./professions"
 import { sleep } from "./sleep"
 type UserSession = {
     readonly sessionId: Id
-    readonly boards: Id[]
+    readonly boards: UserSessionBoardEntry[]
     userInfo: EventUserInfo
     sendEvent: (event: AppEvent) => void
+}
+
+type UserSessionBoardEntry = {
+    boardId: Id,
+    status: "ready" | "buffering"
+    bufferedEvents: BoardHistoryEntry[]
 }
 
 /*
@@ -37,23 +46,33 @@ socket: IO.Socket
 export type SocketId = string
 
 const sessions: Record<SocketId, UserSession> = {}
-
-const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter((s) => s.boards.includes(boardId))
+const isOnBoard = (boardId: Id) => (s: UserSession) => s.boards.some(b => boardId === b.boardId)
+const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter(isOnBoard(boardId))
 const everyoneElseOnTheSameBoard = (boardId: Id, session?: UserSession) =>
-    Object.values(sessions).filter((s) => s.sessionId !== session?.sessionId && s.boards.includes(boardId))
+    Object.values(sessions).filter((s) => s.sessionId !== session?.sessionId && isOnBoard(boardId)(s))
 
 export function startSession(socket: IO.Socket) {
     sessions[socket.id] = userSession(socket)
 }
 
 function userSession(socket: IO.Socket) {
+    const boards: UserSessionBoardEntry[] = []
+    const sessionId = socket.id
     function sendEvent(event: AppEvent) {
+        if (isBoardHistoryEntry(event)) {
+            const entry = boards.find(b => b.boardId === event.boardId)
+            if (!entry) throw Error("Board " + event.boardId + " not found for session " + sessionId)
+            if (entry.status === "buffering") {
+                entry.bufferedEvents.push(event)
+                return
+            }
+        }
         socket.send("app-event", event)
     }
     const session = { 
-        sessionId: socket.id, 
+        sessionId, 
         userInfo: anonymousUser("Anonymous " + randomProfession()),
-        boards: [],
+        boards,
         sendEvent
     }
     sessions[socket.id] = session
@@ -75,39 +94,49 @@ export function getSession(socket: IO.Socket): UserSession {
     return sessions[socket.id]
 }
 
-async function createBoardInit(
-    boardState: ServerSideBoardState,
-    initAtSerial?: Serial,
-): Promise<InitBoardNew | InitBoardDiff> {
-    if (initAtSerial) {
-        const { items, ...boardAttributes } = boardState.board
-        // TODO: Related to #142, in case of a re-join, events may be missed / sent out of order here.
-        // The history is fetched asynchronously from the DB and may not contain latest events in memory. Also,
-        // events occurring during the `await` will be sent to the client before the initialization here.
-        const recentEvents = await getBoardHistory(boardState.board.id, initAtSerial)
-        //await sleep(1000)
-        return {
-            action: "board.init",
-            boardAttributes,
-            recentEvents,
-            initAtSerial,
-        }
-    } else {
-        return {
-            action: "board.init",
-            board: boardState.board,
-        }
-    }
+function describeRange(events: BoardHistoryEntry[]) {
+    if (events.length === 0) return "[]"
+    return `${events[0].serial}..${events[events.length-1].serial}`
 }
 
-export async function addSessionToBoard(boardState: ServerSideBoardState, origin: IO.Socket, initAtSerial?: Serial) {
+
+export async function addSessionToBoard(boardState: ServerSideBoardState, origin: IO.Socket, initAtSerial?: Serial): Promise<void> {
     const session = sessions[origin.id]
     if (!session) throw new Error("No session found for socket " + origin.id)
-    session.boards.push(boardState.board.id)
+    const boardId = boardState.board.id
+    if (initAtSerial) {
+        const entry = { boardId, status: "buffering", bufferedEvents: [] } as UserSessionBoardEntry
+        session.boards.push(entry)
+        const { items, serial, ...boardAttributes } = boardState.board
+        
+        //console.log(`Starting session at ${initAtSerial}`)
+        const inMemoryEvents = boardState.storingEvents.concat(boardState.recentEvents).filter(e => e.serial! > initAtSerial)
+        const dbEvents = await getBoardHistory(boardState.board.id, initAtSerial)
+        const historyEvents = dbEvents.concat(inMemoryEvents)
+
+        //console.log(`Got history from DB: ${describeRange(dbEvents)} and in-memory: ${describeRange(inMemoryEvents)}, total ${describeRange(historyEvents)}`)
+        verifyContinuity(initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)
+        entry.status = "ready"
+        session.sendEvent({
+            action: "board.init",
+            boardAttributes,
+            recentEvents: historyEvents,
+            initAtSerial,
+        })
+        //console.log(`Sending buffered events: ${describeRange(entry.bufferedEvents)}`)
+        entry.bufferedEvents.forEach(e => session.sendEvent(e))
+        entry.bufferedEvents = []
+    } else {
+        session.boards.push({ boardId, status: "ready", bufferedEvents: [] })
+        session.sendEvent({
+            action: "board.init",
+            board: boardState.board,
+        })
+    }
 
     // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
     // TODO: what to include in joined events? Not just nickname, as we want to show who's identified (beside the cursor)
-    session.sendEvent(await createBoardInit(boardState, initAtSerial))
+
     session.sendEvent({
         action: "board.join.ack",
         boardId: boardState.board.id,
@@ -123,6 +152,21 @@ export async function addSessionToBoard(boardState: ServerSideBoardState, origin
         } as JoinedBoard)
     })
     broadcastJoinEvent(boardState.board.id, session)
+
+    function verifyContinuity(init: Serial, ...histories: BoardHistoryEntry[][]) {
+        for (let history of histories) {
+            if (history.length > 0) {
+                verifyTwoPoints(init, history[0].serial!)
+                init = history[history.length-1].serial!
+            }
+        }
+        
+    }   
+    function verifyTwoPoints(a: Serial, b: Serial) {
+        if (b !== a+1) {
+            console.error(`History discontinuity: ${a} -> ${b} for board ${boardId} and user session ${session.sessionId}`)
+        }
+    }
 }
 
 export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
@@ -138,7 +182,7 @@ export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
                 sessionId: session.sessionId,
                 ...session.userInfo,
             }
-            for (const boardId of session.boards) {
+            for (const boardId of session.boards.map(b => b.boardId)) {
                 everyoneElseOnTheSameBoard(boardId, session).forEach((s) => s.sendEvent(updateInfo))
             }
         })
@@ -150,7 +194,7 @@ export function setVerifiedUserForSession(event: AuthLogin, origin: IO.Socket) {
         console.warn("Session not found for socket " + origin.id)
     } else {
         session.userInfo = { userType: "authenticated", nickname: event.name, name: event.name, email: event.email }
-        for (const boardId of session.boards) {
+        for (const boardId of session.boards.map(b => b.boardId)) {
             // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
             everyoneElseOnTheSameBoard(boardId, session).forEach((s) =>
                 s.sendEvent({ ...event, token: "********" }),

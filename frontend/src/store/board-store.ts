@@ -88,6 +88,9 @@ export function boardStore(
                 { board: state.board!, history: state.history },
                 event,
             )
+            if (state.status !== "ready") {
+                console.warn(`Received board update ${event.serial} while in status ${state.status}`)
+            }
             if (reverse && event.serial == undefined) {
                 // No serial == is local event. TODO: maybe a nicer way to recognize this?
                 redoStack = []
@@ -96,7 +99,6 @@ export function boardStore(
             return { ...state, board, history }
         } else if (event.action === "board.init") {
             if ("initAtSerial" in event) {
-                console.log("Init at", event.initAtSerial, "with", event.recentEvents.length + " new events")
                 const boardId = event.boardAttributes.id
                 const localState = getInitialBoardState(boardId)
                 if (!localState) throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
@@ -105,7 +107,9 @@ export function boardStore(
                     throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
 
                 const initialBoard = { ...localState.boardWithHistory.board, ...event.boardAttributes } as Board
+                console.log(`Init at ${event.initAtSerial} with ${event.recentEvents.length} new events. Board starts at ${initialBoard.serial} and first event is ${event.recentEvents[0]?.serial} and last ${event.recentEvents[event.recentEvents.length-1]?.serial}`)
                 const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
+                //console.log(`Init done and board at ${board.serial}`)
                 return {
                     ...state,
                     status: "ready",
@@ -117,6 +121,7 @@ export function boardStore(
                 return { ...state, status: "ready", board: event.board, history: [] }
             }
         } else if (event.action === "board.serial.ack") {
+            console.log(`Update to ${event.serial} with ack`)
             return { ...state, board: state.board ? { ...state.board, serial: event.serial } : state.board }
         } else if (event.action === "board.locks") {
             return { ...state, locks: event.locks }

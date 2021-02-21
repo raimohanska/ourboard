@@ -25,9 +25,7 @@ export async function fetchBoard(id: Id): Promise<Board> {
             let initialBoard: Board
             if (snapshot.serial) {
                 history = await getBoardHistory(id, snapshot.serial)
-                console.log(
-                    `Fetching partial history for board ${id}, starting at serial ${snapshot.serial}, consisting of ${history.length} events`,
-                )
+                //console.log( `Fetching partial history for board ${id}, starting at serial ${snapshot.serial}, consisting of ${history.length} events`, )
                 initialBoard = snapshot
             } else {
                 history = await getFullBoardHistory(id, client)
@@ -91,9 +89,7 @@ export async function getBoardHistory(id: Id, afterSerial: Serial): Promise<Boar
             .flatMap((row) => row.events.events as BoardHistoryEntry[])
             .filter((e) => e.serial! > afterSerial)
 
-        console.log(
-            `Fetched board history for board ${id} after serial ${afterSerial} -> ${historyEvents.length} events`,
-        )
+        //console.log( `Fetched board history for board ${id} after serial ${afterSerial} -> ${historyEvents.length} events`, )
         if (historyEvents.length === 0) {
             return historyEvents
         }
