@@ -49,28 +49,22 @@ export function boardCoordinateHelper(
         return newCoordinates(a.x - b.x, a.y - b.y)
     }
 
+    let boardElOffsetTop: number | null = null
+    let boardElOffsetLeft: number | null = null
     function pageToBoardCoordinates(pageCoords: PageCoordinates): Coordinates {
         const scrollEl = scrollElem.get()
         const boardEl = boardElem.get()
         if (!scrollEl || !boardEl) return { x: 0, y: 0 } // Not the smartest move
 
-        let el: HTMLElement | null = boardEl,
-            offsetLeft = 0,
-            offsetTop = 0
+        boardElOffsetTop = boardElOffsetTop ?? boardEl.offsetTop
+        boardElOffsetLeft = boardElOffsetLeft ?? boardEl.offsetLeft
 
         // Use offsetLeft/offsetTop instead of getBoundingClientRect for getting board position
         // because drag-to-scroll uses CSS translate while dragging and we don't want that to affect the calculation.
-        // Downside here is that we need a bit more complex calculation to figure out the position of the user cursor
-        // in relation to the board element.
-        do {
-            offsetLeft += el.offsetLeft
-            offsetTop += el.offsetTop
-            el = el.offsetParent as HTMLElement
-        } while (el)
 
         return newCoordinates(
-            pxToEm(pageCoords.x + scrollEl.scrollLeft - offsetLeft),
-            pxToEm(pageCoords.y + scrollEl.scrollTop - offsetTop),
+            pxToEm(pageCoords.x + scrollEl.scrollLeft - boardElOffsetLeft),
+            pxToEm(pageCoords.y + scrollEl.scrollTop - boardElOffsetTop),
         )
     }
 
@@ -89,6 +83,11 @@ export function boardCoordinateHelper(
     }
 
     boardElem.forEach((elem) => {
+        if (!elem) {
+            boardElOffsetTop = null
+            boardElOffsetLeft = null
+            return
+        }
         elem.addEventListener(
             "dragover",
             _.throttle(
