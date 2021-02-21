@@ -136,7 +136,7 @@ export function boardStore(
                 return { ...state, status: "ready", board: event.board, history: [] }
             }
         } else if (event.action === "board.serial.ack") {
-            console.log(`Update to ${event.serial} with ack`)
+            //console.log(`Update to ${event.serial} with ack`)
             return { ...state, board: state.board ? { ...state.board, serial: event.serial } : state.board }
         } else if (event.action === "board.locks") {
             return { ...state, locks: event.locks }
