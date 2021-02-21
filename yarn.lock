@@ -4387,10 +4387,10 @@ harmaja@^0.17:
   resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.17.0.tgz#fd69f2f353196dfe0c5fbd53a7fb9b7b7f945193"
   integrity sha512-5ypvfWOgAz3rULJZUppHN+JPmilIUDPrXYeN3IKtlYA0yBikUB0/2NBHQspfggR5GUWsQSLTpv24jxK3j0ZrLw==
 
-harmaja@^0.17.2:
-  version "0.17.2"
-  resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.17.2.tgz#242e4db455f2b26aa88270c49cbec85898d604f8"
-  integrity sha512-ZlY1Y2ui1U36PvaLfbbtJ/bPCX4yNBBDOpCLP8ShD/GOOreaYiNcJWp7QqXRf43fMkk3wZakZIQDlzrfYseQyA==
+harmaja@^0.18.0:
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.18.0.tgz#c63dc74c0bc8a03d98b8a60c0145b9eeb7e4c700"
+  integrity sha512-hGvklNncC4w529ZT/P1dOWtkGVSKvRorMYUKVvD+jPYGci9tXr+GtVTqm7O56VZDQnPITiBrtWzlK0kWmTlvOA==
 
 has-ansi@^2.0.0:
   version "2.0.0"

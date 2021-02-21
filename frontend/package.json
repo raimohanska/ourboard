@@ -14,7 +14,7 @@
     "cookie": "^0.4.1",
     "dotenv-webpack": "^6.0.0",
     "email-validator": "^2.0.4",
-    "harmaja": "^0.17.2",
+    "harmaja": "^0.18.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "lonna": "^0.8.2",
