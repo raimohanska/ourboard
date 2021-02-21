@@ -9,7 +9,9 @@ export async function fetchBoard(id: Id): Promise<Board> {
         if (result.rows.length == 0) {
             if (id === exampleBoard.id) {
                 // Example board is a special case: it is automatically created if not in DB yet.
-                return { ...exampleBoard, serial: 0 }
+                const board = { ...exampleBoard, serial: 0 }
+                await createBoard(board);
+                return board
             } else {
                 throw Error(`Board ${id} not found`)
             }
