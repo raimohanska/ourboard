@@ -82,7 +82,11 @@ async function handleAppEvent(
         if (gotLock) {
             if (isPersistableBoardItemEvent(appEvent)) {
                 const session = getSession(socket)
-                let historyEntry: BoardHistoryEntry = { ...appEvent, user: session.userInfo, timestamp: new Date().toISOString() }
+                let historyEntry: BoardHistoryEntry = {
+                    ...appEvent,
+                    user: session.userInfo,
+                    timestamp: new Date().toISOString(),
+                }
                 const serial = await updateBoards(historyEntry)
                 historyEntry = { ...historyEntry, serial }
                 broadcastBoardEvent(historyEntry, session)

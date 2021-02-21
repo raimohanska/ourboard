@@ -86,7 +86,7 @@ async function saveBoardChanges(state: ServerSideBoardState) {
         }
         state.storingEvents = state.recentEvents.splice(0)
         try {
-            await saveRecentEvents(state.board.id, state.storingEvents)            
+            await saveRecentEvents(state.board.id, state.storingEvents)
         } catch (e) {
             // Push event back to the head of save list for retrying later
             state.recentEvents = [...state.storingEvents, ...state.recentEvents]

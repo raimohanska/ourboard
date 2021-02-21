@@ -33,7 +33,7 @@ type UserSession = {
 }
 
 type UserSessionBoardEntry = {
-    boardId: Id,
+    boardId: Id
     status: "ready" | "buffering"
     bufferedEvents: BoardHistoryEntry[]
 }
@@ -46,7 +46,7 @@ socket: IO.Socket
 export type SocketId = string
 
 const sessions: Record<SocketId, UserSession> = {}
-const isOnBoard = (boardId: Id) => (s: UserSession) => s.boards.some(b => boardId === b.boardId)
+const isOnBoard = (boardId: Id) => (s: UserSession) => s.boards.some((b) => boardId === b.boardId)
 const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter(isOnBoard(boardId))
 const everyoneElseOnTheSameBoard = (boardId: Id, session?: UserSession) =>
     Object.values(sessions).filter((s) => s.sessionId !== session?.sessionId && isOnBoard(boardId)(s))
@@ -60,7 +60,7 @@ function userSession(socket: IO.Socket) {
     const sessionId = socket.id
     function sendEvent(event: AppEvent) {
         if (isBoardHistoryEntry(event)) {
-            const entry = boards.find(b => b.boardId === event.boardId)
+            const entry = boards.find((b) => b.boardId === event.boardId)
             if (!entry) throw Error("Board " + event.boardId + " not found for session " + sessionId)
             if (entry.status === "buffering") {
                 entry.bufferedEvents.push(event)
@@ -69,11 +69,11 @@ function userSession(socket: IO.Socket) {
         }
         socket.send("app-event", event)
     }
-    const session = { 
-        sessionId, 
+    const session = {
+        sessionId,
         userInfo: anonymousUser("Anonymous " + randomProfession()),
         boards,
-        sendEvent
+        sendEvent,
     }
     sessions[socket.id] = session
     return session
@@ -94,13 +94,16 @@ export function getSession(socket: IO.Socket): UserSession {
     return sessions[socket.id]
 }
 
-function describeRange(events: BoardHistoryEntry[]) {
+function describeRange(events: BoardHistoryEntry[]) {
     if (events.length === 0) return "[]"
-    return `${events[0].serial}..${events[events.length-1].serial}`
+    return `${events[0].serial}..${events[events.length - 1].serial}`
 }
 
-
-export async function addSessionToBoard(boardState: ServerSideBoardState, origin: IO.Socket, initAtSerial?: Serial): Promise<void> {
+export async function addSessionToBoard(
+    boardState: ServerSideBoardState,
+    origin: IO.Socket,
+    initAtSerial?: Serial,
+): Promise<void> {
     const session = sessions[origin.id]
     if (!session) throw new Error("No session found for socket " + origin.id)
     const boardId = boardState.board.id
@@ -109,18 +112,20 @@ export async function addSessionToBoard(boardState: ServerSideBoardState, origin
         // 1. Add session to the board with "buffering" status, to collect all events that were meant to be sent during this async initialization
         session.boards.push(entry)
         const { items, serial, ...boardAttributes } = boardState.board
-        
+
         //console.log(`Starting session at ${initAtSerial}`)
         // 2. capture all board events that haven't yet been flushed to the DB
-        const inMemoryEvents = boardState.storingEvents.concat(boardState.recentEvents).filter(e => e.serial! > initAtSerial)
-        
+        const inMemoryEvents = boardState.storingEvents
+            .concat(boardState.recentEvents)
+            .filter((e) => e.serial! > initAtSerial)
+
         // 3. Fetch events from DB
         // IMPORTANT NOTE: this is the only await here and must remain so, as the logic here depends on everything else being synchronous.
         const dbEvents = await getBoardHistory(boardState.board.id, initAtSerial)
 
         //console.log(`Got history from DB: ${describeRange(dbEvents)} and in-memory: ${describeRange(inMemoryEvents)}`)
         // 4. Verify that all this makes for a consistent timeline
-        verifyContinuity(initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)        
+        verifyContinuity(initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)
         // 5. Send the initialization event containing all these events.
         session.sendEvent({
             action: "board.init",
@@ -163,14 +168,15 @@ export async function addSessionToBoard(boardState: ServerSideBoardState, origin
         for (let history of histories) {
             if (history.length > 0) {
                 verifyTwoPoints(init, history[0].serial!)
-                init = history[history.length-1].serial!
+                init = history[history.length - 1].serial!
             }
         }
-        
-    }   
+    }
     function verifyTwoPoints(a: Serial, b: Serial) {
-        if (b !== a+1) {
-            console.error(`History discontinuity: ${a} -> ${b} for board ${boardId} and user session ${session.sessionId}`)
+        if (b !== a + 1) {
+            console.error(
+                `History discontinuity: ${a} -> ${b} for board ${boardId} and user session ${session.sessionId}`,
+            )
         }
     }
 }
@@ -188,7 +194,7 @@ export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
                 sessionId: session.sessionId,
                 ...session.userInfo,
             }
-            for (const boardId of session.boards.map(b => b.boardId)) {
+            for (const boardId of session.boards.map((b) => b.boardId)) {
                 everyoneElseOnTheSameBoard(boardId, session).forEach((s) => s.sendEvent(updateInfo))
             }
         })
@@ -200,11 +206,9 @@ export function setVerifiedUserForSession(event: AuthLogin, origin: IO.Socket) {
         console.warn("Session not found for socket " + origin.id)
     } else {
         session.userInfo = { userType: "authenticated", nickname: event.name, name: event.name, email: event.email }
-        for (const boardId of session.boards.map(b => b.boardId)) {
+        for (const boardId of session.boards.map((b) => b.boardId)) {
             // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
-            everyoneElseOnTheSameBoard(boardId, session).forEach((s) =>
-                s.sendEvent({ ...event, token: "********" }),
-            )
+            everyoneElseOnTheSameBoard(boardId, session).forEach((s) => s.sendEvent({ ...event, token: "********" }))
         }
     }
 }

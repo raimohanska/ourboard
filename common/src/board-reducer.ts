@@ -14,7 +14,7 @@ export function boardReducer(
     board: Board,
     event: PersistableBoardItemEvent,
 ): [Board, PersistableBoardItemEvent | null] {
-    if (isBoardHistoryEntry(event) && event.serial) {        
+    if (isBoardHistoryEntry(event) && event.serial) {
         if (event.serial !== board.serial + 1) {
             console.warn(`Serial skip ${board.serial} -> ${event.serial}`)
         }
