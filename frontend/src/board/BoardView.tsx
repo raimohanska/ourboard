@@ -227,6 +227,7 @@ export const BoardView = ({
     function BoardViewHeader({
         boardId,
         syncStatus,
+        controlSettings,
         state,
         dispatch,
     }: {
