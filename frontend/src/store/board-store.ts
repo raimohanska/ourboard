@@ -127,10 +127,10 @@ export function boardStore(
                     console.error("Error initializing board. Fetching as new board...", e)
                     dispatch({
                         action: "board.join",
-                        boardId                        
+                        boardId,
                     })
                     return state
-                }                
+                }
             } else {
                 console.log("Init as new board")
                 return { ...state, status: "ready", board: event.board, history: [] }
