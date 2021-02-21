@@ -49,22 +49,24 @@ export function boardCoordinateHelper(
         return newCoordinates(a.x - b.x, a.y - b.y)
     }
 
-    let boardElOffsetTop: number | null = null
-    let boardElOffsetLeft: number | null = null
+    const boardAbsolutePosition = L.view(boardElem, (b) => ({
+        offsetTop: b?.offsetTop ?? null,
+        offsetLeft: b?.offsetLeft ?? null,
+    }))
+
     function pageToBoardCoordinates(pageCoords: PageCoordinates): Coordinates {
         const scrollEl = scrollElem.get()
-        const boardEl = boardElem.get()
-        if (!scrollEl || !boardEl) return { x: 0, y: 0 } // Not the smartest move
-
-        boardElOffsetTop = boardElOffsetTop ?? boardEl.offsetTop
-        boardElOffsetLeft = boardElOffsetLeft ?? boardEl.offsetLeft
+        const { offsetTop, offsetLeft } = boardAbsolutePosition.get()
+        if (scrollEl === null || offsetTop === null || offsetLeft === null) {
+            return { x: 0, y: 0 } // Not the smartest move
+        }
 
         // Use offsetLeft/offsetTop instead of getBoundingClientRect for getting board position
         // because drag-to-scroll uses CSS translate while dragging and we don't want that to affect the calculation.
 
         return newCoordinates(
-            pxToEm(pageCoords.x + scrollEl.scrollLeft - boardElOffsetLeft),
-            pxToEm(pageCoords.y + scrollEl.scrollTop - boardElOffsetTop),
+            pxToEm(pageCoords.x + scrollEl.scrollLeft - offsetLeft),
+            pxToEm(pageCoords.y + scrollEl.scrollTop - offsetTop),
         )
     }
 
@@ -84,8 +86,6 @@ export function boardCoordinateHelper(
 
     boardElem.forEach((elem) => {
         if (!elem) {
-            boardElOffsetTop = null
-            boardElOffsetLeft = null
             return
         }
         elem.addEventListener(
