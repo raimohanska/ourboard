@@ -12,6 +12,7 @@ import {
     defaultBoardSize,
     EventFromServer,
     EventUserInfo,
+    Id,
     isPersistableBoardItemEvent,
     ItemLocks,
     LocalUIEvent,
@@ -23,6 +24,7 @@ import {
 } from "../../../common/src/domain"
 import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
 import MessageQueue from "./message-queue"
+import { Dispatch } from "./server-connection"
 
 export type BoardStore = ReturnType<typeof boardStore>
 export type BoardState = {
@@ -40,6 +42,7 @@ export function boardStore(
     messageQueue: ReturnType<typeof MessageQueue>,
     userInfo: L.Property<EventUserInfo>,
     sessionId: L.Property<string | null>,
+    dispatch: Dispatch
 ) {
     type BoardStoreEvent =
         | BoardHistoryEntry
@@ -165,13 +168,23 @@ export function boardStore(
         },
     }).pipe(
         L.changes,
-        L.filter((state: LocalStorageBoard) => state.boardWithHistory.board !== undefined),
+        L.filter((state: LocalStorageBoard) => state.boardWithHistory.board !== undefined && state.boardWithHistory.board.serial > 0),
         L.debounce(1000),
     )
     localBoardToSave.forEach(storeBoardState)
 
+    function joinBoard(boardId: Id) {
+        console.log("Joining board", boardId)
+        dispatch({
+            action: "board.join",
+            boardId,
+            initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
+        })
+    }
+
     return {
         state,
+        joinBoard
     }
 }
 

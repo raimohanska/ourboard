@@ -35,6 +35,7 @@ const App = () => {
         connection.messageQueue,
         store.userInfo,
         store.sessionId,
+        connection.dispatch
     )
     const assets = assetStore(connection.socket, L.view(bs.state, "board"), connection.events)
     const syncStatus = syncStatusStore(connection.socket, connection.queueSize)
@@ -46,7 +47,7 @@ const App = () => {
     const navigateToBoard = (id: Id | undefined) => {
         adjustURL(id)
         boardIdNavigationRequests.push(id)
-        if (id) joinBoard(id)
+        if (id) bs.joinBoard(id)
     }
     const title = L.view(bs.state, (s) => (s.board ? `${s.board.name} - R-Board` : "R-Board"))
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
@@ -60,7 +61,7 @@ const App = () => {
         .forEach(() => {
             const bid = boardId.get()
             if (bid) {
-                joinBoard(bid)
+                bs.joinBoard(bid)
             }
         })
 
@@ -105,15 +106,6 @@ const App = () => {
             <DashboardView {...{ dispatch: connection.dispatch, state, navigateToBoard }} />
         ),
     )
-
-    function joinBoard(boardId: Id) {
-        console.log("Joining board", boardId)
-        connection.dispatch({
-            action: "board.join",
-            boardId,
-            initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
-        })
-    }
 }
 
 H.mount(<App />, document.getElementById("root")!)
