@@ -27,11 +27,7 @@ export function overlaps(a: Rect, b: Rect) {
 }
 
 export function containedBy(a: Rect, b: Rect) {
-    if (a.x < b.x) return false
-    if (a.x + a.width > b.x + b.width) return false
-    if (a.y < b.y) return false
-    if (a.y + a.height > b.y + b.height) return false
-    return true
+    return a.x > b.x && a.y > b.y && a.x + a.width < b.x + b.width && a.y + a.height < b.y + b.height
 }
 
 export function rectFromPoints(a: Coordinates, b: Coordinates) {
