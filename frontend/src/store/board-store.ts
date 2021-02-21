@@ -100,28 +100,37 @@ export function boardStore(
         } else if (event.action === "board.init") {
             if ("initAtSerial" in event) {
                 const boardId = event.boardAttributes.id
-                const localState = getInitialBoardState(boardId)
-                if (!localState) throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
-                const localSerial = localState.boardWithHistory.board.serial
-                if (localSerial != event.initAtSerial)
-                    throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
+                try {
+                    const localState = getInitialBoardState(boardId)
+                    if (!localState) throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
+                    const localSerial = localState.boardWithHistory.board.serial
+                    if (localSerial != event.initAtSerial)
+                        throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
 
-                const initialBoard = { ...localState.boardWithHistory.board, ...event.boardAttributes } as Board
-                console.log(
-                    `Init at ${event.initAtSerial} with ${event.recentEvents.length} new events. Board starts at ${
-                        initialBoard.serial
-                    } and first event is ${event.recentEvents[0]?.serial} and last ${
-                        event.recentEvents[event.recentEvents.length - 1]?.serial
-                    }`,
-                )
-                const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
-                //console.log(`Init done and board at ${board.serial}`)
-                return {
-                    ...state,
-                    status: "ready",
-                    board,
-                    history: localState.boardWithHistory.history.concat(event.recentEvents),
-                }
+                    const initialBoard = { ...localState.boardWithHistory.board, ...event.boardAttributes } as Board
+                    console.log(
+                        `Init at ${event.initAtSerial} with ${event.recentEvents.length} new events. Board starts at ${
+                            initialBoard.serial
+                        } and first event is ${event.recentEvents[0]?.serial} and last ${
+                            event.recentEvents[event.recentEvents.length - 1]?.serial
+                        }`,
+                    )
+                    const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
+                    //console.log(`Init done and board at ${board.serial}`)
+                    return {
+                        ...state,
+                        status: "ready",
+                        board,
+                        history: localState.boardWithHistory.history.concat(event.recentEvents),
+                    }
+                } catch (e) {
+                    console.error("Error initializing board. Fetching as new board...", e)
+                    dispatch({
+                        action: "board.join",
+                        boardId                        
+                    })
+                    return state
+                }                
             } else {
                 console.log("Init as new board")
                 return { ...state, status: "ready", board: event.board, history: [] }
