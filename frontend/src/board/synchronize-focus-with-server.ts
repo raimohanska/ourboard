@@ -3,6 +3,7 @@ import * as _ from "lodash"
 import { Board, Id, ItemLocks } from "../../../common/src/domain"
 import { Dispatch } from "../store/user-session-store"
 import { BoardFocus, getSelectedIds, removeFromSelection, removeNonExistingFromSelection } from "./board-focus"
+import { componentScope } from "harmaja"
 
 /*
   Centralized module to handle locking/unlocking items, i.e. disallow operating on
@@ -46,7 +47,7 @@ export function synchronizeFocusWithServer(
         L.scan({ status: "none" } as BoardFocus, (currentFocus, event) => {
             return narrowFocus("status" in event ? event : currentFocus, circumstances.get())
         }),
-        L.skipDuplicates<BoardFocus>(_.isEqual, L.globalScope),
+        L.skipDuplicates<BoardFocus>(_.isEqual, componentScope()),
     )
 
     function narrowFocus(focus: BoardFocus, { locks, sessionId: sessionId, board }: CircumStances): BoardFocus {
