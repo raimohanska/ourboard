@@ -108,13 +108,17 @@ export function boardStore(
                         throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
 
                     const initialBoard = { ...localState.boardWithHistory.board, ...event.boardAttributes } as Board
-                    console.log(
-                        `Init at ${event.initAtSerial} with ${event.recentEvents.length} new events. Board starts at ${
-                            initialBoard.serial
-                        } and first event is ${event.recentEvents[0]?.serial} and last ${
-                            event.recentEvents[event.recentEvents.length - 1]?.serial
-                        }`,
-                    )
+                    if (event.recentEvents.length > 0) {
+                        console.log(
+                            `Init at ${event.initAtSerial} with ${
+                                event.recentEvents.length
+                            } new events. Board starts at ${initialBoard.serial} and first event is ${
+                                event.recentEvents[0]?.serial
+                            } and last ${event.recentEvents[event.recentEvents.length - 1]?.serial}`,
+                        )
+                    } else {
+                        console.log(`Init at ${event.initAtSerial}, no new events`)
+                    }
                     const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
                     //console.log(`Init done and board at ${board.serial}`)
                     return {

@@ -105,16 +105,35 @@ export async function getBoardHistory(id: Id, afterSerial: Serial): Promise<Boar
     })
 }
 
-function mkSnapshot(board: Board, serial: Serial) {
+export function verifyContinuity(boardId: Id, init: Serial, ...histories: BoardHistoryEntry[][]) {
+    for (let history of histories) {
+        if (history.length > 0) {
+            if (!verifyTwoPoints(boardId, init, history[0].serial!)) {
+                return false
+            }
+            init = history[history.length - 1].serial!
+        }
+    }
+    return true
+}
+function verifyTwoPoints(boardId: Id, a: Serial, b: Serial) {
+    if (b !== a + 1) {
+        console.error(`History discontinuity: ${a} -> ${b} for board ${boardId}`)
+        return false
+    }
+    return true
+}
+
+export function mkSnapshot(board: Board, serial: Serial) {
     return { ...board, serial }
 }
 
-async function saveBoardSnapshot(board: Board, client: PoolClient) {
+export async function saveBoardSnapshot(board: Board, client: PoolClient) {
     console.log(`Save board snapshot ${board.id} at serial ${board.serial}`)
     client.query(`UPDATE board set name=$2, content=$3 WHERE id=$1`, [board.id, board.name, board])
 }
 
-async function storeEventHistoryBundle(boardId: Id, events: BoardHistoryEntry[], client: PoolClient) {
+export async function storeEventHistoryBundle(boardId: Id, events: BoardHistoryEntry[], client: PoolClient) {
     if (events.length > 0) {
         const lastSerial = events[events.length - 1].serial || 0 // default to zero for legacy events. db constraint will prevent inserting two bundles with the same serial
         client.query(`INSERT INTO board_event(board_id, last_serial, events) VALUES ($1, $2, $3)`, [
@@ -123,4 +142,26 @@ async function storeEventHistoryBundle(boardId: Id, events: BoardHistoryEntry[],
             { events },
         ])
     }
+}
+
+export type BoardHistoryBundle = {
+    board_id: Id
+    last_serial: Serial
+    events: {
+        events: BoardHistoryEntry[]
+    }
+}
+
+export async function getBoardHistoryBundles(client: PoolClient, id: Id): Promise<BoardHistoryBundle[]> {
+    return (
+        await client.query(
+            `SELECT board_id, last_serial, events FROM board_event WHERE board_id=$1 ORDER BY last_serial`,
+            [id],
+        )
+    ).rows
+}
+
+export async function findAllBoards(client: PoolClient): Promise<Id[]> {
+    const result = await client.query("SELECT id FROM board")
+    return result.rows.map((row) => row.id)
 }

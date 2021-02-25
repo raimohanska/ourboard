@@ -22,7 +22,7 @@ import {
     isBoardHistoryEntry,
 } from "../../common/src/domain"
 import { ServerSideBoardState } from "./board-state"
-import { getBoardHistory } from "./board-store"
+import { getBoardHistory, verifyContinuity } from "./board-store"
 import { randomProfession } from "./professions"
 import { sleep } from "./sleep"
 type UserSession = {
@@ -125,7 +125,7 @@ export async function addSessionToBoard(
 
         //console.log(`Got history from DB: ${describeRange(dbEvents)} and in-memory: ${describeRange(inMemoryEvents)}`)
         // 4. Verify that all this makes for a consistent timeline
-        verifyContinuity(initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)
+        verifyContinuity(boardId, initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)
         // 5. Send the initialization event containing all these events.
         session.sendEvent({
             action: "board.init",
@@ -163,22 +163,6 @@ export async function addSessionToBoard(
         } as JoinedBoard)
     })
     broadcastJoinEvent(boardState.board.id, session)
-
-    function verifyContinuity(init: Serial, ...histories: BoardHistoryEntry[][]) {
-        for (let history of histories) {
-            if (history.length > 0) {
-                verifyTwoPoints(init, history[0].serial!)
-                init = history[history.length - 1].serial!
-            }
-        }
-    }
-    function verifyTwoPoints(a: Serial, b: Serial) {
-        if (b !== a + 1) {
-            console.error(
-                `History discontinuity: ${a} -> ${b} for board ${boardId} and user session ${session.sessionId}`,
-            )
-        }
-    }
 }
 
 export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {

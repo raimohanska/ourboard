@@ -123,6 +123,11 @@ a {
     cursor: pointer;
 }
 
+::selection {
+    color: red;
+    background: yellow;
+}
+
 #root.board-container {
     width: 100%;
     height: 100%;
