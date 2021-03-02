@@ -70,7 +70,7 @@ export const ItemView = ({
             data-itemid={id}
             draggable={L.view(itemFocus, (f) => f !== "editing")}
             onClick={onClick}
-            className={L.view(selected, (s) => (s ? type + " selected" : type))}
+            className={L.view(selected, L.view(item, getItemBackground), (s, b) => `${type} ${"color-" + b.replace("#", "").toLowerCase()} ${s ? "selected" : ""}`)}
             style={item.pipe(
                 L.map((p: Item) => ({
                     top: p.y + "em",
