@@ -1,3 +1,4 @@
+import { isUndefined } from "lodash"
 import * as uuid from "uuid"
 
 export type Id = string
@@ -63,11 +64,11 @@ export const ITEM_TYPES = {
     CONTAINER: "container",
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
-
-export type Note = ItemProperties & { type: typeof ITEM_TYPES.NOTE; text: string; color: Color }
-export type Text = ItemProperties & { type: typeof ITEM_TYPES.TEXT; text: string }
+export type TextItemProperties = ItemProperties & { text: string, fontSize?: number }
+export type Note = TextItemProperties & { type: typeof ITEM_TYPES.NOTE; color: Color }
+export type Text = TextItemProperties & { type: typeof ITEM_TYPES.TEXT }
 export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string }
-export type Container = ItemProperties & { type: typeof ITEM_TYPES.CONTAINER; text: string; color: Color }
+export type Container = TextItemProperties & { type: typeof ITEM_TYPES.CONTAINER; color: Color }
 
 export type TextItem = Note | Text | Container
 export type ColoredItem = Item & { color: Color }
@@ -85,6 +86,8 @@ export type PersistableBoardItemEvent =
     | UpdateItem
     | MoveItem
     | DeleteItem
+    | IncreaseItemFont
+    | DecreaseItemFont
     | BringItemToFront
     | BootstrapBoard
     | RenameBoard
@@ -120,6 +123,8 @@ export type MoveItem = {
     boardId: Id
     items: { id: Id; x: number; y: number; containerId?: Id | undefined }[]
 }
+export type IncreaseItemFont = { action: "item.font.increase"; boardId: Id; itemIds: Id[] }
+export type DecreaseItemFont = { action: "item.font.decrease"; boardId: Id; itemIds: Id[] }
 export type BringItemToFront = { action: "item.front"; boardId: Id; itemIds: Id[] }
 export type DeleteItem = { action: "item.delete"; boardId: Id; itemIds: Id[] }
 export type BootstrapBoard = { action: "item.bootstrap"; boardId: Id; items: Item[] }
@@ -232,6 +237,10 @@ export function isColoredItem(i: Item): i is ColoredItem {
     return i.type === "note" || i.type === "container"
 }
 
+export function isTextItem(i: Item): i is TextItem {
+    return i.type === "note" || i.type === "text" || i.type === "container"
+}
+
 export function getItemText(i: Item) {
     if (i.type === "image") return ""
     return i.text
@@ -248,6 +257,8 @@ export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id
     switch (e.action) {
         case "item.front":
         case "item.delete":
+        case "item.font.decrease":
+        case "item.font.increase":
             return e.itemIds
         case "item.move":
             return e.items.map((i) => i.id)

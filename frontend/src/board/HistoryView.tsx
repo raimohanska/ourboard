@@ -140,6 +140,8 @@ export const HistoryView = ({
                     kind: "deleted",
                     actionText: "deleted " + describeItems(itemIds.map(getItem(boardBefore))),
                 }
+            case "item.font.decrease":
+            case "item.font.increase":
             case "item.front":
                 return null
             case "item.move": {

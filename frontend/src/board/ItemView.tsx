@@ -92,7 +92,7 @@ export const ItemView = ({
                 (s) => s && <SelectionBorder {...{ id, item: item, coordinateHelper, board, focus, dispatch }} />,
             )}
             {type === "container" && <DragBorder {...{ id, board, coordinateHelper, focus, dispatch }} />}
-            {type === "note" && <AuthorInfo {...{ item, itemHistory }} />}
+            {type === "note" && <AuthorInfo {...{ item: item as L.Property<TextItem>, itemHistory }} />}
         </span>
     )
 
@@ -108,7 +108,7 @@ export const ItemView = ({
             focus.set(e ? { status: "editing", id } : { status: "selected", ids: new Set([id]) })
         }
         const color = L.view(item, getItemBackground, contrastingColor)
-        const fontSize = autoFontSize(item, L.view(item, "text"), focused, coordinateHelper, element)
+        const fontSize = autoFontSize(item, L.view(item, i => i.fontSize ? i.fontSize : 1), L.view(item, "text"), focused, coordinateHelper, element)
         return (
             <span className="text" style={L.combineTemplate({ fontSize, color })}>
                 <HTMLEditableSpan
@@ -125,12 +125,12 @@ export const ItemView = ({
         )
     }
 
-    function AuthorInfo({ item, itemHistory }: { item: L.Property<Item>; itemHistory: BoardHistoryEntry[] }) {
+    function AuthorInfo({ item, itemHistory }: { item: L.Property<TextItem>; itemHistory: BoardHistoryEntry[] }) {
         const color = L.view(item, (i) => (i.type === "note" ? i.color : "white"), contrastingColor)
         const interestingHistory = itemHistory.filter((e) => e.action !== "item.move" && e.action !== "item.front")
         const lastItem = interestingHistory[interestingHistory.length - 1]
         const text = lastItem && lastItem.user.userType !== "system" ? lastItem.user.nickname : ""
-        const fontSize = autoFontSize(item, L.constant(text), L.constant(false), coordinateHelper, element, {
+        const fontSize = autoFontSize(item, L.constant(1), L.constant(text), L.constant(false), coordinateHelper, element, {
             maxFontSize: 0.5,
             minFontSize: 0.5,
             maxLines: 1,

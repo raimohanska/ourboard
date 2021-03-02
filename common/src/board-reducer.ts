@@ -8,6 +8,8 @@ import {
     findItemIdsRecursively,
     isBoardHistoryEntry,
     PersistableBoardItemEvent,
+    isTextItem,
+    TextItem,
 } from "./domain"
 
 export function boardReducer(
@@ -34,6 +36,28 @@ export function boardReducer(
                 { ...board, items: board.items.concat(event.items) },
                 { action: "item.delete", boardId: board.id, itemIds: event.items.map((i) => i.id) },
             ]
+        case "item.font.increase":
+            return [
+                {
+                    ...board,
+                    items: applyFontSize(board.items, 1.1, event.itemIds),
+                },
+                {
+                    ...event,
+                    action: "item.font.decrease"
+                },
+            ]
+        case "item.font.decrease":
+            return [
+                {
+                    ...board,
+                    items: applyFontSize(board.items, 1 / 1.1, event.itemIds),
+                },
+                {
+                    ...event,
+                    action: "item.font.increase"                    
+                },
+            ]            
         case "item.update":
             return [
                 {
@@ -113,6 +137,16 @@ export function boardReducer(
             console.warn("Unknown event", event)
             return [board, null]
     }
+}
+
+function applyFontSize(items: Item[], factor: number, itemIds: Id[]) {
+    return items.map((p) => {
+        const updated = itemIds.find((i) => i === p.id && isTextItem(p))
+        if (updated) return {
+            ...p, fontSize: ((p as TextItem).fontSize || 1) * factor
+        }
+        return p
+    })
 }
 
 const moveItemWithChildren = (itemsOnBoard: Item[], id: Id, x: number, y: number, containerId: Id | undefined) => {

@@ -1,5 +1,6 @@
+import { isUndefined } from "lodash"
 import * as L from "lonna"
-import { Item } from "../../../common/src/domain"
+import { Item, TextItem } from "../../../common/src/domain"
 import { toPlainText } from "../components/sanitizeHTML"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Dimensions } from "./geometry"
@@ -22,25 +23,25 @@ const defaultOptions = {
     heightTarget: 0.6,
 }
 
+
 export function autoFontSize(
-    item: L.Property<Item>,
+    item: L.Property<TextItem>,
+    fontSize: L.Property<number>,
     text: L.Property<string>,
     focused: L.Property<boolean>,
     coordinateHelper: BoardCoordinateHelper,
     element: L.Atom<HTMLElement | null>,
     options: Partial<AutoFontSizeOptions> = {},
-) {
+): L.Property<string> {
     let fullOptions = { ...defaultOptions, ...options }
 
+    const itemProps = L.combine(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), fontSize, text, (t, w, h, fs, text) => ([t, w, h, fs, text] as const))
     return L.view(
-        L.view(item, "type"),
-        L.view(item, "width"),
-        L.view(item, "height"),
-        text,
+        itemProps,
         focused,
         coordinateHelper.elementFont(element),
-        (t, w, h, text, f, referenceFont) => {
-            if (t !== "note") return "1em"
+        ([t, w, h, fs, text], f, referenceFont) => {
+            if (t !== "note") return fs + "em"
 
             const plainText = toPlainText(text)
             const split = plainText.split(/\s/)
@@ -87,7 +88,7 @@ export function autoFontSize(
 
             if (!fit && fullOptions.hideIfNoFit) return "0"
 
-            return Math.min(sizeEm, fullOptions.maxFontSize) + "em"
+            return (Math.min(sizeEm, fullOptions.maxFontSize) * fs) + "em"
 
             // Try to fit text using given font size. Return fit factor (text size / max size)
             function tryFit(sizeEm: number) {

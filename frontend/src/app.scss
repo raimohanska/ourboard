@@ -593,6 +593,7 @@ a {
 
         .context-menu {
             @extend .ui-context-menu;
+            display: flex;
             font-size: 1rem;
             height: 2em;
             margin-top: -2.5em;
@@ -742,6 +743,14 @@ a {
     }
     &.cursor-arrow {
         background-image: url(img/cursor-arrow.svg);
+    }
+    &.plus {
+        @extend .material-icons;
+        @include material-icon("add");
+    }
+    &.minus {
+        @extend .material-icons;
+        @include material-icon("remove");
     }
     &.disabled {
         pointer-events: none;

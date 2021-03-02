@@ -1,7 +1,7 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import _ from "lodash"
-import { Board, Color, findItem, isColoredItem, Note } from "../../../common/src/domain"
+import { Board, Color, findItem, isColoredItem, isTextItem, Note } from "../../../common/src/domain"
 import { Dispatch } from "../store/user-session-store"
 import { NOTE_COLORS } from "./PaletteView"
 import { BoardFocus, getSelectedItems } from "./board-focus"
@@ -44,7 +44,7 @@ export const ContextMenuView = ({
         }
     })
 
-    const widgetCreators = [menuColors()]
+    const widgetCreators = [menuColors(), menuFontSizes()]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
 
     return L.view(
@@ -63,6 +63,29 @@ export const ContextMenuView = ({
                 </div>
             ),
     )
+
+    function menuFontSizes() {
+        const textItems = L.view(focusedItems, (items) => items.filter(isTextItem))
+        const anyText = L.view(textItems, (items) => items.length > 0)
+
+        return L.view(anyText, (any) =>
+        !any
+            ? []
+            : [
+                  <div className="font-size">                      
+                      <span className="icon plus" onClick={increaseFont}/>
+                      <span className="icon minus" onClick={decreaseFont}/>
+                  </div>,
+              ],
+        )
+
+        function increaseFont() {
+            dispatch({ action: "item.font.increase", boardId: board.get().id, itemIds: textItems.get().map(i => i.id) })
+        }
+        function decreaseFont() {
+            dispatch({ action: "item.font.decrease", boardId: board.get().id, itemIds: textItems.get().map(i => i.id) })
+        }
+    }
 
     function menuColors() {
         const coloredItems = L.view(focusedItems, (items) => items.filter(isColoredItem))
