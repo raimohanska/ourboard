@@ -3,6 +3,7 @@ import { Board, BoardCursorPositions, BoardHistoryEntry, Id, ItemLocks, Serial }
 import { Locks } from "./locker"
 import { createBoard, fetchBoard, saveRecentEvents } from "./board-store"
 import { broadcastItemLocks, getBoardSessionCount } from "./sessions"
+import { compactBoardHistory } from "./compact-history"
 
 // A mutable state object for server side state
 export type ServerSideBoardState = {
@@ -81,6 +82,7 @@ async function saveBoards() {
 
 async function saveBoardChanges(state: ServerSideBoardState) {
     if (state.recentEvents.length > 0) {
+        console.log(`Saving board ${state.board.id}`)
         if (state.storingEvents.length > 0) {
             throw Error("Invariant failed: storingEvents not empty")
         }
@@ -97,6 +99,7 @@ async function saveBoardChanges(state: ServerSideBoardState) {
     if (getBoardSessionCount(state.board.id) == 0) {
         console.log(`Purging board ${state.board.id} from memory`)
         boards.delete(state.board.id)
+        await compactBoardHistory(state.board.id)
     }
 }
 

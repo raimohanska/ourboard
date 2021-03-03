@@ -32,7 +32,7 @@
   "scripts": {
     "start": "node --enable-source-maps .",
     "start:dev": "tsc-watch --onSuccess \"node --enable-source-maps .\" --preserveWatchOutput",
-    "compact-history": "ts-node src/history-compactor.ts",
+    "compact-history": "ts-node src/tools/history-compactor.ts",
     "build": "tsc"
   },
   "engines": {
