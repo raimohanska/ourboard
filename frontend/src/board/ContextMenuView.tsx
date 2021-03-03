@@ -45,7 +45,7 @@ export const ContextMenuView = ({
         }
     })
 
-    const widgetCreators = [menuItems(), menuFontSizes()]
+    const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes()]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
 
     type Axis = "x" | "y"
@@ -102,6 +102,113 @@ export const ContextMenuView = ({
 
     const getMaxCoordinate: GetCoordinate = (item, min, max, axis) => max - getItemSize(item, axis)
 
+    const getDistributedCoordinate: GetCoordinate = (
+        item,
+        min,
+        max,
+        _,
+        index,
+        numberOfItems,
+        sumOfPreviousSizes,
+        totalSumOfSizes,
+    ) => {
+        const spaceBetweenItems = (max - min - totalSumOfSizes) / (numberOfItems - 1)
+        return min + sumOfPreviousSizes + index * spaceBetweenItems
+    }
+
+    function menuAlignments() {
+        const hasItemsToAlign = L.view(focusedItems, (items) => items.length > 1)
+        const hasItemsToDistribute = L.view(focusedItems, (items) => items.length > 2)
+
+        return L.combine(hasItemsToAlign, hasItemsToDistribute, (hasItemsToAlign, hasItemsToDistribute) => {
+            return !hasItemsToAlign
+                ? []
+                : [
+                      <div className="align">
+                          {hasItemsToAlign && (
+                              <div className="icon-group">
+                                  <span
+                                      className="icon align_horizontal_left"
+                                      onClick={() => moveFocusedItems("x", getMinCoordinate)}
+                                  />
+                                  <span
+                                      className="icon align_horizontal_center"
+                                      onClick={() => moveFocusedItems("x", getCenterCoordinate)}
+                                  />
+                                  <span
+                                      className="icon align_horizontal_right"
+                                      onClick={() => moveFocusedItems("x", getMaxCoordinate)}
+                                  />
+                              </div>
+                          )}
+
+                          {hasItemsToAlign && (
+                              <div className="icon-group">
+                                  <span
+                                      className="icon align_vertical_top"
+                                      onClick={() => moveFocusedItems("y", getMinCoordinate)}
+                                  />
+                                  <span
+                                      className="icon align_vertical_center"
+                                      onClick={() => moveFocusedItems("y", getCenterCoordinate)}
+                                  />
+                                  <span
+                                      className="icon align_vertical_bottom"
+                                      onClick={() => moveFocusedItems("y", getMaxCoordinate)}
+                                  />
+                              </div>
+                          )}
+
+                          {hasItemsToDistribute && (
+                              <div className="icon-group">
+                                  <span
+                                      className="icon horizontal_distribute"
+                                      onClick={() => moveFocusedItems("x", getDistributedCoordinate)}
+                                  />
+                                  <span
+                                      className="icon vertical_distribute"
+                                      onClick={() => moveFocusedItems("y", getDistributedCoordinate)}
+                                  />
+                              </div>
+                          )}
+                      </div>,
+                  ]
+        })
+    }
+
+    function menuColors() {
+        const coloredItems = L.view(focusedItems, (items) => items.filter(isColoredItem))
+        const anyColored = L.view(coloredItems, (items) => items.length > 0)
+
+        return L.view(anyColored, (anyColored) => {
+            return !anyColored
+                ? []
+                : [
+                      <div className="colors">
+                          {NOTE_COLORS.map((color) => {
+                              return (
+                                  <span
+                                      className={"color " + color}
+                                      style={{ background: color }}
+                                      onClick={() => setColor(color)}
+                                  />
+                              )
+                          })}
+                      </div>,
+                  ]
+        })
+
+        function setColor(color: Color) {
+            const b = board.get()
+
+            // To remember color selection for creating new notes.
+            latestNote.modify((n) => ({ ...n, color }))
+
+            const updated = coloredItems.get().map((item) => ({ ...item, color }))
+            dispatch({ action: "item.update", boardId: b.id, items: updated })
+        }
+    }
+
     function menuFontSizes() {
         const textItems = L.view(focusedItems, (items) => items.filter(isTextItem))
         const anyText = L.view(textItems, (items) => items.length > 0)
@@ -130,104 +237,6 @@ export const ContextMenuView = ({
                 boardId: board.get().id,
                 itemIds: textItems.get().map((i) => i.id),
             })
-        }
-    }
-
-    const getDistributedCoordinate: GetCoordinate = (
-        item,
-        min,
-        max,
-        _,
-        index,
-        numberOfItems,
-        sumOfPreviousSizes,
-        totalSumOfSizes,
-    ) => {
-        const spaceBetweenItems = (max - min - totalSumOfSizes) / (numberOfItems - 1)
-        return min + sumOfPreviousSizes + index * spaceBetweenItems
-    }
-
-    function menuItems() {
-        const numberOfItemsToMove = L.view(focusedItems, (items) => items.length)
-        const coloredItems = L.view(focusedItems, (items) => items.filter(isColoredItem))
-        const anyColored = L.view(coloredItems, (items) => items.length > 0)
-
-        return L.combine(anyColored, numberOfItemsToMove, (anyColored, numberOfItemsToMove) => {
-            const hasItemsToAlign = numberOfItemsToMove > 1
-            const hasItemsToDistribute = numberOfItemsToMove > 2
-            return !(anyColored || hasItemsToAlign || hasItemsToDistribute)
-                ? []
-                : [
-                      <div>
-                          {hasItemsToAlign && (
-                              <div className="icon-group">
-                                  <span
-                                      className="icon align_horizontal_left"
-                                      onClick={() => moveFocusedItems("x", getMinCoordinate)}
-                                  />
-                                  <span
-                                      className="icon align_horizontal_center"
-                                      onClick={() => moveFocusedItems("x", getCenterCoordinate)}
-                                  />
-                                  <span
-                                      className="icon align_horizontal_right"
-                                      onClick={() => moveFocusedItems("x", getMaxCoordinate)}
-                                  />
-                              </div>
-                          )}
-                          {hasItemsToAlign && (
-                              <div className="icon-group">
-                                  <span
-                                      className="icon align_vertical_top"
-                                      onClick={() => moveFocusedItems("y", getMinCoordinate)}
-                                  />
-                                  <span
-                                      className="icon align_vertical_center"
-                                      onClick={() => moveFocusedItems("y", getCenterCoordinate)}
-                                  />
-                                  <span
-                                      className="icon align_vertical_bottom"
-                                      onClick={() => moveFocusedItems("y", getMaxCoordinate)}
-                                  />
-                              </div>
-                          )}
-                          {hasItemsToDistribute && (
-                              <div className="icon-group">
-                                  <span
-                                      className="icon horizontal_distribute"
-                                      onClick={() => moveFocusedItems("x", getDistributedCoordinate)}
-                                  />
-                                  <span
-                                      className="icon vertical_distribute"
-                                      onClick={() => moveFocusedItems("y", getDistributedCoordinate)}
-                                  />
-                              </div>
-                          )}
-                          {anyColored && (
-                              <div className="colors">
-                                  {NOTE_COLORS.map((color) => {
-                                      return (
-                                          <span
-                                              className={"color " + color}
-                                              style={{ background: color }}
-                                              onClick={() => setColor(color)}
-                                          />
-                                      )
-                                  })}
-                              </div>
-                          )}
-                      </div>,
-                  ]
-        })
-
-        function setColor(color: Color) {
-            const b = board.get()
-
-            // To remember color selection for creating new notes.
-            latestNote.modify((n) => ({ ...n, color }))
-
-            const updated = coloredItems.get().map((item) => ({ ...item, color }))
-            dispatch({ action: "item.update", boardId: b.id, items: updated })
         }
     }
 
