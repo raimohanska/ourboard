@@ -67,11 +67,10 @@ export const ContextMenuView = ({
     function moveFocusedItems(axis: Axis, getCoordinateToSetToItem: GetCoordinate) {
         const b = board.get()
 
-        const numberOfItems = L.view(focusedItems, (items) => items.length).get()
-        const min = L.view(focusedItems, (items) => _.min(items.map((i) => i[axis])))?.get() || 0
-        const max = L.view(focusedItems, (items) => _.max(items.map((i) => i[axis] + getItemSize(i, axis))))?.get() || 0
-        const totalSumOfSizes =
-            L.view(focusedItems, (items) => _.sum(items.map((i) => getItemSize(i, axis), 0)))?.get() || 0
+        const itemsToMove = focusedItems.get()
+        const min = _.min(itemsToMove.map((i) => i[axis])) || 0
+        const max = _.max(itemsToMove.map((i) => i[axis] + getItemSize(i, axis))) || 0
+        const totalSumOfSizes = _.sum(itemsToMove.map((i) => getItemSize(i, axis), 0))
 
         let sumOfPreviousSizes = 0
         const updatedItems = focusedItems
@@ -86,7 +85,7 @@ export const ContextMenuView = ({
                         max,
                         axis,
                         index,
-                        numberOfItems,
+                        itemsToMove.length,
                         sumOfPreviousSizes,
                         totalSumOfSizes,
                     ),
