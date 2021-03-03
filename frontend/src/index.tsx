@@ -5,15 +5,12 @@ import { h } from "harmaja"
 import "./app.scss"
 import { UserSessionState, userSessionStore } from "./store/user-session-store"
 import { BoardView } from "./board/BoardView"
-import { syncStatusStore } from "./store/sync-status-store"
-import { BoardHistoryEntry, Id, ItemLocks, UserCursorPosition, UserSessionInfo } from "../../common/src/domain"
+import { Id } from "../../common/src/domain"
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
 import { storeRecentBoard } from "./store/recent-boards"
-import { userInfo } from "./google-auth"
 import { serverConnection } from "./store/server-connection"
 import { boardStore, BoardState } from "./store/board-store"
-import { getInitialBoardState } from "./store/board-local-store"
 import { globalScope } from "lonna"
 
 export type BoardAppState = BoardState & UserSessionState
@@ -38,7 +35,6 @@ const App = () => {
         connection.dispatch,
     )
     const assets = assetStore(connection.socket, L.view(bs.state, "board"), connection.events)
-    const syncStatus = syncStatusStore(connection.socket, connection.queueSize)
     const showingBoardId = bs.state.pipe(L.map((s: BoardState) => (s.board ? s.board.id : undefined)))
     const boardIdFromPopState = L.fromEvent(window, "popstate").pipe(L.map(() => boardIdFromPath()))
     const boardIdNavigationRequests = L.bus<Id | undefined>()
@@ -96,7 +92,6 @@ const App = () => {
                                 assets,
                                 state,
                                 dispatch: connection.dispatch,
-                                syncStatus,
                                 navigateToBoard,
                             }}
                         />

@@ -22,8 +22,6 @@ import { itemDeleteHandler } from "./item-delete"
 import { itemUndoHandler } from "./item-undo-redo"
 import { BoardMenu } from "./BoardMenu"
 import { UserInfoView } from "../components/UserInfoView"
-import { SyncStatusView } from "../components/SyncStatusView"
-import { SyncStatus } from "../store/sync-status-store"
 import { MiniMapView } from "./MiniMapView"
 import { HistoryView } from "./HistoryView"
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
@@ -46,7 +44,6 @@ export const BoardView = ({
     state,
     assets,
     dispatch,
-    syncStatus,
     navigateToBoard,
 }: {
     boardId: string
@@ -54,7 +51,6 @@ export const BoardView = ({
     state: L.Property<BoardAppState>
     assets: AssetStore
     dispatch: Dispatch
-    syncStatus: L.Property<SyncStatus>
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
     const board = L.view(state, (s) => s.board!)
@@ -191,7 +187,6 @@ export const BoardView = ({
                     boardId={boardId}
                     state={state}
                     dispatch={dispatch}
-                    syncStatus={syncStatus}
                     controlSettings={controlSettings}
                 />
 
@@ -226,13 +221,11 @@ export const BoardView = ({
 
     function BoardViewHeader({
         boardId,
-        syncStatus,
         controlSettings,
         state,
         dispatch,
     }: {
         boardId: string
-        syncStatus: L.Property<SyncStatus>
         state: L.Property<BoardAppState>
         controlSettings: L.Atom<ControlSettings>
         dispatch: Dispatch
@@ -273,7 +266,6 @@ export const BoardView = ({
                 </div>
 
                 <UserInfoView state={state} dispatch={dispatch} />
-                <SyncStatusView syncStatus={syncStatus} />
             </header>
         )
     }
