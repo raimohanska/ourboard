@@ -64,7 +64,7 @@ export const ITEM_TYPES = {
     CONTAINER: "container",
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
-export type TextItemProperties = ItemProperties & { text: string, fontSize?: number }
+export type TextItemProperties = ItemProperties & { text: string; fontSize?: number }
 export type Note = TextItemProperties & { type: typeof ITEM_TYPES.NOTE; color: Color }
 export type Text = TextItemProperties & { type: typeof ITEM_TYPES.TEXT }
 export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string }
@@ -238,7 +238,7 @@ export function isColoredItem(i: Item): i is ColoredItem {
 }
 
 export function isTextItem(i: Item): i is TextItem {
-    return i.type === "note" || i.type === "text" || i.type === "container"
+    return i.type === "note" || i.type === "text" || i.type === "container"
 }
 
 export function getItemText(i: Item) {

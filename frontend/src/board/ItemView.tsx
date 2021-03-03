@@ -70,7 +70,11 @@ export const ItemView = ({
             data-itemid={id}
             draggable={L.view(itemFocus, (f) => f !== "editing")}
             onClick={onClick}
-            className={L.view(selected, L.view(item, getItemBackground), (s, b) => `${type} ${"color-" + b.replace("#", "").toLowerCase()} ${s ? "selected" : ""}`)}
+            className={L.view(
+                selected,
+                L.view(item, getItemBackground),
+                (s, b) => `${type} ${"color-" + b.replace("#", "").toLowerCase()} ${s ? "selected" : ""}`,
+            )}
             style={item.pipe(
                 L.map((p: Item) => ({
                     top: p.y + "em",
@@ -108,7 +112,14 @@ export const ItemView = ({
             focus.set(e ? { status: "editing", id } : { status: "selected", ids: new Set([id]) })
         }
         const color = L.view(item, getItemBackground, contrastingColor)
-        const fontSize = autoFontSize(item, L.view(item, i => i.fontSize ? i.fontSize : 1), L.view(item, "text"), focused, coordinateHelper, element)
+        const fontSize = autoFontSize(
+            item,
+            L.view(item, (i) => (i.fontSize ? i.fontSize : 1)),
+            L.view(item, "text"),
+            focused,
+            coordinateHelper,
+            element,
+        )
         return (
             <span className="text" style={L.combineTemplate({ fontSize, color })}>
                 <HTMLEditableSpan
@@ -130,13 +141,21 @@ export const ItemView = ({
         const interestingHistory = itemHistory.filter((e) => e.action !== "item.move" && e.action !== "item.front")
         const lastItem = interestingHistory[interestingHistory.length - 1]
         const text = lastItem && lastItem.user.userType !== "system" ? lastItem.user.nickname : ""
-        const fontSize = autoFontSize(item, L.constant(1), L.constant(text), L.constant(false), coordinateHelper, element, {
-            maxFontSize: 0.5,
-            minFontSize: 0.5,
-            maxLines: 1,
-            hideIfNoFit: true,
-            widthTarget: 0.55,
-        })
+        const fontSize = autoFontSize(
+            item,
+            L.constant(1),
+            L.constant(text),
+            L.constant(false),
+            coordinateHelper,
+            element,
+            {
+                maxFontSize: 0.5,
+                minFontSize: 0.5,
+                maxLines: 1,
+                hideIfNoFit: true,
+                widthTarget: 0.55,
+            },
+        )
         const style = L.combineTemplate({ color, fontSize })
         return (
             <span className="author" style={style}>

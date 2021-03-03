@@ -375,7 +375,7 @@ a {
             @extend .item;
             font-family: $font-family-note;
             text-align: center;
-       
+
             &.color-f5f18d ::selection {
                 color: black;
                 background: #ffc107;
@@ -384,11 +384,12 @@ a {
                 color: black;
                 background: #ffeb3b;
             }
-            &.color-81bae7, &.color-black {
+            &.color-81bae7,
+            &.color-black {
                 ::selection {
                     color: white;
-                    background: #3f51b5
-                }            
+                    background: #3f51b5;
+                }
             }
             small {
                 display: block;

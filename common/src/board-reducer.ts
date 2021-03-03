@@ -44,7 +44,7 @@ export function boardReducer(
                 },
                 {
                     ...event,
-                    action: "item.font.decrease"
+                    action: "item.font.decrease",
                 },
             ]
         case "item.font.decrease":
@@ -55,9 +55,9 @@ export function boardReducer(
                 },
                 {
                     ...event,
-                    action: "item.font.increase"                    
+                    action: "item.font.increase",
                 },
-            ]            
+            ]
         case "item.update":
             return [
                 {
@@ -142,9 +142,11 @@ export function boardReducer(
 function applyFontSize(items: Item[], factor: number, itemIds: Id[]) {
     return items.map((p) => {
         const updated = itemIds.find((i) => i === p.id && isTextItem(p))
-        if (updated) return {
-            ...p, fontSize: ((p as TextItem).fontSize || 1) * factor
-        }
+        if (updated)
+            return {
+                ...p,
+                fontSize: ((p as TextItem).fontSize || 1) * factor,
+            }
         return p
     })
 }

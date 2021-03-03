@@ -23,7 +23,6 @@ const defaultOptions = {
     heightTarget: 0.6,
 }
 
-
 export function autoFontSize(
     item: L.Property<TextItem>,
     fontSize: L.Property<number>,
@@ -35,7 +34,14 @@ export function autoFontSize(
 ): L.Property<string> {
     let fullOptions = { ...defaultOptions, ...options }
 
-    const itemProps = L.combine(L.view(item, "type"), L.view(item, "width"), L.view(item, "height"), fontSize, text, (t, w, h, fs, text) => ([t, w, h, fs, text] as const))
+    const itemProps = L.combine(
+        L.view(item, "type"),
+        L.view(item, "width"),
+        L.view(item, "height"),
+        fontSize,
+        text,
+        (t, w, h, fs, text) => [t, w, h, fs, text] as const,
+    )
     return L.view(
         itemProps,
         focused,
@@ -88,7 +94,7 @@ export function autoFontSize(
 
             if (!fit && fullOptions.hideIfNoFit) return "0"
 
-            return (Math.min(sizeEm, fullOptions.maxFontSize) * fs) + "em"
+            return Math.min(sizeEm, fullOptions.maxFontSize) * fs + "em"
 
             // Try to fit text using given font size. Return fit factor (text size / max size)
             function tryFit(sizeEm: number) {

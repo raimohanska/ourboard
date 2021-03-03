@@ -69,21 +69,29 @@ export const ContextMenuView = ({
         const anyText = L.view(textItems, (items) => items.length > 0)
 
         return L.view(anyText, (any) =>
-        !any
-            ? []
-            : [
-                  <div className="font-size">                      
-                      <span className="icon plus" onClick={increaseFont}/>
-                      <span className="icon minus" onClick={decreaseFont}/>
-                  </div>,
-              ],
+            !any
+                ? []
+                : [
+                      <div className="font-size">
+                          <span className="icon plus" onClick={increaseFont} />
+                          <span className="icon minus" onClick={decreaseFont} />
+                      </div>,
+                  ],
         )
 
         function increaseFont() {
-            dispatch({ action: "item.font.increase", boardId: board.get().id, itemIds: textItems.get().map(i => i.id) })
+            dispatch({
+                action: "item.font.increase",
+                boardId: board.get().id,
+                itemIds: textItems.get().map((i) => i.id),
+            })
         }
         function decreaseFont() {
-            dispatch({ action: "item.font.decrease", boardId: board.get().id, itemIds: textItems.get().map(i => i.id) })
+            dispatch({
+                action: "item.font.decrease",
+                boardId: board.get().id,
+                itemIds: textItems.get().map((i) => i.id),
+            })
         }
     }
 
