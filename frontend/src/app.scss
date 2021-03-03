@@ -584,12 +584,17 @@ a {
             @extend .ui-context-menu;
             display: flex;
             font-size: 1rem;
-            margin-top: -5em;
+            margin-top: -3em;
             cursor: pointer;
+            .align {
+                &:not(:last-child) {
+                    margin-right: 2em;
+                }
+            }
             .icon-group {
                 display: inline-block;
-                &:not(:first-child) {
-                    margin-left: 2em;
+                &:not(:last-child) {
+                    margin-right: 2em;
                 }
                 .icon {
                     &:not(:last-child) {
@@ -598,9 +603,6 @@ a {
                 }
             }
             .colors {
-                &:not(:first-child) {
-                    margin-top: 1em;
-                }
                 .color {
                     height: 1em;
                     width: 1em;
