@@ -24,9 +24,9 @@ import {
 } from "../../../common/src/domain"
 import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
 import MessageQueue from "./message-queue"
-import { Dispatch } from "./server-connection"
+import { Dispatch, ServerConnection } from "./server-connection"
 
-export type BoardStore = ReturnType<typeof boardStore>
+export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardState = {
     status: "none" | "loading" | "ready"
     board: Board | undefined
@@ -36,13 +36,10 @@ export type BoardState = {
     users: UserSessionInfo[]
 }
 
-export function boardStore(
-    bufferedServerEvents: L.EventStream<EventFromServer>,
-    uiEvents: L.EventStream<UIEvent>,
-    messageQueue: ReturnType<typeof MessageQueue>,
+export function BoardStore(
+    connection: ServerConnection,
     userInfo: L.Property<EventUserInfo>,
     sessionId: L.Property<string | null>,
-    dispatch: Dispatch,
 ) {
     type BoardStoreEvent =
         | BoardHistoryEntry
@@ -66,7 +63,7 @@ export function boardStore(
         if (event.action === "ui.undo") {
             if (!undoStack.length) return state
             const undoOperation = undoStack.pop()!
-            messageQueue.enqueue(undoOperation)
+            connection.messageQueue.enqueue(undoOperation)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 tagWithUserFromState(undoOperation),
@@ -76,7 +73,7 @@ export function boardStore(
         } else if (event.action === "ui.redo") {
             if (!redoStack.length) return state
             const redoOperation = redoStack.pop()!
-            messageQueue.enqueue(redoOperation)
+            connection.messageQueue.enqueue(redoOperation)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 tagWithUserFromState(redoOperation),
@@ -129,7 +126,7 @@ export function boardStore(
                     }
                 } catch (e) {
                     console.error("Error initializing board. Fetching as new board...", e)
-                    dispatch({
+                    connection.dispatch({
                         action: "board.join",
                         boardId,
                     })
@@ -180,8 +177,8 @@ export function boardStore(
     function tagWithUser(e: UIEvent): BoardHistoryEntry | ClientToServerRequest | LocalUIEvent {
         return isPersistableBoardItemEvent(e) ? tagWithUserFromState(e) : e
     }
-    const userTaggedLocalEvents = L.view(uiEvents, tagWithUser)
-    const events = L.merge(userTaggedLocalEvents, bufferedServerEvents)
+    const userTaggedLocalEvents = L.view(connection.uiEvents, tagWithUser)
+    const events = L.merge(userTaggedLocalEvents, connection.bufferedServerEvents)
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
     const board = L.view(state, "board") as L.Property<Board>
 
@@ -202,7 +199,7 @@ export function boardStore(
 
     function joinBoard(boardId: Id) {
         console.log("Joining board", boardId)
-        dispatch({
+        connection.dispatch({
             action: "board.join",
             boardId,
             initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,

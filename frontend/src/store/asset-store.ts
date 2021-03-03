@@ -3,12 +3,13 @@ import { AppEvent, AssetPutUrlResponse, Board } from "../../../common/src/domain
 import { UserSessionStore } from "./user-session-store"
 import md5 from "md5"
 import { BoardStore } from "./board-store"
+import { ServerConnection } from "./server-connection"
 
 export type AssetId = string
 export type AssetURL = string
 
 export function assetStore(
-    socket: typeof io.Socket,
+    socket: ServerConnection,
     board: L.Property<Board | undefined>,
     events: L.EventStream<AppEvent>,
 ) {
@@ -46,7 +47,10 @@ export function assetStore(
                         if (exists) {
                             return url
                         }
-                        socket.send("app-events", [{ action: "asset.put.request", assetId }])
+
+                        console.log("PUT REQ")
+
+                        socket.messageQueue.enqueue({ action: "asset.put.request", assetId })
                         const signedUrl = await getAssetPutResponse(assetId, events)
 
                         const response = await fetch(signedUrl, {

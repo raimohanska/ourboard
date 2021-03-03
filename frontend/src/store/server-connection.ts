@@ -58,6 +58,5 @@ export function serverConnection() {
         connected,
         events,
         queueSize: messageQueue.queueSize,
-        socket,
     }
 }

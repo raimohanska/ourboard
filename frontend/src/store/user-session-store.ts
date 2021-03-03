@@ -32,11 +32,11 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
         sessionId: null,
         nickname: localStorage.nickname || undefined,
     }
-    const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
+    const sessionState = events.pipe(L.scan(initialState, eventsReducer, globalScope))
 
     const userInfo = L.view(
         googleUser,
-        L.view(state, "nickname"),
+        L.view(sessionState, "nickname"),
         (g, n): EventUserInfo => {
             return g.status === "signed-in" // The user info will actually be overridden by the server!
                 ? {
@@ -49,7 +49,7 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
         },
     )
 
-    const sessionId = L.view(state, "sessionId")
+    const sessionId = L.view(sessionState, "sessionId")
     L.merge(
         connection.connected.pipe(
             L.changes,
@@ -71,7 +71,7 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
     })
 
     return {
-        state,
+        sessionState,
         userInfo,
         sessionId,
     }

@@ -2,11 +2,12 @@ import { Board, Id } from "../../../common/src/domain"
 import * as L from "lonna"
 
 export type ISODate = string
-export type RecentBoard = { id: Id; name: string; opened: ISODate }
+export type RecentBoardAttributes = { id: Id; name: string }
+export type RecentBoard = RecentBoardAttributes & { opened: ISODate }
 
 let recentBoards = L.atom<RecentBoard[]>(localStorage.recentBoards ? JSON.parse(localStorage.recentBoards) : [])
 
-export function storeRecentBoard(board: Board) {
+export function storeRecentBoard(board: RecentBoardAttributes) {
     const recentBoard = { name: board.name, id: board.id, opened: new Date().toISOString() }
     storeRecentBoards((boards) => [recentBoard, ...boards.filter((b) => b.id !== board.id)])
 }
