@@ -41,7 +41,7 @@ export const ContextMenuView = ({
         const maxY = _.max(items.map((i) => i.y + i.height)) || 0
         return {
             x: _.mean(items.map((i) => i.x)),
-            y: minY > 5 ? minY : maxY + 6,
+            y: minY > 3 ? minY : maxY + 4,
         }
     })
 
