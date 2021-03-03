@@ -584,10 +584,23 @@ a {
             @extend .ui-context-menu;
             display: flex;
             font-size: 1rem;
-            height: 2em;
-            margin-top: -2.5em;
+            margin-top: -5em;
             cursor: pointer;
+            .icon-group {
+                display: inline-block;
+                &:not(:first-child) {
+                    margin-left: 2em;
+                }
+                .icon {
+                    &:not(:last-child) {
+                        margin-right: 1em;
+                    }
+                }
+            }
             .colors {
+                &:not(:first-child) {
+                    margin-top: 1em;
+                }
                 .color {
                     height: 1em;
                     width: 1em;
@@ -729,6 +742,38 @@ a {
         @extend .material-icons;
         @include material-icon("pan_tool");
         font-size: 0.9em;
+    }
+    &.align_horizontal_left {
+        @extend .material-icons;
+        @include material-icon("align_horizontal_left");
+    }
+    &.align_horizontal_center {
+        @extend .material-icons;
+        @include material-icon("align_horizontal_center");
+    }
+    &.align_horizontal_right {
+        @extend .material-icons;
+        @include material-icon("align_horizontal_right");
+    }
+    &.align_vertical_top {
+        @extend .material-icons;
+        @include material-icon("align_vertical_top");
+    }
+    &.align_vertical_center {
+        @extend .material-icons;
+        @include material-icon("align_vertical_center");
+    }
+    &.align_vertical_bottom {
+        @extend .material-icons;
+        @include material-icon("align_vertical_bottom");
+    }
+    &.horizontal_distribute {
+        @extend .material-icons;
+        @include material-icon("horizontal_distribute");
+    }
+    &.vertical_distribute {
+        @extend .material-icons;
+        @include material-icon("vertical_distribute");
     }
     &.cursor-arrow {
         background-image: url(img/cursor-arrow.svg);

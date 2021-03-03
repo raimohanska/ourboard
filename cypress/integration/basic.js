@@ -1,3 +1,5 @@
+import _ from "lodash"
+
 // Cypress doesn't use a DragEvent but just an Event, so it doesn't have dataTransfer property...
 // https://github.com/cypress-io/cypress/issues/649
 const mockDataTransfer = {
@@ -8,8 +10,8 @@ const BACKSPACE = 8
 const DELETE = 46
 
 const NotesWithText = (text) => cy.get(`[data-test^="note"][data-test*="${text}"]`)
-const Notes = () => cy.get(`[data-test^="note"]`)
-const SelectedNotes = () => cy.get(`[data-test^="note-selected"] .text`)
+const SelectedNotes = () => cy.get(`[data-test^="note-selected"]`)
+const SelectedNoteTexts = () => cy.get(`[data-test^="note-selected"] .text`)
 
 const Containers = () => cy.get(`[data-test^="container"]`)
 const TextItemsWithText = (text) => cy.get(`[data-test^="text"][data-test*="${text}"]`)
@@ -130,7 +132,7 @@ describe("Board functionality", () => {
             cy.get(".board").trigger("dragover", { force: true, pageX: x + 600, pageY: y + 300 })
             cy.get(".board").trigger("drag", { force: true, pageX: x + 600, pageY: y + 300 })
 
-            SelectedNotes().then((els) => {
+            SelectedNoteTexts().then((els) => {
                 expect(els.length, "One note should be selected").to.equal(1)
                 expect(els[0].innerText, "Note 'HELLO' should be selected").to.equal("HELLO")
             })
@@ -222,7 +224,7 @@ describe("Board functionality", () => {
             NotesWithText("Monoids").click({ force: true, shiftKey: true })
             NotesWithText("World").click({ force: true, shiftKey: true })
 
-            SelectedNotes().then((els) => {
+            SelectedNoteTexts().then((els) => {
                 expect(els.length, "Both notes should be selected when using shift-click").to.equal(2)
             })
 
@@ -310,7 +312,7 @@ describe("Board functionality", () => {
             expect(els.length, "One note with text 'HELLO' should exist").to.equal(1)
         })
 
-        SelectedNotes().then((els) => {
+        SelectedNoteTexts().then((els) => {
             expect(els.length, "One note should be selected after cut").to.equal(1)
             expect(els[0].innerText, "Note 'HELLO' should be selected after cut").to.equal("HELLO")
         })
@@ -321,7 +323,7 @@ describe("Board functionality", () => {
             expect(els.length, "Two notes with text 'HELLO' should exist").to.equal(2)
         })
 
-        SelectedNotes().then((els) => {
+        SelectedNoteTexts().then((els) => {
             expect(els.length, "One note should be selected after copy").to.equal(1)
             expect(els[0].innerText, "Note 'HELLO' should be selected after copy").to.equal("HELLO")
         })
@@ -347,5 +349,142 @@ describe("Board functionality", () => {
 
         NotesWithText("Monoids").should("not.exist")
         NotesWithText("World").should("not.exist")
+    })
+
+    function createNotesAndAlign(iconSelector) {
+        createNote("ALIGN", 250, 120)
+        createNote("ALL", 300, 100)
+        createNote("THESE", 320, 190)
+        createNote("BUT NOT THIS", 300, 250)
+
+        NotesWithText("ALIGN").click({ force: true })
+        NotesWithText("ALL").click({ force: true, shiftKey: true })
+        NotesWithText("THESE").click({ force: true, shiftKey: true })
+        cy.get(".context-menu").scrollIntoView().should("be.visible")
+
+        const originalX = []
+        const originalY = []
+        SelectedNotes().then((els) => {
+            expect(els.length, "Three notes should be selected").to.equal(3)
+            ;[...els].forEach((source) => {
+                const rect = source.getBoundingClientRect()
+                const parentRect = source.parentNode.getBoundingClientRect()
+                originalX.push(rect.x - parentRect.x)
+                originalY.push(rect.y - parentRect.y)
+            })
+        })
+
+        cy.get(iconSelector).click()
+
+        return { originalX, originalY }
+    }
+
+    const getCoordinate = (source, axis) => {
+        return source.getBoundingClientRect()[axis] - source.parentNode.getBoundingClientRect()[axis]
+    }
+    const getX = (source) => getCoordinate(source, "x")
+    const getY = (source) => getCoordinate(source, "y")
+
+    it("Can align notes to horizontal left from context menu", () => {
+        const { originalX, originalY } = createNotesAndAlign(".align_horizontal_left")
+
+        SelectedNotes().then((els) => {
+            ;[...els].forEach((source) => {
+                expect(getX(source), "Selected notes should have smallest of x coordinates").to.equal(_.min(originalX))
+            })
+            expect([...els].map(getY), "Selected notes should have original y coordinates").to.deep.equal(originalY)
+        })
+    })
+
+    it("Can align notes to horizontal center from context menu", () => {
+        const { originalX, originalY } = createNotesAndAlign(".align_horizontal_center")
+
+        SelectedNotes().then((els) => {
+            ;[...els].forEach((source) => {
+                expect(
+                    getX(source),
+                    "Selected notes should have average of smallest and largest of x coordinates",
+                ).to.equal((_.min(originalX) + _.max(originalX)) / 2)
+            })
+            expect([...els].map(getY), "Selected notes should have original y coordinates").to.deep.equal(originalY)
+        })
+    })
+
+    it("Can align notes to horizontal right from context menu", () => {
+        const { originalX, originalY } = createNotesAndAlign(".align_horizontal_right")
+
+        SelectedNotes().then((els) => {
+            ;[...els].forEach((source) => {
+                expect(getX(source), "Selected notes should have largest of x coordinates").to.equal(_.max(originalX))
+            })
+            expect([...els].map(getY), "Selected notes should have original y coordinates").to.deep.equal(originalY)
+        })
+    })
+
+    it("Can align notes to vertical top from context menu", () => {
+        const { originalX, originalY } = createNotesAndAlign(".align_vertical_top")
+
+        SelectedNotes().then((els) => {
+            ;[...els].forEach((source) => {
+                expect(getY(source), "Selected notes should have smallest of y coordinates").to.equal(_.min(originalY))
+            })
+            expect([...els].map(getX), "Selected notes should have original x coordinates").to.deep.equal(originalX)
+        })
+    })
+
+    it("Can align notes to vertical center from context menu", () => {
+        const { originalX, originalY } = createNotesAndAlign(".align_vertical_center")
+
+        SelectedNotes().then((els) => {
+            ;[...els].forEach((source) => {
+                expect(
+                    getY(source),
+                    "Selected notes should have average of smallest and largest of y coordinates",
+                ).to.equal((_.min(originalY) + _.max(originalY)) / 2)
+            })
+            expect([...els].map(getX), "Selected notes should have original x coordinates").to.deep.equal(originalX)
+        })
+    })
+
+    it("Can align notes to vertical bottom from context menu", () => {
+        const { originalX, originalY } = createNotesAndAlign(".align_vertical_bottom")
+        SelectedNotes().then((els) => {
+            ;[...els].forEach((source) => {
+                expect(getY(source), "Selected notes should have largest of y coordinates").to.equal(_.max(originalY))
+            })
+            expect([...els].map(getX), "Selected notes should have original x coordinates").to.deep.equal(originalX)
+        })
+    })
+
+    it("Can distribute notes horizontally from context menu", () => {
+        const { originalY } = createNotesAndAlign(".horizontal_distribute")
+
+        SelectedNotes().then((els) => {
+            const newEls = [...els]
+            const distances = newEls.map((source, index) =>
+                index > 0 ? getX(source) - getX(newEls[index - 1]) : undefined,
+            )
+            expect(
+                _.uniq(_.compact(distances)).length,
+                "Selected notes should have x coordinates equally spaced",
+            ).to.equal(1)
+            expect([...els].map(getY), "Selected notes should have original y coordinates").to.deep.equal(originalY)
+        })
+    })
+
+    it("Can distribute notes vertically from context menu", () => {
+        const { originalX } = createNotesAndAlign(".vertical_distribute")
+
+        SelectedNotes().then((els) => {
+            const newEls = [...els]
+            const distances = newEls.map((source, index) =>
+                index > 0 ? getY(source) - getY(newEls[index - 1]) : undefined,
+            )
+            expect(
+                _.uniq(_.compact(distances)).length,
+                "Selected notes should have y coordinates equally spaced",
+            ).to.equal(1)
+            expect([...els].map(getX), "Selected notes should have original x coordinates").to.deep.equal(originalX)
+        })
     })
 })
