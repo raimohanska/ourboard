@@ -1,4 +1,4 @@
-import { h } from "harmaja"
+import { h, ListView } from "harmaja"
 import * as L from "lonna"
 import _ from "lodash"
 import { Board, Color, findItem, isColoredItem, Item, isTextItem, Note } from "../../../common/src/domain"
@@ -48,78 +48,102 @@ export const ContextMenuView = ({
     const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes()]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
 
-    type Axis = "x" | "y"
-    type GetCoordinate = (
-        item: Item,
-        min: number,
-        max: number,
-        axis: Axis,
-        index: number,
-        numberOfItems: number,
-        sumOfPreviousSizes: number,
-        totalSumOfSizes: number,
-    ) => number
-
-    function getItemSize(item: Item, axis: Axis) {
-        return axis === "x" ? item.width : item.height
-    }
-
-    function moveFocusedItems(axis: Axis, getCoordinateToSetToItem: GetCoordinate) {
-        const b = board.get()
-
-        const itemsToMove = focusedItems.get()
-        const min = _.min(itemsToMove.map((i) => i[axis])) || 0
-        const max = _.max(itemsToMove.map((i) => i[axis] + getItemSize(i, axis))) || 0
-        const totalSumOfSizes = _.sum(itemsToMove.map((i) => getItemSize(i, axis), 0))
-
-        let sumOfPreviousSizes = 0
-        const updatedItems = focusedItems
-            .get()
-            .sort((item1, item2) => item1[axis] - item2[axis])
-            .map((item, index) => {
-                const newItem = {
-                    ...item,
-                    [axis]: getCoordinateToSetToItem(
-                        item,
-                        min,
-                        max,
-                        axis,
-                        index,
-                        itemsToMove.length,
-                        sumOfPreviousSizes,
-                        totalSumOfSizes,
-                    ),
-                }
-                sumOfPreviousSizes += getItemSize(item, axis)
-                return newItem
-            })
-        dispatch({ action: "item.update", boardId: b.id, items: updatedItems })
-    }
-
-    const getMinCoordinate: GetCoordinate = (_, min) => min
-
-    const getCenterCoordinate: GetCoordinate = (item, min, max, axis) => (min + max - getItemSize(item, axis)) / 2
-
-    const getMaxCoordinate: GetCoordinate = (item, min, max, axis) => max - getItemSize(item, axis)
-
-    const getDistributedCoordinate: GetCoordinate = (
-        item,
-        min,
-        max,
-        _,
-        index,
-        numberOfItems,
-        sumOfPreviousSizes,
-        totalSumOfSizes,
-    ) => {
-        const spaceBetweenItems = (max - min - totalSumOfSizes) / (numberOfItems - 1)
-        return min + sumOfPreviousSizes + index * spaceBetweenItems
-    }
+    
+    return L.view(
+        activeWidgets,
+        (ws) => ws.length === 0,
+        (hide) =>
+            hide ? null : (
+                <div
+                    className="context-menu-positioner"
+                    style={L.combineTemplate({
+                        left: L.view(focusItem, (p) => (p ? p.x + "em" : 0)),
+                        top: L.view(focusItem, (p) => (p ? p.y + "em" : 0)),
+                    })}
+                >
+                    <div className="context-menu">
+                        <ListView 
+                            observable={activeWidgets}
+                            renderItem={x => x}
+                            getKey={x => x}
+                        />
+                    </div>
+                </div>
+            ),
+    )
 
     function menuAlignments() {
         const hasItemsToAlign = L.view(focusedItems, (items) => items.length > 1)
         const hasItemsToDistribute = L.view(focusedItems, (items) => items.length > 2)
 
+        type Axis = "x" | "y"
+        type GetCoordinate = (
+            item: Item,
+            min: number,
+            max: number,
+            axis: Axis,
+            index: number,
+            numberOfItems: number,
+            sumOfPreviousSizes: number,
+            totalSumOfSizes: number,
+        ) => number
+    
+        function getItemSize(item: Item, axis: Axis) {
+            return axis === "x" ? item.width : item.height
+        }
+    
+
+        function moveFocusedItems(axis: Axis, getCoordinateToSetToItem: GetCoordinate) {
+            const b = board.get()
+    
+            const itemsToMove = focusedItems.get()
+            const min = _.min(itemsToMove.map((i) => i[axis])) || 0
+            const max = _.max(itemsToMove.map((i) => i[axis] + getItemSize(i, axis))) || 0
+            const totalSumOfSizes = _.sum(itemsToMove.map((i) => getItemSize(i, axis), 0))
+    
+            let sumOfPreviousSizes = 0
+            const updatedItems = focusedItems
+                .get()
+                .sort((item1, item2) => item1[axis] - item2[axis])
+                .map((item, index) => {
+                    const newItem = {
+                        ...item,
+                        [axis]: getCoordinateToSetToItem(
+                            item,
+                            min,
+                            max,
+                            axis,
+                            index,
+                            itemsToMove.length,
+                            sumOfPreviousSizes,
+                            totalSumOfSizes,
+                        ),
+                    }
+                    sumOfPreviousSizes += getItemSize(item, axis)
+                    return newItem
+                })
+            dispatch({ action: "item.update", boardId: b.id, items: updatedItems })
+        }
+    
+        const getMinCoordinate: GetCoordinate = (_, min) => min
+    
+        const getCenterCoordinate: GetCoordinate = (item, min, max, axis) => (min + max - getItemSize(item, axis)) / 2
+    
+        const getMaxCoordinate: GetCoordinate = (item, min, max, axis) => max - getItemSize(item, axis)
+    
+        const getDistributedCoordinate: GetCoordinate = (
+            item,
+            min,
+            max,
+            _,
+            index,
+            numberOfItems,
+            sumOfPreviousSizes,
+            totalSumOfSizes,
+        ) => {
+            const spaceBetweenItems = (max - min - totalSumOfSizes) / (numberOfItems - 1)
+            return min + sumOfPreviousSizes + index * spaceBetweenItems
+        }        
         return L.combine(hasItemsToAlign, hasItemsToDistribute, (hasItemsToAlign, hasItemsToDistribute) => {
             return !hasItemsToAlign
                 ? []
@@ -154,6 +178,7 @@ export const ContextMenuView = ({
                       </div>,
                   ]
         })
+
     }
 
     function menuColors() {
@@ -219,21 +244,4 @@ export const ContextMenuView = ({
             })
         }
     }
-
-    return L.view(
-        activeWidgets,
-        (ws) => ws.length === 0,
-        (hide) =>
-            hide ? null : (
-                <div
-                    className="context-menu-positioner"
-                    style={L.combineTemplate({
-                        left: L.view(focusItem, (p) => (p ? p.x + "em" : 0)),
-                        top: L.view(focusItem, (p) => (p ? p.y + "em" : 0)),
-                    })}
-                >
-                    <div className="context-menu">{activeWidgets}</div>
-                </div>
-            ),
-    )
 }
