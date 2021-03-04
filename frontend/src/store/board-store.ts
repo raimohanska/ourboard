@@ -198,6 +198,9 @@ export function BoardStore(
     localBoardToSave.forEach(storeBoardState)
 
     function joinBoard(boardId: Id) {
+        // TODO: switch connection per board here, in preparation for load-balancing.
+        // Will also remove the need to introduce LeaveBoard messages for clearing listeners for earlier boards!
+
         console.log("Joining board", boardId)
         connection.dispatch({
             action: "board.join",
