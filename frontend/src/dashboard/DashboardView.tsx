@@ -27,7 +27,7 @@ export const DashboardView = ({
                 Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
             </p>
             <RecentBoards {...{ navigateToBoard }} />
-            <CreateBoard dispatch={dispatch} />
+            <CreateBoard {...{ dispatch, navigateToBoard }} />
             <GoogleLoginArea />
         </div>
     )
@@ -103,7 +103,13 @@ const Welcome = () => {
         </div>
     )
 }
-const CreateBoard = ({ dispatch }: { dispatch: Dispatch }) => {
+const CreateBoard = ({
+    dispatch,
+    navigateToBoard,
+}: {
+    dispatch: Dispatch
+    navigateToBoard: (boardId: Id | undefined) => void
+}) => {
     const boardName = L.atom("")
     const disabled = L.view(boardName, (n) => !n)
 
@@ -116,6 +122,7 @@ const CreateBoard = ({ dispatch }: { dispatch: Dispatch }) => {
         }
         const newBoard = generateFromTemplate(boardName.get(), template)
         dispatch({ action: "board.add", payload: newBoard })
+        navigateToBoard(newBoard.id)
     }
 
     const { templates, templateOptions, defaultTemplate } = getUserTemplates()

@@ -105,8 +105,7 @@ async function handleAppEvent(
                 const board = !isFullyFormedBoard(payload)
                     ? { ...defaultBoardSize, ...payload, items: [], serial: 0 }
                     : payload
-                const boardWithHistory = await addBoard(board)
-                await addSessionToBoard(boardWithHistory, socket)
+                await addBoard(board)
                 return
             }
             case "cursor.move": {
