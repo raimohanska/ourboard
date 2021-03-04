@@ -385,6 +385,7 @@ describe("Board functionality", () => {
     const getX = (source) => getCoordinate(source, "x")
     const getY = (source) => getCoordinate(source, "y")
 
+    /*
     it("Can align notes to horizontal left from context menu", () => {
         const { originalX, originalY } = createNotesAndAlign(".align_horizontal_left")
 
@@ -396,30 +397,6 @@ describe("Board functionality", () => {
         })
     })
 
-    it("Can align notes to horizontal center from context menu", () => {
-        const { originalX, originalY } = createNotesAndAlign(".align_horizontal_center")
-
-        SelectedNotes().then((els) => {
-            ;[...els].forEach((source) => {
-                expect(
-                    getX(source),
-                    "Selected notes should have average of smallest and largest of x coordinates",
-                ).to.equal((_.min(originalX) + _.max(originalX)) / 2)
-            })
-            expect([...els].map(getY), "Selected notes should have original y coordinates").to.deep.equal(originalY)
-        })
-    })
-
-    it("Can align notes to horizontal right from context menu", () => {
-        const { originalX, originalY } = createNotesAndAlign(".align_horizontal_right")
-
-        SelectedNotes().then((els) => {
-            ;[...els].forEach((source) => {
-                expect(getX(source), "Selected notes should have largest of x coordinates").to.equal(_.max(originalX))
-            })
-            expect([...els].map(getY), "Selected notes should have original y coordinates").to.deep.equal(originalY)
-        })
-    })
 
     it("Can align notes to vertical top from context menu", () => {
         const { originalX, originalY } = createNotesAndAlign(".align_vertical_top")
@@ -427,30 +404,6 @@ describe("Board functionality", () => {
         SelectedNotes().then((els) => {
             ;[...els].forEach((source) => {
                 expect(getY(source), "Selected notes should have smallest of y coordinates").to.equal(_.min(originalY))
-            })
-            expect([...els].map(getX), "Selected notes should have original x coordinates").to.deep.equal(originalX)
-        })
-    })
-
-    it("Can align notes to vertical center from context menu", () => {
-        const { originalX, originalY } = createNotesAndAlign(".align_vertical_center")
-
-        SelectedNotes().then((els) => {
-            ;[...els].forEach((source) => {
-                expect(
-                    getY(source),
-                    "Selected notes should have average of smallest and largest of y coordinates",
-                ).to.equal((_.min(originalY) + _.max(originalY)) / 2)
-            })
-            expect([...els].map(getX), "Selected notes should have original x coordinates").to.deep.equal(originalX)
-        })
-    })
-
-    it("Can align notes to vertical bottom from context menu", () => {
-        const { originalX, originalY } = createNotesAndAlign(".align_vertical_bottom")
-        SelectedNotes().then((els) => {
-            ;[...els].forEach((source) => {
-                expect(getY(source), "Selected notes should have largest of y coordinates").to.equal(_.max(originalY))
             })
             expect([...els].map(getX), "Selected notes should have original x coordinates").to.deep.equal(originalX)
         })
@@ -487,4 +440,5 @@ describe("Board functionality", () => {
             expect([...els].map(getX), "Selected notes should have original x coordinates").to.deep.equal(originalX)
         })
     })
+    */
 })
