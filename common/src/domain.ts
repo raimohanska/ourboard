@@ -241,6 +241,10 @@ export function isTextItem(i: Item): i is TextItem {
     return i.type === "note" || i.type === "text" || i.type === "container"
 }
 
+export function isNote(i: Item): i is Note {
+    return i.type === "note"
+}
+
 export function getItemText(i: Item) {
     if (i.type === "image") return ""
     return i.text

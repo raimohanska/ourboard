@@ -20,6 +20,11 @@ import {
     Note,
     Color,
     PersistableBoardItemEvent,
+    Item,
+    TextItem,
+    isTextItem,
+    isNote,
+    Container,
 } from "../../common/src/domain"
 import { addBoard, getBoard, maybeGetBoard, updateBoards } from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
@@ -119,14 +124,11 @@ const configureServer = () => {
                         const color = isBug ? RED : YELLOW
                         if (!existingItem) {
                             console.log(`Github webhook call board ${boardId}: New item`)
-                            return await addItem(boardId, "note", linkHTML, color, "New issues", res)
+                            await addItem(board.board, "note", linkHTML, color, "New issues")
                         } else {
                             console.log(`Github webhook call board ${boardId}: Item exists`)
                             const updatedItem: Note = { ...existingItem, color }
-                            return await dispatchSystemAppEvent(
-                                { action: "item.update", boardId, items: [updatedItem] },
-                                res,
-                            )
+                            await dispatchSystemAppEvent({ action: "item.update", boardId, items: [updatedItem] })
                         }
                     }
                 } else {
@@ -140,7 +142,11 @@ const configureServer = () => {
             res.sendStatus(200)
         } catch (e) {
             console.error(e)
-            res.sendStatus(500)
+            if (e instanceof InvalidRequest) {
+                res.status(400).send(e.message)
+            } else {
+                res.sendStatus(500)
+            }
         }
     })
 
@@ -152,57 +158,119 @@ const configureServer = () => {
             }
             const { type, text, color, container } = req.body
             console.log(`POST item for board ${boardId}: ${JSON.stringify(req.body)}`)
-            await addItem(boardId, type, text, color, container, res)
+            const board = await getBoard(boardId)
+            if (!board) return res.sendStatus(404)
+            await addItem(board.board, type, text, color, container)
+            res.status(200).json({ ok: true })
         } catch (e) {
             console.error(e)
-            res.sendStatus(500)
+            if (e instanceof InvalidRequest) {
+                res.status(400).send(e.message)
+            } else {
+                res.sendStatus(500)
+            }
         }
     })
 
-    async function addItem(
-        boardId: string,
-        type: "note",
-        text: string,
-        color: Color,
-        container: string,
-        res: express.Response,
-    ) {
-        const board = await getBoard(boardId)
-        if (!board) {
-            return res.sendStatus(404)
+    app.put("/api/v1/board/:boardId/item/:itemId", bodyParser.json(), async (req, res) => {
+        try {
+            const { boardId, itemId } = req.params
+            if (!boardId) throw new InvalidRequest("boardId missing")
+            if (!itemId) throw new InvalidRequest("itemId missing")
+            const { type, text, color, container, replaceTextIfExists } = req.body
+            console.log(`PUT item for board ${boardId} item ${itemId}: ${JSON.stringify(req.body)}`)
+            if (type !== "note") throw new InvalidRequest("Expecting type: note")
+            if (typeof text !== "string" || text.length === 0)
+                throw new InvalidRequest("Expecting non zero-length text")
+
+            const board = await getBoard(boardId)
+            if (board) {
+                const existingItem = board.board.items.find((i) => i.id === itemId)
+                if (existingItem) {
+                    if (!isNote(existingItem)) {
+                        throw new InvalidRequest("Unexpected item type")
+                    }
+                    const containerItem = findContainer(container, board.board)
+                    const currentContainer = findContainer(existingItem.containerId, board.board)
+
+                    const containerAttrs =
+                        containerItem !== currentContainer ? getItemAttributesForContainer(container, board.board) : {}
+
+                    let updatedItem: Note = {
+                        ...existingItem,
+                        ...containerAttrs,
+                        text: replaceTextIfExists ? text : existingItem.text,
+                        color: color || existingItem.color,
+                    }
+                    console.log(`Updating existing item`)
+                    await dispatchSystemAppEvent({ action: "item.update", boardId, items: [updatedItem] })
+                } else {
+                    console.log(`Adding new item`)
+                    await addItem(board.board, type, text, color, container, itemId)
+                }
+            } else {
+                console.warn(`Github webhook call for unknown board ${boardId}`)
+            }
+            res.status(200).json({ ok: true })
+        } catch (e) {
+            console.error(e)
+            if (e instanceof InvalidRequest) {
+                res.status(400).send(e.message)
+            } else {
+                res.sendStatus(500)
+            }
         }
-        if (type !== "note") return res.status(400).send("Expecting type: note")
-        if (typeof text !== "string" || text.length === 0) return res.status(400).send("Expecting non zero-length text")
-        let containerItem
-        let itemAttributes
+    })
+
+    class InvalidRequest extends Error {
+        constructor(message: string) {
+            super(message)
+        }
+    }
+
+    function findContainer(container: string | undefined, board: Board): Container | null {
         if (container !== undefined) {
             if (typeof container !== "string") {
-                return res
-                    .status(400)
-                    .send("Expecting container to be undefined, or an id or name of an Container item")
+                throw new InvalidRequest("Expecting container to be undefined, or an id or name of an Container item")
             }
-            containerItem = board.board.items.find(
+            const containerItem = board.items.find(
                 (i) =>
                     i.type === "container" && (i.text.toLowerCase() === container.toLowerCase() || i.id === container),
             )
             if (!containerItem) {
-                return res.status(400).send(`Container "${container}" not found by id or name`)
+                throw new InvalidRequest(`Container "${container}" not found by id or name`)
             }
-            itemAttributes = {
+            return containerItem as Container
+        } else {
+            return null
+        }
+    }
+
+    function getItemAttributesForContainer(container: string | undefined, board: Board) {
+        const containerItem = findContainer(container, board)
+        if (containerItem) {
+            return {
                 containedId: containerItem.id,
                 x: containerItem.x + 2,
                 y: containerItem.y + 2,
             }
-        } else {
-            itemAttributes = {}
         }
-
-        const item: Note = { ...newNote(text, color || "#F5F18D"), ...itemAttributes }
-        const appEvent: AppEvent = { action: "item.add", boardId: boardId, items: [item] }
-        dispatchSystemAppEvent(appEvent, res)
+        return {}
     }
 
-    async function dispatchSystemAppEvent(appEvent: PersistableBoardItemEvent, res: express.Response) {
+    async function addItem(board: Board, type: "note", text: string, color: Color, container: string, itemId?: string) {
+        if (type !== "note") throw new InvalidRequest("Expecting type: note")
+        if (typeof text !== "string" || text.length === 0) throw new InvalidRequest("Expecting non zero-length text")
+
+        let itemAttributes: object = getItemAttributesForContainer(container, board)
+        if (itemId) itemAttributes = { ...itemAttributes, id: itemId }
+
+        const item: Note = { ...newNote(text, color || YELLOW), ...itemAttributes }
+        const appEvent: AppEvent = { action: "item.add", boardId: board.id, items: [item] }
+        dispatchSystemAppEvent(appEvent)
+    }
+
+    async function dispatchSystemAppEvent(appEvent: PersistableBoardItemEvent) {
         const user: EventUserInfo = { userType: "system", nickname: "Github webhook" }
         let historyEntry: BoardHistoryEntry = { ...appEvent, user, timestamp: new Date().toISOString() }
         console.log(JSON.stringify(historyEntry))
@@ -210,7 +278,6 @@ const configureServer = () => {
         const serial = await updateBoards(historyEntry)
         historyEntry = { ...historyEntry, serial }
         broadcastBoardEvent(historyEntry)
-        res.status(200).json({ ok: true })
     }
 
     io.on("connection", connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) }))
