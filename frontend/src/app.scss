@@ -364,21 +364,6 @@ a {
             font-family: $font-family-note;
             text-align: center;
 
-            &.color-f5f18d ::selection {
-                color: black;
-                background: #ffc107;
-            }
-            &.color-f3bf71 ::selection {
-                color: black;
-                background: #ffeb3b;
-            }
-            &.color-81bae7,
-            &.color-black {
-                ::selection {
-                    color: white;
-                    background: #3f51b5;
-                }
-            }
             small {
                 display: block;
                 font-size: 0.3em;

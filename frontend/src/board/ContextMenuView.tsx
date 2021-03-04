@@ -3,7 +3,7 @@ import * as L from "lonna"
 import _ from "lodash"
 import { Board, Color, findItem, isColoredItem, Item, isTextItem, Note } from "../../../common/src/domain"
 import { Dispatch } from "../store/user-session-store"
-import { NOTE_COLORS } from "./PaletteView"
+import { NOTE_COLORS } from "../../../common/src/colors"
 import { BoardFocus } from "./board-focus"
 
 export const ContextMenuView = ({
@@ -48,7 +48,6 @@ export const ContextMenuView = ({
     const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes()]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
 
-    
     return L.view(
         activeWidgets,
         (ws) => ws.length === 0,
@@ -62,11 +61,7 @@ export const ContextMenuView = ({
                     })}
                 >
                     <div className="context-menu">
-                        <ListView 
-                            observable={activeWidgets}
-                            renderItem={x => x}
-                            getKey={x => x}
-                        />
+                        <ListView observable={activeWidgets} renderItem={(x) => x} getKey={(x) => x} />
                     </div>
                 </div>
             ),
@@ -87,20 +82,19 @@ export const ContextMenuView = ({
             sumOfPreviousSizes: number,
             totalSumOfSizes: number,
         ) => number
-    
+
         function getItemSize(item: Item, axis: Axis) {
             return axis === "x" ? item.width : item.height
         }
-    
 
         function moveFocusedItems(axis: Axis, getCoordinateToSetToItem: GetCoordinate) {
             const b = board.get()
-    
+
             const itemsToMove = focusedItems.get()
             const min = _.min(itemsToMove.map((i) => i[axis])) || 0
             const max = _.max(itemsToMove.map((i) => i[axis] + getItemSize(i, axis))) || 0
             const totalSumOfSizes = _.sum(itemsToMove.map((i) => getItemSize(i, axis), 0))
-    
+
             let sumOfPreviousSizes = 0
             const updatedItems = focusedItems
                 .get()
@@ -124,13 +118,13 @@ export const ContextMenuView = ({
                 })
             dispatch({ action: "item.update", boardId: b.id, items: updatedItems })
         }
-    
+
         const getMinCoordinate: GetCoordinate = (_, min) => min
-    
+
         const getCenterCoordinate: GetCoordinate = (item, min, max, axis) => (min + max - getItemSize(item, axis)) / 2
-    
+
         const getMaxCoordinate: GetCoordinate = (item, min, max, axis) => max - getItemSize(item, axis)
-    
+
         const getDistributedCoordinate: GetCoordinate = (
             item,
             min,
@@ -143,34 +137,34 @@ export const ContextMenuView = ({
         ) => {
             const spaceBetweenItems = (max - min - totalSumOfSizes) / (numberOfItems - 1)
             return min + sumOfPreviousSizes + index * spaceBetweenItems
-        }        
+        }
         return L.combine(hasItemsToAlign, hasItemsToDistribute, (hasItemsToAlign, hasItemsToDistribute) => {
             return !hasItemsToAlign
                 ? []
                 : [
                       <div className="align">
                           {hasItemsToAlign && (
-                                  <span
+                              <span
                                   className="icon align_horizontal_left"
                                   onClick={() => moveFocusedItems("x", getMinCoordinate)}
                               />
                           )}
 
                           {hasItemsToAlign && (
-                                  <span
+                              <span
                                   className="icon align_vertical_top"
                                   onClick={() => moveFocusedItems("y", getMinCoordinate)}
                               />
                           )}
 
                           {hasItemsToDistribute && (
-                                  <span
+                              <span
                                   className="icon horizontal_distribute"
                                   onClick={() => moveFocusedItems("x", getDistributedCoordinate)}
                               />
                           )}
                           {hasItemsToDistribute && (
-                                  <span
+                              <span
                                   className="icon vertical_distribute"
                                   onClick={() => moveFocusedItems("y", getDistributedCoordinate)}
                               />
@@ -178,7 +172,6 @@ export const ContextMenuView = ({
                       </div>,
                   ]
         })
-
     }
 
     function menuColors() {

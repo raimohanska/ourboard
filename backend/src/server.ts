@@ -26,6 +26,7 @@ import { createGetSignedPutUrl } from "./storage"
 import { broadcastBoardEvent } from "./sessions"
 import { encode as htmlEncode } from "html-entities"
 import { item } from "lonna"
+import { RED, YELLOW } from "../../common/src/colors"
 
 const configureServer = () => {
     const config = getConfig()
@@ -115,7 +116,7 @@ const configureServer = () => {
                             (i) => i.type === "note" && i.text.includes(url),
                         ) as Note | undefined
                         const isBug = body.issue.labels.some((l: any) => l.name === "bug")
-                        const color = isBug ? "#E98AA7" : "#81BAE7"
+                        const color = isBug ? RED : YELLOW
                         if (!existingItem) {
                             console.log(`Github webhook call board ${boardId}: New item`)
                             return await addItem(boardId, "note", linkHTML, color, "New issues", res)
