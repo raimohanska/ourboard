@@ -1,16 +1,7 @@
 {
+    "extends": "../tsconfig",
     "compilerOptions": {
-        "target": "esnext",
         "module": "commonjs",
-        "moduleResolution": "node",
-        "lib": ["dom", "es2019"],
-        "skipLibCheck": true,
-        "allowSyntheticDefaultImports": true,
-        "strict": true,
-        "forceConsistentCasingInFileNames": true,
-        "allowJs": false,
-        "outDir": "dist",
-        "declaration": true
-    },
-    "include": ["src/*"]
+        "outDir": "dist"
+    }
 }
