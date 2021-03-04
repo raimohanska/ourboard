@@ -66,7 +66,10 @@ export function cutCopyPasteHandler(
                 const rboardData = e.clipboardData?.getData("application/rboard")
                 if (!rboardData) {
                     if (e.clipboardData) {
-                        console.log("Unsupported data from clipboard.", Object.fromEntries(e.clipboardData.types.map(t => [t, e.clipboardData?.getData(t)])))                        
+                        console.log(
+                            "Unsupported data from clipboard.",
+                            Object.fromEntries(e.clipboardData.types.map((t) => [t, e.clipboardData?.getData(t)])),
+                        )
                     }
                     return
                 }
