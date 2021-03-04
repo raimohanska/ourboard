@@ -4,7 +4,7 @@ module.exports = {
     roots: [`<rootDir>/${which}/src`],
     globals: {
         "ts-jest": {
-            tsconfig: `<rootDir>/${which}/tsconfig.json`,
+            tsconfig: `<rootDir>/tsconfig.json`,
         },
     },
     testMatch: ["**/__tests__/**/*.+(ts|tsx|js)", "**/?(*.)+(spec|test).+(ts|tsx|js)"],

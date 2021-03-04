@@ -1,15 +1,10 @@
 {
+    "extends": "../tsconfig",
     "compilerOptions": {
-        "target": "es2019",
-        "lib": ["es2019", "DOM"],
         "module": "commonjs",
         "outDir": "./dist",
         "rootDir": "..",
-        "strict": true,
-        "moduleResolution": "node",
-        "esModuleInterop": true,
-        "sourceMap": true,
-        "forceConsistentCasingInFileNames": true
+        "sourceMap": true
     },
     "include": ["src/server.ts"]
 }
