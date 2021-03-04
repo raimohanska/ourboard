@@ -1,4 +1,4 @@
-import * as io from "socket.io-client"
+import io from "socket.io-client"
 
 import * as G from "../../frontend/src/board/geometry"
 import { newNote } from "../../common/src/domain"
