@@ -64,7 +64,12 @@ export function cutCopyPasteHandler(
             case "paste": {
                 if (currentFocus.status === "editing") return
                 const rboardData = e.clipboardData?.getData("application/rboard")
-                if (!rboardData) return
+                if (!rboardData) {
+                    if (e.clipboardData) {
+                        console.log("Unsupported data from clipboard.", Object.fromEntries(e.clipboardData.types.map(t => [t, e.clipboardData?.getData(t)])))                        
+                    }
+                    return
+                }
                 const clipboard = JSON.parse(rboardData) as Item[]
                 const xCenterOld = _.sum(clipboard.map((i) => i.x + i.width / 2)) / clipboard.length
                 const yCenterOld = _.sum(clipboard.map((i) => i.y + i.height / 2)) / clipboard.length
