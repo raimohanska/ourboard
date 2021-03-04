@@ -126,50 +126,30 @@ export const ContextMenuView = ({
                 : [
                       <div className="align">
                           {hasItemsToAlign && (
-                              <div className="icon-group">
                                   <span
-                                      className="icon align_horizontal_left"
-                                      onClick={() => moveFocusedItems("x", getMinCoordinate)}
-                                  />
-                                  <span
-                                      className="icon align_horizontal_center"
-                                      onClick={() => moveFocusedItems("x", getCenterCoordinate)}
-                                  />
-                                  <span
-                                      className="icon align_horizontal_right"
-                                      onClick={() => moveFocusedItems("x", getMaxCoordinate)}
-                                  />
-                              </div>
+                                  className="icon align_horizontal_left"
+                                  onClick={() => moveFocusedItems("x", getMinCoordinate)}
+                              />
                           )}
 
                           {hasItemsToAlign && (
-                              <div className="icon-group">
                                   <span
-                                      className="icon align_vertical_top"
-                                      onClick={() => moveFocusedItems("y", getMinCoordinate)}
-                                  />
-                                  <span
-                                      className="icon align_vertical_center"
-                                      onClick={() => moveFocusedItems("y", getCenterCoordinate)}
-                                  />
-                                  <span
-                                      className="icon align_vertical_bottom"
-                                      onClick={() => moveFocusedItems("y", getMaxCoordinate)}
-                                  />
-                              </div>
+                                  className="icon align_vertical_top"
+                                  onClick={() => moveFocusedItems("y", getMinCoordinate)}
+                              />
                           )}
 
                           {hasItemsToDistribute && (
-                              <div className="icon-group">
                                   <span
-                                      className="icon horizontal_distribute"
-                                      onClick={() => moveFocusedItems("x", getDistributedCoordinate)}
-                                  />
+                                  className="icon horizontal_distribute"
+                                  onClick={() => moveFocusedItems("x", getDistributedCoordinate)}
+                              />
+                          )}
+                          {hasItemsToDistribute && (
                                   <span
-                                      className="icon vertical_distribute"
-                                      onClick={() => moveFocusedItems("y", getDistributedCoordinate)}
-                                  />
-                              </div>
+                                  className="icon vertical_distribute"
+                                  onClick={() => moveFocusedItems("y", getDistributedCoordinate)}
+                              />
                           )}
                       </div>,
                   ]

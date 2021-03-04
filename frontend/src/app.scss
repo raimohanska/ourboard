@@ -588,7 +588,10 @@ a {
             cursor: pointer;
             .align {
                 &:not(:last-child) {
-                    margin-right: 2em;
+                    margin-right: 1em;
+                }
+                .icon:not(:last-child) {
+                    margin-right: 0.5em;
                 }
             }
             .icon-group {
@@ -692,6 +695,7 @@ a {
     height: 1em;
     background-size: contain;
     background-repeat: no-repeat;
+    font-size: 1em !important;
     &.edit {
         @extend .material-icons;
         @include material-icon("edit");
@@ -749,25 +753,9 @@ a {
         @extend .material-icons;
         @include material-icon("align_horizontal_left");
     }
-    &.align_horizontal_center {
-        @extend .material-icons;
-        @include material-icon("align_horizontal_center");
-    }
-    &.align_horizontal_right {
-        @extend .material-icons;
-        @include material-icon("align_horizontal_right");
-    }
     &.align_vertical_top {
         @extend .material-icons;
         @include material-icon("align_vertical_top");
-    }
-    &.align_vertical_center {
-        @extend .material-icons;
-        @include material-icon("align_vertical_center");
-    }
-    &.align_vertical_bottom {
-        @extend .material-icons;
-        @include material-icon("align_vertical_bottom");
     }
     &.horizontal_distribute {
         @extend .material-icons;
