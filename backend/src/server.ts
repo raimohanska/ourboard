@@ -178,7 +178,7 @@ const configureServer = () => {
             const { boardId, itemId } = req.params
             if (!boardId) throw new InvalidRequest("boardId missing")
             if (!itemId) throw new InvalidRequest("itemId missing")
-            const { type, text, color, container, replaceTextIfExists } = req.body
+            const { type, text, color, container, replaceTextIfExists, replaceColorIfExists } = req.body
             console.log(`PUT item for board ${boardId} item ${itemId}: ${JSON.stringify(req.body)}`)
             if (type !== "note") throw new InvalidRequest("Expecting type: note")
             if (typeof text !== "string" || text.length === 0)
@@ -188,7 +188,16 @@ const configureServer = () => {
             if (board) {
                 const existingItem = board.board.items.find((i) => i.id === itemId)
                 if (existingItem) {
-                    await updateItem(board.board, type, text, color, container, itemId, replaceTextIfExists)
+                    await updateItem(
+                        board.board,
+                        type,
+                        text,
+                        color,
+                        container,
+                        itemId,
+                        replaceTextIfExists,
+                        replaceColorIfExists,
+                    )
                 } else {
                     console.log(`Adding new item`)
                     await addItem(board.board, type, text, color, container, itemId)
@@ -263,6 +272,7 @@ const configureServer = () => {
         container: string,
         itemId: string,
         replaceTextIfExists: boolean | undefined,
+        replaceColorIfExists: boolean | undefined,
     ) {
         const existingItem = board.items.find((i) => i.id === itemId)!
         if (!isNote(existingItem)) {
@@ -277,7 +287,7 @@ const configureServer = () => {
             ...existingItem,
             ...containerAttrs,
             text: replaceTextIfExists !== false ? text : existingItem.text,
-            color: color || existingItem.color,
+            color: replaceColorIfExists !== false ? color || existingItem.color : existingItem.color,
         }
         if (!_.isEqual(updatedItem, existingItem)) {
             console.log(`Updating existing item`)
