@@ -26,7 +26,7 @@ import { RED, YELLOW } from "../../common/src/colors"
 import { applyMiddleware, router as typeraRouter } from "typera-express"
 import { wrapNative } from "typera-express/middleware"
 import { body, headers } from "typera-express/parser"
-import { badRequest, internalServerError, ok } from "typera-common/response"
+import { badRequest, internalServerError, notFound, ok } from "typera-common/response"
 import * as t from "io-ts"
 import { NonEmptyString } from "io-ts-types"
 
@@ -160,30 +160,34 @@ const githubWebhook = route
         }
     })
 
-router.use(typeraRouter(boardCreate, boardUpdate, githubWebhook).handler())
+const boardAddItem = route
+    .post("/api/v1/board/:boardId/item")
+    .use(
+        body(t.type({ type: t.literal("note"), text: t.string, color: t.string, container: t.string })),
+        headers(t.type({ api_token: t.string })),
+    )
+    .handler(async (request) => {
+        try {
+            const boardId = request.routeParams.boardId
+            const { type, text, color, container } = request.body
+            const { api_token } = request.headers
+            console.log(`POST item for board ${boardId}: ${JSON.stringify(request.body)}`)
+            const board = await getBoard(boardId)
+            checkBoardAPIAccess(board, api_token)
+            if (!board) return notFound()
+            await addItem(board.board, type, text, color, container)
+            return ok({ ok: true })
+        } catch (e) {
+            console.error(e)
+            if (e instanceof InvalidRequest) {
+                return badRequest(e.message)
+            } else {
+                return internalServerError()
+            }
+        }
+    })
 
-router.post("/api/v1/board/:boardId/item", bodyParser.json(), async (req, res) => {
-    try {
-        const boardId = req.params.boardId
-        if (!boardId) {
-            return res.sendStatus(400)
-        }
-        const { type, text, color, container } = req.body
-        console.log(`POST item for board ${boardId}: ${JSON.stringify(req.body)}`)
-        const board = await getBoard(boardId)
-        checkBoardAPIAccess(board, (req.headers.API_TOKEN as string) || "")
-        if (!board) return res.sendStatus(404)
-        await addItem(board.board, type, text, color, container)
-        res.status(200).json({ ok: true })
-    } catch (e) {
-        console.error(e)
-        if (e instanceof InvalidRequest) {
-            res.status(400).send(e.message)
-        } else {
-            res.sendStatus(500)
-        }
-    }
-})
+router.use(typeraRouter(boardCreate, boardUpdate, githubWebhook, boardAddItem).handler())
 
 router.put("/api/v1/board/:boardId/item/:itemId", bodyParser.json(), async (req, res) => {
     try {
