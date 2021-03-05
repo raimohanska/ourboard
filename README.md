@@ -6,18 +6,18 @@ Feel free to try at https://r-board.herokuapp.com/
 
 Setting your nickname
 
-- Click on the top right corner nickname field to change
+-   Click on the top right corner nickname field to change
 
 Adding items
 
-- Drag from palette
-- Double click to add a new note
-- Use keyboard shortcuts below 
+-   Drag from palette
+-   Double click to add a new note
+-   Use keyboard shortcuts below
 
 Adding images
 
-- Add by dragging a file from your computer or from a browser window
-- Add by pasting an image from the clipboard using Command-V
+-   Add by dragging a file from your computer or from a browser window
+-   Add by pasting an image from the clipboard using Command-V
 
 Keyboard shortcuts
 
