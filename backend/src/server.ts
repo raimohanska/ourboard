@@ -32,6 +32,7 @@ import { broadcastBoardEvent } from "./sessions"
 import { encode as htmlEncode } from "html-entities"
 import { item } from "lonna"
 import { RED, YELLOW } from "../../common/src/colors"
+import _ from "lodash"
 
 const configureServer = () => {
     const config = getConfig()
@@ -187,23 +188,7 @@ const configureServer = () => {
             if (board) {
                 const existingItem = board.board.items.find((i) => i.id === itemId)
                 if (existingItem) {
-                    if (!isNote(existingItem)) {
-                        throw new InvalidRequest("Unexpected item type")
-                    }
-                    const containerItem = findContainer(container, board.board)
-                    const currentContainer = findContainer(existingItem.containerId, board.board)
-
-                    const containerAttrs =
-                        containerItem !== currentContainer ? getItemAttributesForContainer(container, board.board) : {}
-
-                    let updatedItem: Note = {
-                        ...existingItem,
-                        ...containerAttrs,
-                        text: replaceTextIfExists ? text : existingItem.text,
-                        color: color || existingItem.color,
-                    }
-                    console.log(`Updating existing item`)
-                    await dispatchSystemAppEvent({ action: "item.update", boardId, items: [updatedItem] })
+                    await updateItem(board.board, type, text, color, container, itemId, replaceTextIfExists)
                 } else {
                     console.log(`Adding new item`)
                     await addItem(board.board, type, text, color, container, itemId)
@@ -268,6 +253,38 @@ const configureServer = () => {
         const item: Note = { ...newNote(text, color || YELLOW), ...itemAttributes }
         const appEvent: AppEvent = { action: "item.add", boardId: board.id, items: [item] }
         dispatchSystemAppEvent(appEvent)
+    }
+
+    async function updateItem(
+        board: Board,
+        type: "note",
+        text: string,
+        color: Color,
+        container: string,
+        itemId: string,
+        replaceTextIfExists: boolean | undefined,
+    ) {
+        const existingItem = board.items.find((i) => i.id === itemId)!
+        if (!isNote(existingItem)) {
+            throw new InvalidRequest("Unexpected item type")
+        }
+        const containerItem = findContainer(container, board)
+        const currentContainer = findContainer(existingItem.containerId, board)
+
+        const containerAttrs = containerItem !== currentContainer ? getItemAttributesForContainer(container, board) : {}
+
+        let updatedItem: Note = {
+            ...existingItem,
+            ...containerAttrs,
+            text: replaceTextIfExists !== false ? text : existingItem.text,
+            color: color || existingItem.color,
+        }
+        if (!_.isEqual(updatedItem, existingItem)) {
+            console.log(`Updating existing item`)
+            await dispatchSystemAppEvent({ action: "item.update", boardId: board.id, items: [updatedItem] })
+        } else {
+            console.log(`Not updating: item not changed`)
+        }
     }
 
     async function dispatchSystemAppEvent(appEvent: PersistableBoardItemEvent) {
