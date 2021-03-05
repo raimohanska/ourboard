@@ -31,6 +31,7 @@ import { itemSelectAllHandler } from "./item-select-all"
 import { localStorageAtom } from "./local-storage-atom"
 import { isFirefox } from "../components/browser"
 import { BoardAppState } from ".."
+import { itemCreateHandler } from "./item-create"
 
 export type ControlMode = "mouse" | "trackpad"
 export type ControlSettings = {
@@ -104,6 +105,7 @@ export const BoardView = ({
         doOnUnmount.push(imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL))
     }
 
+    itemCreateHandler(board, focus, latestNote, boardElement, onAdd)
     itemDeleteHandler(boardId, dispatch, focus)
     itemUndoHandler(dispatch)
     itemSelectAllHandler(board, focus)
@@ -126,19 +128,6 @@ export const BoardView = ({
             focus.set({ status: "none" })
         }
     }
-
-    L.fromEvent<JSX.KeyboardEvent>(window, "dblclick")
-        .pipe(L.applyScope(componentScope()))
-        .forEach((event) => {
-            if (event.target === boardElement.get()! || boardElement.get()!.contains(event.target as Node)) {
-                const f = focus.get()
-                const selectedElement = getSelectedItem(board.get())(focus.get())
-                if (f.status === "none" || (selectedElement && selectedElement.type === "container")) {
-                    const newItem = newSimilarNote(latestNote.get())
-                    onAdd(newItem)
-                }
-            }
-        })
 
     function onAdd(item: Item) {
         const point = coordinateHelper.currentBoardCoordinates.get()

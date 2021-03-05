@@ -30,7 +30,7 @@ export const NewText = ({ onAdd }: { onAdd: (i: Item) => void }) => {
         <span
             data-test="palette-new-text"
             title="Drag to add new text area"
-            onDragEnd={() => onAdd(newText("HELLO"))}
+            onDragEnd={() => onAdd(newText())}
             className="text palette-item"
             draggable={true}
         >

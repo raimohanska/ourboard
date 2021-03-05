@@ -4,7 +4,34 @@ Feel free to try at https://r-board.herokuapp.com/
 
 ## Features and User Guide
 
-TODO
+Setting your nickname
+
+- Click on the top right corner nickname field to change
+
+Adding items
+
+- Drag from palette
+- Double click to add a new note
+- Use keyboard shortcuts below 
+
+Adding images
+
+- Add by dragging a file from your computer or from a browser window
+- Add by pasting an image from the clipboard using Command-V
+
+Keyboard shortcuts
+
+```
+DEL/Backspace       Delete item
+A                   Create new area
+N                   Create new note
+T                   Create new text box
+Command-V           Paste
+Command-C           Copy
+Command-X           Cut
+Command-Z           Undo
+Command-Shift-Z     Redo
+```
 
 ## Github Issues Integration
 

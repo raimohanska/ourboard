@@ -185,7 +185,7 @@ export function newSimilarNote(note: Note) {
 }
 
 export function newText(
-    text: string,
+    text: string = "HELLO",
     x: number = 20,
     y: number = 20,
     width: number = 5,
