@@ -25,6 +25,12 @@ import { broadcastBoardEvent } from "./sessions"
 import { encode as htmlEncode } from "html-entities"
 import _ from "lodash"
 import { RED, YELLOW } from "../../common/src/colors"
+import { applyMiddleware, router as typeraRouter } from "typera-express"
+import { wrapNative } from "typera-express/middleware"
+import { body } from "typera-express/parser"
+import { ok } from "typera-common/response"
+import * as t from "io-ts"
+import { NonEmptyString } from "io-ts-types"
 
 const router = express.Router()
 
@@ -50,25 +56,18 @@ router.get("/b/:boardId", async (req, res) => {
     res.sendFile(path.resolve("../frontend/dist/index.html"))
 })
 
-router.post("/api/v1/board", bodyParser.json(), async (req, res) => {
-    try {
-        let { name, accessPolicy } = req.body
-        if (!name) {
-            res.status(400).send('Expecting JSON document containing the field "name".')
-            return
-        }
-        let board: Board = createBoard(name, validateAccessPolicy(accessPolicy))
+const route = applyMiddleware(wrapNative(bodyParser.json()))
+
+const boardCreate = route
+    .post("/api/v1/board")
+    .use(body(t.type({ name: NonEmptyString, accessPolicy: BoardAccessPolicyCodec })))
+    .handler(async (request) => {
+        let board: Board = createBoard(request.body.name, request.body.accessPolicy)
         const boardWithHistory = await addBoard(board, true)
-        res.json({ id: boardWithHistory.board.id, accessToken: boardWithHistory.accessTokens[0] })
-    } catch (e) {
-        console.error(e)
-        if (e instanceof InvalidRequest) {
-            res.status(400).send(e.message)
-        } else {
-            res.sendStatus(500)
-        }
-    }
-})
+        return ok({ id: boardWithHistory.board.id, accessToken: boardWithHistory.accessTokens[0] })
+    })
+
+router.use(typeraRouter(boardCreate).handler())
 
 router.put("/api/v1/board/:boardId", bodyParser.json(), async (req, res) => {
     try {
