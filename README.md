@@ -43,6 +43,63 @@ Command-Shift-Z     Redo
 3. Create a new issue or change labels of an existing issue.
 4. You should see new notes appear on your board
 
+## API
+
+All POST and PUT endpoints accept application/json content.
+
+### POST /api/v1/board
+
+Creates a new board. Payload:
+
+```js
+{
+    "name": "board name as string"
+}
+```
+
+Response:
+
+```js
+{
+    "id": "board id"
+}
+```
+
+### POST /api/v1/board/:boardId/item
+
+Creates a new item on given board. If you want to add the item onto a specific area/container element on the board, you can
+find the id of the container by inspecting with your browser.
+
+Payload:
+
+```js
+{
+    "type": "note",
+    "text": "text on note",
+    "container": "container element text or id",
+    "color": "hexadecimal color code"
+}
+```
+
+### PUT /api/v1/board/:boardId/item/:itemId
+
+Creates a new item on given board or updates an existing one. 
+If you want to add the item onto a specific area/container element on the board, you can
+find the id of the container by inspecting with your browser.
+
+Payload:
+
+```js
+{
+    "type": "note",
+    "text": "text on note",
+    "container": "container element text or id",
+    "color": "hexadecimal color code",
+    "replaceTextIfExists": boolean,
+    "replaceColorIfExists": boolean
+}
+```
+
 ## Dev
 
 Running locally:
