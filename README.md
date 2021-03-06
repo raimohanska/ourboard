@@ -91,6 +91,12 @@ Response:
 
 The `accessToken` returned here is required for further API calls in case you set an access policy. So, make sure to save the token.
 
+### PUT /api/v1/board/:boardId
+
+Changes board name and, optionally, access policy. Payload is similar to the POST request above.
+
+This endpoint always requires the API_TOKEN header.
+
 ### POST /api/v1/board/:boardId/item
 
 Creates a new item on given board. If you want to add the item onto a specific area/container element on the board, you can

@@ -26,6 +26,7 @@ import {
     isNote,
     Container,
     BoardAccessPolicyCodec,
+    BoardAccessPolicy,
 } from "../../common/src/domain"
 import { addBoard, getBoard, maybeGetBoard, ServerSideBoardState, updateBoards } from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
@@ -36,6 +37,7 @@ import { RED, YELLOW } from "../../common/src/colors"
 import _, { some } from "lodash"
 import * as t from "io-ts"
 import * as Either from "fp-ts/lib/Either"
+import { updateBoard } from "./board-store"
 
 const configureServer = () => {
     const config = getConfig()
@@ -97,12 +99,7 @@ const configureServer = () => {
                 res.status(400).send('Expecting JSON document containing the field "name".')
                 return
             }
-            const accessPolicyResult = BoardAccessPolicyCodec.decode(accessPolicy)
-            if (Either.isLeft(accessPolicyResult)) {
-                res.status(400).send("Invalid accessPolicy")
-                return
-            }
-            let board: Board = createBoard(name, accessPolicyResult.right)
+            let board: Board = createBoard(name, validateAccessPolicy(accessPolicy))
             const boardWithHistory = await addBoard(board, true)
             res.json({ id: boardWithHistory.board.id, accessToken: boardWithHistory.accessTokens[0] })
         } catch (e) {
@@ -115,8 +112,42 @@ const configureServer = () => {
         }
     })
 
-    function checkBoardAPIAccess(board: ServerSideBoardState, req: express.Request) {
-        if (board.board.accessPolicy || board.accessTokens.length) {
+    app.put("/api/v1/board/:boardId", bodyParser.json(), async (req, res) => {
+        try {
+            const boardId = req.params.boardId
+            if (!boardId) {
+                return res.sendStatus(400)
+            }
+            let { name, accessPolicy } = req.body
+            if (!name) {
+                res.status(400).send('Expecting JSON document containing the field "name".')
+                return
+            }
+            let validAccessPolicy = validateAccessPolicy(accessPolicy)
+            const board = await getBoard(boardId)
+            checkBoardAPIAccess(board, req)
+            await updateBoard({ boardId, name, accessPolicy: validAccessPolicy })            
+            res.json({ ok: true })
+        } catch (e) {
+            console.error(e)
+            if (e instanceof InvalidRequest) {
+                res.status(400).send(e.message)
+            } else {
+                res.sendStatus(500)
+            }
+        }
+    })
+
+    function validateAccessPolicy(accessPolicy: any): BoardAccessPolicy {
+        const accessPolicyResult = BoardAccessPolicyCodec.decode(accessPolicy)
+        if (Either.isLeft(accessPolicyResult)) {
+            throw new InvalidRequest("Invalid accessPolicy")
+        }
+        return accessPolicyResult.right
+    }
+
+    function checkBoardAPIAccess(board: ServerSideBoardState, req: express.Request, requireAlways?: boolean) {
+        if (requireAlways || board.board.accessPolicy || board.accessTokens.length) {
             if (!req.headers.api_token) {
                 throw new InvalidRequest("API_TOKEN required")
             }
