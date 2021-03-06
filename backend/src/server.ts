@@ -25,6 +25,7 @@ import {
     isTextItem,
     isNote,
     Container,
+    BoardAccessPolicyCodec,
 } from "../../common/src/domain"
 import { addBoard, getBoard, maybeGetBoard, updateBoards } from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
@@ -33,6 +34,8 @@ import { encode as htmlEncode } from "html-entities"
 import { item } from "lonna"
 import { RED, YELLOW } from "../../common/src/colors"
 import _ from "lodash"
+import * as t from "io-ts"
+import * as Either from "fp-ts/lib/Either"
 
 const configureServer = () => {
     const config = getConfig()
@@ -88,11 +91,17 @@ const configureServer = () => {
     })
 
     app.post("/api/v1/board", bodyParser.json(), async (req, res) => {
-        let { name } = req.body
+        let { name, accessPolicy} = req.body
         if (!name) {
             res.status(400).send('Expecting JSON document containing the field "name".')
+            return
         }
-        let board: Board = createBoard(name)
+        const accessPolicyResult = BoardAccessPolicyCodec.decode(accessPolicy)
+        if (Either.isLeft(accessPolicyResult)) {
+            res.status(400).send('Invalid accessPolicy')
+            return
+        }
+        let board: Board = createBoard(name, accessPolicyResult.right)
         const boardWithHistory = await addBoard(board)
         res.json(boardWithHistory.board)
     })

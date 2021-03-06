@@ -11,15 +11,12 @@ let GoogleAuth: any
 var SCOPE = "email"
 const userInfoAtom: L.Atom<GoogleAuthUserInfo> = L.atom({ status: SUPPORTED ? "in-progress" : "not-supported" })
 
-export const userInfo = L.view(userInfoAtom, (x) => x) // read-only view
-
-type GoogleAuthUserInfo =
+export const googleUser = L.view(userInfoAtom, (x) => x) // read-only view
+L.view(googleUser, "status").log("Google login status")
+export type GoogleAuthUserInfo =
     | {
-          status: "signed-in"
-          name: string
-          email: string
-          token: string
-      }
+          status: "signed-in"          
+      } & GoogleAuthenticatedUser
     | {
           status: "signed-out"
       }
@@ -29,6 +26,12 @@ type GoogleAuthUserInfo =
     | {
           status: "not-supported"
       }
+
+export type GoogleAuthenticatedUser = {
+    name: string
+    email: string
+    token: string    
+}
 
 export async function start() {
     try {
@@ -71,6 +74,11 @@ async function updateSigninStatus() {
     } else {
         userInfoAtom.set({ status: "signed-out" })
     }
+}
+
+export function signInWithDifferentAccount() {
+    signOut();
+    signIn();
 }
 
 export function signIn() {

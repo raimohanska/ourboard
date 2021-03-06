@@ -32,6 +32,8 @@ import { localStorageAtom } from "./local-storage-atom"
 import { isFirefox } from "../components/browser"
 import { BoardAppState } from ".."
 import { itemCreateHandler } from "./item-create"
+import { BoardAccessStatus } from "../store/board-store"
+import { signIn, signInWithDifferentAccount } from "../google-auth"
 
 export type ControlMode = "mouse" | "trackpad"
 export type ControlSettings = {
@@ -162,12 +164,16 @@ export const BoardView = ({
         doOnUnmount.forEach((fn) => fn())
     })
 
+    const boardAccessStatus = L.view(
+        state,
+        (s) => s.status
+    )
+
     return (
         <div
             id="root"
             className={L.view(
-                state,
-                (s) => s.status,
+                boardAccessStatus,
                 (status) => `board-container ${status}`,
             )}
         >
@@ -178,6 +184,7 @@ export const BoardView = ({
                     dispatch={dispatch}
                     controlSettings={controlSettings}
                 />
+                <BoardViewMessage {...{boardAccessStatus}}/>
 
                 <div className="border-container" style={style}>
                     <div
@@ -303,4 +310,22 @@ export const BoardView = ({
             }
         })
     }
+}
+
+const BoardViewMessage = ({ boardAccessStatus }: { boardAccessStatus : L.Property<BoardAccessStatus>}) => {
+    return L.view(boardAccessStatus, s => {
+        return s === "denied-permanently"
+            ? <div className="board-status-message">
+                <div>
+                    <p>Sorry, access denied. Click <a onClick={signInWithDifferentAccount}>here</a> to sign in with another account.</p>
+                </div>
+            </div>
+            : s === "login-required"
+            ? <div className="board-status-message">
+                <div>
+                    This board is for authorized users only. Click <a onClick={signIn}>here</a> to sign in.
+                </div>
+            </div>
+            : null
+    })
 }

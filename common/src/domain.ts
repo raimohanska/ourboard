@@ -1,5 +1,6 @@
-import { isUndefined } from "lodash"
+import _, { isUndefined } from "lodash"
 import * as uuid from "uuid"
+import * as t from "io-ts"
 
 export type Id = string
 export type ISOTimeStamp = string
@@ -9,12 +10,29 @@ export type BoardAttributes = {
     name: string
     width: number
     height: number
+    accessPolicy?: BoardAccessPolicy
 }
 
 export type Board = BoardAttributes & {
     items: Item[]
     serial: Serial
 }
+
+export const BoardAccessPolicyCodec = t.union([t.undefined, t.type({
+    allowList: t.array(t.union([
+        t.type({
+            email: t.string
+        }),
+        t.type({
+            domain: t.string
+        })
+    ]))
+})])
+export type BoardAccessPolicy = t.TypeOf<typeof BoardAccessPolicyCodec>
+
+export type AuthorizedParty = AuthorizedByEmailAddress | AuthorizedByDomain
+export type AuthorizedByEmailAddress = { email: string }
+export type AuthorizedByDomain = { domain: string }
 
 export type BoardStub = Pick<Board, "id" | "name">
 
@@ -78,9 +96,9 @@ export type BoardEvent = { boardId: Id }
 // TODO: Undo, Redo at least shouldn't be EventFromServer!
 export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
 export type LocalUIEvent = Undo | Redo
-export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent
+export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse
 export type Serial = number
-export type AppEvent = BoardItemEvent | BoardStateSyncEvent | LocalUIEvent | ClientToServerRequest
+export type AppEvent = BoardItemEvent | BoardStateSyncEvent | LocalUIEvent | ClientToServerRequest | LoginResponse
 export type PersistableBoardItemEvent =
     | AddItem
     | UpdateItem
@@ -101,6 +119,7 @@ export type BoardStateSyncEvent =
     | CursorPositions
     | JoinedBoard
     | AckJoinBoard
+    | DeniedJoinBoard
     | UserInfoUpdate
 
 export type ClientToServerRequest =
@@ -114,6 +133,8 @@ export type ClientToServerRequest =
     | AssetPutUrlResponse
     | AuthLogin
     | AuthLogout
+
+export type LoginResponse = { action: "auth.login.response"; success: boolean }
 export type AuthLogin = { action: "auth.login"; name: string; email: string; token: string }
 export type AuthLogout = { action: "auth.logout" }
 export type AddItem = { action: "item.add"; boardId: Id; items: Item[] }
@@ -134,6 +155,7 @@ export type GotBoardLocks = { action: "board.locks"; boardId: Id; locks: ItemLoc
 export type AddBoard = { action: "board.add"; payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Serial }
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
+export type DeniedJoinBoard = { action: "board.join.denied"; boardId: Id; reason: "unauthorized" | "forbidden" }
 export type BoardSerialAck = { action: "board.serial.ack"; boardId: Id; serial: Serial }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
 export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo
@@ -163,9 +185,9 @@ export const exampleBoard: Board = {
     serial: 0,
 }
 
-export function createBoard(name: string): Board {
+export function createBoard(name: string, accessPolicy?: BoardAccessPolicy): Board {
     const id = uuid.v4()
-    return { id: uuid.v4(), name, items: [], ...defaultBoardSize, serial: 0 }
+    return { id: uuid.v4(), name, items: [], ...defaultBoardSize, serial: 0, accessPolicy }
 }
 
 export function newNote(
@@ -228,7 +250,9 @@ export const isPersistableBoardItemEvent = (e: AppEvent): e is PersistableBoardI
 
 export const isBoardHistoryEntry = (e: AppEvent): e is BoardHistoryEntry =>
     isPersistableBoardItemEvent(e) && !!(e as BoardHistoryEntry).user && !!(e as BoardHistoryEntry).timestamp
-
+export const isLocalUIEvent = (e: AppEvent): e is LocalUIEvent =>
+    e.action.startsWith("ui.")
+    
 export function isSameUser(a: EventUserInfo, b: EventUserInfo) {
     return a.userType == b.userType && a.nickname == b.nickname
 }

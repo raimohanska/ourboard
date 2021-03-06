@@ -2,13 +2,13 @@ import { h, Fragment } from "harmaja"
 import * as L from "lonna"
 import { Dispatch } from "../store/user-session-store"
 import { EditableSpan } from "./EditableSpan"
-import { signIn, signOut, userInfo } from "../google-auth"
+import { signIn, signOut, googleUser } from "../google-auth"
 import { BoardAppState } from ".."
 
 export const UserInfoView = ({ state, dispatch }: { state: L.Property<BoardAppState>; dispatch: Dispatch }) => {
     return (
         <span className="user-info">
-            {L.view(userInfo, (user) => {
+            {L.view(googleUser, (user) => {
                 switch (user.status) {
                     case "in-progress":
                         return ""

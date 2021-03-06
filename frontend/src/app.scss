@@ -128,9 +128,11 @@ a {
     height: 100%;
     display: flex;
     flex-direction: row;
-    &.loading {
-        opacity: 0.3;
-        pointer-events: none;
+    &:not(.ready) {
+        .board, .controls, .board-name {
+            opacity: 0.3;
+            pointer-events: none;
+        }
     }
 
     header {
@@ -139,7 +141,7 @@ a {
         position: fixed;
         z-index: $z-index-menu;
         padding: 0.2em $left-padding;
-        padding-right: 2em;
+        padding-right: 4em;
         width: 100%;
         display: flex;
         align-items: center;
@@ -329,6 +331,17 @@ a {
         flex-grow: 1;
         overflow: auto;
         background: $off-board-color;
+        .board-status-message {
+            height: 100%;
+            width: 100%;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;    
+            > div {
+                max-width: 80%;
+            }        
+        }
         .border-container {
             box-sizing: content-box;
             padding: $board-border-top 1rem 1rem 1rem;

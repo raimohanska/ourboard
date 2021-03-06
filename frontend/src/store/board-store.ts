@@ -16,19 +16,22 @@ import {
     isPersistableBoardItemEvent,
     ItemLocks,
     LocalUIEvent,
+    LoginResponse,
     PersistableBoardItemEvent,
     TransientBoardItemEvent,
     UIEvent,
     UserCursorPosition,
     UserSessionInfo,
 } from "../../../common/src/domain"
+import { googleUser } from "../google-auth"
 import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
-import MessageQueue from "./message-queue"
-import { Dispatch, ServerConnection } from "./server-connection"
+import { ServerConnection } from "./server-connection"
+import { UserSessionState } from "./user-session-store"
 
 export type BoardStore = ReturnType<typeof BoardStore>
+export type BoardAccessStatus = "none" | "loading" | "ready" | "denied-temporarily" | "denied-permanently" | "login-required"
 export type BoardState = {
-    status: "none" | "loading" | "ready"
+    status: BoardAccessStatus
     board: Board | undefined
     history: BoardHistoryEntry[]
     cursors: UserCursorPosition[]
@@ -38,8 +41,7 @@ export type BoardState = {
 
 export function BoardStore(
     connection: ServerConnection,
-    userInfo: L.Property<EventUserInfo>,
-    sessionId: L.Property<string | null>,
+    sessionInfo: L.Property<UserSessionState>
 ) {
     type BoardStoreEvent =
         | BoardHistoryEntry
@@ -47,11 +49,12 @@ export function BoardStore(
         | BoardStateSyncEvent
         | LocalUIEvent
         | ClientToServerRequest
+        | LoginResponse
     let undoStack: PersistableBoardItemEvent[] = []
     let redoStack: PersistableBoardItemEvent[] = []
 
     function tagWithUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
-        const user: EventUserInfo = userInfo.get()
+        const user: EventUserInfo = sessionState2UserInfo(sessionInfo.get())
         return {
             ...e,
             user,
@@ -94,6 +97,28 @@ export function BoardStore(
                 undoStack = addToStack(reverse, undoStack)
             }
             return { ...state, board, history }
+        } else if (event.action === "board.join.denied") {
+            const loginStatus = sessionInfo.get().status
+            if (state.status !== "loading") {
+                console.error(`Got board.join.denied while in status ${state.status}`)
+            }
+            
+            if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
+                console.log(`Access denied to board: login in progress`)
+                return { ...state, status: "denied-temporarily" }    
+            } else if (loginStatus === "anonymous" || loginStatus === "logged-out") {
+                console.log(`Access denied to board: login required`)
+                return { ...state, status: "login-required" }    
+            } else if (event.reason === "unauthorized") {
+                console.warn(`Got "unauthorized" while logged in, likely login in progress...`)
+                return state
+            } else if (event.reason === "forbidden") {
+                console.log(`Access denied to board: no privileges`)
+                return { ...state, status: "denied-permanently" }
+            } else {
+                console.error(`Unexpected board access denial: ${state.status}/${loginStatus}/${event.reason}`)
+                return state
+            }
         } else if (event.action === "board.init") {
             if ("initAtSerial" in event) {
                 const boardId = event.boardAttributes.id
@@ -144,7 +169,7 @@ export function BoardStore(
         } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
             // TODO when switching board, the cursor is not removed from previous board.
             const otherCursors = { ...event.p }
-            const session = sessionId.get() // TODO: this should be done by the server indeed
+            const session = sessionInfo.get().sessionId // TODO: this should be done by the server indeed
             session && delete otherCursors[session]
             const cursors = Object.values(otherCursors)
             return { ...state, cursors }
@@ -180,22 +205,41 @@ export function BoardStore(
     const userTaggedLocalEvents = L.view(connection.uiEvents, tagWithUser)
     const events = L.merge(userTaggedLocalEvents, connection.bufferedServerEvents)
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
-    const board = L.view(state, "board") as L.Property<Board>
 
-    const localBoardToSave = L.combineTemplate({
-        boardWithHistory: {
-            board,
-            history: L.view(state, "history"),
-        },
-    }).pipe(
+    const localBoardToSave = state.pipe(
         L.changes,
         L.filter(
-            (state: LocalStorageBoard) =>
-                state.boardWithHistory.board !== undefined && state.boardWithHistory.board.serial > 0,
+            (state: BoardState) =>
+                state.board !== undefined && state.board.serial > 0 && state.status === "ready",
         ),
         L.debounce(1000),
+        L.map((state: BoardState) => {
+            console.log("ready to save", state)
+            return {
+                boardWithHistory: {
+                    board: state.board!,
+                    history: state.history
+                }
+            }
+        })
     )
     localBoardToSave.forEach(storeBoardState)
+
+    L.view(sessionInfo, s => s.status).onChange(status => {
+        const board = state.get().board
+        const loginInProgress = status === "logging-in-local" || status === "logging-in-server"
+        if (board && !loginInProgress) {
+            const wasDenied = ["denied-temporarily", "denied-permanently", "login-required"].includes(state.get().status)
+            if (status === "logged-out") {
+                console.log("Trying to re-join board after logout")
+                joinBoard(board.id)                
+            }
+            else if (wasDenied) {
+                console.log("Trying to re-join board after login")
+                joinBoard(board.id)
+            }
+        }
+    })
 
     function joinBoard(boardId: Id) {
         // TODO: switch connection per board here, in preparation for load-balancing.
@@ -226,4 +270,21 @@ function addToStack(event: PersistableBoardItemEvent, b: PersistableBoardItemEve
     }
 
     return b.concat(event)
+}
+
+
+function sessionState2UserInfo(state: UserSessionState): EventUserInfo {
+    if (state.status === "logged-in") {
+        return {
+            userType: "authenticated",
+            email: state.email,
+            nickname: state.nickname,
+            name: state.name
+        }
+    } else {
+        return {
+            userType: "unidentified",
+            nickname: state.nickname || "<unknown>"
+        }
+    }
 }

@@ -53,7 +53,19 @@ Creates a new board. Payload:
 
 ```js
 {
-    "name": "board name as string"
+    "name": "board name as string",
+}
+```
+
+You can also specify board access policy, including individual users by email and user email domains:
+
+```js
+{
+    "name": "board name as string",
+    "accessPolicy": [
+        { email: "coolgirl@reaktor.com" },
+        { domain: "reaktor.fi" }
+    ]
 }
 ```
 

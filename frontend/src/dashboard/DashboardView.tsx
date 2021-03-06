@@ -6,7 +6,7 @@ import { TextInput } from "../components/components"
 import { Dispatch } from "../store/user-session-store"
 import { getRecentBoards, removeRecentBoard } from "../store/recent-boards"
 
-import { signIn, signOut, userInfo } from "../google-auth"
+import { signIn, signOut, googleUser } from "../google-auth"
 import { BoardAppState } from ".."
 
 export const DashboardView = ({
@@ -36,7 +36,7 @@ export const DashboardView = ({
 const GoogleLoginArea = () => {
     return (
         <div className="user-auth">
-            {L.view(userInfo, (user) => {
+            {L.view(googleUser, (user) => {
                 switch (user.status) {
                     case "signed-in":
                         return (

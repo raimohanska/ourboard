@@ -2,7 +2,7 @@ import * as L from "lonna"
 import { globalScope } from "lonna"
 import io from "socket.io-client"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
-import { EventFromServer, UIEvent } from "../../../common/src/domain"
+import { EventFromServer, isLocalUIEvent, UIEvent } from "../../../common/src/domain"
 import MessageQueue from "./message-queue"
 
 export type Dispatch = (e: UIEvent) => void
@@ -40,9 +40,8 @@ export function serverConnection() {
             serverEvents.push(event)
         }
     })
-    L.pipe(
-        uiEvents,
-        L.filter((e: UIEvent) => e.action !== "ui.undo" && e.action !== "ui.redo"),
+    uiEvents.pipe(
+        L.filter((e: UIEvent) => !isLocalUIEvent(e))
     ).forEach(messageQueue.enqueue)
 
     // uiEvents.log("UI")

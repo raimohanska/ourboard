@@ -98,6 +98,27 @@ async function handleAppEvent(
             case "board.join":
                 //await sleep(3000) // simulate latency
                 const board = await getBoard(appEvent.boardId)
+                if (board.board.accessPolicy) {
+                    const session = getSession(socket)
+                    if (session.userInfo.userType != "authenticated") {
+                        console.warn("Access denied to board by anonymous user");
+                        session.sendEvent({action: "board.join.denied", boardId: appEvent.boardId, reason: "unauthorized"})
+                        return
+                    }
+                    const email = session.userInfo.email
+                    if (!board.board.accessPolicy.allowList.some(entry => {
+                        if ("email" in entry) {
+                            return entry.email === email
+                        } else {
+                            return email.endsWith(entry.domain)
+                        }
+                    })) {
+                        console.warn("Access denied to board by user not on allowList");
+                        session.sendEvent({action: "board.join.denied", boardId: appEvent.boardId, reason: "forbidden"})
+                        return
+                    }
+                    session.userInfo.email
+                }
                 await addSessionToBoard(board, socket, appEvent.initAtSerial)
                 return
             case "board.add": {
@@ -119,11 +140,12 @@ async function handleAppEvent(
                 return
             }
             case "auth.login": {
-                const loginSuccess = await verifyGoogleTokenAndUserInfo(appEvent)
-                if (loginSuccess) {
+                const success = await verifyGoogleTokenAndUserInfo(appEvent)
+                if (success) {
                     setVerifiedUserForSession(appEvent, socket)
                     console.log(`${appEvent.name} logged in`)
                 }
+                socket.send("app-event", {action: "auth.login.response", success} as AppEvent)
                 return
             }
             case "auth.logout": {
