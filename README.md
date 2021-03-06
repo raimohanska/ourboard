@@ -112,6 +112,10 @@ Payload:
 }
 ```
 
+## Google Authentication integration
+
+Google authentication is supported. To enable this feature, you'll need to supply `GOOGLE_API_KEY` and `GOOGLE_CLIENT_ID` as environment variables
+
 ## Dev
 
 Running locally:
