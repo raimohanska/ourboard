@@ -116,11 +116,11 @@ const configureServer = () => {
     })
 
     function checkBoardAPIAccess(board: ServerSideBoardState, req: express.Request) {
-        if (board.board.accessPolicy || board.accessTokens.length) {
+        if (board.board.accessPolicy || board.accessTokens.length) {
             if (!req.headers.api_token) {
                 throw new InvalidRequest("API_TOKEN required")
             }
-            if (!board.accessTokens.some(t => t === req.headers.api_token)) {
+            if (!board.accessTokens.some((t) => t === req.headers.api_token)) {
                 console.log(`API_TOKEN ${req.headers.api_token} not on list ${board.accessTokens}`)
                 throw new InvalidRequest("Invalid API_TOKEN")
             }
@@ -208,7 +208,7 @@ const configureServer = () => {
     app.put("/api/v1/board/:boardId/item/:itemId", bodyParser.json(), async (req, res) => {
         try {
             const { boardId, itemId } = req.params
-            if (!boardId) throw new InvalidRequest("boardId missing")            
+            if (!boardId) throw new InvalidRequest("boardId missing")
             if (!itemId) throw new InvalidRequest("itemId missing")
             const { type, text, color, container, replaceTextIfExists, replaceColorIfExists } = req.body
             console.log(`PUT item for board ${boardId} item ${itemId}: ${JSON.stringify(req.body)}`)

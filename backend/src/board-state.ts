@@ -67,7 +67,7 @@ export async function addBoard(board: Board, createToken?: boolean): Promise<Ser
         locks: Locks((changedLocks) => broadcastItemLocks(board.id, changedLocks)),
         cursorsMoved: false,
         cursorPositions: {},
-        accessTokens
+        accessTokens,
     }
     boards.set(board.id, boardState)
     return boardState

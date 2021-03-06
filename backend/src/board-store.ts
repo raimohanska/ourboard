@@ -5,7 +5,7 @@ import { inTransaction, withDBClient } from "./db"
 import * as uuid from "uuid"
 
 export type BoardAndAccessTokens = {
-    board: Board,
+    board: Board
     accessTokens: string[]
 }
 
@@ -17,7 +17,7 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
                 // Example board is a special case: it is automatically created if not in DB yet.
                 const board = { ...exampleBoard, serial: 0 }
                 await createBoard(board)
-                return { board, accessTokens: [] }
+                return { board, accessTokens: [] }
             } else {
                 throw Error(`Board ${id} not found`)
             }
@@ -43,8 +43,10 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
             if (history.length > 1000) {
                 await saveBoardSnapshot(mkSnapshot(board, serial), client)
             }
-            const accessTokens = (await client.query("SELECT token FROM board_api_token WHERE board_id=$1", [id])).rows.map(row => row.token)
-            return { board: { ...board, serial }, accessTokens }
+            const accessTokens = (
+                await client.query("SELECT token FROM board_api_token WHERE board_id=$1", [id])
+            ).rows.map((row) => row.token)
+            return { board: { ...board, serial }, accessTokens }
         }
     })
 }
@@ -63,7 +65,9 @@ export async function createBoard(board: Board): Promise<void> {
 
 export async function createAccessToken(board: Board): Promise<string> {
     const token = uuid.v4()
-    await inTransaction(async client => client.query("INSERT INTO board_api_token (board_id, token) VALUES ($1, $2)", [board.id, token]))
+    await inTransaction(async (client) =>
+        client.query("INSERT INTO board_api_token (board_id, token) VALUES ($1, $2)", [board.id, token]),
+    )
     return token
 }
 

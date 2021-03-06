@@ -37,7 +37,7 @@ Command-Shift-Z     Redo
 
 ### Board access controls
 
-All boards created using the UI are accessible to anyone with the link. 
+All boards created using the UI are accessible to anyone with the link.
 
 Boards with restricted access can currently only be created using the POST API (see below).
 
@@ -53,7 +53,7 @@ Boards with restricted access can currently only be created using the POST API (
 
 ## API
 
-All POST and PUT endpoints accept application/json content. 
+All POST and PUT endpoints accept application/json content.
 
 API requests against boards with restricted access require you to supply an API_TOKEN header with a valid API token.
 The token is returned in the response of the POST request used to create the board.
