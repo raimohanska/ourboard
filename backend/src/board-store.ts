@@ -63,14 +63,22 @@ export async function createBoard(board: Board): Promise<void> {
     })
 }
 
-export async function updateBoard({ boardId, name, accessPolicy }: { boardId: Id, name: string, accessPolicy: BoardAccessPolicy}) {
-    await inTransaction(async client => {
+export async function updateBoard({
+    boardId,
+    name,
+    accessPolicy,
+}: {
+    boardId: Id
+    name: string
+    accessPolicy: BoardAccessPolicy
+}) {
+    await inTransaction(async (client) => {
         const result = await client.query("SELECT content FROM board WHERE id=$1", [boardId])
         if (result.rows.length !== 1) throw Error("Board not found: " + boardId)
         let content = result.rows[0].content
-        if (name) content = { ...content, name }
+        if (name) content = { ...content, name }
         if (accessPolicy) content = { ...content, accessPolicy }
-        await client.query("UPDATE board SET content=$1 WHERE id=$2", [ content, boardId ])
+        await client.query("UPDATE board SET content=$1 WHERE id=$2", [content, boardId])
     })
 }
 

@@ -126,8 +126,8 @@ const configureServer = () => {
             let validAccessPolicy = validateAccessPolicy(accessPolicy)
             const board = await getBoard(boardId)
             checkBoardAPIAccess(board, req)
-            await updateBoard({ boardId, name, accessPolicy: validAccessPolicy })            
-            res.json({ ok: true })
+            await updateBoard({ boardId, name, accessPolicy: validAccessPolicy })
+            res.json({ ok: true })
         } catch (e) {
             console.error(e)
             if (e instanceof InvalidRequest) {
