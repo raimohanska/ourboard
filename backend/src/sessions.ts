@@ -30,6 +30,7 @@ type UserSession = {
     readonly boards: UserSessionBoardEntry[]
     userInfo: EventUserInfo
     sendEvent: (event: AppEvent) => void
+    isOnBoard(boardId: Id): boolean
 }
 
 type UserSessionBoardEntry = {
@@ -74,6 +75,7 @@ function userSession(socket: IO.Socket) {
         userInfo: anonymousUser("Anonymous " + randomProfession()),
         boards,
         sendEvent,
+        isOnBoard: (boardId: Id) => boards.some((b) => b.boardId === boardId),
     }
     sessions[socket.id] = session
     return session

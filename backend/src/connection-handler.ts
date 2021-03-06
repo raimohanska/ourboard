@@ -82,15 +82,19 @@ async function handleAppEvent(
         if (gotLock) {
             if (isPersistableBoardItemEvent(appEvent)) {
                 const session = getSession(socket)
-                let historyEntry: BoardHistoryEntry = {
-                    ...appEvent,
-                    user: session.userInfo,
-                    timestamp: new Date().toISOString(),
+                if (!session.isOnBoard(appEvent.boardId)) {
+                    console.warn("Trying to send event to board without session")
+                } else {
+                    let historyEntry: BoardHistoryEntry = {
+                        ...appEvent,
+                        user: session.userInfo,
+                        timestamp: new Date().toISOString(),
+                    }
+                    const serial = await updateBoards(historyEntry)
+                    historyEntry = { ...historyEntry, serial }
+                    broadcastBoardEvent(historyEntry, session)
+                    return { boardId, serial }
                 }
-                const serial = await updateBoards(historyEntry)
-                historyEntry = { ...historyEntry, serial }
-                broadcastBoardEvent(historyEntry, session)
-                return { boardId, serial }
             }
         }
     } else {
@@ -144,8 +148,11 @@ async function handleAppEvent(
                 const { x, y } = position
                 const state = maybeGetBoard(boardId)
                 if (state) {
-                    state.cursorPositions[socket.id] = { x, y, sessionId: socket.id }
-                    state.cursorsMoved = true
+                    const session = getSession(socket)
+                    if (!session.isOnBoard(appEvent.boardId)) {
+                        state.cursorPositions[socket.id] = { x, y, sessionId: socket.id }
+                        state.cursorsMoved = true
+                    }
                 }
                 return
             }
