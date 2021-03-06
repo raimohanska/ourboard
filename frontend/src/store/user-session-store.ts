@@ -48,8 +48,18 @@ export type Dispatch = (e: UIEvent) => void
 export function userSessionStore(connection: ServerConnection, localStorage: Storage) {
     const { events } = connection
 
-    const eventsReducer = (state: UserSessionState, event: AppEvent | GoogleAuthUserInfo): UserSessionState => {
-        if ("action" in event) {
+    const eventsReducer = (
+        state: UserSessionState,
+        event: AppEvent | GoogleAuthUserInfo | boolean,
+    ): UserSessionState => {
+        if (typeof event === "boolean") {
+            const newState = state.status === "logged-in" ? { ...state, status: "logging-in-server" as const } : state
+            if (event === true) {
+                // connected
+                sendLoginAndNickname(newState)
+            }
+            return newState
+        } else if ("action" in event) {
             if (event.action === "board.join.ack") {
                 return { ...state, sessionId: event.sessionId, nickname: state.nickname || event.nickname }
             } else if (event.action === "nickname.set") {
@@ -88,23 +98,29 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
                 }
             } else {
                 const { status, ...googleUser } = event
-
-                connection.messageQueue.enqueue({ action: "nickname.set", nickname: googleUser.name })
-                connection.messageQueue.enqueue({
-                    action: "auth.login",
-                    name: googleUser.name,
-                    email: googleUser.email,
-                    token: googleUser.token,
-                })
-
-                return {
+                return sendLoginAndNickname({
                     status: "logging-in-server",
                     sessionId: state.sessionId,
                     nickname: googleUser.name,
                     ...googleUser,
-                }
+                })
             }
         }
+    }
+
+    function sendLoginAndNickname(state: UserSessionState) {
+        if (state.status === "logging-in-server" || state.status === "logged-in") {
+            connection.messageQueue.enqueue({ action: "nickname.set", nickname: state.name })
+            connection.messageQueue.enqueue({
+                action: "auth.login",
+                name: state.name,
+                email: state.email,
+                token: state.token,
+            })
+        } else if (state.nickname) {
+            connection.messageQueue.enqueue({ action: "nickname.set", nickname: state.nickname })
+        }
+        return state
     }
 
     const initialState: UserSessionState = {
@@ -112,7 +128,7 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
         sessionId: null,
         nickname: localStorage.nickname || undefined,
     }
-    const sessionState = L.merge(events, googleUser.pipe(L.changes)).pipe(
+    const sessionState = L.merge(events, connection.connected.pipe(L.changes), googleUser.pipe(L.changes)).pipe(
         L.scan(initialState, eventsReducer, globalScope),
     )
 
