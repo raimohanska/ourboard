@@ -4,6 +4,8 @@ Feel free to try at https://r-board.herokuapp.com/
 
 ## Features and User Guide
 
+### Basics
+
 Setting your nickname
 
 -   Click on the top right corner nickname field to change
@@ -33,6 +35,12 @@ Command-Z           Undo
 Command-Shift-Z     Redo
 ```
 
+### Board access controls
+
+All boards created using the UI are accessible to anyone with the link. 
+
+Boards with restricted access can currently only be created using the POST API (see below).
+
 ## Github Issues Integration
 
 1. Create an r-board and an Area named "new issues" (case insensitive) on the board.
@@ -45,7 +53,10 @@ Command-Shift-Z     Redo
 
 ## API
 
-All POST and PUT endpoints accept application/json content.
+All POST and PUT endpoints accept application/json content. 
+
+API requests against boards with restricted access require you to supply an API_TOKEN header with a valid API token.
+The token is returned in the response of the POST request used to create the board.
 
 ### POST /api/v1/board
 
@@ -73,9 +84,12 @@ Response:
 
 ```js
 {
-    "id": "board id"
+    "id": "board id",
+    "accessToken": "************"
 }
 ```
+
+The `accessToken` returned here is required for further API calls in case you set an access policy. So, make sure to save the token.
 
 ### POST /api/v1/board/:boardId/item
 

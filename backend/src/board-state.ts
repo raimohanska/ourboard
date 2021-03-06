@@ -1,7 +1,7 @@
 import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardCursorPositions, BoardHistoryEntry, Id, ItemLocks, Serial } from "../../common/src/domain"
 import { Locks } from "./locker"
-import { createBoard, fetchBoard, saveRecentEvents } from "./board-store"
+import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./board-store"
 import { broadcastItemLocks, getBoardSessionCount } from "./sessions"
 import { compactBoardHistory } from "./compact-history"
 
@@ -13,6 +13,7 @@ export type ServerSideBoardState = {
     locks: ReturnType<typeof Locks>
     cursorsMoved: boolean
     cursorPositions: BoardCursorPositions
+    accessTokens: string[]
 }
 
 let boards: Map<Id, ServerSideBoardState> = new Map()
@@ -21,9 +22,10 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
     let state = boards.get(id)
     if (!state) {
         console.log(`Loading board ${id} into memory`)
-        const board = await fetchBoard(id)
+        const { board, accessTokens } = await fetchBoard(id)
         state = {
             board,
+            accessTokens,
             recentEvents: [],
             storingEvents: [],
             locks: Locks((changedLocks) => broadcastItemLocks(id, changedLocks)),
@@ -54,8 +56,9 @@ export async function updateBoards(appEvent: BoardHistoryEntry) {
     return serial
 }
 
-export async function addBoard(board: Board): Promise<ServerSideBoardState> {
+export async function addBoard(board: Board, createToken?: boolean): Promise<ServerSideBoardState> {
     await createBoard(board)
+    const accessTokens = createToken ? [await createAccessToken(board)] : []
     const boardState = {
         board,
         serial: 0,
@@ -64,6 +67,7 @@ export async function addBoard(board: Board): Promise<ServerSideBoardState> {
         locks: Locks((changedLocks) => broadcastItemLocks(board.id, changedLocks)),
         cursorsMoved: false,
         cursorPositions: {},
+        accessTokens
     }
     boards.set(board.id, boardState)
     return boardState

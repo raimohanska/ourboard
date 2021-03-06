@@ -22,6 +22,7 @@ export async function initDB() {
             CREATE TABLE IF NOT EXISTS board_event (board_id text REFERENCES board(id), last_serial integer, events JSONB NOT NULL, PRIMARY KEY (board_id, last_serial));
             ALTER TABLE board_event ALTER COLUMN last_serial SET NOT NULL;
             ALTER TABLE board_event ALTER COLUMN board_id SET NOT NULL;
+            CREATE TABLE IF NOT EXISTS board_api_token (board_id text REFERENCES board(id), token TEXT NOT NULL);
         `)
     })
 

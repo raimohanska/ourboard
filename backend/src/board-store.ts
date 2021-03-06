@@ -2,8 +2,14 @@ import { PoolClient } from "pg"
 import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardHistoryEntry, exampleBoard, Id, Serial } from "../../common/src/domain"
 import { inTransaction, withDBClient } from "./db"
+import * as uuid from "uuid"
 
-export async function fetchBoard(id: Id): Promise<Board> {
+export type BoardAndAccessTokens = {
+    board: Board,
+    accessTokens: string[]
+}
+
+export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
     return await inTransaction(async (client) => {
         const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id])
         if (result.rows.length == 0) {
@@ -11,7 +17,7 @@ export async function fetchBoard(id: Id): Promise<Board> {
                 // Example board is a special case: it is automatically created if not in DB yet.
                 const board = { ...exampleBoard, serial: 0 }
                 await createBoard(board)
-                return board
+                return { board, accessTokens: [] }
             } else {
                 throw Error(`Board ${id} not found`)
             }
@@ -37,13 +43,14 @@ export async function fetchBoard(id: Id): Promise<Board> {
             if (history.length > 1000) {
                 await saveBoardSnapshot(mkSnapshot(board, serial), client)
             }
-            return { ...board, serial }
+            const accessTokens = (await client.query("SELECT token FROM board_api_token WHERE board_id=$1", [id])).rows.map(row => row.token)
+            return { board: { ...board, serial }, accessTokens }
         }
     })
 }
 
 export async function createBoard(board: Board): Promise<void> {
-    await withDBClient(async (client) => {
+    await inTransaction(async (client) => {
         const result = await client.query("SELECT id FROM board WHERE id=$1", [board.id])
         if (result.rows.length > 0) throw Error("Board already exists: " + board.id)
         client.query(`INSERT INTO board(id, name, content) VALUES ($1, $2, $3)`, [
@@ -52,6 +59,12 @@ export async function createBoard(board: Board): Promise<void> {
             mkSnapshot(board, 0),
         ])
     })
+}
+
+export async function createAccessToken(board: Board): Promise<string> {
+    const token = uuid.v4()
+    await inTransaction(async client => client.query("INSERT INTO board_api_token (board_id, token) VALUES ($1, $2)", [board.id, token]))
+    return token
 }
 
 export async function saveRecentEvents(id: Id, recentEvents: BoardHistoryEntry[]) {

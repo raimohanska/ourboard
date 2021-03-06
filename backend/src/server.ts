@@ -27,13 +27,13 @@ import {
     Container,
     BoardAccessPolicyCodec,
 } from "../../common/src/domain"
-import { addBoard, getBoard, maybeGetBoard, updateBoards } from "./board-state"
+import { addBoard, getBoard, maybeGetBoard, ServerSideBoardState, updateBoards } from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
 import { broadcastBoardEvent } from "./sessions"
 import { encode as htmlEncode } from "html-entities"
 import { item } from "lonna"
 import { RED, YELLOW } from "../../common/src/colors"
-import _ from "lodash"
+import _, { some } from "lodash"
 import * as t from "io-ts"
 import * as Either from "fp-ts/lib/Either"
 
@@ -91,21 +91,43 @@ const configureServer = () => {
     })
 
     app.post("/api/v1/board", bodyParser.json(), async (req, res) => {
-        let { name, accessPolicy } = req.body
-        if (!name) {
-            res.status(400).send('Expecting JSON document containing the field "name".')
-            return
+        try {
+            let { name, accessPolicy } = req.body
+            if (!name) {
+                res.status(400).send('Expecting JSON document containing the field "name".')
+                return
+            }
+            const accessPolicyResult = BoardAccessPolicyCodec.decode(accessPolicy)
+            if (Either.isLeft(accessPolicyResult)) {
+                res.status(400).send("Invalid accessPolicy")
+                return
+            }
+            let board: Board = createBoard(name, accessPolicyResult.right)
+            const boardWithHistory = await addBoard(board, true)
+            res.json({ id: boardWithHistory.board.id, accessToken: boardWithHistory.accessTokens[0] })
+        } catch (e) {
+            console.error(e)
+            if (e instanceof InvalidRequest) {
+                res.status(400).send(e.message)
+            } else {
+                res.sendStatus(500)
+            }
         }
-        const accessPolicyResult = BoardAccessPolicyCodec.decode(accessPolicy)
-        if (Either.isLeft(accessPolicyResult)) {
-            res.status(400).send("Invalid accessPolicy")
-            return
-        }
-        let board: Board = createBoard(name, accessPolicyResult.right)
-        const boardWithHistory = await addBoard(board)
-        res.json(boardWithHistory.board)
     })
 
+    function checkBoardAPIAccess(board: ServerSideBoardState, req: express.Request) {
+        if (board.board.accessPolicy || board.accessTokens.length) {
+            if (!req.headers.api_token) {
+                throw new InvalidRequest("API_TOKEN required")
+            }
+            if (!board.accessTokens.some(t => t === req.headers.api_token)) {
+                console.log(`API_TOKEN ${req.headers.api_token} not on list ${board.accessTokens}`)
+                throw new InvalidRequest("Invalid API_TOKEN")
+            }
+        }
+    }
+
+    // TODO: require API_TOKEN header for github too!
     app.post("/api/v1/webhook/github/:boardId", bodyParser.json(), async (req, res) => {
         try {
             const boardId = req.params.boardId
@@ -169,6 +191,7 @@ const configureServer = () => {
             const { type, text, color, container } = req.body
             console.log(`POST item for board ${boardId}: ${JSON.stringify(req.body)}`)
             const board = await getBoard(boardId)
+            checkBoardAPIAccess(board, req)
             if (!board) return res.sendStatus(404)
             await addItem(board.board, type, text, color, container)
             res.status(200).json({ ok: true })
@@ -185,7 +208,7 @@ const configureServer = () => {
     app.put("/api/v1/board/:boardId/item/:itemId", bodyParser.json(), async (req, res) => {
         try {
             const { boardId, itemId } = req.params
-            if (!boardId) throw new InvalidRequest("boardId missing")
+            if (!boardId) throw new InvalidRequest("boardId missing")            
             if (!itemId) throw new InvalidRequest("itemId missing")
             const { type, text, color, container, replaceTextIfExists, replaceColorIfExists } = req.body
             console.log(`PUT item for board ${boardId} item ${itemId}: ${JSON.stringify(req.body)}`)
@@ -194,6 +217,7 @@ const configureServer = () => {
                 throw new InvalidRequest("Expecting non zero-length text")
 
             const board = await getBoard(boardId)
+            checkBoardAPIAccess(board, req)
             if (board) {
                 const existingItem = board.board.items.find((i) => i.id === itemId)
                 if (existingItem) {
