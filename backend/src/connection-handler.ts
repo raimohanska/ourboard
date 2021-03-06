@@ -101,20 +101,30 @@ async function handleAppEvent(
                 if (board.board.accessPolicy) {
                     const session = getSession(socket)
                     if (session.userInfo.userType != "authenticated") {
-                        console.warn("Access denied to board by anonymous user");
-                        session.sendEvent({action: "board.join.denied", boardId: appEvent.boardId, reason: "unauthorized"})
+                        console.warn("Access denied to board by anonymous user")
+                        session.sendEvent({
+                            action: "board.join.denied",
+                            boardId: appEvent.boardId,
+                            reason: "unauthorized",
+                        })
                         return
                     }
                     const email = session.userInfo.email
-                    if (!board.board.accessPolicy.allowList.some(entry => {
-                        if ("email" in entry) {
-                            return entry.email === email
-                        } else {
-                            return email.endsWith(entry.domain)
-                        }
-                    })) {
-                        console.warn("Access denied to board by user not on allowList");
-                        session.sendEvent({action: "board.join.denied", boardId: appEvent.boardId, reason: "forbidden"})
+                    if (
+                        !board.board.accessPolicy.allowList.some((entry) => {
+                            if ("email" in entry) {
+                                return entry.email === email
+                            } else {
+                                return email.endsWith(entry.domain)
+                            }
+                        })
+                    ) {
+                        console.warn("Access denied to board by user not on allowList")
+                        session.sendEvent({
+                            action: "board.join.denied",
+                            boardId: appEvent.boardId,
+                            reason: "forbidden",
+                        })
                         return
                     }
                     session.userInfo.email
@@ -145,7 +155,7 @@ async function handleAppEvent(
                     setVerifiedUserForSession(appEvent, socket)
                     console.log(`${appEvent.name} logged in`)
                 }
-                socket.send("app-event", {action: "auth.login.response", success} as AppEvent)
+                socket.send("app-event", { action: "auth.login.response", success } as AppEvent)
                 return
             }
             case "auth.logout": {

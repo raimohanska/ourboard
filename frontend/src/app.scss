@@ -129,7 +129,9 @@ a {
     display: flex;
     flex-direction: row;
     &:not(.ready) {
-        .board, .controls, .board-name {
+        .board,
+        .controls,
+        .board-name {
             opacity: 0.3;
             pointer-events: none;
         }
@@ -337,10 +339,10 @@ a {
             z-index: 100;
             display: flex;
             align-items: center;
-            justify-content: center;    
+            justify-content: center;
             > div {
                 max-width: 80%;
-            }        
+            }
         }
         .border-container {
             box-sizing: content-box;

@@ -14,9 +14,9 @@ const userInfoAtom: L.Atom<GoogleAuthUserInfo> = L.atom({ status: SUPPORTED ? "i
 export const googleUser = L.view(userInfoAtom, (x) => x) // read-only view
 L.view(googleUser, "status").log("Google login status")
 export type GoogleAuthUserInfo =
-    | {
-          status: "signed-in"          
-      } & GoogleAuthenticatedUser
+    | ({
+          status: "signed-in"
+      } & GoogleAuthenticatedUser)
     | {
           status: "signed-out"
       }
@@ -30,7 +30,7 @@ export type GoogleAuthUserInfo =
 export type GoogleAuthenticatedUser = {
     name: string
     email: string
-    token: string    
+    token: string
 }
 
 export async function start() {
@@ -77,8 +77,8 @@ async function updateSigninStatus() {
 }
 
 export function signInWithDifferentAccount() {
-    signOut();
-    signIn();
+    signOut()
+    signIn()
 }
 
 export function signIn() {

@@ -164,19 +164,10 @@ export const BoardView = ({
         doOnUnmount.forEach((fn) => fn())
     })
 
-    const boardAccessStatus = L.view(
-        state,
-        (s) => s.status
-    )
+    const boardAccessStatus = L.view(state, (s) => s.status)
 
     return (
-        <div
-            id="root"
-            className={L.view(
-                boardAccessStatus,
-                (status) => `board-container ${status}`,
-            )}
-        >
+        <div id="root" className={L.view(boardAccessStatus, (status) => `board-container ${status}`)}>
             <div className="scroll-container" ref={scrollElement.set}>
                 <BoardViewHeader
                     boardId={boardId}
@@ -184,7 +175,7 @@ export const BoardView = ({
                     dispatch={dispatch}
                     controlSettings={controlSettings}
                 />
-                <BoardViewMessage {...{boardAccessStatus}}/>
+                <BoardViewMessage {...{ boardAccessStatus }} />
 
                 <div className="border-container" style={style}>
                     <div
@@ -312,20 +303,23 @@ export const BoardView = ({
     }
 }
 
-const BoardViewMessage = ({ boardAccessStatus }: { boardAccessStatus : L.Property<BoardAccessStatus>}) => {
-    return L.view(boardAccessStatus, s => {
-        return s === "denied-permanently"
-            ? <div className="board-status-message">
+const BoardViewMessage = ({ boardAccessStatus }: { boardAccessStatus: L.Property<BoardAccessStatus> }) => {
+    return L.view(boardAccessStatus, (s) => {
+        return s === "denied-permanently" ? (
+            <div className="board-status-message">
                 <div>
-                    <p>Sorry, access denied. Click <a onClick={signInWithDifferentAccount}>here</a> to sign in with another account.</p>
+                    <p>
+                        Sorry, access denied. Click <a onClick={signInWithDifferentAccount}>here</a> to sign in with
+                        another account.
+                    </p>
                 </div>
             </div>
-            : s === "login-required"
-            ? <div className="board-status-message">
+        ) : s === "login-required" ? (
+            <div className="board-status-message">
                 <div>
                     This board is for authorized users only. Click <a onClick={signIn}>here</a> to sign in.
                 </div>
             </div>
-            : null
+        ) : null
     })
 }

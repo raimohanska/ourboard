@@ -27,17 +27,19 @@ export type LoggingInLocal = BaseSessionState & {
 }
 
 /**
- *  Locally OAUTH authenticated but auth with server pending 
+ *  Locally OAUTH authenticated but auth with server pending
  **/
- export type LoggingInServer = BaseSessionState & GoogleAuthenticatedUser & {
-    status: "logging-in-server",
-    nickname: string
-}
+export type LoggingInServer = BaseSessionState &
+    GoogleAuthenticatedUser & {
+        status: "logging-in-server"
+        nickname: string
+    }
 
-export type LoggedIn = BaseSessionState & GoogleAuthenticatedUser & {
-    status: "logged-in",
-    nickname: string
-}
+export type LoggedIn = BaseSessionState &
+    GoogleAuthenticatedUser & {
+        status: "logged-in"
+        nickname: string
+    }
 
 export type UserSessionStore = ReturnType<typeof userSessionStore>
 
@@ -53,7 +55,7 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
             } else if (event.action === "nickname.set") {
                 const nickname = storeNickName(event.nickname)
                 return { ...state, nickname }
-            } else if (event.action === "auth.login.response") {                
+            } else if (event.action === "auth.login.response") {
                 if (!event.success) {
                     console.log("Login failure TODO send new token")
                 } else if (state.status === "logging-in-server") {
@@ -66,9 +68,9 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
             } else {
                 // Ignore other events
                 return state
-            }    
-        } else {            
-            if (event.status === "signed-out" || event.status === "not-supported") {
+            }
+        } else {
+            if (event.status === "signed-out" || event.status === "not-supported") {
                 if (state.status === "logging-in-server" || state.status == "logged-in") {
                     connection.messageQueue.enqueue({ action: "auth.logout" })
                 }
@@ -76,38 +78,43 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
                 return {
                     status: "logged-out",
                     sessionId: state.sessionId,
-                    nickname: state.nickname
+                    nickname: state.nickname,
                 }
             } else if (event.status === "in-progress") {
                 return {
                     status: "logging-in-local",
                     sessionId: state.sessionId,
-                    nickname: state.nickname
+                    nickname: state.nickname,
                 }
             } else {
-                const { status, ...googleUser } = event
+                const { status, ...googleUser } = event
 
                 connection.messageQueue.enqueue({ action: "nickname.set", nickname: googleUser.name })
-                connection.messageQueue.enqueue({ action: "auth.login", name: googleUser.name, email: googleUser.email, token: googleUser.token })
-
+                connection.messageQueue.enqueue({
+                    action: "auth.login",
+                    name: googleUser.name,
+                    email: googleUser.email,
+                    token: googleUser.token,
+                })
 
                 return {
                     status: "logging-in-server",
                     sessionId: state.sessionId,
                     nickname: googleUser.name,
-                    ...googleUser
+                    ...googleUser,
                 }
             }
         }
     }
 
-
     const initialState: UserSessionState = {
-        status: googleUser.get().status === "in-progress" ? "logging-in-local": "anonymous",
+        status: googleUser.get().status === "in-progress" ? "logging-in-local" : "anonymous",
         sessionId: null,
         nickname: localStorage.nickname || undefined,
     }
-    const sessionState = L.merge(events, googleUser.pipe(L.changes)).pipe(L.scan(initialState, eventsReducer, globalScope))
+    const sessionState = L.merge(events, googleUser.pipe(L.changes)).pipe(
+        L.scan(initialState, eventsReducer, globalScope),
+    )
 
     L.view(sessionState, "status").log("Session status")
 

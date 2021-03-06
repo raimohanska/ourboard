@@ -95,7 +95,7 @@ Payload:
 
 ### PUT /api/v1/board/:boardId/item/:itemId
 
-Creates a new item on given board or updates an existing one. 
+Creates a new item on given board or updates an existing one.
 If you want to add the item onto a specific area/container element on the board, you can
 find the id of the container by inspecting with your browser.
 

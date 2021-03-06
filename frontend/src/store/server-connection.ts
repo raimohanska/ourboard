@@ -40,9 +40,7 @@ export function serverConnection() {
             serverEvents.push(event)
         }
     })
-    uiEvents.pipe(
-        L.filter((e: UIEvent) => !isLocalUIEvent(e))
-    ).forEach(messageQueue.enqueue)
+    uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach(messageQueue.enqueue)
 
     // uiEvents.log("UI")
     // serverEvents.log("Server")

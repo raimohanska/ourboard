@@ -29,7 +29,13 @@ import { ServerConnection } from "./server-connection"
 import { UserSessionState } from "./user-session-store"
 
 export type BoardStore = ReturnType<typeof BoardStore>
-export type BoardAccessStatus = "none" | "loading" | "ready" | "denied-temporarily" | "denied-permanently" | "login-required"
+export type BoardAccessStatus =
+    | "none"
+    | "loading"
+    | "ready"
+    | "denied-temporarily"
+    | "denied-permanently"
+    | "login-required"
 export type BoardState = {
     status: BoardAccessStatus
     board: Board | undefined
@@ -39,10 +45,7 @@ export type BoardState = {
     users: UserSessionInfo[]
 }
 
-export function BoardStore(
-    connection: ServerConnection,
-    sessionInfo: L.Property<UserSessionState>
-) {
+export function BoardStore(connection: ServerConnection, sessionInfo: L.Property<UserSessionState>) {
     type BoardStoreEvent =
         | BoardHistoryEntry
         | TransientBoardItemEvent
@@ -102,19 +105,19 @@ export function BoardStore(
             if (state.status !== "loading") {
                 console.error(`Got board.join.denied while in status ${state.status}`)
             }
-            
+
             if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
                 console.log(`Access denied to board: login in progress`)
-                return { ...state, status: "denied-temporarily" }    
-            } else if (loginStatus === "anonymous" || loginStatus === "logged-out") {
+                return { ...state, status: "denied-temporarily" }
+            } else if (loginStatus === "anonymous" || loginStatus === "logged-out") {
                 console.log(`Access denied to board: login required`)
-                return { ...state, status: "login-required" }    
+                return { ...state, status: "login-required" }
             } else if (event.reason === "unauthorized") {
                 console.warn(`Got "unauthorized" while logged in, likely login in progress...`)
                 return state
             } else if (event.reason === "forbidden") {
                 console.log(`Access denied to board: no privileges`)
-                return { ...state, status: "denied-permanently" }
+                return { ...state, status: "denied-permanently" }
             } else {
                 console.error(`Unexpected board access denial: ${state.status}/${loginStatus}/${event.reason}`)
                 return state
@@ -209,8 +212,7 @@ export function BoardStore(
     const localBoardToSave = state.pipe(
         L.changes,
         L.filter(
-            (state: BoardState) =>
-                state.board !== undefined && state.board.serial > 0 && state.status === "ready",
+            (state: BoardState) => state.board !== undefined && state.board.serial > 0 && state.status === "ready",
         ),
         L.debounce(1000),
         L.map((state: BoardState) => {
@@ -218,23 +220,24 @@ export function BoardStore(
             return {
                 boardWithHistory: {
                     board: state.board!,
-                    history: state.history
-                }
+                    history: state.history,
+                },
             }
-        })
+        }),
     )
     localBoardToSave.forEach(storeBoardState)
 
-    L.view(sessionInfo, s => s.status).onChange(status => {
+    L.view(sessionInfo, (s) => s.status).onChange((status) => {
         const board = state.get().board
         const loginInProgress = status === "logging-in-local" || status === "logging-in-server"
         if (board && !loginInProgress) {
-            const wasDenied = ["denied-temporarily", "denied-permanently", "login-required"].includes(state.get().status)
+            const wasDenied = ["denied-temporarily", "denied-permanently", "login-required"].includes(
+                state.get().status,
+            )
             if (status === "logged-out") {
                 console.log("Trying to re-join board after logout")
-                joinBoard(board.id)                
-            }
-            else if (wasDenied) {
+                joinBoard(board.id)
+            } else if (wasDenied) {
                 console.log("Trying to re-join board after login")
                 joinBoard(board.id)
             }
@@ -272,19 +275,18 @@ function addToStack(event: PersistableBoardItemEvent, b: PersistableBoardItemEve
     return b.concat(event)
 }
 
-
 function sessionState2UserInfo(state: UserSessionState): EventUserInfo {
     if (state.status === "logged-in") {
         return {
             userType: "authenticated",
             email: state.email,
             nickname: state.nickname,
-            name: state.name
+            name: state.name,
         }
     } else {
         return {
             userType: "unidentified",
-            nickname: state.nickname || "<unknown>"
+            nickname: state.nickname || "<unknown>",
         }
     }
 }

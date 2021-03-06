@@ -23,12 +23,14 @@ const App = () => {
 
     const assets = assetStore(connection, L.view(boardStore.state, "board"), connection.events)
 
-    boardStore.state.pipe(
-        L.changes,
-        L.filter((s: BoardState) => s.status === "ready" && !!s.board),
-        L.map((s: BoardState) => ({ id: s.board!.id, name: s.board!.name}) as RecentBoardAttributes),
-        L.skipDuplicates(_.isEqual)
-    ).forEach(storeRecentBoard)
+    boardStore.state
+        .pipe(
+            L.changes,
+            L.filter((s: BoardState) => s.status === "ready" && !!s.board),
+            L.map((s: BoardState) => ({ id: s.board!.id, name: s.board!.name } as RecentBoardAttributes)),
+            L.skipDuplicates(_.isEqual),
+        )
+        .forEach(storeRecentBoard)
 
     const state = L.view(userStore.sessionState, boardStore.state, (s, bs) => ({ ...s, ...bs }))
 

@@ -91,14 +91,14 @@ const configureServer = () => {
     })
 
     app.post("/api/v1/board", bodyParser.json(), async (req, res) => {
-        let { name, accessPolicy} = req.body
+        let { name, accessPolicy } = req.body
         if (!name) {
             res.status(400).send('Expecting JSON document containing the field "name".')
             return
         }
         const accessPolicyResult = BoardAccessPolicyCodec.decode(accessPolicy)
         if (Either.isLeft(accessPolicyResult)) {
-            res.status(400).send('Invalid accessPolicy')
+            res.status(400).send("Invalid accessPolicy")
             return
         }
         let board: Board = createBoard(name, accessPolicyResult.right)

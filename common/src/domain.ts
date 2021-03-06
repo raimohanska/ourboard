@@ -18,21 +18,26 @@ export type Board = BoardAttributes & {
     serial: Serial
 }
 
-export const BoardAccessPolicyCodec = t.union([t.undefined, t.type({
-    allowList: t.array(t.union([
-        t.type({
-            email: t.string
-        }),
-        t.type({
-            domain: t.string
-        })
-    ]))
-})])
+export const BoardAccessPolicyCodec = t.union([
+    t.undefined,
+    t.type({
+        allowList: t.array(
+            t.union([
+                t.type({
+                    email: t.string,
+                }),
+                t.type({
+                    domain: t.string,
+                }),
+            ]),
+        ),
+    }),
+])
 export type BoardAccessPolicy = t.TypeOf<typeof BoardAccessPolicyCodec>
 
 export type AuthorizedParty = AuthorizedByEmailAddress | AuthorizedByDomain
 export type AuthorizedByEmailAddress = { email: string }
-export type AuthorizedByDomain = { domain: string }
+export type AuthorizedByDomain = { domain: string }
 
 export type BoardStub = Pick<Board, "id" | "name">
 
@@ -134,7 +139,7 @@ export type ClientToServerRequest =
     | AuthLogin
     | AuthLogout
 
-export type LoginResponse = { action: "auth.login.response"; success: boolean }
+export type LoginResponse = { action: "auth.login.response"; success: boolean }
 export type AuthLogin = { action: "auth.login"; name: string; email: string; token: string }
 export type AuthLogout = { action: "auth.logout" }
 export type AddItem = { action: "item.add"; boardId: Id; items: Item[] }
@@ -250,9 +255,8 @@ export const isPersistableBoardItemEvent = (e: AppEvent): e is PersistableBoardI
 
 export const isBoardHistoryEntry = (e: AppEvent): e is BoardHistoryEntry =>
     isPersistableBoardItemEvent(e) && !!(e as BoardHistoryEntry).user && !!(e as BoardHistoryEntry).timestamp
-export const isLocalUIEvent = (e: AppEvent): e is LocalUIEvent =>
-    e.action.startsWith("ui.")
-    
+export const isLocalUIEvent = (e: AppEvent): e is LocalUIEvent => e.action.startsWith("ui.")
+
 export function isSameUser(a: EventUserInfo, b: EventUserInfo) {
     return a.userType == b.userType && a.nickname == b.nickname
 }
