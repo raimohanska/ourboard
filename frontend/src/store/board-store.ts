@@ -216,7 +216,6 @@ export function BoardStore(connection: ServerConnection, sessionInfo: L.Property
         ),
         L.debounce(1000),
         L.map((state: BoardState) => {
-            console.log("ready to save", state)
             return {
                 boardWithHistory: {
                     board: state.board!,
