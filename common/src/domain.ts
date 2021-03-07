@@ -147,6 +147,7 @@ export type ClientToServerRequest =
     | UnlockItem
     | JoinBoard
     | AssociateBoard
+    | DissociateBoard
     | SetNickname
     | AssetPutUrlRequest
     | AssetPutUrlResponse
@@ -176,6 +177,7 @@ export type GotBoardLocks = { action: "board.locks"; boardId: Id; locks: ItemLoc
 export type AddBoard = { action: "board.add"; payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Serial }
 export type AssociateBoard = { action: "board.associate"; boardId: Id; lastOpened: ISOTimeStamp }
+export type DissociateBoard = { action: "board.dissociate"; boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
 export type DeniedJoinBoard = { action: "board.join.denied"; boardId: Id; reason: "unauthorized" | "forbidden" }
 export type RecentBoardsFromServer = { action: "user.boards"; email: string; boards: RecentBoard[] }

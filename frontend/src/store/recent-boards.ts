@@ -18,6 +18,7 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
 
     function removeRecentBoard(board: RecentBoard) {
         storeRecentBoards((boards) => boards.filter((b) => b.id !== board.id))
+        connection.dispatch({ action: "board.dissociate", boardId: board.id })
     }
 
     function storeRecentBoards(fn: (boards: RecentBoard[]) => RecentBoard[]) {

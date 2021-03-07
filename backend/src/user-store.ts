@@ -14,7 +14,7 @@ export function getUserIdForEmail(email: string): Promise<string> {
     })
 }
 
-export async function accociateUserWithBoard(
+export async function associateUserWithBoard(
     userId: string,
     boardId: Id,
     lastOpened: ISOTimeStamp = new Date().toISOString(),
@@ -29,6 +29,16 @@ export async function accociateUserWithBoard(
         })
     } catch (e) {
         console.error(`Failed to associate user ${userId} with board ${boardId}`)
+    }
+}
+
+export async function dissociateUserWithBoard(userId: string, boardId: Id) {
+    try {
+        await inTransaction(async (client) => {
+            await client.query(`DELETE FROM user_board WHERE user_id=$1 and board_id=$2`, [userId, boardId])
+        })
+    } catch (e) {
+        console.error(`Failed to dissociate user ${userId} with board ${boardId}`)
     }
 }
 

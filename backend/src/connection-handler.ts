@@ -25,7 +25,12 @@ import {
 import { obtainLock, releaseLocksFor } from "./locker"
 import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
 import { updateBoard } from "./board-store"
-import { accociateUserWithBoard, getUserAssociatedBoards, getUserIdForEmail } from "./user-store"
+import {
+    associateUserWithBoard,
+    dissociateUserWithBoard,
+    getUserAssociatedBoards,
+    getUserIdForEmail,
+} from "./user-store"
 
 export type ConnectionHandlerParams = Readonly<{
     getSignedPutUrl: (key: string) => string
@@ -137,22 +142,32 @@ async function handleAppEvent(
                         })
                         return
                     }
-                    await accociateUserWithBoard(session.userInfo.userId, appEvent.boardId)
+                    await associateUserWithBoard(session.userInfo.userId, appEvent.boardId)
                 }
 
                 await addSessionToBoard(board, socket, appEvent.initAtSerial)
                 return
-            case "board.associate":
+            case "board.associate": {
                 // TODO: maybe access check? Not security-wise necessary
-
                 const session = getSession(socket)
                 if (session.userInfo.userType !== "authenticated") {
                     console.warn("Trying to associate board without authenticated user")
                     return
                 }
                 const userId = session.userInfo.userId
-                await accociateUserWithBoard(userId, appEvent.boardId, appEvent.lastOpened)
+                await associateUserWithBoard(userId, appEvent.boardId, appEvent.lastOpened)
                 return
+            }
+            case "board.dissociate": {
+                const session = getSession(socket)
+                if (session.userInfo.userType !== "authenticated") {
+                    console.warn("Trying to dissociate board without authenticated user")
+                    return
+                }
+                const userId = session.userInfo.userId
+                await dissociateUserWithBoard(userId, appEvent.boardId)
+                return
+            }
             case "board.add": {
                 const { payload } = appEvent
                 const board = !isFullyFormedBoard(payload)
@@ -183,7 +198,7 @@ async function handleAppEvent(
                     console.log(`${appEvent.name} logged in`)
                     session.sendEvent({ action: "auth.login.response", success, userId })
                     for (let board of session.boards) {
-                        await accociateUserWithBoard(userId, board.boardId)
+                        await associateUserWithBoard(userId, board.boardId)
                     }
                     session.sendEvent({
                         action: "user.boards",
