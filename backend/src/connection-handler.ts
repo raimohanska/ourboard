@@ -24,6 +24,7 @@ import {
 } from "./sessions"
 import { obtainLock, releaseLocksFor } from "./locker"
 import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
+import { updateBoard } from "./board-store"
 
 export type ConnectionHandlerParams = Readonly<{
     getSignedPutUrl: (key: string) => string
@@ -93,6 +94,11 @@ async function handleAppEvent(
                     const serial = await updateBoards(historyEntry)
                     historyEntry = { ...historyEntry, serial }
                     broadcastBoardEvent(historyEntry, session)
+                    if (appEvent.action === "board.rename") {
+                        // special case: keeping name up to date as it's in a separate column
+                        console.log("RENAME", appEvent.boardId, appEvent.name)
+                        await updateBoard({ boardId: appEvent.boardId, name: appEvent.name })
+                    }
                     return { boardId, serial }
                 }
             }
