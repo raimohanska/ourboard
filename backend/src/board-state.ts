@@ -4,6 +4,7 @@ import { Locks } from "./locker"
 import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./board-store"
 import { broadcastItemLocks, getBoardSessionCount } from "./sessions"
 import { compactBoardHistory } from "./compact-history"
+import { sleep } from "./sleep"
 
 // A mutable state object for server side state
 export type ServerSideBoardState = {
@@ -77,11 +78,18 @@ export function getActiveBoards() {
     return boards
 }
 
+let savingPromise: Promise<void> = saveBoards()
+
 async function saveBoards() {
+    await sleep(1000)
     for (let state of boards.values()) {
         await saveBoardChanges(state)
     }
-    setTimeout(saveBoards, 1000)
+    savingPromise = saveBoards()
+}
+
+export async function awaitSavingChanges() {
+    await savingPromise
 }
 
 async function saveBoardChanges(state: ServerSideBoardState) {
@@ -110,5 +118,3 @@ async function saveBoardChanges(state: ServerSideBoardState) {
 setInterval(() => {
     console.log("Number of active boards: " + boards.size)
 }, 60000)
-
-saveBoards()

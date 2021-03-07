@@ -28,9 +28,16 @@ import {
     BoardAccessPolicyCodec,
     BoardAccessPolicy,
 } from "../../common/src/domain"
-import { addBoard, getBoard, maybeGetBoard, ServerSideBoardState, updateBoards } from "./board-state"
+import {
+    addBoard,
+    awaitSavingChanges as waitUntilChangesSaved,
+    getBoard,
+    maybeGetBoard,
+    ServerSideBoardState,
+    updateBoards,
+} from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
-import { broadcastBoardEvent } from "./sessions"
+import { broadcastBoardEvent, terminateSessions } from "./sessions"
 import { encode as htmlEncode } from "html-entities"
 import { item } from "lonna"
 import { RED, YELLOW } from "../../common/src/colors"
@@ -38,6 +45,7 @@ import _, { some } from "lodash"
 import * as t from "io-ts"
 import * as Either from "fp-ts/lib/Either"
 import { updateBoard } from "./board-store"
+import { sleep } from "./sleep"
 
 const configureServer = () => {
     const config = getConfig()
@@ -376,11 +384,29 @@ const configureServer = () => {
     return http
 }
 
+let http: Http.Server | null = null
+
+async function shutdown() {
+    console.log("Shutdown initiated. Closing HTTP socket...")
+    if (http) http.close()
+    console.log("Shutdown in progress. Terminating all Socket.IO sockets...")
+    terminateSessions()
+    console.log("Shutdown in progress. Waiting for all changes to be saved...")
+    await waitUntilChangesSaved()
+    console.log("Shutdown complete. Exiting process.")
+    process.exit(0)
+}
+
+process.on("SIGTERM", () => {
+    console.log("Received SIGTERM. Initiating shutdown")
+    shutdown()
+})
+
 const port = process.env.PORT || 1337
 
 initDB()
     .then(() => {
-        const http = configureServer()
+        http = configureServer()
         http.listen(port, () => {
             console.log("Listening on port " + port)
         })

@@ -33,6 +33,7 @@ type UserSession = {
     userInfo: EventUserInfo
     sendEvent: (event: AppEvent) => void
     isOnBoard(boardId: Id): boolean
+    close(): void
 }
 
 type UserSessionBoardEntry = {
@@ -78,6 +79,7 @@ function userSession(socket: IO.Socket) {
         boards,
         sendEvent,
         isOnBoard: (boardId: Id) => boards.some((b) => b.boardId === boardId),
+        close: () => socket.disconnect(),
     }
     sessions[socket.id] = session
     return session
@@ -96,6 +98,10 @@ export function getBoardSessionCount(id: Id) {
 }
 export function getSession(socket: IO.Socket): UserSession {
     return sessions[socket.id]
+}
+
+export function terminateSessions() {
+    Object.values(sessions).forEach((session) => session.close())
 }
 
 function describeRange(events: BoardHistoryEntry[]) {
