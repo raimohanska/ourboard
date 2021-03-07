@@ -32,7 +32,7 @@ import { localStorageAtom } from "./local-storage-atom"
 import { isFirefox } from "../components/browser"
 import { itemCreateHandler } from "./item-create"
 import { BoardAccessStatus, BoardState } from "../store/board-store"
-import { signIn, signInWithDifferentAccount } from "../google-auth"
+import { signIn } from "../google-auth"
 
 export type ControlMode = "mouse" | "trackpad"
 export type ControlSettings = {
@@ -177,7 +177,7 @@ export const BoardView = ({
                     dispatch={dispatch}
                     controlSettings={controlSettings}
                 />
-                <BoardViewMessage {...{ boardAccessStatus }} />
+                <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
 
                 <div className="border-container" style={style}>
                     <div
@@ -307,23 +307,33 @@ export const BoardView = ({
     }
 }
 
-const BoardViewMessage = ({ boardAccessStatus }: { boardAccessStatus: L.Property<BoardAccessStatus> }) => {
+const BoardViewMessage = ({ boardAccessStatus, sessionState }: { boardAccessStatus: L.Property<BoardAccessStatus>, sessionState: L.Property<UserSessionState> }) => {
     return L.view(boardAccessStatus, (s) => {
-        return s === "denied-permanently" ? (
-            <div className="board-status-message">
+        if (s === "denied-permanently") {
+            return <div className="board-status-message">
                 <div>
                     <p>
-                        Sorry, access denied. Click <a onClick={signInWithDifferentAccount}>here</a> to sign in with
+                        Sorry, access denied. Click <a onClick={signIn}>here</a> to sign in with
                         another account.
                     </p>
                 </div>
             </div>
-        ) : s === "login-required" ? (
-            <div className="board-status-message">
+        }
+        if (s === "login-required") {
+            const ss = sessionState.get()
+            if (ss.status === "login-failed") {
+                return <div className="board-status-message">
+                    <div>
+                        Something went wrong with logging in. Click <a onClick={signIn}>here</a> to try again.
+                    </div>
+                </div>    
+            }
+            return <div className="board-status-message">
                 <div>
                     This board is for authorized users only. Click <a onClick={signIn}>here</a> to sign in.
                 </div>
-            </div>
-        ) : null
+            </div>            
+        }
+        return null
     })
 }

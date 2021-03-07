@@ -84,12 +84,8 @@ async function updateSigninStatus() {
     }
 }
 
-export function signInWithDifferentAccount() {
-    signOut()
-    signIn()
-}
-
 export function signIn() {
+    signOut() // Otherwise re-login doesn't work
     GoogleAuth?.signIn()
 }
 
