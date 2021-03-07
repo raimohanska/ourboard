@@ -51,5 +51,5 @@ jobs:
               uses: cypress-io/github-action@v2
               with:
                   install: false
-                  start: yarn start:dev:no-db
+                  start: yarn build-and-start
                   wait-on: "http://localhost:1337"
