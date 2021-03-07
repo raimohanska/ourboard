@@ -30,17 +30,26 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
             let history: BoardHistoryEntry[]
             let initialBoard: Board
             if (snapshot.serial) {
-                history = await getBoardHistory(id, snapshot.serial)
-                //console.log( `Fetching partial history for board ${id}, starting at serial ${snapshot.serial}, consisting of ${history.length} events`, )
-                initialBoard = snapshot
+                try {
+                    history = await getBoardHistory(id, snapshot.serial)
+                    //console.log( `Fetching partial history for board ${id}, starting at serial ${snapshot.serial}, consisting of ${history.length} events`, )
+                    initialBoard = snapshot
+                } catch (e) {
+                    console.error(
+                        `Error fetching board history for snapshot update for board ${id}. Rebooting snaphot...`,
+                    )
+                    history = await getFullBoardHistory(id, client)
+                    initialBoard = { ...snapshot, items: [] }
+                }
             } else {
+                console.warn(`Found legacy board snapshot for ${id}. You should not see this message.`) // TODO remove this legacy branch
                 history = await getFullBoardHistory(id, client)
                 console.log(`Fetched full history for board ${id}, consisting of ${history.length} events`)
                 initialBoard = { ...snapshot, items: [] }
             }
             const board = history.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
             const serial = (history.length > 0 ? history[history.length - 1].serial : snapshot.serial) || 0
-            if (history.length > 1000) {
+            if (history.length > 1000 || serial == 1 || !snapshot.serial /* rebooted */) {
                 await saveBoardSnapshot(mkSnapshot(board, serial), client)
             }
             const accessTokens = (
@@ -120,17 +129,22 @@ export async function getFullBoardHistory(id: Id, client: PoolClient): Promise<B
 
 export async function getBoardHistory(id: Id, afterSerial: Serial): Promise<BoardHistoryEntry[]> {
     return withDBClient(async (client) => {
-        const historyEvents = (
+        const historyEventsIncludingLatest = (
             await client.query(
-                `SELECT events FROM board_event WHERE board_id=$1 AND last_serial > $2 ORDER BY last_serial`,
+                `SELECT events FROM board_event WHERE board_id=$1 AND last_serial >= $2 ORDER BY last_serial`,
                 [id, afterSerial],
             )
-        ).rows
-            .flatMap((row) => row.events.events as BoardHistoryEntry[])
-            .filter((e) => e.serial! > afterSerial)
+        ).rows.flatMap((row) => row.events.events as BoardHistoryEntry[])
+
+        const historyEvents = historyEventsIncludingLatest.filter((e) => e.serial! > afterSerial)
 
         //console.log( `Fetched board history for board ${id} after serial ${afterSerial} -> ${historyEvents.length} events`, )
         if (historyEvents.length === 0) {
+            if (historyEventsIncludingLatest.length === 0) {
+                throw Error(
+                    `Cannot find history to start after the requested serial ${afterSerial} for board ${id}. Seems like the requested serial is higher than currently stored in DB`,
+                )
+            }
             return historyEvents
         }
         if (historyEvents[0].serial === afterSerial + 1) {
@@ -176,7 +190,7 @@ export async function saveBoardSnapshot(board: Board, client: PoolClient) {
 export async function storeEventHistoryBundle(boardId: Id, events: BoardHistoryEntry[], client: PoolClient) {
     if (events.length > 0) {
         const lastSerial = events[events.length - 1].serial || 0 // default to zero for legacy events. db constraint will prevent inserting two bundles with the same serial
-        client.query(`INSERT INTO board_event(board_id, last_serial, events) VALUES ($1, $2, $3)`, [
+        await client.query(`INSERT INTO board_event(board_id, last_serial, events) VALUES ($1, $2, $3)`, [
             boardId,
             lastSerial,
             { events },

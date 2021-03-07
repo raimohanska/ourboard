@@ -115,32 +115,44 @@ export async function addSessionToBoard(
         const entry = { boardId, status: "buffering", bufferedEvents: [] } as UserSessionBoardEntry
         // 1. Add session to the board with "buffering" status, to collect all events that were meant to be sent during this async initialization
         session.boards.push(entry)
-        const { items, serial, ...boardAttributes } = boardState.board
+        try {
+            const { items, serial, ...boardAttributes } = boardState.board
 
-        //console.log(`Starting session at ${initAtSerial}`)
-        // 2. capture all board events that haven't yet been flushed to the DB
-        const inMemoryEvents = boardState.storingEvents
-            .concat(boardState.recentEvents)
-            .filter((e) => e.serial! > initAtSerial)
+            //console.log(`Starting session at ${initAtSerial}`)
+            // 2. capture all board events that haven't yet been flushed to the DB
+            const inMemoryEvents = boardState.storingEvents
+                .concat(boardState.recentEvents)
+                .filter((e) => e.serial! > initAtSerial)
 
-        // 3. Fetch events from DB
-        // IMPORTANT NOTE: this is the only await here and must remain so, as the logic here depends on everything else being synchronous.
-        const dbEvents = await getBoardHistory(boardState.board.id, initAtSerial)
+            // 3. Fetch events from DB
+            // IMPORTANT NOTE: this is the only await here and must remain so, as the logic here depends on everything else being synchronous.
+            const dbEvents = await getBoardHistory(boardState.board.id, initAtSerial)
 
-        //console.log(`Got history from DB: ${describeRange(dbEvents)} and in-memory: ${describeRange(inMemoryEvents)}`)
-        // 4. Verify that all this makes for a consistent timeline
-        verifyContinuity(boardId, initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)
-        // 5. Send the initialization event containing all these events.
-        session.sendEvent({
-            action: "board.init",
-            boardAttributes,
-            recentEvents: [...dbEvents, ...inMemoryEvents, ...entry.bufferedEvents],
-            initAtSerial,
-        })
-        //console.log(`Sending buffered events: ${describeRange(entry.bufferedEvents)}`)
-        // 6. Set the client to "ready" status so that new events will be flushed
-        entry.status = "ready"
-        entry.bufferedEvents = []
+            //console.log(`Got history from DB: ${describeRange(dbEvents)} and in-memory: ${describeRange(inMemoryEvents)}`)
+            // 4. Verify that all this makes for a consistent timeline
+            verifyContinuity(boardId, initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)
+            // 5. Send the initialization event containing all these events.
+            session.sendEvent({
+                action: "board.init",
+                boardAttributes,
+                recentEvents: [...dbEvents, ...inMemoryEvents, ...entry.bufferedEvents],
+                initAtSerial,
+            })
+            //console.log(`Sending buffered events: ${describeRange(entry.bufferedEvents)}`)
+            // 6. Set the client to "ready" status so that new events will be flushed
+            entry.status = "ready"
+            entry.bufferedEvents = []
+        } catch (e) {
+            console.warn(
+                `Failed to bootstrap client on board ${boardId} at serial ${initAtSerial}. Sending full state.`,
+            )
+            entry.status = "ready"
+            entry.bufferedEvents = []
+            session.sendEvent({
+                action: "board.init",
+                board: boardState.board,
+            })
+        }
     } else {
         session.boards.push({ boardId, status: "ready", bufferedEvents: [] })
         session.sendEvent({
