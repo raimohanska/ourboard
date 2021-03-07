@@ -30,14 +30,12 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
             // Board list from server, let's sync
             const boardsFromServer = e.boards
             const localBoards = recentBoards.get()
-            const toSend = localBoards
-                .filter((b) => !b.userEmail || b.userEmail === e.email)
-                .filter((b) => !boardsFromServer.some((bs) => bs.id === b.id))
-            toSend.forEach((b) =>
+            const boardsOnlyFoundLocally = localBoards.filter((b) => !boardsFromServer.some((bs) => bs.id === b.id))
+            const boardsToSend = boardsOnlyFoundLocally.filter((b) => !b.userEmail || b.userEmail === e.email)
+            boardsToSend.forEach((b) =>
                 connection.dispatch({ action: "board.associate", boardId: b.id, lastOpened: b.opened }),
             )
-            const newFromServer = boardsFromServer.filter((b) => !localBoards.some((lb) => lb.id === b.id))
-            newFromServer.forEach(storeRecentBoardLocally)
+            storeRecentBoards(() => [...boardsFromServer, ...boardsOnlyFoundLocally])
         }
     })
 

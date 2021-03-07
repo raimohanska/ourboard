@@ -137,8 +137,9 @@ async function handleAppEvent(
                         })
                         return
                     }
-                    session.userInfo.email
+                    await accociateUserWithBoard(session.userInfo.userId, appEvent.boardId)
                 }
+
                 await addSessionToBoard(board, socket, appEvent.initAtSerial)
                 return
             case "board.associate":
@@ -181,6 +182,9 @@ async function handleAppEvent(
                     const userInfo = await setVerifiedUserForSession(appEvent, session)
                     console.log(`${appEvent.name} logged in`)
                     session.sendEvent({ action: "auth.login.response", success, userId })
+                    for (let board of session.boards) {
+                        await accociateUserWithBoard(userId, board.boardId)
+                    }
                     session.sendEvent({
                         action: "user.boards",
                         email: appEvent.email,

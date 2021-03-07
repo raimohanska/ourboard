@@ -4,7 +4,7 @@ import { exampleBoard, Id } from "../../../common/src/domain"
 import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components"
 import { canLogin, Dispatch, UserSessionState } from "../store/user-session-store"
-
+import _ from "lodash"
 import { signIn, signOut } from "../google-auth"
 import { RecentBoards } from "../store/recent-boards"
 
@@ -64,7 +64,11 @@ const RecentBoardsView = ({
     recentBoards: RecentBoards
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
-    const boardsToShow = L.view(recentBoards.recentboards, (bs) => bs.slice(0, 15))
+    const boardsToShow = L.view(recentBoards.recentboards, (bs) =>
+        _.sortBy(bs, (b) => b.opened)
+            .reverse()
+            .slice(0, 15),
+    )
     return L.view(
         boardsToShow,
         (recent) => recent.length === 0,

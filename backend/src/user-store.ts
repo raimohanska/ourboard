@@ -14,11 +14,16 @@ export function getUserIdForEmail(email: string): Promise<string> {
     })
 }
 
-export async function accociateUserWithBoard(userId: string, boardId: Id, lastOpened: ISOTimeStamp) {
+export async function accociateUserWithBoard(
+    userId: string,
+    boardId: Id,
+    lastOpened: ISOTimeStamp = new Date().toISOString(),
+) {
     try {
         await inTransaction(async (client) => {
             await client.query(
-                "INSERT INTO user_board (user_id, board_id, last_opened) values ($1, $2, $3) ON CONFLICT DO NOTHING",
+                `INSERT INTO user_board (user_id, board_id, last_opened) values ($1, $2, $3) 
+                 ON CONFLICT (user_id, board_id) DO UPDATE SET last_opened=EXCLUDED.last_opened`,
                 [userId, boardId, lastOpened],
             )
         })
