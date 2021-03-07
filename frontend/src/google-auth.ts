@@ -36,7 +36,7 @@ export type GoogleAuthenticatedUser = {
 export async function start() {
     try {
         var discoveryUrl = "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
-        await gapi.client.init({
+        await gapi.auth2.init({
             apiKey: API_KEY,
             clientId: CLIENT_ID,
             discoveryDocs: [discoveryUrl],
@@ -53,6 +53,14 @@ export async function start() {
     }
 }
 
+export async function refreshUserInfo() {
+    const resp = await GoogleAuth.currentUser.get().reloadAuthResponse()
+    await updateSigninStatus()
+    const gu = googleUser.get()
+    //console.log("TOKEN", gu.status === "signed-in" && gu.token)
+    return gu
+}
+
 async function fetchUserInfo(): Promise<{ name: string; email: string }> {
     const { name, email } = (
         await gapi.client.request({
@@ -64,10 +72,10 @@ async function fetchUserInfo(): Promise<{ name: string; email: string }> {
 }
 
 async function updateSigninStatus() {
-    var user = GoogleAuth.currentUser.get()
-    var isAuthorized = user.hasGrantedScopes(SCOPE)
+    const user = GoogleAuth.currentUser.get()
+    const isAuthorized = user.hasGrantedScopes(SCOPE)
     if (isAuthorized) {
-        var token = user.getAuthResponse().id_token
+        let token = user.getAuthResponse().id_token
         const userInfo = { ...(await fetchUserInfo()), status: "signed-in" as const, token }
         console.log("Google sign-in successful")
         userInfoAtom.set(userInfo)

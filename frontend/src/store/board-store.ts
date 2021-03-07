@@ -109,7 +109,7 @@ export function BoardStore(connection: ServerConnection, sessionInfo: L.Property
             if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
                 console.log(`Access denied to board: login in progress`)
                 return { ...state, status: "denied-temporarily" }
-            } else if (loginStatus === "anonymous" || loginStatus === "logged-out") {
+            } else if (loginStatus === "anonymous" || loginStatus === "logged-out" || loginStatus === "login-failed") {
                 console.log(`Access denied to board: login required`)
                 return { ...state, status: "login-required" }
             } else if (event.reason === "unauthorized") {

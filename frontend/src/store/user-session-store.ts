@@ -1,10 +1,16 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { AppEvent, EventUserInfo, Id, UIEvent } from "../../../common/src/domain"
-import { GoogleAuthenticatedUser, GoogleAuthUserInfo, googleUser, signIn } from "../google-auth"
+import { GoogleAuthenticatedUser, GoogleAuthUserInfo, googleUser, signIn, refreshUserInfo } from "../google-auth"
 import { ServerConnection } from "./server-connection"
 
-export type UserSessionState = Anonymous | LoggingInLocal | LoggingInServer | LoggedIn | LoggedOut
+export type UserSessionState =
+    | Anonymous
+    | LoggingInLocal
+    | LoggingInServer
+    | LoggedIn
+    | LoggedOut
+    | LoginFailedDueToTechnicalProblem
 
 export type BaseSessionState = {
     sessionId: Id | null
@@ -17,6 +23,10 @@ export type Anonymous = BaseSessionState & {
 
 export type LoggedOut = BaseSessionState & {
     status: "logged-out"
+}
+
+export type LoginFailedDueToTechnicalProblem = BaseSessionState & {
+    status: "login-failed"
 }
 
 /**
@@ -33,6 +43,7 @@ export type LoggingInServer = BaseSessionState &
     GoogleAuthenticatedUser & {
         status: "logging-in-server"
         nickname: string
+        retries: number
     }
 
 export type LoggedIn = BaseSessionState &
@@ -53,9 +64,12 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
         event: AppEvent | GoogleAuthUserInfo | boolean,
     ): UserSessionState => {
         if (typeof event === "boolean") {
-            const newState = state.status === "logged-in" ? { ...state, status: "logging-in-server" as const } : state
+            // Connected = true, Disconnected = false
+            const newState =
+                state.status === "logged-in"
+                    ? { ...state, status: "logging-in-server" as const, retries: getRetries(state) + 1 }
+                    : state
             if (event === true) {
-                // connected
                 sendLoginAndNickname(newState)
             }
             return newState
@@ -67,7 +81,14 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
                 return { ...state, nickname }
             } else if (event.action === "auth.login.response") {
                 if (!event.success) {
-                    console.log("Login failure TODO send new token")
+                    const retries = getRetries(state)
+                    if (retries >= 2) {
+                        console.error("Login validation failed after retries, giving up.")
+                        return { status: "login-failed", nickname: state.nickname, sessionId: state.sessionId }
+                    } else {
+                        console.log("Server denied login - refreshing token...")
+                        refreshUserInfo()
+                    }
                 } else if (state.status === "logging-in-server") {
                     console.log("Successfully logged in")
                     return { ...state, status: "logged-in" }
@@ -103,9 +124,17 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
                     sessionId: state.sessionId,
                     nickname: googleUser.name,
                     ...googleUser,
+                    retries: getRetries(state) + 1,
                 })
             }
         }
+    }
+
+    function getRetries(state: UserSessionState): number {
+        if (state.status === "logging-in-server") {
+            return state.retries
+        }
+        return 0
     }
 
     function sendLoginAndNickname(state: UserSessionState) {
