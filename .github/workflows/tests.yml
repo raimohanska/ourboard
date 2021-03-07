@@ -47,9 +47,11 @@ jobs:
                   runTests: false
             - name: Run unit tests
               run: yarn test-unit
+            - name: Build
+              run: yarn build
             - name: Run cypress tests
               uses: cypress-io/github-action@v2
               with:
                   install: false
-                  start: yarn start:dev:no-db
+                  start: yarn start
                   wait-on: "http://localhost:1337"
