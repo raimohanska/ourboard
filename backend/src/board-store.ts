@@ -128,7 +128,7 @@ export async function getFullBoardHistory(id: Id, client: PoolClient): Promise<B
 }
 
 export async function getBoardHistory(id: Id, afterSerial: Serial): Promise<BoardHistoryEntry[]> {
-    return withDBClient(async (client) => {
+    return await withDBClient(async (client) => {
         const historyEventsIncludingLatest = (
             await client.query(
                 `SELECT events FROM board_event WHERE board_id=$1 AND last_serial >= $2 ORDER BY last_serial`,

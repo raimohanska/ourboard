@@ -42,7 +42,7 @@ export async function withDBClient<T>(f: (client: PoolClient) => Promise<T>): Pr
     const client = await connectionPool.connect()
     try {
         await client.query("BEGIN;SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;")
-        return f(client)
+        return await f(client)
     } finally {
         await client.query("ROLLBACK;")
         client.release()
