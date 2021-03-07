@@ -314,6 +314,7 @@ const BoardViewMessage = ({
     boardAccessStatus: L.Property<BoardAccessStatus>
     sessionState: L.Property<UserSessionState>
 }) => {
+    // TODO: login may be disabled due to Incognito mode or other reasons
     return L.view(boardAccessStatus, (s) => {
         if (s === "denied-permanently") {
             return (
