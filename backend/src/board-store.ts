@@ -31,9 +31,9 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
             let initialBoard: Board
             if (snapshot.serial) {
                 try {
-                    console.log("Loading history for board with snapshot at serial " + snapshot.serial);
+                    console.log("Loading history for board with snapshot at serial " + snapshot.serial)
                     history = await getBoardHistory(id, snapshot.serial)
-                    console.log("Got history for board with snapshot at serial " + snapshot.serial);
+                    console.log("Got history for board with snapshot at serial " + snapshot.serial)
                     //console.log( `Fetching partial history for board ${id}, starting at serial ${snapshot.serial}, consisting of ${history.length} events`, )
                     initialBoard = snapshot
                 } catch (e) {
