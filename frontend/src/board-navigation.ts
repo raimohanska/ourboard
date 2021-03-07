@@ -28,6 +28,9 @@ export function BoardNavigation(connection: ServerConnection, bs: BoardStore) {
     })
     // React to board id changes from server (when creating new board at least)
     boardIdChanges.forEach((id) => {
+        // Switch socket per board. This terminates the unnecessary board session on server.
+        // Also, is preparation for load balancing solution.
+        connection.newSocket()
         if (id) bs.joinBoard(id)
         adjustURL(id)
     })

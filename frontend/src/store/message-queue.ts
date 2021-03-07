@@ -12,7 +12,7 @@ type Sender = {
     send: (...args: any[]) => any
 }
 
-export default function (socket: Sender) {
+export default function (socket: Sender | null) {
     const state = L.atom<QueueState>({
         queue: [],
         sent: [],
@@ -22,7 +22,7 @@ export default function (socket: Sender) {
         state.modify((s) => {
             if (s.sent.length > 0 || s.queue.length === 0) return s
             //console.log("Sending", s.queue)
-            socket.send("app-events", s.queue, ack)
+            socket!.send("app-events", s.queue, ack)
             return {
                 queue: [],
                 sent: s.queue,
@@ -53,5 +53,8 @@ export default function (socket: Sender) {
         enqueue,
         onConnect,
         queueSize: queueSize,
+        setSocket(newSocket: Sender) {
+            socket = newSocket
+        },
     }
 }

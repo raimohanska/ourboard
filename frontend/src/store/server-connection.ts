@@ -12,7 +12,6 @@ const SERVER_EVENTS_BUFFERING_MILLIS = 20
 export type ServerConnection = ReturnType<typeof serverConnection>
 
 export function serverConnection() {
-    const socket = io()
     const uiEvents = L.bus<UIEvent>()
     const dispatch: Dispatch = uiEvents.push
     const serverEvents = L.bus<EventFromServer>()
@@ -24,22 +23,38 @@ export function serverConnection() {
             )
         }, globalScope),
     )
-    const messageQueue = MessageQueue(socket)
+
     const connected = L.atom(false)
-    socket.on("connect", () => {
-        console.log("Socket connected")
-        messageQueue.onConnect()
-        connected.set(true)
-    })
-    socket.on("disconnect", () => {
-        console.log("Socket disconnected")
-        connected.set(false)
-    })
-    socket.on("message", function (kind: string, event: EventFromServer) {
-        if (kind === "app-event") {
-            serverEvents.push(event)
-        }
-    })
+    const messageQueue = MessageQueue(null)
+
+    function initSocket() {
+        const socket = io()
+        messageQueue.setSocket(socket)
+
+        socket.on("connect", () => {
+            console.log("Socket connected")
+            messageQueue.onConnect()
+            connected.set(true)
+        })
+        socket.on("disconnect", () => {
+            console.log("Socket disconnected")
+            connected.set(false)
+        })
+        socket.on("message", function (kind: string, event: EventFromServer) {
+            if (kind === "app-event") {
+                serverEvents.push(event)
+            }
+        })
+        return socket
+    }
+
+    let socket = initSocket()
+
+    function newSocket() {
+        console.log("New socket")
+        socket.disconnect()
+        socket = initSocket()
+    }
     uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach(messageQueue.enqueue)
 
     // uiEvents.log("UI")
@@ -55,5 +70,6 @@ export function serverConnection() {
         connected,
         events,
         queueSize: messageQueue.queueSize,
+        newSocket,
     }
 }
