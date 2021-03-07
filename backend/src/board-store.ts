@@ -31,7 +31,9 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
             let initialBoard: Board
             if (snapshot.serial) {
                 try {
+                    console.log("Loading history for board with snapshot at serial " + snapshot.serial);
                     history = await getBoardHistory(id, snapshot.serial)
+                    console.log("Got history for board with snapshot at serial " + snapshot.serial);
                     //console.log( `Fetching partial history for board ${id}, starting at serial ${snapshot.serial}, consisting of ${history.length} events`, )
                     initialBoard = snapshot
                 } catch (e) {
@@ -50,11 +52,13 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
             const board = history.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
             const serial = (history.length > 0 ? history[history.length - 1].serial : snapshot.serial) || 0
             if (history.length > 1000 || serial == 1 || !snapshot.serial /* rebooted */) {
+                console.log(`Saving snapshot history ${history.length} serial ${serial}/${snapshot.serial}`)
                 await saveBoardSnapshot(mkSnapshot(board, serial), client)
             }
             const accessTokens = (
                 await client.query("SELECT token FROM board_api_token WHERE board_id=$1", [id])
             ).rows.map((row) => row.token)
+            console.log(`Board loaded`)
             return { board: { ...board, serial }, accessTokens }
         }
     })

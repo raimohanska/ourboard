@@ -132,7 +132,10 @@ export async function addSessionToBoard(
 
             // 3. Fetch events from DB
             // IMPORTANT NOTE: this is the only await here and must remain so, as the logic here depends on everything else being synchronous.
+            console.log(`Loading board history for board ${boardState.board.id} session at serial ${initAtSerial}`)
+            
             const dbEvents = await getBoardHistory(boardState.board.id, initAtSerial)
+            console.log(`Got board history for board ${boardState.board.id} session at serial ${initAtSerial}`)
 
             //console.log(`Got history from DB: ${describeRange(dbEvents)} and in-memory: ${describeRange(inMemoryEvents)}`)
             // 4. Verify that all this makes for a consistent timeline
