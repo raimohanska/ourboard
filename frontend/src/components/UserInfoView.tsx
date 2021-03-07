@@ -6,7 +6,13 @@ import { signIn, signOut } from "../google-auth"
 
 export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessionState>; dispatch: Dispatch }) => {
     return (
-        <span className={L.view(state, s => s.status, s => `user-info ${s}`)}>
+        <span
+            className={L.view(
+                state,
+                (s) => s.status,
+                (s) => `user-info ${s}`,
+            )}
+        >
             {L.view(state, (user) => {
                 switch (user.status) {
                     case "logging-in-server":
@@ -23,11 +29,11 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                         return (
                             <span>
                                 <NicknameEditor {...{ state, dispatch }} />
-                                {
-                                    canLogin(user) && <a className="login" onClick={signIn}>
+                                {canLogin(user) && (
+                                    <a className="login" onClick={signIn}>
                                         Sign in
                                     </a>
-                                }
+                                )}
                             </span>
                         )
                 }

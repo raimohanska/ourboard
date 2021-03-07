@@ -125,7 +125,7 @@ a {
 
 .disabled-interaction {
     opacity: 0.3;
-    pointer-events: none;    
+    pointer-events: none;
 }
 
 #root.board-container {
@@ -298,7 +298,8 @@ a {
                 margin-left: 0.5em;
                 font-size: 0.6em;
             }
-            &.logging-in-local, &.logging-in-server {
+            &.logging-in-local,
+            &.logging-in-server {
                 @extend .disabled-interaction;
             }
         }

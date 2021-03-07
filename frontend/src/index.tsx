@@ -49,7 +49,9 @@ const App = () => {
                     />
                 ) : null
             ) : (
-                <DashboardView {...{ dispatch: connection.dispatch, sessionState: userStore.sessionState, navigateToBoard }} />
+                <DashboardView
+                    {...{ dispatch: connection.dispatch, sessionState: userStore.sessionState, navigateToBoard }}
+                />
             ),
     )
 }

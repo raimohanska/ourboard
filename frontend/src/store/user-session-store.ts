@@ -18,7 +18,7 @@ export type BaseSessionState = {
 }
 
 export type Anonymous = BaseSessionState & {
-    status: "anonymous",
+    status: "anonymous"
     loginSupported: boolean
 }
 
@@ -107,7 +107,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                     status: "anonymous",
                     nickname: state.nickname,
                     sessionId: state.sessionId,
-                    loginSupported: false
+                    loginSupported: false,
                 }
             } else if (event.status === "signed-out") {
                 if (state.status === "logging-in-server" || state.status == "logged-in") {

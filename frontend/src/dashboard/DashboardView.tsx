@@ -27,12 +27,12 @@ export const DashboardView = ({
             </p>
             <RecentBoards {...{ navigateToBoard }} />
             <CreateBoard {...{ dispatch, navigateToBoard }} />
-            <GoogleLoginArea {...{sessionState}} />
+            <GoogleLoginArea {...{ sessionState }} />
         </div>
     )
 }
 
-const GoogleLoginArea = ({sessionState}: {sessionState: L.Property<UserSessionState>}) => {
+const GoogleLoginArea = ({ sessionState }: { sessionState: L.Property<UserSessionState> }) => {
     return (
         <div className="user-auth">
             {L.view(sessionState, (user) => {
