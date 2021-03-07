@@ -249,7 +249,7 @@ export function BoardStore(connection: ServerConnection, sessionInfo: L.Property
         connection.dispatch({
             action: "board.join",
             boardId,
-            initAtSerial: 10000,
+            initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
         })
     }
 
