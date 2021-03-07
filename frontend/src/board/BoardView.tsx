@@ -5,7 +5,7 @@ import _ from "lodash"
 import { boardCoordinateHelper } from "./board-coordinates"
 import { Id, Image, Item, newNote, newSimilarNote, Note, UserCursorPosition } from "../../../common/src/domain"
 import { ItemView } from "./ItemView"
-import { Dispatch } from "../store/user-session-store"
+import { Dispatch, UserSessionState } from "../store/user-session-store"
 import { ContextMenuView } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView"
 import { CursorsView } from "./CursorsView"
@@ -30,9 +30,8 @@ import { onClickOutside } from "../components/onClickOutside"
 import { itemSelectAllHandler } from "./item-select-all"
 import { localStorageAtom } from "./local-storage-atom"
 import { isFirefox } from "../components/browser"
-import { BoardAppState } from ".."
 import { itemCreateHandler } from "./item-create"
-import { BoardAccessStatus } from "../store/board-store"
+import { BoardAccessStatus, BoardState } from "../store/board-store"
 import { signIn, signInWithDifferentAccount } from "../google-auth"
 
 export type ControlMode = "mouse" | "trackpad"
@@ -44,23 +43,25 @@ export type ControlSettings = {
 export const BoardView = ({
     boardId,
     cursors,
-    state,
+    boardState,
+    sessionState,
     assets,
     dispatch,
     navigateToBoard,
 }: {
     boardId: string
     cursors: L.Property<UserCursorPosition[]>
-    state: L.Property<BoardAppState>
+    boardState: L.Property<BoardState>
+    sessionState: L.Property<UserSessionState>
     assets: AssetStore
     dispatch: Dispatch
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
-    const board = L.view(state, (s) => s.board!)
-    const history = L.view(state, "history")
-    const locks = L.view(state, (s) => s.locks)
-    const sessionId = L.view(state, (s) => s.sessionId)
-    const sessions = L.view(state, (s) => s.users)
+    const board = L.view(boardState, (s) => s.board!)
+    const history = L.view(boardState, "history")
+    const locks = L.view(boardState, (s) => s.locks)
+    const sessionId = L.view(sessionState, (s) => s.sessionId)
+    const sessions = L.view(boardState, (s) => s.users)
     const zoom = L.atom(1)
     const style = L.combineTemplate({
         fontSize: L.view(zoom, (z) => z + "em"),
@@ -164,14 +165,15 @@ export const BoardView = ({
         doOnUnmount.forEach((fn) => fn())
     })
 
-    const boardAccessStatus = L.view(state, (s) => s.status)
+    const boardAccessStatus = L.view(boardState, (s) => s.status)
 
     return (
         <div id="root" className={L.view(boardAccessStatus, (status) => `board-container ${status}`)}>
             <div className="scroll-container" ref={scrollElement.set}>
                 <BoardViewHeader
                     boardId={boardId}
-                    state={state}
+                    boardState={boardState}
+                    sessionState={sessionState}
                     dispatch={dispatch}
                     controlSettings={controlSettings}
                 />
@@ -209,11 +211,13 @@ export const BoardView = ({
     function BoardViewHeader({
         boardId,
         controlSettings,
-        state,
+        boardState,
+        sessionState,
         dispatch,
     }: {
         boardId: string
-        state: L.Property<BoardAppState>
+        boardState: L.Property<BoardState>
+        sessionState: L.Property<UserSessionState>
         controlSettings: L.Atom<ControlSettings>
         dispatch: Dispatch
     }) {
@@ -228,7 +232,7 @@ export const BoardView = ({
                 >
                     <span className="icon back" />
                 </a>
-                <BoardMenu boardId={boardId} state={state} dispatch={dispatch} />
+                <BoardMenu boardId={boardId} state={boardState} dispatch={dispatch} />
 
                 <div className="controls">
                     <span className="icon zoom_in" title="Zoom in" onClick={() => zoom.modify((z) => z * 1.1)}></span>
@@ -252,7 +256,7 @@ export const BoardView = ({
                     />
                 </div>
 
-                <UserInfoView state={state} dispatch={dispatch} />
+                <UserInfoView state={sessionState} dispatch={dispatch} />
             </header>
         )
     }

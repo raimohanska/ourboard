@@ -18,7 +18,8 @@ export type BaseSessionState = {
 }
 
 export type Anonymous = BaseSessionState & {
-    status: "anonymous"
+    status: "anonymous",
+    loginSupported: boolean
 }
 
 export type LoggedOut = BaseSessionState & {
@@ -52,11 +53,11 @@ export type LoggedIn = BaseSessionState &
         nickname: string
     }
 
-export type UserSessionStore = ReturnType<typeof userSessionStore>
+export type UserSessionStore = ReturnType<typeof UserSessionStore>
 
 export type Dispatch = (e: UIEvent) => void
 
-export function userSessionStore(connection: ServerConnection, localStorage: Storage) {
+export function UserSessionStore(connection: ServerConnection, localStorage: Storage) {
     const { events } = connection
 
     const eventsReducer = (
@@ -101,7 +102,14 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
                 return state
             }
         } else {
-            if (event.status === "signed-out" || event.status === "not-supported") {
+            if (event.status === "not-supported") {
+                return {
+                    status: "anonymous",
+                    nickname: state.nickname,
+                    sessionId: state.sessionId,
+                    loginSupported: false
+                }
+            } else if (event.status === "signed-out") {
                 if (state.status === "logging-in-server" || state.status == "logged-in") {
                     connection.messageQueue.enqueue({ action: "auth.logout" })
                 }
@@ -153,10 +161,11 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
     }
 
     const initialState: UserSessionState = {
-        status: googleUser.get().status === "in-progress" ? "logging-in-local" : "anonymous",
+        status: "logging-in-local",
         sessionId: null,
         nickname: localStorage.nickname || undefined,
     }
+
     const sessionState = L.merge(events, connection.connected.pipe(L.changes), googleUser.pipe(L.changes)).pipe(
         L.scan(initialState, eventsReducer, globalScope),
     )
@@ -175,4 +184,10 @@ export function userSessionStore(connection: ServerConnection, localStorage: Sto
         localStorage.nickname = nickname
         return nickname
     }
+}
+
+export function canLogin(state: UserSessionState): boolean {
+    if (state.status === "logged-out" || state.status === "login-failed") return true
+    if (state.status === "anonymous" && state.loginSupported) return true
+    return false
 }

@@ -3,18 +3,17 @@ import * as L from "lonna"
 import { exampleBoard, Id } from "../../../common/src/domain"
 import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components"
-import { Dispatch } from "../store/user-session-store"
+import { canLogin, Dispatch, UserSessionState } from "../store/user-session-store"
 import { getRecentBoards, removeRecentBoard } from "../store/recent-boards"
 
-import { signIn, signOut, googleUser } from "../google-auth"
-import { BoardAppState } from ".."
+import { signIn, signOut } from "../google-auth"
 
 export const DashboardView = ({
-    state,
+    sessionState,
     dispatch,
     navigateToBoard,
 }: {
-    state: L.Property<BoardAppState>
+    sessionState: L.Property<UserSessionState>
     dispatch: Dispatch
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
@@ -28,28 +27,28 @@ export const DashboardView = ({
             </p>
             <RecentBoards {...{ navigateToBoard }} />
             <CreateBoard {...{ dispatch, navigateToBoard }} />
-            <GoogleLoginArea />
+            <GoogleLoginArea {...{sessionState}} />
         </div>
     )
 }
 
-const GoogleLoginArea = () => {
+const GoogleLoginArea = ({sessionState}: {sessionState: L.Property<UserSessionState>}) => {
     return (
         <div className="user-auth">
-            {L.view(googleUser, (user) => {
+            {L.view(sessionState, (user) => {
                 switch (user.status) {
-                    case "signed-in":
+                    case "logged-in":
                         return (
                             <span>
                                 You're signed in as {user.name} <button onClick={signOut}>Sign out</button>
                             </span>
                         )
-                    case "in-progress":
-                        return ""
-                    case "signed-out":
-                        return <button onClick={signIn}>Sign in</button>
-                    case "not-supported":
-                        return null
+                    default:
+                        if (canLogin(user)) {
+                            return <button onClick={signIn}>Sign in</button>
+                        } else {
+                            return null
+                        }
                 }
             })}
         </div>

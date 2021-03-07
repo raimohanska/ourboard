@@ -1,18 +1,16 @@
-import { h, Fragment } from "harmaja"
+import { h } from "harmaja"
 import * as L from "lonna"
-import { Dispatch } from "../store/user-session-store"
+import { canLogin, Dispatch, UserSessionState } from "../store/user-session-store"
 import { EditableSpan } from "./EditableSpan"
-import { signIn, signOut, googleUser } from "../google-auth"
-import { BoardAppState } from ".."
+import { signIn, signOut } from "../google-auth"
 
-export const UserInfoView = ({ state, dispatch }: { state: L.Property<BoardAppState>; dispatch: Dispatch }) => {
+export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessionState>; dispatch: Dispatch }) => {
     return (
-        <span className="user-info">
-            {L.view(googleUser, (user) => {
+        <span className={L.view(state, s => s.status, s => `user-info ${s}`)}>
+            {L.view(state, (user) => {
                 switch (user.status) {
-                    case "in-progress":
-                        return ""
-                    case "signed-in":
+                    case "logging-in-server":
+                    case "logged-in":
                         return (
                             <span>
                                 {user.name}
@@ -21,19 +19,15 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<BoardAppSt
                                 </a>
                             </span>
                         )
-                    case "signed-out":
+                    default:
                         return (
                             <span>
                                 <NicknameEditor {...{ state, dispatch }} />
-                                <a className="login" onClick={signIn}>
-                                    Sign in
-                                </a>
-                            </span>
-                        )
-                    case "not-supported":
-                        return (
-                            <span>
-                                <NicknameEditor {...{ state, dispatch }} />
+                                {
+                                    canLogin(user) && <a className="login" onClick={signIn}>
+                                        Sign in
+                                    </a>
+                                }
                             </span>
                         )
                 }
@@ -42,7 +36,7 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<BoardAppSt
     )
 }
 
-const NicknameEditor = ({ state, dispatch }: { state: L.Property<BoardAppState>; dispatch: Dispatch }) => {
+const NicknameEditor = ({ state, dispatch }: { state: L.Property<UserSessionState>; dispatch: Dispatch }) => {
     const editingThis = L.atom(false)
 
     const nicknameAtom = L.atom(L.view(state, "nickname"), (nickname) => {

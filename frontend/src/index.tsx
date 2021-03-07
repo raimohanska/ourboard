@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { h } from "harmaja"
 
 import "./app.scss"
-import { BaseSessionState, UserSessionState, userSessionStore } from "./store/user-session-store"
+import { UserSessionStore } from "./store/user-session-store"
 import { BoardView } from "./board/BoardView"
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
@@ -13,11 +13,9 @@ import { BoardState, BoardStore } from "./store/board-store"
 import _ from "lodash"
 import { BoardNavigation } from "./board-navigation"
 
-export type BoardAppState = BoardState & BaseSessionState
-
 const App = () => {
     const connection = serverConnection()
-    const userStore = userSessionStore(connection, localStorage)
+    const userStore = UserSessionStore(connection, localStorage)
     const boardStore = BoardStore(connection, userStore.sessionState)
     const { boardId, navigateToBoard } = BoardNavigation(connection, boardStore)
 
@@ -32,8 +30,6 @@ const App = () => {
         )
         .forEach(storeRecentBoard)
 
-    const state = L.view(userStore.sessionState, boardStore.state, (s, bs) => ({ ...s, ...bs }))
-
     return L.view(
         boardId,
         L.view(boardStore.state, (s) => s.board !== undefined),
@@ -45,14 +41,15 @@ const App = () => {
                             boardId,
                             cursors: L.view(boardStore.state, "cursors"),
                             assets,
-                            state,
+                            boardState: boardStore.state,
+                            sessionState: userStore.sessionState,
                             dispatch: connection.dispatch,
                             navigateToBoard,
                         }}
                     />
                 ) : null
             ) : (
-                <DashboardView {...{ dispatch: connection.dispatch, state, navigateToBoard }} />
+                <DashboardView {...{ dispatch: connection.dispatch, sessionState: userStore.sessionState, navigateToBoard }} />
             ),
     )
 }

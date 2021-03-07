@@ -23,8 +23,7 @@ import {
     UserCursorPosition,
     UserSessionInfo,
 } from "../../../common/src/domain"
-import { googleUser } from "../google-auth"
-import { getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
+import { getInitialBoardState, storeBoardState } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { UserSessionState } from "./user-session-store"
 
@@ -105,7 +104,6 @@ export function BoardStore(connection: ServerConnection, sessionInfo: L.Property
             if (state.status !== "loading") {
                 console.error(`Got board.join.denied while in status ${state.status}`)
             }
-
             if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
                 console.log(`Access denied to board: login in progress`)
                 return { ...state, status: "denied-temporarily" }
