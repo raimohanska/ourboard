@@ -81,6 +81,7 @@ const RecentBoardsView = ({
                     <ul>
                         <ListView
                             observable={boardsToShow}
+                            getKey={(b) => b.id}
                             renderItem={(b) => (
                                 <li>
                                     <a
