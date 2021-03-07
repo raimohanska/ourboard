@@ -44,7 +44,15 @@ export type BoardStub = Pick<Board, "id" | "name">
 export type EventUserInfo =
     | { nickname: string; userType: "unidentified" }
     | { nickname: string; userType: "system" }
-    | { nickname: string; userType: "authenticated"; name: string; email: string }
+    | EventUserInfoAuthenticated
+
+export type EventUserInfoAuthenticated = {
+    nickname: string
+    userType: "authenticated"
+    name: string
+    email: string
+    userId: string
+}
 
 export type UserSessionInfo = EventUserInfo & {
     sessionId: Id
@@ -97,6 +105,10 @@ export type TextItem = Note | Text | Container
 export type ColoredItem = Item & { color: Color }
 export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id>
+
+export type RecentBoardAttributes = { id: Id; name: string }
+export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEmail: string | null }
+
 export type BoardEvent = { boardId: Id }
 // TODO: Undo, Redo at least shouldn't be EventFromServer!
 export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
@@ -120,6 +132,7 @@ export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
 export type BoardStateSyncEvent =
     | BoardInit
     | BoardSerialAck
+    | RecentBoardsFromServer
     | GotBoardLocks
     | CursorPositions
     | JoinedBoard
@@ -133,13 +146,16 @@ export type ClientToServerRequest =
     | LockItem
     | UnlockItem
     | JoinBoard
+    | AssociateBoard
     | SetNickname
     | AssetPutUrlRequest
     | AssetPutUrlResponse
     | AuthLogin
     | AuthLogout
 
-export type LoginResponse = { action: "auth.login.response"; success: boolean }
+export type LoginResponse =
+    | { action: "auth.login.response"; success: false }
+    | { action: "auth.login.response"; success: true; userId: string }
 export type AuthLogin = { action: "auth.login"; name: string; email: string; token: string }
 export type AuthLogout = { action: "auth.logout" }
 export type AddItem = { action: "item.add"; boardId: Id; items: Item[] }
@@ -159,8 +175,10 @@ export type UnlockItem = { action: "item.unlock"; boardId: Id; itemId: Id }
 export type GotBoardLocks = { action: "board.locks"; boardId: Id; locks: ItemLocks }
 export type AddBoard = { action: "board.add"; payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Serial }
+export type AssociateBoard = { action: "board.associate"; boardId: Id; lastOpened: ISOTimeStamp }
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
 export type DeniedJoinBoard = { action: "board.join.denied"; boardId: Id; reason: "unauthorized" | "forbidden" }
+export type RecentBoardsFromServer = { action: "user.boards"; email: string; boards: RecentBoard[] }
 export type BoardSerialAck = { action: "board.serial.ack"; boardId: Id; serial: Serial }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
 export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo

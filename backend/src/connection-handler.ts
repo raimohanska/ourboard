@@ -25,6 +25,7 @@ import {
 import { obtainLock, releaseLocksFor } from "./locker"
 import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
 import { updateBoard } from "./board-store"
+import { accociateUserWithBoard, getUserAssociatedBoards, getUserIdForEmail } from "./user-store"
 
 export type ConnectionHandlerParams = Readonly<{
     getSignedPutUrl: (key: string) => string
@@ -96,7 +97,6 @@ async function handleAppEvent(
                     broadcastBoardEvent(historyEntry, session)
                     if (appEvent.action === "board.rename") {
                         // special case: keeping name up to date as it's in a separate column
-                        console.log("RENAME", appEvent.boardId, appEvent.name)
                         await updateBoard({ boardId: appEvent.boardId, name: appEvent.name })
                     }
                     return { boardId, serial }
@@ -141,6 +141,17 @@ async function handleAppEvent(
                 }
                 await addSessionToBoard(board, socket, appEvent.initAtSerial)
                 return
+            case "board.associate":
+                // TODO: maybe access check? Not security-wise necessary
+
+                const session = getSession(socket)
+                if (session.userInfo.userType !== "authenticated") {
+                    console.warn("Trying to associate board without authenticated user")
+                    return
+                }
+                const userId = session.userInfo.userId
+                await accociateUserWithBoard(userId, appEvent.boardId, appEvent.lastOpened)
+                return
             case "board.add": {
                 const { payload } = appEvent
                 const board = !isFullyFormedBoard(payload)
@@ -164,11 +175,20 @@ async function handleAppEvent(
             }
             case "auth.login": {
                 const success = await verifyGoogleTokenAndUserInfo(appEvent)
+                const userId = await getUserIdForEmail(appEvent.email)
+                const session = getSession(socket)
                 if (success) {
-                    setVerifiedUserForSession(appEvent, socket)
+                    const userInfo = await setVerifiedUserForSession(appEvent, session)
                     console.log(`${appEvent.name} logged in`)
+                    session.sendEvent({ action: "auth.login.response", success, userId })
+                    session.sendEvent({
+                        action: "user.boards",
+                        email: appEvent.email,
+                        boards: await getUserAssociatedBoards(userInfo),
+                    })
+                } else {
+                    session.sendEvent({ action: "auth.login.response", success })
                 }
-                socket.send("app-event", { action: "auth.login.response", success } as AppEvent)
                 return
             }
             case "auth.logout": {

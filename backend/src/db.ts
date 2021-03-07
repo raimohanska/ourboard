@@ -23,6 +23,9 @@ export async function initDB() {
             ALTER TABLE board_event ALTER COLUMN last_serial SET NOT NULL;
             ALTER TABLE board_event ALTER COLUMN board_id SET NOT NULL;
             CREATE TABLE IF NOT EXISTS board_api_token (board_id text REFERENCES board(id), token TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS app_user (id text PRIMARY KEY, email text NOT NULL);
+            CREATE TABLE IF NOT EXISTS user_board (user_id text REFERENCES app_user(id), board_id text REFERENCES board(id), last_opened TIMESTAMP NOT NULL, PRIMARY KEY (user_id, board_id));
+
         `)
     })
 

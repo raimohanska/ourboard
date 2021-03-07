@@ -7,11 +7,12 @@ import { UserSessionStore } from "./store/user-session-store"
 import { BoardView } from "./board/BoardView"
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
-import { RecentBoardAttributes, RecentBoards } from "./store/recent-boards"
+import { RecentBoards } from "./store/recent-boards"
 import { serverConnection } from "./store/server-connection"
 import { BoardState, BoardStore } from "./store/board-store"
 import _ from "lodash"
 import { BoardNavigation } from "./board-navigation"
+import { RecentBoardAttributes } from "../../common/src/domain"
 
 const App = () => {
     const connection = serverConnection()

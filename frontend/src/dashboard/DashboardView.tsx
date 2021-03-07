@@ -64,7 +64,7 @@ const RecentBoardsView = ({
     recentBoards: RecentBoards
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
-    const boardsToShow = L.view(recentBoards.getRecentBoards(), (bs) => bs.slice(0, 15))
+    const boardsToShow = L.view(recentBoards.recentboards, (bs) => bs.slice(0, 15))
     return L.view(
         boardsToShow,
         (recent) => recent.length === 0,

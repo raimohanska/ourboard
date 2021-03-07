@@ -9,17 +9,17 @@ import {
     getItemIds,
     getItemText,
     EventUserInfo,
+    ISOTimeStamp,
 } from "../../../common/src/domain"
 import prettyMs from "pretty-ms"
 import _ from "lodash"
-import { ISODate } from "../store/recent-boards"
 import { boardReducer } from "../../../common/src/board-reducer"
 import { getItem } from "../../../common/src/domain"
-import { BoardFocus, getSelectedIds, getSelectedItems } from "./board-focus"
+import { BoardFocus, getSelectedIds } from "./board-focus"
 import { Checkbox } from "../components/components"
 
 type ParsedHistoryEntry = {
-    timestamp: ISODate
+    timestamp: ISOTimeStamp
     itemIds: Id[]
     user: EventUserInfo
     kind: "added" | "moved into" | "renamed" | "deleted" | "changed"
@@ -81,7 +81,7 @@ export const HistoryView = ({
         )
     }
 
-    function renderTimestamp(timestamp: ISODate) {
+    function renderTimestamp(timestamp: ISOTimeStamp) {
         const diff = new Date().getTime() - new Date(timestamp).getTime()
         if (diff < 1000) return "just now"
         return prettyMs(diff, { compact: true }) + " ago"

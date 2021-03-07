@@ -20,11 +20,13 @@ import {
     PersistableBoardItemEvent,
     isPersistableBoardItemEvent,
     isBoardHistoryEntry,
+    EventUserInfoAuthenticated,
 } from "../../common/src/domain"
 import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory, verifyContinuity } from "./board-store"
 import { randomProfession } from "./professions"
 import { sleep } from "./sleep"
+import { getUserIdForEmail } from "./user-store"
 type UserSession = {
     readonly sessionId: Id
     readonly boards: UserSessionBoardEntry[]
@@ -186,17 +188,17 @@ export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
         })
 }
 
-export function setVerifiedUserForSession(event: AuthLogin, origin: IO.Socket) {
-    const session = Object.values(sessions).find((s) => s.sessionId === origin.id)
-    if (!session) {
-        console.warn("Session not found for socket " + origin.id)
-    } else {
-        session.userInfo = { userType: "authenticated", nickname: event.name, name: event.name, email: event.email }
-        for (const boardId of session.boards.map((b) => b.boardId)) {
-            // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
-            everyoneElseOnTheSameBoard(boardId, session).forEach((s) => s.sendEvent({ ...event, token: "********" }))
-        }
+export async function setVerifiedUserForSession(
+    event: AuthLogin,
+    session: UserSession,
+): Promise<EventUserInfoAuthenticated> {
+    const userId = await getUserIdForEmail(event.email)
+    session.userInfo = { userType: "authenticated", nickname: event.name, name: event.name, email: event.email, userId }
+    for (const boardId of session.boards.map((b) => b.boardId)) {
+        // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
+        everyoneElseOnTheSameBoard(boardId, session).forEach((s) => s.sendEvent({ ...event, token: "********" }))
     }
+    return session.userInfo
 }
 
 export function logoutUser(event: AuthLogout, origin: IO.Socket) {

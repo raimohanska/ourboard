@@ -279,6 +279,7 @@ function sessionState2UserInfo(state: UserSessionState): EventUserInfo {
             email: state.email,
             nickname: state.nickname,
             name: state.name,
+            userId: state.userId,
         }
     } else {
         return {

@@ -51,6 +51,7 @@ export type LoggedIn = BaseSessionState &
     GoogleAuthenticatedUser & {
         status: "logged-in"
         nickname: string
+        userId: string
     }
 
 export type UserSessionStore = ReturnType<typeof UserSessionStore>
@@ -92,7 +93,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                     }
                 } else if (state.status === "logging-in-server") {
                     console.log("Successfully logged in")
-                    return { ...state, status: "logged-in" }
+                    return { ...state, status: "logged-in", userId: event.userId }
                 } else {
                     console.warn(`Login response in unexpected state ${state.status}`)
                 }
@@ -190,4 +191,12 @@ export function canLogin(state: UserSessionState): boolean {
     if (state.status === "logged-out" || state.status === "login-failed") return true
     if (state.status === "anonymous" && state.loginSupported) return true
     return false
+}
+
+export function getAuthenticatedUser(state: UserSessionState): GoogleAuthenticatedUser | null {
+    if (state.status === "logged-in" || state.status === "logging-in-server") {
+        return state
+    } else {
+        return null
+    }
 }
