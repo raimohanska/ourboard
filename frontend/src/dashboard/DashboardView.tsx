@@ -4,16 +4,18 @@ import { exampleBoard, Id } from "../../../common/src/domain"
 import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components"
 import { canLogin, Dispatch, UserSessionState } from "../store/user-session-store"
-import { getRecentBoards, removeRecentBoard } from "../store/recent-boards"
 
 import { signIn, signOut } from "../google-auth"
+import { RecentBoards } from "../store/recent-boards"
 
 export const DashboardView = ({
     sessionState,
     dispatch,
     navigateToBoard,
+    recentBoards,
 }: {
     sessionState: L.Property<UserSessionState>
+    recentBoards: RecentBoards
     dispatch: Dispatch
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
@@ -25,7 +27,7 @@ export const DashboardView = ({
             <p>
                 Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
             </p>
-            <RecentBoards {...{ navigateToBoard }} />
+            <RecentBoardsView {...{ recentBoards, navigateToBoard }} />
             <CreateBoard {...{ dispatch, navigateToBoard }} />
             <GoogleLoginArea {...{ sessionState }} />
         </div>
@@ -55,10 +57,16 @@ const GoogleLoginArea = ({ sessionState }: { sessionState: L.Property<UserSessio
     )
 }
 
-const RecentBoards = ({ navigateToBoard }: { navigateToBoard: (boardId: Id | undefined) => void }) => {
-    const recentBoardsAtom = L.view(getRecentBoards(), (bs) => bs.slice(0, 10))
+const RecentBoardsView = ({
+    recentBoards,
+    navigateToBoard,
+}: {
+    recentBoards: RecentBoards
+    navigateToBoard: (boardId: Id | undefined) => void
+}) => {
+    const boardsToShow = L.view(recentBoards.getRecentBoards(), (bs) => bs.slice(0, 15))
     return L.view(
-        recentBoardsAtom,
+        boardsToShow,
         (recent) => recent.length === 0,
         (empty) =>
             empty ? (
@@ -68,7 +76,7 @@ const RecentBoards = ({ navigateToBoard }: { navigateToBoard: (boardId: Id | und
                     <h2>Recent boards</h2>
                     <ul>
                         <ListView
-                            observable={recentBoardsAtom}
+                            observable={boardsToShow}
                             renderItem={(b) => (
                                 <li>
                                     <a
@@ -80,7 +88,7 @@ const RecentBoards = ({ navigateToBoard }: { navigateToBoard: (boardId: Id | und
                                     >
                                         {b.name}
                                     </a>
-                                    <a className="remove" onClick={() => removeRecentBoard(b)}>
+                                    <a className="remove" onClick={() => recentBoards.removeRecentBoard(b)}>
                                         remove
                                     </a>
                                 </li>

@@ -7,7 +7,7 @@ import { UserSessionStore } from "./store/user-session-store"
 import { BoardView } from "./board/BoardView"
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
-import { RecentBoardAttributes, storeRecentBoard } from "./store/recent-boards"
+import { RecentBoardAttributes, RecentBoards } from "./store/recent-boards"
 import { serverConnection } from "./store/server-connection"
 import { BoardState, BoardStore } from "./store/board-store"
 import _ from "lodash"
@@ -15,10 +15,10 @@ import { BoardNavigation } from "./board-navigation"
 
 const App = () => {
     const connection = serverConnection()
-    const userStore = UserSessionStore(connection, localStorage)
-    const boardStore = BoardStore(connection, userStore.sessionState)
+    const sessionStore = UserSessionStore(connection, localStorage)
+    const boardStore = BoardStore(connection, sessionStore.sessionState)
     const { boardId, navigateToBoard } = BoardNavigation(connection, boardStore)
-
+    const recentBoards = RecentBoards(connection, sessionStore)
     const assets = assetStore(connection, L.view(boardStore.state, "board"), connection.events)
 
     boardStore.state
@@ -28,7 +28,7 @@ const App = () => {
             L.map((s: BoardState) => ({ id: s.board!.id, name: s.board!.name } as RecentBoardAttributes)),
             L.skipDuplicates(_.isEqual),
         )
-        .forEach(storeRecentBoard)
+        .forEach(recentBoards.storeRecentBoard)
 
     return L.view(
         boardId,
@@ -42,7 +42,7 @@ const App = () => {
                             cursors: L.view(boardStore.state, "cursors"),
                             assets,
                             boardState: boardStore.state,
-                            sessionState: userStore.sessionState,
+                            sessionState: sessionStore.sessionState,
                             dispatch: connection.dispatch,
                             navigateToBoard,
                         }}
@@ -50,7 +50,12 @@ const App = () => {
                 ) : null
             ) : (
                 <DashboardView
-                    {...{ dispatch: connection.dispatch, sessionState: userStore.sessionState, navigateToBoard }}
+                    {...{
+                        dispatch: connection.dispatch,
+                        sessionState: sessionStore.sessionState,
+                        recentBoards,
+                        navigateToBoard,
+                    }}
                 />
             ),
     )
