@@ -387,9 +387,8 @@ const configureServer = () => {
 let http: Http.Server | null = null
 
 async function shutdown() {
-    console.log("Shutdown initiated. Closing HTTP socket...")
+    console.log("Shutdown initiated. Closing sockets.")
     if (http) http.close()
-    console.log("Shutdown in progress. Terminating all Socket.IO sockets...")
     terminateSessions()
     console.log("Shutdown in progress. Waiting for all changes to be saved...")
     await waitUntilChangesSaved()
@@ -398,7 +397,7 @@ async function shutdown() {
 }
 
 process.on("SIGTERM", () => {
-    console.log("Received SIGTERM. Initiating shutdown")
+    console.log("Received SIGTERM. Initiating shutdown.")
     shutdown()
 })
 
