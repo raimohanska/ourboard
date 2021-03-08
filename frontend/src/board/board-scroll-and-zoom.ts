@@ -70,7 +70,7 @@ export function boardScrollAndZoomHandler(
                 event.preventDefault()
                 const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
                 const step = 1.1
-                zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.15, 10))
+                zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 10))
                 coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
             } else {
                 // If the user seems to be using a trackpad, and they haven't manually configured their control mode yet,
