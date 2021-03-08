@@ -124,7 +124,7 @@ export const BoardView = ({
 
     onClickOutside(boardElement, () => focus.set({ status: "none" }))
 
-    const { viewRect } = boardScrollAndZoomHandler(boardElement, scrollElement, zoom, coordinateHelper, controlSettings)
+    const { viewRect } = boardScrollAndZoomHandler(board, boardElement, scrollElement, zoom, coordinateHelper, controlSettings)
 
     function onClick(e: JSX.MouseEvent) {
         if (e.target === boardElement.get()) {

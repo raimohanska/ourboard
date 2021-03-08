@@ -5,45 +5,50 @@ import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import * as G from "./geometry"
 import { ControlSettings } from "./BoardView"
+import { Board } from "../../../common/src/domain"
 
 export function boardScrollAndZoomHandler(
+    board: L.Property<Board>,
     boardElement: L.Property<HTMLElement | null>,
     scrollElement: L.Property<HTMLElement | null>,
     zoom: L.Atom<number>,
     coordinateHelper: BoardCoordinateHelper,
     controlSettings: L.Atom<ControlSettings>,
 ) {
-    const scrollEvent = scrollElement.pipe(
+    const scrollPos = scrollElement.pipe(
         L.changes,
-        L.flatMapLatest((el) => L.fromEvent(el, "scroll"), componentScope()),
+        L.filter((el: any) => !!el),
+        L.flatMapLatest((el: HTMLElement) => L.fromEvent(el, "scroll").pipe(L.map(() => ({x: el.scrollLeft, y: el.scrollTop }))), componentScope()),
+        L.toProperty({x: 0, y: 0} as {x: number, y: number}, componentScope())
     )
 
-    scrollElement.forEach((elem) => {
-        if (elem) {
-            if (localStorage.scrollAndZoom) {
-                const parsed = JSON.parse(localStorage.scrollAndZoom)
+    const scrollAndZoom = L.combine(scrollPos, zoom, (s, zoom) => ({ ...s, zoom }))
+
+    const localStorageKey = L.view(board, b => b.id, id => "scrollAndZoom." + id)
+
+    L.view(scrollElement, localStorageKey, (el, key) => ({el, key})).pipe(L.applyScope(componentScope())).forEach(({ el, key }) => {
+        if (el) {
+            const storedScrollAndZoom = localStorage[key]
+            if (storedScrollAndZoom) {
+                //console.log("Init position for board", key)
+                const parsed = JSON.parse(storedScrollAndZoom)
                 setTimeout(() => {
-                    elem.scrollTop = parsed.y
-                    elem.scrollLeft = parsed.x
+                    el.scrollTop = parsed.y
+                    el.scrollLeft = parsed.x
                     zoom.set(parsed.zoom)
                 }, 0) // Need to wait for first render to have correct size. Causes a little flicker.
             }
-            const scrollPos = scrollEvent.pipe(
-                L.toStatelessProperty(() => {
-                    return {
-                        x: elem.scrollLeft,
-                        y: elem.scrollTop,
-                    }
-                }),
-            )
-            const scrollAndZoom = L.combine(scrollPos, zoom, (s, zoom) => ({ ...s, zoom }))
-            scrollAndZoom
-                .pipe(L.changes, L.debounce(100))
-                .forEach((s) => (localStorage.scrollAndZoom = JSON.stringify(s)))
         }
     })
 
-    const changes = L.merge(L.fromEvent(window, "resize"), scrollEvent, L.changes(boardElement), L.changes(zoom))
+    scrollAndZoom
+        .pipe(L.changes, L.debounce(100), L.applyScope(componentScope()))
+        .forEach((s) => {
+            //console.log("Store position for board", localStorageKey.get())
+            localStorage[localStorageKey.get()] = JSON.stringify(s)
+        })
+
+    const changes = L.merge(L.fromEvent(window, "resize"), scrollPos.pipe(L.changes), L.changes(boardElement), L.changes(zoom))
     const viewRect = changes.pipe(
         L.toStatelessProperty(() => {
             const boardRect = boardElement.get()?.getBoundingClientRect()
