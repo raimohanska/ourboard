@@ -249,7 +249,15 @@ const configureServer = () => {
             const { boardId, itemId } = req.params
             if (!boardId) throw new InvalidRequest("boardId missing")
             if (!itemId) throw new InvalidRequest("itemId missing")
-            let { type, text, color, container, replaceTextIfExists, replaceColorIfExists, replaceContainerIfExists = true } = req.body
+            let {
+                type,
+                text,
+                color,
+                container,
+                replaceTextIfExists,
+                replaceColorIfExists,
+                replaceContainerIfExists = true,
+            } = req.body
             console.log(`PUT item for board ${boardId} item ${itemId}: ${JSON.stringify(req.body)}`)
             if (type !== "note") throw new InvalidRequest("Expecting type: note")
             if (typeof text !== "string" || text.length === 0)
@@ -269,7 +277,7 @@ const configureServer = () => {
                         itemId,
                         replaceTextIfExists,
                         replaceColorIfExists,
-                        replaceContainerIfExists
+                        replaceContainerIfExists,
                     )
                 } else {
                     console.log(`Adding new item`)
@@ -346,7 +354,7 @@ const configureServer = () => {
         itemId: string,
         replaceTextIfExists: boolean | undefined,
         replaceColorIfExists: boolean | undefined,
-        replaceContainerIfExists: boolean | undefined,
+        replaceContainerIfExists: boolean | undefined,
     ) {
         const existingItem = board.items.find((i) => i.id === itemId)!
         if (!isNote(existingItem)) {
@@ -354,7 +362,10 @@ const configureServer = () => {
         }
         const containerItem = findContainer(container, board)
         const currentContainer = findContainer(existingItem.containerId, board)
-        const containerAttrs = replaceContainerIfExists && containerItem !== currentContainer ? getItemAttributesForContainer(container, board) : {}
+        const containerAttrs =
+            replaceContainerIfExists && containerItem !== currentContainer
+                ? getItemAttributesForContainer(container, board)
+                : {}
 
         let updatedItem: Note = {
             ...existingItem,

@@ -18,37 +18,49 @@ export function boardScrollAndZoomHandler(
     const scrollPos = scrollElement.pipe(
         L.changes,
         L.filter((el: any) => !!el),
-        L.flatMapLatest((el: HTMLElement) => L.fromEvent(el, "scroll").pipe(L.map(() => ({x: el.scrollLeft, y: el.scrollTop }))), componentScope()),
-        L.toProperty({x: 0, y: 0} as {x: number, y: number}, componentScope())
+        L.flatMapLatest(
+            (el: HTMLElement) => L.fromEvent(el, "scroll").pipe(L.map(() => ({ x: el.scrollLeft, y: el.scrollTop }))),
+            componentScope(),
+        ),
+        L.toProperty({ x: 0, y: 0 } as { x: number; y: number }, componentScope()),
     )
 
     const scrollAndZoom = L.combine(scrollPos, zoom, (s, zoom) => ({ ...s, zoom }))
 
-    const localStorageKey = L.view(board, b => b.id, id => "scrollAndZoom." + id)
+    const localStorageKey = L.view(
+        board,
+        (b) => b.id,
+        (id) => "scrollAndZoom." + id,
+    )
 
-    L.view(scrollElement, localStorageKey, (el, key) => ({el, key})).pipe(L.applyScope(componentScope())).forEach(({ el, key }) => {
-        if (el) {
-            const storedScrollAndZoom = localStorage[key]
-            if (storedScrollAndZoom) {
-                //console.log("Init position for board", key)
-                const parsed = JSON.parse(storedScrollAndZoom)
-                setTimeout(() => {
-                    el.scrollTop = parsed.y
-                    el.scrollLeft = parsed.x
-                    zoom.set(parsed.zoom)
-                }, 0) // Need to wait for first render to have correct size. Causes a little flicker.
+    L.view(scrollElement, localStorageKey, (el, key) => ({ el, key }))
+        .pipe(L.applyScope(componentScope()))
+        .forEach(({ el, key }) => {
+            if (el) {
+                const storedScrollAndZoom = localStorage[key]
+                if (storedScrollAndZoom) {
+                    //console.log("Init position for board", key)
+                    const parsed = JSON.parse(storedScrollAndZoom)
+                    setTimeout(() => {
+                        el.scrollTop = parsed.y
+                        el.scrollLeft = parsed.x
+                        zoom.set(parsed.zoom)
+                    }, 0) // Need to wait for first render to have correct size. Causes a little flicker.
+                }
             }
-        }
-    })
-
-    scrollAndZoom
-        .pipe(L.changes, L.debounce(100), L.applyScope(componentScope()))
-        .forEach((s) => {
-            //console.log("Store position for board", localStorageKey.get())
-            localStorage[localStorageKey.get()] = JSON.stringify(s)
         })
 
-    const changes = L.merge(L.fromEvent(window, "resize"), scrollPos.pipe(L.changes), L.changes(boardElement), L.changes(zoom))
+    scrollAndZoom.pipe(L.changes, L.debounce(100), L.applyScope(componentScope())).forEach((s) => {
+        //console.log("Store position for board", localStorageKey.get())
+        localStorage[localStorageKey.get()] = JSON.stringify(s)
+    })
+
+    const changes = L.merge(
+        L.fromEvent(window, "resize"),
+        scrollPos.pipe(L.changes),
+        L.changes(boardElement),
+        L.changes(zoom),
+    )
     const viewRect = changes.pipe(
         L.toStatelessProperty(() => {
             const boardRect = boardElement.get()?.getBoundingClientRect()
