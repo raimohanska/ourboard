@@ -1,3 +1,5 @@
+require("dotenv").config()
+
 const sass = require("esbuild-plugin-sass")
 const path = require("path")
 const fs = require("fs")
