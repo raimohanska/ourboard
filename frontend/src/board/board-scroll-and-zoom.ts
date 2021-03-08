@@ -69,7 +69,7 @@ export function boardScrollAndZoomHandler(
             if (ctrlOrCmd && event.deltaY !== 0) {
                 event.preventDefault()
                 const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
-                const step = 1.2
+                const step = 1.1
                 zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.15, 10))
                 coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
             } else {
