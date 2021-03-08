@@ -27,8 +27,8 @@ import _ from "lodash"
 import { RED, YELLOW } from "../../common/src/colors"
 import { applyMiddleware, router as typeraRouter } from "typera-express"
 import { wrapNative } from "typera-express/middleware"
-import { body } from "typera-express/parser"
-import { ok } from "typera-common/response"
+import { body, headers } from "typera-express/parser"
+import { badRequest, internalServerError, ok } from "typera-common/response"
 import * as t from "io-ts"
 import { NonEmptyString } from "io-ts-types"
 
@@ -67,53 +67,41 @@ const boardCreate = route
         return ok({ id: boardWithHistory.board.id, accessToken: boardWithHistory.accessTokens[0] })
     })
 
-router.use(typeraRouter(boardCreate).handler())
-
-router.put("/api/v1/board/:boardId", bodyParser.json(), async (req, res) => {
-    try {
-        const boardId = req.params.boardId
-        if (!boardId) {
-            return res.sendStatus(400)
+const boardUpdate = route
+    .put("/api/v1/board/:boardId")
+    .use(
+        body(t.type({ name: NonEmptyString, accessPolicy: BoardAccessPolicyCodec })),
+        headers(t.type({ api_token: t.string })),
+    )
+    .handler(async (request) => {
+        try {
+            const { boardId } = request.routeParams
+            const { name, accessPolicy } = request.body
+            const { api_token } = request.headers
+            const board = await getBoard(boardId)
+            checkBoardAPIAccess(board, api_token)
+            await updateBoard({ boardId, name, accessPolicy })
+            return ok({ ok: true })
+        } catch (e) {
+            console.error(e)
+            if (e instanceof InvalidRequest) {
+                return badRequest(e.message)
+            } else {
+                return internalServerError()
+            }
         }
-        let { name, accessPolicy } = req.body
-        if (!name) {
-            res.status(400).send('Expecting JSON document containing the field "name".')
-            return
-        }
-        let validAccessPolicy = validateAccessPolicy(accessPolicy)
-        const board = await getBoard(boardId)
-        checkBoardAPIAccess(board, req)
-        await updateBoard({ boardId, name, accessPolicy: validAccessPolicy })
-        res.json({ ok: true })
-    } catch (e) {
-        console.error(e)
-        if (e instanceof InvalidRequest) {
-            res.status(400).send(e.message)
-        } else {
-            res.sendStatus(500)
-        }
-    }
-})
+    })
 
-function validateAccessPolicy(accessPolicy: any): BoardAccessPolicy {
-    const accessPolicyResult = BoardAccessPolicyCodec.decode(accessPolicy)
-    if (Either.isLeft(accessPolicyResult)) {
-        throw new InvalidRequest("Invalid accessPolicy")
-    }
-    return accessPolicyResult.right
-}
-
-function checkBoardAPIAccess(board: ServerSideBoardState, req: express.Request, requireAlways?: boolean) {
+function checkBoardAPIAccess(board: ServerSideBoardState, apiToken: string, requireAlways?: boolean) {
     if (requireAlways || board.board.accessPolicy || board.accessTokens.length) {
-        if (!req.headers.api_token) {
-            throw new InvalidRequest("API_TOKEN required")
-        }
-        if (!board.accessTokens.some((t) => t === req.headers.api_token)) {
-            console.log(`API_TOKEN ${req.headers.api_token} not on list ${board.accessTokens}`)
+        if (!board.accessTokens.some((t) => t === apiToken)) {
+            console.log(`API_TOKEN ${apiToken} not on list ${board.accessTokens}`)
             throw new InvalidRequest("Invalid API_TOKEN")
         }
     }
 }
+
+router.use(typeraRouter(boardCreate, boardUpdate).handler())
 
 // TODO: require API_TOKEN header for github too!
 router.post("/api/v1/webhook/github/:boardId", bodyParser.json(), async (req, res) => {
@@ -177,7 +165,7 @@ router.post("/api/v1/board/:boardId/item", bodyParser.json(), async (req, res) =
         const { type, text, color, container } = req.body
         console.log(`POST item for board ${boardId}: ${JSON.stringify(req.body)}`)
         const board = await getBoard(boardId)
-        checkBoardAPIAccess(board, req)
+        checkBoardAPIAccess(board, (req.headers.API_TOKEN as string) || "")
         if (!board) return res.sendStatus(404)
         await addItem(board.board, type, text, color, container)
         res.status(200).json({ ok: true })
@@ -210,7 +198,7 @@ router.put("/api/v1/board/:boardId/item/:itemId", bodyParser.json(), async (req,
         if (typeof text !== "string" || text.length === 0) throw new InvalidRequest("Expecting non zero-length text")
 
         const board = await getBoard(boardId)
-        checkBoardAPIAccess(board, req)
+        checkBoardAPIAccess(board, (req.headers.API_TOKEN as string) || "")
         if (board) {
             const existingItem = board.board.items.find((i) => i.id === itemId)
             if (existingItem) {
