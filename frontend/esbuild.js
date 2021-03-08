@@ -3,6 +3,7 @@ const path = require("path")
 const fs = require("fs")
 const esbuild = require("esbuild")
 const rimraf = require("rimraf")
+const chokidar = require("chokidar")
 
 const mode = process.argv[2]
 
@@ -67,7 +68,7 @@ if (mode === "build") {
     build()
         .catch((e) => console.error(e))
         .then(() => {
-            fs.watch(path.resolve(__dirname, "src"), { recursive: true }, () => {
+            chokidar.watch(path.resolve(__dirname, "src"), { ignoreInitial: true }).on("all", (...arg) => {
                 build().catch((e) => console.error(e))
             })
         })

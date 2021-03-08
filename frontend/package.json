@@ -31,6 +31,7 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.0",
     "@types/uuid": "^8.3.0",
+    "chokidar": "^3.5.1",
     "core-js": "^3.8.3",
     "cssnano": "^4.1.10",
     "dotenv": "^8.2.0",
