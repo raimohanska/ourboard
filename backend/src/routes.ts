@@ -3,7 +3,6 @@ import * as Http from "http"
 import * as Https from "https"
 import * as path from "path"
 import * as bodyParser from "body-parser"
-import * as Either from "fp-ts/lib/Either"
 import {
     Board,
     createBoard,
@@ -17,7 +16,6 @@ import {
     isNote,
     Container,
     BoardAccessPolicyCodec,
-    BoardAccessPolicy,
 } from "../../common/src/domain"
 import { addBoard, getBoard, updateBoards, ServerSideBoardState } from "./board-state"
 import { updateBoard } from "./board-store"
@@ -101,24 +99,35 @@ function checkBoardAPIAccess(board: ServerSideBoardState, apiToken: string, requ
     }
 }
 
-router.use(typeraRouter(boardCreate, boardUpdate).handler())
-
 // TODO: require API_TOKEN header for github too!
-router.post("/api/v1/webhook/github/:boardId", bodyParser.json(), async (req, res) => {
-    try {
-        const boardId = req.params.boardId
-        if (!boardId) {
-            return res.sendStatus(400)
-        }
-        let body = req.body
-        const board = await getBoard(boardId)
-        if (board) {
+const githubWebhook = route
+    .post("/api/v1/webhook/github/:boardId")
+    .use(
+        body(
+            t.partial({
+                issue: t.type({
+                    html_url: t.string,
+                    title: t.string,
+                    number: t.number,
+                    state: t.string,
+                    labels: t.array(t.type({ name: t.string })),
+                }),
+            }),
+        ),
+    )
+    .handler(async (request) => {
+        try {
+            const boardId = request.routeParams.boardId
+            const body = request.body
+            const board = await getBoard(boardId)
+            if (!board) {
+                console.warn(`Github webhook call for unknown board ${boardId}`)
+                return ok()
+            }
             if (body.issue) {
                 const url = body.issue.html_url
                 const title = body.issue.title
                 const number = body.issue.number.toString()
-                if (!title) throw Error(`Github webhook call board ${boardId}: title missing`)
-                if (!url) throw Error(`Github webhook call board ${boardId}: url missing`)
                 const state = body.issue.state
                 if (state !== "open") {
                     console.log(`Github webhook call board ${boardId}: Item in ${state} state`)
@@ -128,7 +137,7 @@ router.post("/api/v1/webhook/github/:boardId", bodyParser.json(), async (req, re
                     const existingItem = board.board.items.find((i) => i.type === "note" && i.text.includes(url)) as
                         | Note
                         | undefined
-                    const isBug = body.issue.labels.some((l: any) => l.name === "bug")
+                    const isBug = body.issue.labels.some((l) => l.name === "bug")
                     const color = isBug ? RED : YELLOW
                     if (!existingItem) {
                         console.log(`Github webhook call board ${boardId}: New item`)
@@ -139,22 +148,19 @@ router.post("/api/v1/webhook/github/:boardId", bodyParser.json(), async (req, re
                         await dispatchSystemAppEvent({ action: "item.update", boardId, items: [updatedItem] })
                     }
                 }
-            } else {
-                console.warn(`Unrecognized content in webhook call board ${boardId}: ${JSON.stringify(body, null, 2)}`)
             }
-        } else {
-            console.warn(`Github webhook call for unknown board ${boardId}`)
+            return ok()
+        } catch (e) {
+            console.error(e)
+            if (e instanceof InvalidRequest) {
+                return badRequest(e.message)
+            } else {
+                return internalServerError()
+            }
         }
-        res.sendStatus(200)
-    } catch (e) {
-        console.error(e)
-        if (e instanceof InvalidRequest) {
-            res.status(400).send(e.message)
-        } else {
-            res.sendStatus(500)
-        }
-    }
-})
+    })
+
+router.use(typeraRouter(boardCreate, boardUpdate, githubWebhook).handler())
 
 router.post("/api/v1/board/:boardId/item", bodyParser.json(), async (req, res) => {
     try {
