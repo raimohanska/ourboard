@@ -30,7 +30,7 @@ export function BoardNavigation(connection: ServerConnection, bs: BoardStore) {
     boardIdChanges.forEach((id) => {
         // Switch socket per board. This terminates the unnecessary board session on server.
         // Also, is preparation for load balancing solution.
-        connection.newSocket()        
+        connection.newSocket()
         adjustURL(id)
     })
 
