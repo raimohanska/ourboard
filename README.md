@@ -127,8 +127,9 @@ Payload:
     "text": "text on note",
     "container": "container element text or id",
     "color": "hexadecimal color code",
-    "replaceTextIfExists": boolean,
-    "replaceColorIfExists": boolean
+    "replaceTextIfExists": boolean,      // Override text if item with this id exists. Defaults to false.
+    "replaceColorIfExists": boolean,     // Override color if item with this id exists. Defaults to false.
+    "replaceContainerIfExists": boolean, // Override container in item with this id exists. Defaults to true.
 }
 ```
 
