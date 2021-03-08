@@ -8,13 +8,11 @@ $link-color: #35b2dc;
 $heading-color: $link-color;
 $heading-height: 1.8em;
 $board-border-top: 2.8rem;
-$material-design-icons-font-directory-path: "~../../node_modules/material-design-icons-iconfont/dist/fonts/";
 $disabled-color: lightgrey;
 $z-index-menu: 400000002;
 $z-index-minimap: 400000001;
 $z-index-cursors: 400000000;
 
-@import "~material-design-icons-iconfont/src/material-design-icons";
 @import "ui.scss";
 
 * {
@@ -710,84 +708,65 @@ a {
     background-repeat: no-repeat;
     font-size: 1em !important;
     &.edit {
-        @extend .material-icons;
-        @include material-icon("edit");
+        background-image: url(img/edit.svg);
     }
     &.copy {
-        @extend .material-icons;
-        @include material-icon("content_copy");
+        background-image: url(img/content_copy.svg);
     }
     &.link {
-        @extend .material-icons;
-        @include material-icon("link");
+        background-image: url(img/link.svg);
     }
     &.unlink {
-        @extend .material-icons;
-        @include material-icon("link_off");
+        background-image: url(img/link_off.svg);
     }
     &.redo {
-        @extend .material-icons;
-        @include material-icon("redo");
+        background-image: url(img/redo.svg);
     }
     &.undo {
-        @extend .material-icons;
-        @include material-icon("undo");
+        background-image: url(img/undo.svg);
     }
     &.zoom_in {
-        @extend .material-icons;
-        @include material-icon("zoom_in");
+        background-image: url(img/zoom_in.svg);
     }
     &.zoom_out {
-        @extend .material-icons;
-        @include material-icon("zoom_out");
+        background-image: url(img/zoom_out.svg);
     }
     &.back {
-        @extend .material-icons;
-        @include material-icon("arrow_back");
+        background-image: url(img/arrow_back.svg);
     }
     &.menu {
-        @extend .material-icons;
-        @include material-icon("arrow_drop_down");
+        background-image: url(img/arrow_drop_down.svg);
     }
     &.user {
-        @extend .material-icons;
-        @include material-icon("face");
+        background-image: url(img/face.svg);
     }
     &.history {
-        @extend .material-icons;
-        @include material-icon("history");
+        background-image: url(img/history.svg);
     }
     &.pan {
-        @extend .material-icons;
-        @include material-icon("pan_tool");
+        background-image: url(img/pan_tool.svg);
         font-size: 0.9em;
     }
     &.align_horizontal_left {
-        @extend .material-icons;
-        @include material-icon("align_horizontal_left");
+        background-image: url(img/align_horizontal_left.svg);
     }
     &.align_vertical_top {
-        @extend .material-icons;
-        @include material-icon("align_vertical_top");
+        background-image: url(img/align_vertical_top.svg);
     }
     &.horizontal_distribute {
-        @extend .material-icons;
-        @include material-icon("horizontal_distribute");
+        background-image: url(img/horizontal_distribute.svg);
     }
     &.vertical_distribute {
-        @extend .material-icons;
-        @include material-icon("vertical_distribute");
+        background-image: url(img/vertical_distribute.svg);
     }
     &.cursor-arrow {
         background-image: url(img/cursor-arrow.svg);
     }
     &.plus {
-        @extend .material-icons;
-        @include material-icon("add");
+        background-image: url(img/add.svg);
     }
     &.minus {
-        @extend .material-icons;
-        @include material-icon("remove");
+        background-image: url(img/remove.svg);
     }
     &.disabled {
         pointer-events: none;
