@@ -137,6 +137,14 @@ Payload:
 
 Google authentication is supported. To enable this feature, you'll need to supply `GOOGLE_API_KEY` and `GOOGLE_CLIENT_ID` as environment variables
 
+## Tech stack
+
+-   Typescript
+-   [Harmaja](https://github.com/raimohanska/harmaja) frontend library
+-   Socket.IO realtime sync
+-   Express server
+-   Runs on Heroku
+
 ## Dev
 
 Running locally:
@@ -151,13 +159,29 @@ Run end-to end Cypress tests against the server you just started:
 -   `yarn test-e2e:dev` to run once
 -   `yarn cypress` to open the Cypress UI for repeated test runs
 
-## Tech stack
+## Developing with production data
 
--   Typescript
--   [Harmaja](https://github.com/raimohanska/harmaja) frontend library
--   Socket.IO realtime sync
--   Express server
--   Runs on Heroku
+Do not run your local server against the production database, or you'll corrupt production. The server's in memory state will be out of sync with DB and bad things will happen. 
+
+Instead, do this.
+
+1. Capture a backup and download it: `heroku pg:backups:capture`, then `heroku pg:backups:download`.
+2. Restore the backup to your local database: `pg_restore --verbose --clean --no-acl --no-owner -d postgres://r-board:secret@localhost:13338/r-board latest.dump`
+3. Start you local server using `yarn start:dev`
+
+If you need the local state for a given board in localStorage, you can 
+
+1. extract the content in the browser devtools, when viewing production site in browser, using `localStorage["board_<boardid>"]`
+2. Copy that string to clipboard
+3. Run the following in your localhost site console:
+
+    
+    localStorage["board_32de1a50-09a6-4453-9b9e-ed10c56afa99"]=JSON.stringify(
+        <paste content here>
+    )
+
+
+Copy the result string, navigate to your localhost site and paste the same value to the same localStorage key. Refresh and enjoy.
 
 ## Contribution
 
