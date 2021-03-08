@@ -30,9 +30,7 @@ export function migrateBoardWithHistory(
             console.warn("Board history check fail, bootstrapping", e)
         }
     }
-    const bootstrappedHistory = [
-        mkBootStrapEvent(board.id, board)        
-    ] as BoardHistoryEntry[]
+    const bootstrappedHistory = [mkBootStrapEvent(board.id, board)] as BoardHistoryEntry[]
     return { boardAttributes, history: bootstrappedHistory }
 }
 

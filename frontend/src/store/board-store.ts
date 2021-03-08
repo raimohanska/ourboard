@@ -161,10 +161,15 @@ export function BoardStore(connection: ServerConnection, sessionInfo: L.Property
                 }
             } else {
                 console.log("Init as new board")
-                return { ...state, status: "ready", board: event.board, history: [
-                    //  Create a bootstrap event to make the local history consistent even though we don't have the full history from server.
-                    mkBootStrapEvent(event.board.id, event.board, event.board.serial)
-                ]}
+                return {
+                    ...state,
+                    status: "ready",
+                    board: event.board,
+                    history: [
+                        //  Create a bootstrap event to make the local history consistent even though we don't have the full history from server.
+                        mkBootStrapEvent(event.board.id, event.board, event.board.serial),
+                    ],
+                }
             }
         } else if (event.action === "board.serial.ack") {
             //console.log(`Update to ${event.serial} with ack`)
