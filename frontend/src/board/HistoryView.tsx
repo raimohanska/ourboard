@@ -100,8 +100,11 @@ export const HistoryView = ({
     }
 
     function parseFullHistory(history: BoardHistoryEntry[]): ParsedHistoryEntry[] {
+        // Note: the history is not necessarily full, just what we have available locally. It will always start with a bootstrapping
+        // action though, so it will be consistent.
+        const initAtSerial = (history[0]?.serial || 1) - 1
         const init = {
-            board: createBoard("tmp"),
+            board: { ...createBoard("tmp"), serial: initAtSerial },
             parsedHistory: [] as ParsedHistoryEntry[],
         }
         const { parsedHistory } = history.reduce(({ board, parsedHistory }, event) => {

@@ -23,6 +23,7 @@ import {
     UserCursorPosition,
     UserSessionInfo,
 } from "../../../common/src/domain"
+import { mkBootStrapEvent } from "../../../common/src/migration"
 import { getInitialBoardState, storeBoardState } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { UserSessionState } from "./user-session-store"
@@ -160,7 +161,10 @@ export function BoardStore(connection: ServerConnection, sessionInfo: L.Property
                 }
             } else {
                 console.log("Init as new board")
-                return { ...state, status: "ready", board: event.board, history: [] }
+                return { ...state, status: "ready", board: event.board, history: [
+                    //  Create a bootstrap event to make the local history consistent even though we don't have the full history from server.
+                    mkBootStrapEvent(event.board.id, event.board, event.board.serial)
+                ]}
             }
         } else if (event.action === "board.serial.ack") {
             //console.log(`Update to ${event.serial} with ack`)

@@ -12,6 +12,7 @@ import { Board, BoardHistoryEntry, Id } from "../../common/src/domain"
 import { format } from "date-fns"
 import { boardReducer } from "../../common/src/board-reducer"
 import { PoolClient } from "pg"
+import { mkBootStrapEvent } from "../../common/src/migration"
 
 // TODO: there are now some incomplete/inconsistent histories in production.
 //    Analyze and re-bootstrap them into consistency. This tool could do it!
@@ -115,15 +116,4 @@ async function bootstrapHistory(boardId: Id, snap: Board, events: BoardHistoryEn
     await saveBoardSnapshot(board, client)
 
     console.log(`Bootstrapped history for board ${boardId}`)
-}
-
-function mkBootStrapEvent(boardId: Id, snapshot: Board) {
-    return {
-        action: "item.bootstrap",
-        boardId,
-        items: snapshot.items,
-        timestamp: new Date().toISOString(),
-        user: { nickname: "admin" },
-        serial: 1,
-    } as BoardHistoryEntry
 }

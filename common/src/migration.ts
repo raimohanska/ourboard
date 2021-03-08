@@ -8,6 +8,7 @@ import {
     createBoard,
     defaultBoardSize,
     EventUserInfo,
+    Id,
     Item,
     Serial,
 } from "./domain"
@@ -30,15 +31,20 @@ export function migrateBoardWithHistory(
         }
     }
     const bootstrappedHistory = [
-        {
-            action: "item.bootstrap",
-            boardId: board.id,
-            items: board.items,
-            timestamp: new Date().toISOString(),
-            user: { nickname: "admin" },
-        },
+        mkBootStrapEvent(board.id, board)        
     ] as BoardHistoryEntry[]
     return { boardAttributes, history: bootstrappedHistory }
+}
+
+export function mkBootStrapEvent(boardId: Id, snapshot: Board, serial: Serial = 1) {
+    return {
+        action: "item.bootstrap",
+        boardId,
+        items: snapshot.items,
+        timestamp: new Date().toISOString(),
+        user: { nickname: "admin" },
+        serial,
+    } as BoardHistoryEntry
 }
 
 function migrateHistory(historyToMigrate: BoardHistoryEntry[]) {
