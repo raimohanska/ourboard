@@ -133,11 +133,13 @@ a {
     height: 100%;
     display: flex;
     flex-direction: row;
-    &:not(.ready) {
-        .board,
-        .controls,
-        .board-name {
+    &:not(.ready) {        
+        header .controls, >.scroll-container >.border-container >.board,
+        header .board-name {
             @extend .disabled-interaction;
+        }        
+        >.history, >.minimap {
+            display: none;
         }
     }
 
