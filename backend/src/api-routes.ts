@@ -136,9 +136,9 @@ const itemCreateOrUpdate = route
                     type: t.literal("note"),
                     text: NonEmptyString,
                     color: t.string,
-                    container: t.string,
                 }),
                 t.partial({
+                    container: t.string,
                     replaceTextIfExists: t.boolean,
                     replaceColorIfExists: t.boolean,
                     replaceContainerIfExists: t.boolean,
@@ -247,7 +247,7 @@ function getItemAttributesForContainer(container: string | undefined, board: Boa
     return {}
 }
 
-async function addItem(board: Board, type: "note", text: string, color: Color, container: string, itemId?: string) {
+async function addItem(board: Board, type: "note", text: string, color: Color, container: string | undefined, itemId?: string) {
     if (type !== "note") throw new InvalidRequest("Expecting type: note")
     if (typeof text !== "string" || text.length === 0) throw new InvalidRequest("Expecting non zero-length text")
 
@@ -264,7 +264,7 @@ async function updateItem(
     type: "note",
     text: string,
     color: Color,
-    container: string,
+    container: string | undefined,
     itemId: string,
     replaceTextIfExists: boolean | undefined,
     replaceColorIfExists: boolean | undefined,
