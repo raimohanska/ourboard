@@ -91,12 +91,14 @@ async function build() {
 
 if (mode === "build") {
     build().catch((e) => !console.error(e) && process.exit(1))
-} else {
+} else if (mode === "watch") {
     build()
         .catch((e) => console.error(e))
         .then(() => {
-            chokidar.watch(path.resolve(CWD, "src"), { ignoreInitial: true }).on("all", (...arg) => {
+            chokidar.watch([path.resolve(CWD, "src"), path.resolve(CWD, "../common/src")], { ignoreInitial: true }).on("all", (...arg) => {
                 build().catch((e) => console.error(e))
             })
         })
+} else {
+    throw Error("Unknown mode: " + mode)
 }
