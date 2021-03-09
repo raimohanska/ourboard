@@ -2578,16 +2578,6 @@ es5-ext@0.8.x:
   resolved "https://registry.yarnpkg.com/es5-ext/-/es5-ext-0.8.2.tgz#aba8d9e1943a895ac96837a62a39b3f55ecd94ab"
   integrity sha1-q6jZ4ZQ6iVrJaDemKjmz9V7NlKs=
 
-esbuild-plugin-sass@^0.3.3:
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/esbuild-plugin-sass/-/esbuild-plugin-sass-0.3.3.tgz#ec160f73c6a508937c06fae361f4a21aabd3213c"
-  integrity sha512-BeMfTBfowgb8t+7OOKX+t0p2W1PmRKLJNzBKhogstVq/1UnCBi6Wx+/kljVfjN9IRo3tGbIxIA+tq3WVCD/Yag==
-  dependencies:
-    css-tree "^1.1.2"
-    fs-extra "^9.0.1"
-    sass "^1.32.4"
-    tmp "^0.2.1"
-
 esbuild@^0.8.57:
   version "0.8.57"
   resolved "https://registry.yarnpkg.com/esbuild/-/esbuild-0.8.57.tgz#a42d02bc2b57c70bcd0ef897fe244766bb6dd926"
@@ -6405,7 +6395,7 @@ sanitize-html@^2.3.2:
     parse-srcset "^1.0.2"
     postcss "^8.0.2"
 
-sass@^1.32.4:
+sass@^1.32.8:
   version "1.32.8"
   resolved "https://registry.yarnpkg.com/sass/-/sass-1.32.8.tgz#f16a9abd8dc530add8834e506878a2808c037bdc"
   integrity sha512-Sl6mIeGpzjIUZqvKnKETfMf0iDAswD9TNlv13A7aAF3XZlRPMq4VvJWBC2N2DXbp94MQVdNSFG6LfF/iOXrPHQ==
@@ -7095,7 +7085,7 @@ timsort@^0.3.0:
   resolved "https://registry.yarnpkg.com/timsort/-/timsort-0.3.0.tgz#405411a8e7e6339fe64db9a234de11dc31e02bd4"
   integrity sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q=
 
-tmp@^0.2.1, tmp@~0.2.1:
+tmp@~0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.2.1.tgz#8457fc3037dcf4719c251367a1af6500ee1ccf14"
   integrity sha512-76SUhtfqR2Ijn+xllcI5P1oyannHNHByD80W1q447gU3mp9G9PSpGdWmjUOHRDPiHYacIk66W7ubDTuPF3BEtQ==

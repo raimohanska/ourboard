@@ -1,6 +1,6 @@
 require("dotenv").config()
 
-const sass = require("esbuild-plugin-sass")
+const sass = require("sass")
 const path = require("path")
 const fs = require("fs")
 const esbuild = require("esbuild")
@@ -29,6 +29,30 @@ const stubImportsPlugin = (paths) => {
     }
 }
 
+const sassPlugin = {
+    name: "sass",
+    setup(build) {
+        build.onResolve({ filter: /(\.svg|\.png)$/ }, (args) => {
+            return {
+                path: path.resolve(CWD, "src", args.path),
+            }
+        })
+        build.onResolve({ filter: /\.scss$/ }, (args) => {
+            return {
+                path: path.resolve(args.resolveDir, args.path),
+                namespace: "sass",
+            }
+        })
+        build.onLoad({ filter: /.*/, namespace: "sass" }, (args) => {
+            let compiled = sass.renderSync({ file: args.path })
+            return {
+                contents: compiled.css.toString(),
+                loader: "css",
+            }
+        })
+    },
+}
+
 const CWD = process.cwd()
 const DIST_FOLDER = path.resolve(CWD, "dist")
 
@@ -45,7 +69,7 @@ async function build() {
         minify: true,
         outfile,
         platform: "browser",
-        plugins: [sass(), stubImportsPlugin(["path"])],
+        plugins: [sassPlugin, stubImportsPlugin(["path"])],
         loader: { ".png": "file", ".svg": "file" },
         define: {
             "process.env.NODE_ENV": envFallback(process.env.NODE_ENV, `"development"`),

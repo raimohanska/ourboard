@@ -14,7 +14,6 @@
     "cookie": "^0.4.1",
     "email-validator": "^2.0.4",
     "esbuild": "^0.8.57",
-    "esbuild-plugin-sass": "^0.3.3",
     "fp-ts": "^2.9.5",
     "harmaja": "^0.18.0",
     "io-ts": "^2.2.15",
@@ -25,6 +24,7 @@
     "pretty-ms": "^7.0.1",
     "rimraf": "^3.0.2",
     "sanitize-html": "^2.3.2",
+    "sass": "^1.32.8",
     "socket.io-client": "^2.3.0",
     "uuid": "^8.3.0"
   },
