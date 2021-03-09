@@ -55,6 +55,7 @@ router.get("/b/:boardId", async (req, res) => {
 })
 
 const route = applyMiddleware(wrapNative(bodyParser.json()))
+const apiTokenHeader = headers(t.partial({ api_token: t.string }))
 
 const boardCreate = route
     .post("/api/v1/board")
@@ -67,10 +68,7 @@ const boardCreate = route
 
 const boardUpdate = route
     .put("/api/v1/board/:boardId")
-    .use(
-        body(t.type({ name: NonEmptyString, accessPolicy: BoardAccessPolicyCodec })),
-        headers(t.type({ api_token: t.string })),
-    )
+    .use(apiTokenHeader, body(t.type({ name: NonEmptyString, accessPolicy: BoardAccessPolicyCodec })))
     .handler(async (request) => {
         try {
             const { boardId } = request.routeParams
@@ -90,8 +88,11 @@ const boardUpdate = route
         }
     })
 
-function checkBoardAPIAccess(board: ServerSideBoardState, apiToken: string, requireAlways?: boolean) {
+function checkBoardAPIAccess(board: ServerSideBoardState, apiToken: string | undefined, requireAlways?: boolean) {
     if (requireAlways || board.board.accessPolicy || board.accessTokens.length) {
+        if (!apiToken) {
+            throw new InvalidRequest("API_TOKEN is missing")
+        }
         if (!board.accessTokens.some((t) => t === apiToken)) {
             console.log(`API_TOKEN ${apiToken} not on list ${board.accessTokens}`)
             throw new InvalidRequest("Invalid API_TOKEN")
@@ -163,8 +164,8 @@ const githubWebhook = route
 const itemCreate = route
     .post("/api/v1/board/:boardId/item")
     .use(
+        apiTokenHeader,
         body(t.type({ type: t.literal("note"), text: t.string, color: t.string, container: t.string })),
-        headers(t.type({ api_token: t.string })),
     )
     .handler(async (request) => {
         try {
@@ -190,6 +191,7 @@ const itemCreate = route
 const itemCreateOrUpdate = route
     .put("/api/v1/board/:boardId/item/:itemId")
     .use(
+        apiTokenHeader,
         body(
             t.intersection([
                 t.type({
@@ -205,7 +207,6 @@ const itemCreateOrUpdate = route
                 }),
             ]),
         ),
-        headers(t.type({ api_token: t.string })),
     )
     .handler(async (request) => {
         try {
