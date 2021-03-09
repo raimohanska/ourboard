@@ -40,7 +40,7 @@ export function mkBootStrapEvent(boardId: Id, snapshot: Board, serial: Serial = 
         boardId,
         items: snapshot.items,
         timestamp: new Date().toISOString(),
-        user: { nickname: "admin" },
+        user: { nickname: "admin", userType: "system" },
         serial,
     } as BoardHistoryEntry
 }
