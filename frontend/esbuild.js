@@ -68,6 +68,7 @@ async function build() {
         bundle: true,
         minify: true,
         outfile,
+        sourcemap: true,
         platform: "browser",
         plugins: [sassPlugin, stubImportsPlugin(["path"])],
         loader: { ".png": "file", ".svg": "file" },
