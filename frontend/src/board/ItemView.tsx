@@ -77,10 +77,11 @@ export const ItemView = ({
             )}
             style={item.pipe(
                 L.map((p: Item) => ({
-                    top: p.y + "em",
-                    left: p.x + "em",
+                    top: 0,
+                    left: 0,
                     height: p.height + "em",
                     width: p.width + "em",
+                    transform: `translate(${p.x}em, ${p.y}em)`,
                     zIndex: p.z,
                     background: getItemBackground(p),
                     position: "absolute",

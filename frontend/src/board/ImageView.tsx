@@ -39,8 +39,9 @@ export const ImageView = ({
                 image,
                 (p: Image) =>
                     ({
-                        top: p.y + "em",
-                        left: p.x + "em",
+                        top: 0,
+                        left: 0,
+                        transform: `translate(${p.x}em, ${p.y}em)`,
                         height: p.height + "em",
                         width: p.width + "em",
                         zIndex: p.z,
