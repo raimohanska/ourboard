@@ -1,7 +1,3 @@
-import * as express from "express"
-import * as Http from "http"
-import * as Https from "https"
-import * as path from "path"
 import * as bodyParser from "body-parser"
 import {
     Board,
@@ -23,36 +19,12 @@ import { broadcastBoardEvent } from "./sessions"
 import { encode as htmlEncode } from "html-entities"
 import _ from "lodash"
 import { RED, YELLOW } from "../../common/src/colors"
-import { applyMiddleware, router as typeraRouter } from "typera-express"
+import { applyMiddleware, router } from "typera-express"
 import { wrapNative } from "typera-express/middleware"
 import { body, headers } from "typera-express/parser"
 import { badRequest, internalServerError, ok } from "typera-common/response"
 import * as t from "io-ts"
 import { NonEmptyString } from "io-ts-types"
-
-const router = express.Router()
-
-router.get("/assets/external", (req, res) => {
-    const src = req.query.src
-    if (typeof src !== "string" || ["http://", "https://"].every((prefix) => !src.startsWith(prefix)))
-        return res.send(400)
-    const protocol = src.startsWith("https://") ? Https : Http
-
-    protocol
-        .request(src, (upstreamResponse) => {
-            res.writeHead(upstreamResponse.statusCode!, upstreamResponse.headers)
-            upstreamResponse
-                .pipe(res, {
-                    end: true,
-                })
-                .on("error", (err) => res.status(500).send(err.message))
-        })
-        .end()
-})
-
-router.get("/b/:boardId", async (req, res) => {
-    res.sendFile(path.resolve("../frontend/dist/index.html"))
-})
 
 const route = applyMiddleware(wrapNative(bodyParser.json()))
 const apiTokenHeader = headers(t.partial({ api_token: t.string }))
@@ -208,7 +180,9 @@ const itemCreateOrUpdate = route
         }),
     )
 
-router.use(typeraRouter(boardCreate, boardUpdate, githubWebhook, itemCreate, itemCreateOrUpdate).handler())
+export default router(boardCreate, boardUpdate, githubWebhook, itemCreate, itemCreateOrUpdate)
+
+// Utils
 
 class InvalidRequest extends Error {
     constructor(message: string) {
@@ -330,5 +304,3 @@ async function dispatchSystemAppEvent(appEvent: PersistableBoardItemEvent) {
     historyEntry = { ...historyEntry, serial }
     broadcastBoardEvent(historyEntry)
 }
-
-export default router

@@ -2,6 +2,8 @@ import dotenv from "dotenv"
 dotenv.config()
 import express from "express"
 import * as Http from "http"
+import * as Https from "https"
+import * as path from "path"
 import IO from "socket.io"
 import { connectionHandler } from "./connection-handler"
 import { initDB } from "./db"
@@ -11,7 +13,7 @@ import { awaitSavingChanges as waitUntilChangesSaved } from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
 import { terminateSessions } from "./sessions"
 import _ from "lodash"
-import routes from "./routes"
+import apiRoutes from "./api-routes"
 
 const configureServer = () => {
     const config = getConfig()
@@ -45,7 +47,29 @@ const configureServer = () => {
         app.use("/assets", express.static(localDirectory))
     }
 
-    app.use(routes)
+    app.get("/assets/external", (req, res) => {
+        const src = req.query.src
+        if (typeof src !== "string" || ["http://", "https://"].every((prefix) => !src.startsWith(prefix)))
+            return res.send(400)
+        const protocol = src.startsWith("https://") ? Https : Http
+
+        protocol
+            .request(src, (upstreamResponse) => {
+                res.writeHead(upstreamResponse.statusCode!, upstreamResponse.headers)
+                upstreamResponse
+                    .pipe(res, {
+                        end: true,
+                    })
+                    .on("error", (err) => res.status(500).send(err.message))
+            })
+            .end()
+    })
+
+    app.get("/b/:boardId", async (req, res) => {
+        res.sendFile(path.resolve("../frontend/dist/index.html"))
+    })
+
+    app.use(apiRoutes.handler())
 
     io.on("connection", connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) }))
 
