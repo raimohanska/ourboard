@@ -26,7 +26,7 @@ import { RED, YELLOW } from "../../common/src/colors"
 import { applyMiddleware, router as typeraRouter } from "typera-express"
 import { wrapNative } from "typera-express/middleware"
 import { body, headers } from "typera-express/parser"
-import { badRequest, internalServerError, notFound, ok } from "typera-common/response"
+import { badRequest, internalServerError, ok } from "typera-common/response"
 import * as t from "io-ts"
 import { NonEmptyString } from "io-ts-types"
 
@@ -69,36 +69,14 @@ const boardCreate = route
 const boardUpdate = route
     .put("/api/v1/board/:boardId")
     .use(apiTokenHeader, body(t.type({ name: NonEmptyString, accessPolicy: BoardAccessPolicyCodec })))
-    .handler(async (request) => {
-        try {
+    .handler((request) =>
+        checkBoardAPIAccess(request, async () => {
             const { boardId } = request.routeParams
             const { name, accessPolicy } = request.body
-            const { api_token } = request.headers
-            const board = await getBoard(boardId)
-            checkBoardAPIAccess(board, api_token)
             await updateBoard({ boardId, name, accessPolicy })
             return ok({ ok: true })
-        } catch (e) {
-            console.error(e)
-            if (e instanceof InvalidRequest) {
-                return badRequest(e.message)
-            } else {
-                return internalServerError()
-            }
-        }
-    })
-
-function checkBoardAPIAccess(board: ServerSideBoardState, apiToken: string | undefined, requireAlways?: boolean) {
-    if (requireAlways || board.board.accessPolicy || board.accessTokens.length) {
-        if (!apiToken) {
-            throw new InvalidRequest("API_TOKEN is missing")
-        }
-        if (!board.accessTokens.some((t) => t === apiToken)) {
-            console.log(`API_TOKEN ${apiToken} not on list ${board.accessTokens}`)
-            throw new InvalidRequest("Invalid API_TOKEN")
-        }
-    }
-}
+        }),
+    )
 
 // TODO: require API_TOKEN header for github too!
 const githubWebhook = route
@@ -167,26 +145,14 @@ const itemCreate = route
         apiTokenHeader,
         body(t.type({ type: t.literal("note"), text: t.string, color: t.string, container: t.string })),
     )
-    .handler(async (request) => {
-        try {
-            const boardId = request.routeParams.boardId
+    .handler((request) =>
+        checkBoardAPIAccess(request, async (board) => {
             const { type, text, color, container } = request.body
-            const { api_token } = request.headers
-            console.log(`POST item for board ${boardId}: ${JSON.stringify(request.body)}`)
-            const board = await getBoard(boardId)
-            checkBoardAPIAccess(board, api_token)
-            if (!board) return notFound()
+            console.log(`POST item for board ${board.board.id}: ${JSON.stringify(request.req.body)}`)
             await addItem(board.board, type, text, color, container)
             return ok({ ok: true })
-        } catch (e) {
-            console.error(e)
-            if (e instanceof InvalidRequest) {
-                return badRequest(e.message)
-            } else {
-                return internalServerError()
-            }
-        }
-    })
+        }),
+    )
 
 const itemCreateOrUpdate = route
     .put("/api/v1/board/:boardId/item/:itemId")
@@ -208,9 +174,9 @@ const itemCreateOrUpdate = route
             ]),
         ),
     )
-    .handler(async (request) => {
-        try {
-            const { boardId, itemId } = request.routeParams
+    .handler((request) =>
+        checkBoardAPIAccess(request, async (board) => {
+            const { itemId } = request.routeParams
             let {
                 type,
                 text,
@@ -220,47 +186,61 @@ const itemCreateOrUpdate = route
                 replaceColorIfExists,
                 replaceContainerIfExists = true,
             } = request.body
-            console.log(`PUT item for board ${boardId} item ${itemId}: ${JSON.stringify(request.req.body)}`)
-
-            const board = await getBoard(boardId)
-            checkBoardAPIAccess(board, request.headers.api_token)
-            if (board) {
-                const existingItem = board.board.items.find((i) => i.id === itemId)
-                if (existingItem) {
-                    await updateItem(
-                        board.board,
-                        type,
-                        text,
-                        color,
-                        container,
-                        itemId,
-                        replaceTextIfExists,
-                        replaceColorIfExists,
-                        replaceContainerIfExists,
-                    )
-                } else {
-                    console.log(`Adding new item`)
-                    await addItem(board.board, type, text, color, container, itemId)
-                }
+            console.log(`PUT item for board ${board.board.id} item ${itemId}: ${JSON.stringify(request.req.body)}`)
+            const existingItem = board.board.items.find((i) => i.id === itemId)
+            if (existingItem) {
+                await updateItem(
+                    board.board,
+                    type,
+                    text,
+                    color,
+                    container,
+                    itemId,
+                    replaceTextIfExists,
+                    replaceColorIfExists,
+                    replaceContainerIfExists,
+                )
             } else {
-                console.warn(`Github webhook call for unknown board ${boardId}`)
+                console.log(`Adding new item`)
+                await addItem(board.board, type, text, color, container, itemId)
             }
             return ok({ ok: true })
-        } catch (e) {
-            console.error(e)
-            if (e instanceof InvalidRequest) {
-                return badRequest(e.message)
-            } else {
-                return internalServerError()
-            }
-        }
-    })
+        }),
+    )
 
 router.use(typeraRouter(boardCreate, boardUpdate, githubWebhook, itemCreate, itemCreateOrUpdate).handler())
 
 class InvalidRequest extends Error {
     constructor(message: string) {
         super(message)
+    }
+}
+
+async function checkBoardAPIAccess<T>(
+    request: { routeParams: { boardId: string }; headers: { api_token?: string | undefined } },
+    fn: (board: ServerSideBoardState) => Promise<T>,
+) {
+    const boardId = request.routeParams.boardId
+    const apiToken = request.headers.api_token
+    try {
+        const board = await getBoard(boardId)
+        if (board.board.accessPolicy || board.accessTokens.length) {
+            if (!apiToken) {
+                return badRequest("API_TOKEN header is missing")
+            }
+            if (!board.accessTokens.some((t) => t === apiToken)) {
+                console.log(`API_TOKEN ${apiToken} not on list ${board.accessTokens}`)
+                return badRequest("Invalid API_TOKEN")
+            }
+        }
+        return await fn(board)
+    } catch (e) {
+        console.error(e)
+        if (e instanceof InvalidRequest) {
+            return badRequest(e.message)
+        } else {
+            return internalServerError()
+        }
     }
 }
 
