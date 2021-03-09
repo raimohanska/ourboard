@@ -29,17 +29,18 @@ const stubImportsPlugin = (paths) => {
     }
 }
 
-const DIST_FOLDER = path.resolve(__dirname, "dist")
+const CWD = process.cwd()
+const DIST_FOLDER = path.resolve(CWD, "dist")
 
 const envFallback = (envVar, fb = null) => (envVar ? `"${envVar}"` : `${fb}`)
 
 async function build() {
     if (fs.existsSync(DIST_FOLDER)) rimraf.sync(DIST_FOLDER)
     const randomString = Math.random().toString(36).slice(2)
-    const outfile = path.resolve(__dirname, `dist/bundle.${randomString}.js`)
+    const outfile = path.resolve(CWD, `dist/bundle.${randomString}.js`)
     const now = Date.now()
     await esbuild.build({
-        entryPoints: [path.resolve(__dirname, "src", "index.tsx")],
+        entryPoints: [path.resolve(CWD, "src", "index.tsx")],
         bundle: true,
         minify: true,
         outfile,
@@ -55,9 +56,9 @@ async function build() {
     })
 
     fs.writeFileSync(
-        path.resolve(__dirname, "dist/index.html"),
+        path.resolve(CWD, "dist/index.html"),
         fs
-            .readFileSync(path.resolve(__dirname, "index.tmpl.html"), "utf8")
+            .readFileSync(path.resolve(CWD, "index.tmpl.html"), "utf8")
             .replace("JAVASCRIPT_BUNDLE", `/bundle.${randomString}.js`)
             .replace("CSS_BUNDLE", `/bundle.${randomString}.css`),
     )
@@ -70,7 +71,7 @@ if (mode === "build") {
     build()
         .catch((e) => console.error(e))
         .then(() => {
-            chokidar.watch(path.resolve(__dirname, "src"), { ignoreInitial: true }).on("all", (...arg) => {
+            chokidar.watch(path.resolve(CWD, "src"), { ignoreInitial: true }).on("all", (...arg) => {
                 build().catch((e) => console.error(e))
             })
         })
