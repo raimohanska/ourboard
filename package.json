@@ -46,7 +46,7 @@
     "test-e2e:dev": "cypress run --headed || true",
     "cypress": "cypress open",
     "prettier:check": "prettier --check .",
-    "typecheck:dev:frontend": "cd frontend && tsc --noEmit --watch",
+    "typecheck:dev:frontend": "cd frontend && tsc --noEmit --preserveWatchOutput --watch",
     "format": "prettier --write ."
   }
 }
