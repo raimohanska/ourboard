@@ -160,7 +160,7 @@ const githubWebhook = route
         }
     })
 
-const boardAddItem = route
+const itemCreate = route
     .post("/api/v1/board/:boardId/item")
     .use(
         body(t.type({ type: t.literal("note"), text: t.string, color: t.string, container: t.string })),
@@ -187,59 +187,75 @@ const boardAddItem = route
         }
     })
 
-router.use(typeraRouter(boardCreate, boardUpdate, githubWebhook, boardAddItem).handler())
+const itemCreateOrUpdate = route
+    .put("/api/v1/board/:boardId/item/:itemId")
+    .use(
+        body(
+            t.intersection([
+                t.type({
+                    type: t.literal("note"),
+                    text: NonEmptyString,
+                    color: t.string,
+                    container: t.string,
+                }),
+                t.partial({
+                    replaceTextIfExists: t.boolean,
+                    replaceColorIfExists: t.boolean,
+                    replaceContainerIfExists: t.boolean,
+                }),
+            ]),
+        ),
+        headers(t.type({ api_token: t.string })),
+    )
+    .handler(async (request) => {
+        try {
+            const { boardId, itemId } = request.routeParams
+            let {
+                type,
+                text,
+                color,
+                container,
+                replaceTextIfExists,
+                replaceColorIfExists,
+                replaceContainerIfExists = true,
+            } = request.body
+            console.log(`PUT item for board ${boardId} item ${itemId}: ${JSON.stringify(request.req.body)}`)
 
-router.put("/api/v1/board/:boardId/item/:itemId", bodyParser.json(), async (req, res) => {
-    try {
-        const { boardId, itemId } = req.params
-        if (!boardId) throw new InvalidRequest("boardId missing")
-        if (!itemId) throw new InvalidRequest("itemId missing")
-        let {
-            type,
-            text,
-            color,
-            container,
-            replaceTextIfExists,
-            replaceColorIfExists,
-            replaceContainerIfExists = true,
-        } = req.body
-        console.log(`PUT item for board ${boardId} item ${itemId}: ${JSON.stringify(req.body)}`)
-        if (type !== "note") throw new InvalidRequest("Expecting type: note")
-        if (typeof text !== "string" || text.length === 0) throw new InvalidRequest("Expecting non zero-length text")
-
-        const board = await getBoard(boardId)
-        checkBoardAPIAccess(board, (req.headers.API_TOKEN as string) || "")
-        if (board) {
-            const existingItem = board.board.items.find((i) => i.id === itemId)
-            if (existingItem) {
-                await updateItem(
-                    board.board,
-                    type,
-                    text,
-                    color,
-                    container,
-                    itemId,
-                    replaceTextIfExists,
-                    replaceColorIfExists,
-                    replaceContainerIfExists,
-                )
+            const board = await getBoard(boardId)
+            checkBoardAPIAccess(board, request.headers.api_token)
+            if (board) {
+                const existingItem = board.board.items.find((i) => i.id === itemId)
+                if (existingItem) {
+                    await updateItem(
+                        board.board,
+                        type,
+                        text,
+                        color,
+                        container,
+                        itemId,
+                        replaceTextIfExists,
+                        replaceColorIfExists,
+                        replaceContainerIfExists,
+                    )
+                } else {
+                    console.log(`Adding new item`)
+                    await addItem(board.board, type, text, color, container, itemId)
+                }
             } else {
-                console.log(`Adding new item`)
-                await addItem(board.board, type, text, color, container, itemId)
+                console.warn(`Github webhook call for unknown board ${boardId}`)
             }
-        } else {
-            console.warn(`Github webhook call for unknown board ${boardId}`)
+            return ok({ ok: true })
+        } catch (e) {
+            console.error(e)
+            if (e instanceof InvalidRequest) {
+                return badRequest(e.message)
+            } else {
+                return internalServerError()
+            }
         }
-        res.status(200).json({ ok: true })
-    } catch (e) {
-        console.error(e)
-        if (e instanceof InvalidRequest) {
-            res.status(400).send(e.message)
-        } else {
-            res.sendStatus(500)
-        }
-    }
-})
+    })
+
+router.use(typeraRouter(boardCreate, boardUpdate, githubWebhook, itemCreate, itemCreateOrUpdate).handler())
 
 class InvalidRequest extends Error {
     constructor(message: string) {
