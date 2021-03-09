@@ -247,7 +247,14 @@ function getItemAttributesForContainer(container: string | undefined, board: Boa
     return {}
 }
 
-async function addItem(board: Board, type: "note", text: string, color: Color, container: string | undefined, itemId?: string) {
+async function addItem(
+    board: Board,
+    type: "note",
+    text: string,
+    color: Color,
+    container: string | undefined,
+    itemId?: string,
+) {
     if (type !== "note") throw new InvalidRequest("Expecting type: note")
     if (typeof text !== "string" || text.length === 0) throw new InvalidRequest("Expecting non zero-length text")
 
