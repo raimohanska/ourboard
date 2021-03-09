@@ -13,31 +13,40 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                 (s) => `user-info ${s}`,
             )}
         >
-            {L.view(state, s => s.status, (status) => {
-                switch (status) {
-                    case "logging-in-server":
-                    case "logged-in":
-                        return (
-                            <span>
-                                {L.view(state, s => (s as LoggingInServer).name)}
-                                <a className="login" onClick={signOut}>
-                                    Sign out
-                                </a>
-                            </span>
-                        )
-                    default:
-                        return (
-                            <span>
-                                <NicknameEditor {...{ state, dispatch }} />
-                                {L.view(state, canLogin, show => show && (
-                                    <a className="login" onClick={signIn}>
-                                        Sign in
+            {L.view(
+                state,
+                (s) => s.status,
+                (status) => {
+                    switch (status) {
+                        case "logging-in-server":
+                        case "logged-in":
+                            return (
+                                <span>
+                                    {L.view(state, (s) => (s as LoggingInServer).name)}
+                                    <a className="login" onClick={signOut}>
+                                        Sign out
                                     </a>
-                                ))}
-                            </span>
-                        )
-                }
-            })}
+                                </span>
+                            )
+                        default:
+                            return (
+                                <span>
+                                    <NicknameEditor {...{ state, dispatch }} />
+                                    {L.view(
+                                        state,
+                                        canLogin,
+                                        (show) =>
+                                            show && (
+                                                <a className="login" onClick={signIn}>
+                                                    Sign in
+                                                </a>
+                                            ),
+                                    )}
+                                </span>
+                            )
+                    }
+                },
+            )}
         </span>
     )
 }
