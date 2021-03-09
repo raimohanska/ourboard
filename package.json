@@ -30,7 +30,7 @@
     "perf-tester"
   ],
   "scripts": {
-    "start:dev": "npm-run-all --parallel start:db watch:frontend start:dev:backend",
+    "start:dev": "npm-run-all --parallel start:db watch:frontend start:dev:backend typecheck:dev:frontend",
     "start:dev:no-db": "npm-run-all --parallel watch:frontend start:dev:backend",
     "start:db": "docker-compose up||true",
     "watch:frontend": "yarn --cwd frontend watch",
@@ -46,6 +46,7 @@
     "test-e2e:dev": "cypress run --headed || true",
     "cypress": "cypress open",
     "prettier:check": "prettier --check .",
+    "typecheck:dev:frontend": "cd frontend && tsc --noEmit --watch",
     "format": "prettier --write ."
   }
 }
