@@ -1,6 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { canLogin, Dispatch, UserSessionState } from "../store/user-session-store"
+import { canLogin, Dispatch, UserSessionState, LoggingInServer } from "../store/user-session-store"
 import { EditableSpan } from "./EditableSpan"
 import { signIn, signOut } from "../google-auth"
 
@@ -13,13 +13,13 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                 (s) => `user-info ${s}`,
             )}
         >
-            {L.view(state, (user) => {
-                switch (user.status) {
+            {L.view(state, s => s.status, (status) => {
+                switch (status) {
                     case "logging-in-server":
                     case "logged-in":
                         return (
                             <span>
-                                {user.name}
+                                {L.view(state, s => (s as LoggingInServer).name)}
                                 <a className="login" onClick={signOut}>
                                     Sign out
                                 </a>
@@ -29,11 +29,11 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                         return (
                             <span>
                                 <NicknameEditor {...{ state, dispatch }} />
-                                {canLogin(user) && (
+                                {L.view(state, canLogin, show => show && (
                                     <a className="login" onClick={signIn}>
                                         Sign in
                                     </a>
-                                )}
+                                ))}
                             </span>
                         )
                 }
