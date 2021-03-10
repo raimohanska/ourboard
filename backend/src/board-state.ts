@@ -18,10 +18,12 @@ export type ServerSideBoardState = {
     accessTokens: string[]
 }
 
-export type ServerSideBoardStateInternal = ServerSideBoardState | {
-    ready: false,
-    fetch: Promise<ServerSideBoardState>
-}
+export type ServerSideBoardStateInternal =
+    | ServerSideBoardState
+    | {
+          ready: false
+          fetch: Promise<ServerSideBoardState>
+      }
 
 let boards: Map<Id, ServerSideBoardStateInternal> = new Map()
 
@@ -29,7 +31,7 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
     let state = boards.get(id)
     if (!state) {
         console.log(`Loading board ${id} into memory`)
-        const fetchState = async () => {            
+        const fetchState = async () => {
             const { board, accessTokens } = await fetchBoard(id)
             return {
                 ready: true,
@@ -45,11 +47,11 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
         const fetch = fetchState()
         const temporaryState = {
             ready: false as const,
-            fetch
+            fetch,
         }
         boards.set(id, temporaryState)
         const finalState = await fetch
-        boards.set(id, finalState)             
+        boards.set(id, finalState)
         return finalState
     } else if (!state.ready) {
         return await state.fetch
@@ -97,7 +99,7 @@ export async function addBoard(board: Board, createToken?: boolean): Promise<Ser
 }
 
 export function getActiveBoards() {
-    return [...boards.values()].filter(b => b.ready) as ServerSideBoardState[]
+    return [...boards.values()].filter((b) => b.ready) as ServerSideBoardState[]
 }
 
 let savingPromise: Promise<void> = saveBoards()

@@ -1,4 +1,4 @@
-import * as WebSocket from "ws";
+import * as WebSocket from "ws"
 import * as uuid from "uuid"
 
 export const WsWrapper = (ws: WebSocket) => {
@@ -11,7 +11,7 @@ export const WsWrapper = (ws: WebSocket) => {
             }
         },
         ws,
-        id: uuid.v4()
+        id: uuid.v4(),
     }
 }
 export type WsWrapper = ReturnType<typeof WsWrapper>

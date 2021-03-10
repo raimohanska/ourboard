@@ -21,22 +21,22 @@ function createTester(nickname: string) {
             console.log("reconnecting...")
             socket = initSocket()
         }
-    }    
+    }
     function initSocket() {
         let ws: WebSocket
         ws = new WebSocket(`ws://localhost:1337/socket/board/${boardId}`)
 
-        ws.addEventListener('error', e => { 
-            console.error("Web socket error"); 
+        ws.addEventListener("error", (e) => {
+            console.error("Web socket error")
             reconnect(ws)
-        });
-        ws.addEventListener('open', () => { 
-            console.log("Websocket connected"); 
+        })
+        ws.addEventListener("open", () => {
+            console.log("Websocket connected")
             messageQueue.onConnect()
             console.log("Joining board")
             messageQueue.enqueue({ action: "board.join", boardId })
-        });
-        ws.addEventListener('message', str => { 
+        })
+        ws.addEventListener("message", (str) => {
             const event = JSON.parse(str.data)
             if (event.action === "ack") {
                 messageQueue.ack()
@@ -58,12 +58,12 @@ function createTester(nickname: string) {
                     messageQueue.enqueue({ action: "nickname.set", nickname })
                 }
             }
-        });
+        })
 
-        ws.addEventListener('close', () => {
+        ws.addEventListener("close", () => {
             console.log("Socket disconnected")
-            reconnect(ws)            
-        });
+            reconnect(ws)
+        })
 
         messageQueue.setSocket(ws)
         return ws

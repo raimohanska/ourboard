@@ -19,7 +19,7 @@ export default function (socket: Sender | null) {
 
     function sendIfPossible() {
         state.modify((s) => {
-            if (s.sent.length > 0 || s.queue.length === 0) return s            
+            if (s.sent.length > 0 || s.queue.length === 0) return s
             socket!.send(JSON.stringify(s.queue))
             return {
                 queue: [],
@@ -54,6 +54,6 @@ export default function (socket: Sender | null) {
         setSocket(newSocket: Sender) {
             socket = newSocket
         },
-        ack
+        ack,
     }
 }

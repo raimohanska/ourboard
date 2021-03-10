@@ -96,7 +96,7 @@ export function endSession(socket: WsWrapper) {
 export function getBoardSessionCount(id: Id) {
     return everyoneOnTheBoard(id).length
 }
-export function getSession(socket: WsWrapper): UserSession {
+export function getSession(socket: WsWrapper): UserSession | undefined {
     return sessions[socket.id]
 }
 

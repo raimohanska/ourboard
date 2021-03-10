@@ -28,33 +28,33 @@ export function serverConnection(initialBoardId: Id | undefined) {
     const messageQueue = MessageQueue(null)
     let socket = initSocket(initialBoardId)
 
-    function initSocket(boardId: Id | undefined) {
+    function initSocket(boardId: Id | undefined) {
         let ws: WebSocket
         ws = new WebSocket(`ws://${location.host}/socket/${boardId ? "board/" + boardId : "lobby"}`)
 
-        ws.addEventListener('error', e => { 
-            console.error("Web socket error"); 
+        ws.addEventListener("error", (e) => {
+            console.error("Web socket error")
             reconnect()
-        });
-        ws.addEventListener('open', () => { 
-            console.log("Websocket connected"); 
+        })
+        ws.addEventListener("open", () => {
+            console.log("Websocket connected")
             messageQueue.onConnect()
             connected.set(true)
-        });
-        ws.addEventListener('message', str => { 
+        })
+        ws.addEventListener("message", (str) => {
             const event = JSON.parse(str.data)
             if (event.action === "ack") {
                 messageQueue.ack()
             } else {
                 serverEvents.push(event)
             }
-        });
+        })
 
-        ws.addEventListener('close', () => {
+        ws.addEventListener("close", () => {
             console.log("Socket disconnected")
             connected.set(false)
-            reconnect()            
-        });
+            reconnect()
+        })
 
         messageQueue.setSocket(ws)
         return ws
@@ -68,7 +68,7 @@ export function serverConnection(initialBoardId: Id | undefined) {
         }
     }
 
-    function newSocket(boardId: Id | undefined) {
+    function newSocket(boardId: Id | undefined) {
         console.log("New socket")
         socket.close()
         socket = initSocket(boardId)

@@ -15,12 +15,14 @@ import { terminateSessions } from "./sessions"
 import _ from "lodash"
 import apiRoutes from "./api-routes"
 import { WsWrapper } from "./ws-wrapper"
+import { handleCommonEvent } from "./common-event-handler"
+import { handleBoardEvent } from "./board-event-handler"
 
 const configureServer = () => {
     const config = getConfig()
 
     const app = express()
-    
+
     let http = new Http.Server(app)
     const ws = expressWs(app, http)
 
@@ -65,19 +67,19 @@ const configureServer = () => {
                     .on("error", (err) => res.status(500).send(err.message))
             })
             .end()
-    });
+    })
 
     app.get("/b/:boardId", async (req, res) => {
         res.sendFile(path.resolve("../frontend/dist/index.html"))
     })
 
-    const handler = connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) })
-    ws.app.ws('/socket/lobby', (socket, req) => { 
-        handler(WsWrapper(socket))
-    });
-    ws.app.ws('/socket/board/:boardId', (socket, req) => {    
-        handler(WsWrapper(socket))
-    });
+    ws.app.ws("/socket/lobby", (socket, req) => {
+        connectionHandler(WsWrapper(socket), handleCommonEvent)
+    })
+    ws.app.ws("/socket/board/:boardId", (socket, req) => {
+        const boardId = req.params.boardId
+        connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, createGetSignedPutUrl(config.storageBackend)))
+    })
 
     return http
 }
