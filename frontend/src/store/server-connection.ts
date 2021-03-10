@@ -29,40 +29,44 @@ export function serverConnection() {
     const messageQueue = MessageQueue(null)
     let socket = initSocket()
 
-    async function reconnect(reconnectSocket: SocketIOClient.Socket) {
+    async function reconnect(reconnectSocket: WebSocket) {
         await sleep(100)
         if (reconnectSocket === socket) {
             console.log("reconnecting")
-            socket.connect()
+            initSocket()
         }
     }
 
     function initSocket() {
         console.log("New socket")
-        const socket = io({ reconnection: true, reconnectionDelay: 100 })
-        messageQueue.setSocket(socket)
+        const ws = new WebSocket(`ws://${location.host}/socket/board`)
 
-        socket.on("connect", () => {
-            console.log("Socket connected")
+        ws.addEventListener('error', e => { 
+            console.error("Web socket error", e); 
+        });
+        ws.addEventListener('open', () => { 
+            console.log("Websocket connected"); 
             messageQueue.onConnect()
             connected.set(true)
-        })
-        socket.on("disconnect", () => {
+        });
+        ws.addEventListener('message', str => { 
+            const event = JSON.parse(str.data)
+            serverEvents.push(event)
+        });
+
+        ws.addEventListener('close', () => {
             console.log("Socket disconnected")
             connected.set(false)
-            reconnect(socket)
-        })
-        socket.on("message", function (kind: string, event: EventFromServer) {
-            if (kind === "app-event") {
-                serverEvents.push(event)
-            }
-        })
-        return socket
+            reconnect(ws)            
+        });
+
+        messageQueue.setSocket(ws)
+        return ws
     }
 
     function newSocket() {
         console.log("New socket")
-        socket.disconnect()
+        socket.close()
         socket = initSocket()
     }
     uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach(messageQueue.enqueue)

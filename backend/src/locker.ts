@@ -2,6 +2,7 @@ import IO from "socket.io"
 import { Id, BoardItemEvent, isPersistableBoardItemEvent, getItemIds, ItemLocks } from "../../common/src/domain"
 import { getActiveBoards, ServerSideBoardState } from "./board-state"
 import { AutoExpiringMap } from "./expiring-map"
+import { WsWrapper } from "./ws-wrapper"
 
 const LOCK_TTL_SECONDS = 10
 
@@ -29,7 +30,7 @@ export function Locks(onChange: (locks: ItemLocks) => any) {
     }
 }
 
-export function obtainLock(locks: ServerSideBoardState["locks"], e: BoardItemEvent, socket: IO.Socket) {
+export function obtainLock(locks: ServerSideBoardState["locks"], e: BoardItemEvent, socket: WsWrapper) {
     if (isPersistableBoardItemEvent(e)) {
         const itemIds = getItemIds(e)
         // Since we are operating on multiple items at a time, locking must succeed for all of them

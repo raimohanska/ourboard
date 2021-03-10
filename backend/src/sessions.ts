@@ -27,6 +27,7 @@ import { getBoardHistory, verifyContinuity } from "./board-store"
 import { randomProfession } from "./professions"
 import { sleep } from "../../common/src/sleep"
 import { getUserIdForEmail } from "./user-store"
+import { WsWrapper } from "./ws-wrapper"
 type UserSession = {
     readonly sessionId: Id
     readonly boards: UserSessionBoardEntry[]
@@ -43,7 +44,7 @@ type UserSessionBoardEntry = {
 }
 
 /*
-socket: IO.Socket
+socket: WsWrapper
     boards: Id[]
     userInfo: EventUserInfo
     */
@@ -55,11 +56,11 @@ const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter(i
 const everyoneElseOnTheSameBoard = (boardId: Id, session?: UserSession) =>
     Object.values(sessions).filter((s) => s.sessionId !== session?.sessionId && isOnBoard(boardId)(s))
 
-export function startSession(socket: IO.Socket) {
+export function startSession(socket: WsWrapper) {
     sessions[socket.id] = userSession(socket)
 }
 
-function userSession(socket: IO.Socket) {
+function userSession(socket: WsWrapper) {
     const boards: UserSessionBoardEntry[] = []
     const sessionId = socket.id
     function sendEvent(event: AppEvent) {
@@ -71,7 +72,7 @@ function userSession(socket: IO.Socket) {
                 return
             }
         }
-        socket.send("app-event", event)
+        socket.send(event)
     }
     const session = {
         sessionId,
@@ -79,7 +80,7 @@ function userSession(socket: IO.Socket) {
         boards,
         sendEvent,
         isOnBoard: (boardId: Id) => boards.some((b) => b.boardId === boardId),
-        close: () => socket.disconnect(),
+        close: () => socket.ws.close(),
     }
     sessions[socket.id] = session
     return session
@@ -89,14 +90,14 @@ function anonymousUser(nickname: string): EventUserInfo {
     return { userType: "unidentified", nickname }
 }
 
-export function endSession(socket: IO.Socket) {
+export function endSession(socket: WsWrapper) {
     const boards = sessions[socket.id].boards
     delete sessions[socket.id]
 }
 export function getBoardSessionCount(id: Id) {
     return everyoneOnTheBoard(id).length
 }
-export function getSession(socket: IO.Socket): UserSession {
+export function getSession(socket: WsWrapper): UserSession {
     return sessions[socket.id]
 }
 
@@ -111,7 +112,7 @@ function describeRange(events: BoardHistoryEntry[]) {
 
 export async function addSessionToBoard(
     boardState: ServerSideBoardState,
-    origin: IO.Socket,
+    origin: WsWrapper,
     initAtSerial?: Serial,
 ): Promise<void> {
     const session = sessions[origin.id]
@@ -190,7 +191,7 @@ export async function addSessionToBoard(
     broadcastJoinEvent(boardState.board.id, session)
 }
 
-export function setNicknameForSession(event: SetNickname, origin: IO.Socket) {
+export function setNicknameForSession(event: SetNickname, origin: WsWrapper) {
     Object.values(sessions)
         .filter((s) => s.sessionId === origin.id)
         .forEach((session) => {
@@ -222,7 +223,7 @@ export async function setVerifiedUserForSession(
     return session.userInfo
 }
 
-export function logoutUser(event: AuthLogout, origin: IO.Socket) {
+export function logoutUser(event: AuthLogout, origin: WsWrapper) {
     const session = Object.values(sessions).find((s) => s.sessionId === origin.id)
     if (!session) {
         console.warn("Session not found for socket " + origin.id)

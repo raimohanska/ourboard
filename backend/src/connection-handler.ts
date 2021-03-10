@@ -31,12 +31,39 @@ import {
     getUserAssociatedBoards,
     getUserIdForEmail,
 } from "./user-store"
+import { WsWrapper } from "./ws-wrapper"
 
 export type ConnectionHandlerParams = Readonly<{
     getSignedPutUrl: (key: string) => string
 }>
 
-export const connectionHandler = ({ getSignedPutUrl }: ConnectionHandlerParams) => (socket: IO.Socket) => {
+
+export const connectionHandler = ({ getSignedPutUrl }: ConnectionHandlerParams) => (socket: WsWrapper) => {
+    startSession(socket)
+    socket.ws.addEventListener('error', e => { 
+        console.error("Web socket error", e); 
+    });
+    socket.ws.addEventListener('message', async str => { 
+        const event = JSON.parse(str.data)
+        console.log("received", event)
+        socket.send({"action": "ack"})
+        let serialsToAck: Record<Id, Serial> = {}
+        for (const e of event as AppEvent[]) {
+            const serialAck = await handleAppEvent(socket, e, getSignedPutUrl)
+            if (serialAck) {
+                serialsToAck[serialAck.boardId] = serialAck.serial
+            }
+        }
+        Object.entries(serialsToAck).forEach(([boardId, serial]) => {
+            socket.send({ action: "board.serial.ack", boardId, serial } as BoardSerialAck)
+        })
+    });
+
+    socket.ws.addEventListener('close', () => {
+        console.log("Socket disconnected")                   
+    });
+
+    /*
     socket.on("message", async (kind: string, event: any, ackFn) => {
         // console.log("Received", kind, event)
         if (kind === "app-events") {
@@ -66,6 +93,7 @@ export const connectionHandler = ({ getSignedPutUrl }: ConnectionHandlerParams) 
         })
         releaseLocksFor(socket)
     })
+    */
 }
 
 setInterval(() => {
@@ -78,7 +106,7 @@ setInterval(() => {
 }, 100)
 
 async function handleAppEvent(
-    socket: IO.Socket,
+    socket: WsWrapper,
     appEvent: AppEvent,
     getSignedPutUrl: (key: string) => string,
 ): Promise<{ boardId: Id; serial: Serial } | undefined> {
@@ -225,7 +253,7 @@ async function handleAppEvent(
             case "asset.put.request": {
                 const { assetId } = appEvent
                 const signedUrl = getSignedPutUrl(assetId)
-                socket.send("app-event", { action: "asset.put.response", assetId, signedUrl } as AppEvent)
+                socket.send({ action: "asset.put.response", assetId, signedUrl } as AppEvent)
                 return
             }
             default: {

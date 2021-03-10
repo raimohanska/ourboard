@@ -1,6 +1,7 @@
 import dotenv from "dotenv"
 dotenv.config()
 import express from "express"
+import expressWs from "express-ws"
 import * as Http from "http"
 import * as Https from "https"
 import * as path from "path"
@@ -14,13 +15,15 @@ import { createGetSignedPutUrl } from "./storage"
 import { terminateSessions } from "./sessions"
 import _ from "lodash"
 import apiRoutes from "./api-routes"
+import { WsWrapper } from "./ws-wrapper"
 
 const configureServer = () => {
     const config = getConfig()
 
     const app = express()
+    
     let http = new Http.Server(app)
-    let io = IO(http)
+    const ws = expressWs(app, http)
 
     app.use("/", express.static("../frontend/dist"))
     app.use("/", express.static("../frontend/public"))
@@ -63,15 +66,16 @@ const configureServer = () => {
                     .on("error", (err) => res.status(500).send(err.message))
             })
             .end()
-    })
+    });
 
     app.get("/b/:boardId", async (req, res) => {
         res.sendFile(path.resolve("../frontend/dist/index.html"))
     })
 
-    app.use(apiRoutes.handler())
-
-    io.on("connection", connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) }))
+    ws.app.ws('/socket/board', (socket, req) => {
+        console.log('Websocket connection');        
+        connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) })(WsWrapper(socket))
+    });
 
     return http
 }
