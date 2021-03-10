@@ -36,21 +36,16 @@ export function autoFontSize(
 ): L.Property<string> {
     let fullOptions = { ...defaultOptions, ...options }
 
-    const itemProps = L.combine(
+    const elFont = coordinateHelper.elementFont(element)
+    return L.view(
         L.view(item, "type"),
         L.view(item, "width"),
         L.view(item, "height"),
         fontSize,
         text,
-        (t, w, h, fs, text) => [t, w, h, fs, text] as const,
-    )
-    return L.view(
-        itemProps,
-        focused,
-        coordinateHelper.elementFont(element),
-        ([t, w, h, fs, text], f, referenceFont) => {
+        (t, w, h, fs, text) => {
             if (t !== "note") return fs + "em"
-
+            const referenceFont = elFont.get()
             sanitizeHTMLCache[text] = sanitizeHTMLCache[text] ?? toPlainText(text)
             const plainText = sanitizeHTMLCache[text]
             const split = plainText.split(/\s/)
