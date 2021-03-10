@@ -23,6 +23,64 @@ export function boardReducer(
         board = { ...board, serial: event.serial }
     }
     switch (event.action) {
+        case "connection.add": {
+            const { connection } = event
+            const fromItem = board.items.find((i) => i.id === connection.from)
+            if (!fromItem) {
+                throw Error(`Connection ${connection.id} refers to nonexisting origin item ${connection.from}`)
+            }
+            if (typeof connection.to === "string") {
+                const toItem = board.items.find((i) => i.id === connection.to)
+                if (!toItem) {
+                    throw Error(`Connection ${connection.id} refers to nonexisting destination item ${connection.to}`)
+                }
+            }
+
+            if (board.connections.some((c) => c.id === connection.id)) {
+                throw Error(`Connection ${connection.id} already exists on board ${board.id}`)
+            }
+
+            return [
+                { ...board, connections: board.connections.concat(connection) },
+                { action: "connection.delete", boardId: event.boardId, connectionId: event.connection.id },
+            ]
+        }
+        case "connection.modify": {
+            const { connection } = event
+            const fromItem = board.items.find((i) => i.id === connection.from)
+            if (!fromItem) {
+                throw Error(`Connection ${connection.id} refers to nonexisting origin item ${connection.from}`)
+            }
+            if (typeof connection.to === "string") {
+                const toItem = board.items.find((i) => i.id === connection.to)
+                if (!toItem) {
+                    throw Error(`Connection ${connection.id} refers to nonexisting destination item ${connection.to}`)
+                }
+            }
+
+            const existingConnection = board.connections.find((c) => c.id === connection.id)
+            if (!existingConnection) {
+                throw Error(`Trying to modify nonexisting connection ${connection.id} on board ${board.id}`)
+            }
+
+            return [
+                { ...board, connections: board.connections.map((c) => (c === existingConnection ? connection : c)) },
+                { action: "connection.modify", boardId: event.boardId, connection: existingConnection },
+            ]
+        }
+        case "connection.delete": {
+            const { connectionId } = event
+
+            const existingConnection = board.connections.find((c) => c.id === connectionId)
+            if (!existingConnection) {
+                throw Error(`Trying to delete nonexisting connection ${connectionId} on board ${board.id}`)
+            }
+
+            return [
+                { ...board, connections: board.connections.filter((c) => c !== existingConnection) },
+                { action: "connection.add", boardId: event.boardId, connection: existingConnection },
+            ]
+        }
         case "board.rename":
             return [{ ...board, name: event.name }, null]
         case "item.bootstrap":
@@ -101,9 +159,14 @@ export function boardReducer(
             ]
         case "item.delete": {
             const idsToDelete = findItemIdsRecursively(event.itemIds, board)
+
+            const connectionsToKeep = board.connections.filter(
+                (c) => !idsToDelete.has(c.from) && (typeof c.to !== "string" || !idsToDelete.has(c.to)),
+            )
             return [
                 {
                     ...board,
+                    connections: connectionsToKeep,
                     items: board.items.filter((i) => !idsToDelete.has(i.id)),
                 },
                 {

@@ -5,16 +5,22 @@ import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainer } from "./item-setcontainer"
 import { Dispatch } from "../store/server-connection"
+import { Tool } from "./BoardView"
 
 export function itemDragToMove(
     id: string,
     board: L.Property<Board>,
     focus: L.Atom<BoardFocus>,
+    tool: L.Property<Tool>,
     coordinateHelper: BoardCoordinateHelper,
     dispatch: Dispatch,
 ) {
     return (elem: HTMLElement) =>
         onBoardItemDrag(elem, id, board, focus, coordinateHelper, (b, items, xDiff, yDiff) => {
+            // Cant drag when connect tool is active
+            const t = tool.get()
+            if (t === "connect") return
+
             // While dragging
             const f = focus.get()
             if (f.status !== "dragging") throw Error("Assertion fail")

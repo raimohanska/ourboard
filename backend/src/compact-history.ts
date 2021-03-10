@@ -12,7 +12,7 @@ import { Board, BoardHistoryEntry, Id } from "../../common/src/domain"
 import { format } from "date-fns"
 import { boardReducer } from "../../common/src/board-reducer"
 import { PoolClient } from "pg"
-import { mkBootStrapEvent } from "../../common/src/migration"
+import { mkBootStrapEvent, migrateBoard } from "../../common/src/migration"
 
 // TODO: there are now some incomplete/inconsistent histories in production.
 //    Analyze and re-bootstrap them into consistency. This tool could do it!
@@ -107,7 +107,7 @@ export function compactBoardHistory(id: Id) {
 
 // TODO: should re-serialize events as well to make it consistent. Then the clients should somehow detect that their serial is ahead and start from scratch. Otherwise they'll ignore future events
 async function bootstrapHistory(boardId: Id, snap: Board, events: BoardHistoryEntry[], client: PoolClient) {
-    const board = events.reduce((b, e) => boardReducer(b, e)[0], snap)
+    const board = migrateBoard(events.reduce((b, e) => boardReducer(b, e)[0], snap))
 
     const bootstrappedHistory = [mkBootStrapEvent(boardId, board)] as BoardHistoryEntry[]
 

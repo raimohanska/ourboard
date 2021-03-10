@@ -3,10 +3,10 @@ import { Board, Item, Container } from "../../../common/src/domain"
 import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { BoardFocus } from "./board-focus"
-import { Rect, overlaps, rectFromPoints } from "./geometry"
+import { Rect, overlaps, rectFromPoints, Coordinates } from "./geometry"
 import * as _ from "lodash"
 import { componentScope } from "harmaja"
-import { ControlMode } from "./BoardView"
+import { Tool } from "./BoardView"
 
 const ELSEWHERE = { type: "OTHER" } as const
 type Elsewhere = typeof ELSEWHERE
@@ -20,13 +20,13 @@ export function boardDragHandler({
     boardElem,
     coordinateHelper,
     board,
-    controlMode,
+    tool,
     focus,
 }: {
     boardElem: L.Property<HTMLElement | null>
     coordinateHelper: BoardCoordinateHelper
     board: L.Property<Board>
-    controlMode: L.Property<ControlMode>
+    tool: L.Property<Tool>
     focus: L.Atom<BoardFocus>
 }) {
     let start: L.Atom<BoardCoordinates | null> = L.atom(null)
@@ -47,8 +47,8 @@ export function boardDragHandler({
     boardElem.forEach((el) => {
         if (!el) return
         el.addEventListener("dragstart", (e) => {
-            const mode = controlMode.get()
-            const shouldDragSelect = mode === "mouse" ? !!e.altKey : true
+            const t = tool.get()
+            const shouldDragSelect = t === "pan" ? !!e.altKey : true
             dragAction.set(
                 !shouldDragSelect
                     ? { action: "move" }
@@ -143,12 +143,14 @@ export function boardDragHandler({
         }
     })
 
-    return L.pipe(
-        L.combine(rect, dragAction, (rect: Rect | null, dragAction: DragAction) => {
-            if (!rect || dragAction.action !== "select") return null
+    return {
+        selectionRect: L.pipe(
+            L.combine(rect, dragAction, (rect: Rect | null, dragAction: DragAction) => {
+                if (!rect || dragAction.action !== "select") return null
 
-            return rect
-        }),
-        L.skipDuplicates<Rect | null>(_.isEqual, componentScope()),
-    )
+                return rect
+            }),
+            L.skipDuplicates<Rect | null>(_.isEqual, componentScope()),
+        ),
+    }
 }

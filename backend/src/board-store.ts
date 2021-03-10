@@ -1,6 +1,7 @@
 import { PoolClient } from "pg"
 import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardAccessPolicy, BoardHistoryEntry, exampleBoard, Id, Serial } from "../../common/src/domain"
+import { migrateBoard } from "../../common/src/migration"
 import { inTransaction, withDBClient } from "./db"
 import * as uuid from "uuid"
 
@@ -49,7 +50,7 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
                 console.log(`Fetched full history for board ${id}, consisting of ${history.length} events`)
                 initialBoard = { ...snapshot, items: [] }
             }
-            const board = history.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
+            const board = history.reduce((b, e) => boardReducer(b, e)[0], migrateBoard(initialBoard))
             const serial = (history.length > 0 ? history[history.length - 1].serial : snapshot.serial) || 0
             if (history.length > 1000 || serial == 1 || !snapshot.serial /* rebooted */) {
                 console.log(`Saving snapshot history ${history.length} serial ${serial}/${snapshot.serial}`)
@@ -183,7 +184,7 @@ function verifyTwoPoints(boardId: Id, a: Serial, b: Serial) {
 }
 
 export function mkSnapshot(board: Board, serial: Serial) {
-    return { ...board, serial }
+    return migrateBoard({ ...board, serial })
 }
 
 export async function saveBoardSnapshot(board: Board, client: PoolClient) {

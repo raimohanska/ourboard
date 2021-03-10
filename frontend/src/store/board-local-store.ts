@@ -1,4 +1,5 @@
 import { BoardWithHistory, Id } from "../../../common/src/domain"
+import { migrateBoard } from "../../../common/src/migration"
 
 export type LocalStorageBoard = {
     boardWithHistory: BoardWithHistory
@@ -16,7 +17,12 @@ export function getInitialBoardState(boardId: Id) {
             state = undefined // Discard earlier stored versions where serial was not part of Board
         }
     }
-    return state
+    return state && state.boardWithHistory
+        ? {
+              ...state,
+              boardWithHistory: { ...state.boardWithHistory, board: migrateBoard(state.boardWithHistory.board) },
+          }
+        : state
 }
 
 function getStorageKey(boardId: string) {

@@ -1,7 +1,7 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Item } from "../../../common/src/domain"
+import { Board } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { Dispatch } from "../store/server-connection"
@@ -11,14 +11,12 @@ type Vertical = "top" | "bottom"
 
 export const SelectionBorder = ({
     id,
-    item,
     board,
     coordinateHelper,
     focus,
     dispatch,
 }: {
     id: string
-    item: L.Property<Item>
     coordinateHelper: BoardCoordinateHelper
     focus: L.Atom<BoardFocus>
     board: L.Property<Board>

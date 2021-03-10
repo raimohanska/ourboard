@@ -90,12 +90,12 @@ export function boardScrollAndZoomHandler(
                 zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 10))
                 coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
             } else {
-                // If the user seems to be using a trackpad, and they haven't manually configured their control mode yet,
-                // Let's set the mode to 'trackpad' as a best-effort "works like you'd expect" UX thing
+                // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
+                // Let's set the mode to 'select' as a best-effort "works like you'd expect" UX thing
                 const settings = controlSettings.get()
-                if (settings.hasUserManuallySetMode || settings.mode === "trackpad") {
-                    // Don't automatically make decisions for user if they have already set mode manually,
-                    // Or if the mode is already trackpad
+                if (settings.hasUserManuallySetTool || settings.tool === "select") {
+                    // Don't automatically make decisions for user if they have already set tool manually,
+                    // Or if the select tool is already on
                     return
                 }
 
@@ -105,7 +105,7 @@ export function boardScrollAndZoomHandler(
                     event.deltaMode === 0 && Math.max(Math.abs(event.deltaX), Math.abs(event.deltaY)) <= 3
 
                 if (isTrackpad) {
-                    controlSettings.set({ ...settings, mode: "trackpad" })
+                    controlSettings.set({ ...settings, tool: "select" })
                 }
             }
         }

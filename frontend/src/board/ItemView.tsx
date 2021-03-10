@@ -1,4 +1,4 @@
-import { h } from "harmaja"
+import { componentScope, h } from "harmaja"
 import * as L from "lonna"
 import {
     Board,
@@ -18,8 +18,10 @@ import { Dispatch } from "../store/server-connection"
 import { contrastingColor } from "./contrasting-color"
 import { DragBorder } from "./DragBorder"
 import { itemDragToMove } from "./item-dragmove"
+import { drawConnectionHandler } from "./item-connect"
 import { itemSelectionHandler } from "./item-selection"
 import { SelectionBorder } from "./SelectionBorder"
+import { Tool } from "./BoardView"
 
 export const ItemView = ({
     board,
@@ -31,6 +33,7 @@ export const ItemView = ({
     focus,
     coordinateHelper,
     dispatch,
+    tool,
 }: {
     board: L.Property<Board>
     history: L.Property<BoardHistoryEntry[]>
@@ -41,12 +44,14 @@ export const ItemView = ({
     focus: L.Atom<BoardFocus>
     coordinateHelper: BoardCoordinateHelper
     dispatch: Dispatch
+    tool: L.Atom<Tool>
 }) => {
     const itemHistory = findItemHistory(history.get(), id) // Purposefully fixing to the first snapshot of history instead of reacting to changes. Would be a performance disaster most likely.
     const element = L.atom<HTMLElement | null>(null)
 
     const ref = (el: HTMLElement) => {
-        type !== "container" && itemDragToMove(id, board, focus, coordinateHelper, dispatch)(el)
+        type !== "container" && itemDragToMove(id, board, focus, tool, coordinateHelper, dispatch)(el)
+        type !== "container" && drawConnectionHandler(el, id, board, coordinateHelper, tool, dispatch)
         element.set(el)
     }
 
@@ -106,9 +111,14 @@ export const ItemView = ({
             {L.view(isLocked, (l) => l && <span className="lock">🔒</span>)}
             {L.view(
                 selected,
-                (s) => s && <SelectionBorder {...{ id, item: item, coordinateHelper, board, focus, dispatch }} />,
+                tool,
+                (s, t) =>
+                    s &&
+                    t !== "connect" && (
+                        <SelectionBorder {...{ id, tool, item: item, coordinateHelper, board, focus, dispatch }} />
+                    ),
             )}
-            {type === "container" && <DragBorder {...{ id, board, coordinateHelper, focus, dispatch }} />}
+            {type === "container" && <DragBorder {...{ id, board, tool, coordinateHelper, focus, dispatch }} />}
             {type === "note" && <AuthorInfo {...{ item: item as L.Property<TextItem>, itemHistory }} />}
         </span>
     )

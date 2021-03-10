@@ -72,7 +72,7 @@ export function migrateBoard(board: Board) {
             items.push(migrateItem(item, items, board.items))
         }
     }
-    return { ...board, width, height, items }
+    return { ...board, connections: board.connections ?? [], width, height, items }
 
     function migrateItem(item: Item, migratedItems: Item[], boardItems: Item[]): Item {
         const { width, height, z, type, ...rest } = item

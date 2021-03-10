@@ -139,6 +139,25 @@ export const HistoryView = ({
         const { timestamp, user } = event
         const itemIds = getItemIds(event)
         switch (event.action) {
+            case "connection.add":
+            case "connection.delete":
+            case "connection.modify": {
+                const kind =
+                    event.action === "connection.add"
+                        ? "added"
+                        : event.action === "connection.delete"
+                        ? "deleted"
+                        : "changed"
+
+                const id = "connectionId" in event ? event.connectionId : event.connection.id
+                return {
+                    timestamp,
+                    user,
+                    itemIds: [id],
+                    kind,
+                    actionText: `${kind} connection ${id}`,
+                }
+            }
             case "item.add": {
                 const containerIds = [...new Set(event.items.map((i) => i.containerId))]
                 const containerInfo =

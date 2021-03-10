@@ -22,7 +22,14 @@ export function foldActions(a: AppEvent, b: AppEvent): AppEvent | null {
         if (!isSameUser(a.user, b.user)) return null
     }
     if (a.action === "item.add") {
-        if (isPersistableBoardItemEvent(b) && b.action !== "item.delete" && a.boardId === b.boardId) {
+        if (
+            isPersistableBoardItemEvent(b) &&
+            b.action !== "item.delete" &&
+            b.action !== "connection.add" &&
+            b.action !== "connection.delete" &&
+            b.action !== "connection.modify" &&
+            a.boardId === b.boardId
+        ) {
             const createdItemIds = new Set(getItemIds(a))
             if (getItemIds(b).every((id) => createdItemIds.has(id))) {
                 try {

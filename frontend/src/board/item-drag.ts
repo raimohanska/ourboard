@@ -3,6 +3,7 @@ import { Board, Item } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
+import { Coordinates } from "./geometry"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/

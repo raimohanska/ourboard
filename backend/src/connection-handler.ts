@@ -10,11 +10,11 @@ export type ConnectionHandlerParams = Readonly<{
 
 export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandler) => {
     startSession(socket)
-    socket.ws.addEventListener("error", (e) => {
+    socket.ws.addEventListener("error", () => {
         //console.error("Web socket error", e);
         socket.ws.close()
     })
-    socket.ws.addEventListener("message", async (str) => {
+    socket.ws.addEventListener("message", async (str: any) => {
         const event = JSON.parse(str.data)
         let serialsToAck: Record<Id, Serial> = {}
         for (const e of event as AppEvent[]) {

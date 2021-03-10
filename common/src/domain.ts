@@ -1,4 +1,4 @@
-import _, { isUndefined } from "lodash"
+import _ from "lodash"
 import * as uuid from "uuid"
 import * as t from "io-ts"
 
@@ -15,6 +15,7 @@ export type BoardAttributes = {
 
 export type Board = BoardAttributes & {
     items: Item[]
+    connections: Connection[]
     serial: Serial
 }
 
@@ -105,6 +106,19 @@ export type Text = TextItemProperties & { type: typeof ITEM_TYPES.TEXT }
 export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string }
 export type Container = TextItemProperties & { type: typeof ITEM_TYPES.CONTAINER; color: Color }
 
+export type Point = { x: number; y: number }
+export const isPoint = (u: unknown): u is Point => typeof u === "object" && !!u && "x" in u && "y" in u
+export type Connection = {
+    id: Id
+    from: Id
+    controlPoints: Point[]
+    to: Id | Point
+}
+export type RenderableConnection = Omit<Connection, "from" | "to"> & {
+    from: Point
+    to: Point
+}
+
 export type TextItem = Note | Text | Container
 export type ColoredItem = Item & { color: Color }
 export type ShapedItem = Note
@@ -125,6 +139,9 @@ export type PersistableBoardItemEvent =
     | UpdateItem
     | MoveItem
     | DeleteItem
+    | AddConnection
+    | ModifyConnection
+    | DeleteConnection
     | IncreaseItemFont
     | DecreaseItemFont
     | BringItemToFront
@@ -165,6 +182,9 @@ export type ClientToServerRequest =
 export type LoginResponse =
     | { action: "auth.login.response"; success: false }
     | { action: "auth.login.response"; success: true; userId: string }
+export type AddConnection = { action: "connection.add"; boardId: Id; connection: Connection }
+export type ModifyConnection = { action: "connection.modify"; boardId: Id; connection: Connection }
+export type DeleteConnection = { action: "connection.delete"; boardId: Id; connectionId: Id }
 export type AuthLogin = { action: "auth.login"; name: string; email: string; token: string }
 export type AuthLogout = { action: "auth.logout" }
 export type Ping = { action: "ping" }
@@ -218,13 +238,14 @@ export const exampleBoard: Board = {
     id: "default",
     name: "Test Board",
     items: [newNote("Hello", "pink", 10, 5), newNote("World", "cyan", 20, 10), newNote("Welcome", "cyan", 5, 14)],
+    connections: [],
     ...defaultBoardSize,
     serial: 0,
 }
 
 export function createBoard(name: string, accessPolicy?: BoardAccessPolicy): Board {
     const id = uuid.v4()
-    return { id: uuid.v4(), name, items: [], ...defaultBoardSize, serial: 0, accessPolicy }
+    return { id: uuid.v4(), name, items: [], accessPolicy, connections: [], ...defaultBoardSize, serial: 0 }
 }
 
 export function newNote(
@@ -281,7 +302,7 @@ export function getCurrentTime(): ISOTimeStamp {
 }
 
 export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent =>
-    a.action.startsWith("item.") || a.action === "board.rename"
+    a.action.startsWith("item.") || a.action.startsWith("connection.") || a.action === "board.rename"
 
 export const isPersistableBoardItemEvent = (e: any): e is PersistableBoardItemEvent =>
     isBoardItemEvent(e) && !["item.lock", "item.unlock"].includes(e.action)
@@ -337,6 +358,9 @@ export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id
         case "item.bootstrap":
             return e.items.map((i) => i.id)
         case "board.rename":
+        case "connection.add":
+        case "connection.modify":
+        case "connection.delete":
             return []
     }
 }

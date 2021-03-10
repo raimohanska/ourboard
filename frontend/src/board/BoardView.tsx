@@ -7,11 +7,14 @@ import {
     findItem,
     Id,
     Image,
+    Connection,
+    isPoint,
     Item,
     newNote,
-    newSimilarNote,
     Note,
     UserCursorPosition,
+    RenderableConnection,
+    Point,
 } from "../../../common/src/domain"
 import { ItemView } from "./ItemView"
 import { UserSessionState } from "../store/user-session-store"
@@ -43,11 +46,12 @@ import { isFirefox } from "../components/browser"
 import { itemCreateHandler } from "./item-create"
 import { BoardAccessStatus, BoardState } from "../store/board-store"
 import { signIn } from "../google-auth"
+import { existingConnectionHandler } from "./item-connect"
 
-export type ControlMode = "mouse" | "trackpad"
+export type Tool = "pan" | "select" | "connect"
 export type ControlSettings = {
-    mode: ControlMode
-    hasUserManuallySetMode: boolean
+    tool: Tool
+    hasUserManuallySetTool: boolean
 }
 
 const emptyNote = newNote("")
@@ -90,8 +94,8 @@ export const BoardView = ({
     const focus = synchronizeFocusWithServer(board, locks, sessionId, dispatch)
     const coordinateHelper = boardCoordinateHelper(boardElement, scrollElement, zoom)
     const controlSettings = localStorageAtom<ControlSettings>("controlSettings", {
-        mode: "mouse",
-        hasUserManuallySetMode: false,
+        tool: "pan",
+        hasUserManuallySetTool: false,
     })
 
     let previousFocus: BoardFocus | null = null
@@ -156,6 +160,7 @@ export const BoardView = ({
     }
 
     function onAdd(item: Item) {
+        tool.set("select")
         const point = coordinateHelper.currentBoardCoordinates.get()
         const { x, y } = item.type !== "container" ? G.add(point, { x: -item.width / 2, y: -item.height / 2 }) : point
         item = withCurrentContainer({ ...item, x, y }, board.get())
@@ -173,13 +178,13 @@ export const BoardView = ({
         dispatch({ action: "cursor.move", position, boardId })
     })
 
-    const selectionRect = boardDragHandler({
+    const { selectionRect } = boardDragHandler({
         ...{
             board,
             boardElem: boardElement,
             coordinateHelper,
             focus,
-            controlMode: L.view(controlSettings, (c) => c.mode),
+            tool: L.view(controlSettings, (c) => c.tool),
             dispatch,
         },
     })
@@ -189,6 +194,32 @@ export const BoardView = ({
     })
 
     const boardAccessStatus = L.view(boardState, (s) => s.status)
+    const tool = L.view(controlSettings, "tool")
+
+    // Item position might change but connection doesn't -- need to rerender connections anyway
+    // Connection objects normally only hold the ID to the "from" and "to" items
+    // This populates the actual object in place of the ID
+    const connectionsWithItemsPopulated = L.combine(
+        L.view(board, "items"),
+        L.view(board, "connections"),
+        zoom,
+        (is: Item[], cs: Connection[], z: number) =>
+            cs.map((c) => ({
+                ...c,
+                from: is.find((i) => i.id === c.from)!,
+                to: isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!,
+            })),
+    )
+
+    // We want to render round draggable nodes at the end of edges (paths),
+    // But SVG elements are not draggable by default, so get a flat list of
+    // nodes and render them as regular HTML elements
+    const connectionNodes = L.view(connectionsWithItemsPopulated, (cs) =>
+        cs.flatMap((c) => [
+            { id: c.id, type: "from" as const, node: c.from },
+            { id: c.id, type: "to" as const, node: c.to },
+        ]),
+    )
 
     return (
         <div id="root" className={L.view(boardAccessStatus, (status) => `board-container ${status}`)}>
@@ -204,7 +235,7 @@ export const BoardView = ({
 
                 <div className="border-container" style={style}>
                     <div
-                        className={L.view(controlSettings, (s) => "board " + s.mode)}
+                        className={L.view(controlSettings, (s) => "board " + s.tool)}
                         draggable={isFirefox ? L.view(focus, (f) => f.status !== "editing") : true}
                         ref={boardRef}
                         onClick={onClick}
@@ -216,7 +247,53 @@ export const BoardView = ({
                         />
                         <RectangularDragSelection {...{ rect: selectionRect }} />
                         <CursorsView {...{ cursors, sessions }} />
-                        <ContextMenuView {...{ dispatch, board, focus }} />
+                        <ContextMenuView {...{ latestNote, dispatch, board, focus }} />
+                        <ListView<ConnectionNodeProps, string>
+                            observable={connectionNodes}
+                            renderObservable={ConnectionNode}
+                            getKey={(c) => c.id + c.type}
+                        />
+                        <svg
+                            style={{
+                                border: "1px solid red",
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                width: "10000em", // lol todo
+                                height: "10000em",
+                            }}
+                        >
+                            <ListView<RenderableConnection, string>
+                                observable={connectionsWithItemsPopulated}
+                                renderItem={(conn: RenderableConnection) => {
+                                    console.log("rerenders every time because using renderItem")
+                                    const { from, to } = conn
+                                    const curve = G.quadraticCurveSVGPath(
+                                        {
+                                            x: coordinateHelper.emToPx(from.x),
+                                            y: coordinateHelper.emToPx(from.y),
+                                        },
+                                        {
+                                            x: coordinateHelper.emToPx(to.x),
+                                            y: coordinateHelper.emToPx(to.y),
+                                        },
+                                    )
+                                    return (
+                                        <g>
+                                            <path
+                                                id="curve"
+                                                d={curve}
+                                                stroke="black"
+                                                stroke-width="1"
+                                                stroke-linecap="round"
+                                                fill="transparent"
+                                            ></path>
+                                        </g>
+                                    )
+                                }}
+                                getKey={(c) => c.id}
+                            />
+                        </svg>
                     </div>
                 </div>
             </div>
@@ -265,17 +342,22 @@ export const BoardView = ({
                     <span className="icon redo" title="Redo" onClick={() => dispatch({ action: "ui.redo" })} />
                     <span
                         className={L.view(controlSettings, (s) =>
-                            s.mode === "trackpad" ? "icon cursor-arrow active" : "icon cursor-arrow",
+                            s.tool === "select" ? "icon cursor-arrow active" : "icon cursor-arrow",
                         )}
                         title="Select tool"
-                        onClick={() => controlSettings.set({ mode: "trackpad", hasUserManuallySetMode: true })}
+                        onClick={() => controlSettings.set({ tool: "select", hasUserManuallySetTool: true })}
+                    />
+                    <span
+                        className={L.view(controlSettings, (s) => (s.tool === "pan" ? "icon pan active" : "icon pan"))}
+                        title="Pan tool"
+                        onClick={() => controlSettings.set({ tool: "pan", hasUserManuallySetTool: true })}
                     />
                     <span
                         className={L.view(controlSettings, (s) =>
-                            s.mode === "mouse" ? "icon pan active" : "icon pan",
+                            s.tool === "connect" ? "icon connection active" : "icon connection",
                         )}
-                        title="Pan tool"
-                        onClick={() => controlSettings.set({ mode: "mouse", hasUserManuallySetMode: true })}
+                        title="Connect tool"
+                        onClick={() => controlSettings.set({ tool: "connect", hasUserManuallySetTool: true })}
                     />
                 </div>
 
@@ -284,10 +366,39 @@ export const BoardView = ({
         )
     }
 
+    type ConnectionNodeProps = {
+        id: string
+        node: Point
+        type: "to" | "from"
+    }
+    function ConnectionNode(key: string, cNode: L.Property<ConnectionNodeProps>) {
+        function onRef(el: Element) {
+            cNode.get().type === "to" &&
+                existingConnectionHandler(el, cNode.get().id, coordinateHelper, board, dispatch)
+        }
+
+        const id = L.view(cNode, (cn) => `connection-${cn.id}-${cn.type}`)
+
+        const style = L.view(cNode, (cn) => ({
+            backgroundColor: "blue",
+            width: "0.3em",
+            height: "0.3em",
+            position: "absolute",
+            borderRadius: "50%",
+            zIndex: 666,
+            top: coordinateHelper.emToPx(cn.node.y),
+            left: coordinateHelper.emToPx(cn.node.x),
+            transform: "translate(-50%, -50%)",
+        }))
+
+        return <div ref={onRef} draggable={true} onClick={console.log} id={id} style={style}></div>
+    }
+
     function renderItem(id: string, item: L.Property<Item>) {
         const isLocked = L.combineTemplate({ locks, sessionId }).pipe(
             L.map(({ locks, sessionId }) => !!locks[id] && locks[id] !== sessionId),
         )
+
         return L.view(L.view(item, "type"), (t) => {
             switch (t) {
                 case "container":
@@ -305,6 +416,7 @@ export const BoardView = ({
                                 focus,
                                 coordinateHelper,
                                 dispatch,
+                                tool,
                             }}
                         />
                     )
@@ -318,6 +430,7 @@ export const BoardView = ({
                                 board,
                                 isLocked,
                                 focus,
+                                tool,
                                 coordinateHelper,
                                 dispatch,
                             }}
