@@ -23,8 +23,6 @@ const defaultOptions = {
     heightTarget: 0.6,
 }
 
-const sanitizeHTMLCache: Record<string, string> = {}
-
 export function autoFontSize(
     item: L.Property<TextItem>,
     fontSize: L.Property<number>,
@@ -46,8 +44,7 @@ export function autoFontSize(
         (t, w, h, fs, text) => {
             if (t !== "note") return fs + "em"
             const referenceFont = elFont.get()
-            sanitizeHTMLCache[text] = sanitizeHTMLCache[text] ?? toPlainText(text)
-            const plainText = sanitizeHTMLCache[text]
+            const plainText = toPlainText(text)
             const split = plainText.split(/\s/)
             const words = split
                 .map((s) => s.trim())
@@ -143,12 +140,7 @@ export function autoFontSize(
     )
 }
 
-const textDimensionsCache: Record<string, Dimensions> = {}
-
 export function getTextDimensions(text: string, font: string): Dimensions {
-    if (textDimensionsCache[text + "__$SEPARATOR$__" + font]) {
-        return textDimensionsCache[text + "__$SEPARATOR$__" + font]
-    }
     // if given, use cached canvas for better performance
     // else, create new canvas
     var gtw: any = getTextDimensions
@@ -159,6 +151,5 @@ export function getTextDimensions(text: string, font: string): Dimensions {
     const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
     const width = metrics.width
 
-    textDimensionsCache[text + "__$SEPARATOR$__" + font] = { height, width }
-    return textDimensionsCache[text + "__$SEPARATOR$__" + font]
+    return { height, width }
 }
