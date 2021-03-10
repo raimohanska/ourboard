@@ -24,7 +24,7 @@ function createTester(nickname: string) {
     }    
     function initSocket() {
         let ws: WebSocket
-        ws = new WebSocket(`ws://localhost:1337/socket/board`)
+        ws = new WebSocket(`ws://localhost:1337/socket/board/${boardId}`)
 
         ws.addEventListener('error', e => { 
             console.error("Web socket error"); 

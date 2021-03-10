@@ -1,7 +1,7 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
-import { EventFromServer, isLocalUIEvent, UIEvent } from "../../../common/src/domain"
+import { EventFromServer, Id, isLocalUIEvent, UIEvent } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
 import MessageQueue from "./message-queue"
 
@@ -11,7 +11,7 @@ const SERVER_EVENTS_BUFFERING_MILLIS = 20
 
 export type ServerConnection = ReturnType<typeof serverConnection>
 
-export function serverConnection() {
+export function serverConnection(initialBoardId: Id | undefined) {
     const uiEvents = L.bus<UIEvent>()
     const dispatch: Dispatch = uiEvents.push
     const serverEvents = L.bus<EventFromServer>()
@@ -26,24 +26,15 @@ export function serverConnection() {
 
     const connected = L.atom(false)
     const messageQueue = MessageQueue(null)
-    let socket = initSocket()
+    let socket = initSocket(initialBoardId)
 
-    async function reconnect(reconnectSocket: WebSocket) {
-        await sleep(1000)
-        if (reconnectSocket === socket) {
-            console.log("reconnecting...")
-            socket = initSocket()
-        }
-    }
-
-
-    function initSocket() {
+    function initSocket(boardId: Id | undefined) {
         let ws: WebSocket
-        ws = new WebSocket(`ws://${location.host}/socket/board`)
+        ws = new WebSocket(`ws://${location.host}/socket/${boardId ? "board/" + boardId : "lobby"}`)
 
         ws.addEventListener('error', e => { 
             console.error("Web socket error"); 
-            reconnect(ws)
+            reconnect()
         });
         ws.addEventListener('open', () => { 
             console.log("Websocket connected"); 
@@ -62,17 +53,25 @@ export function serverConnection() {
         ws.addEventListener('close', () => {
             console.log("Socket disconnected")
             connected.set(false)
-            reconnect(ws)            
+            reconnect()            
         });
 
         messageQueue.setSocket(ws)
         return ws
+
+        async function reconnect() {
+            await sleep(1000)
+            if (ws === socket) {
+                console.log("reconnecting...")
+                socket = initSocket(boardId)
+            }
+        }
     }
 
-    function newSocket() {
+    function newSocket(boardId: Id | undefined) {
         console.log("New socket")
         socket.close()
-        socket = initSocket()
+        socket = initSocket(boardId)
     }
     uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach(messageQueue.enqueue)
 

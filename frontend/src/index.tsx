@@ -11,11 +11,11 @@ import { RecentBoards } from "./store/recent-boards"
 import { serverConnection } from "./store/server-connection"
 import { BoardState, BoardStore } from "./store/board-store"
 import _ from "lodash"
-import { BoardNavigation } from "./board-navigation"
+import { boardIdFromPath, BoardNavigation } from "./board-navigation"
 import { RecentBoardAttributes } from "../../common/src/domain"
 
 const App = () => {
-    const connection = serverConnection()
+    const connection = serverConnection(boardIdFromPath())
     const sessionStore = UserSessionStore(connection, localStorage)
     const boardStore = BoardStore(connection, sessionStore.sessionState)
     const { boardId, navigateToBoard } = BoardNavigation(connection, boardStore)

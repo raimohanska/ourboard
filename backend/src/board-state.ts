@@ -8,6 +8,7 @@ import { sleep } from "../../common/src/sleep"
 
 // A mutable state object for server side state
 export type ServerSideBoardState = {
+    ready: true
     board: Board
     recentEvents: BoardHistoryEntry[]
     storingEvents: BoardHistoryEntry[]
@@ -17,29 +18,49 @@ export type ServerSideBoardState = {
     accessTokens: string[]
 }
 
-let boards: Map<Id, ServerSideBoardState> = new Map()
+export type ServerSideBoardStateInternal = ServerSideBoardState | {
+    ready: false,
+    fetch: Promise<ServerSideBoardState>
+}
+
+let boards: Map<Id, ServerSideBoardStateInternal> = new Map()
 
 export async function getBoard(id: Id): Promise<ServerSideBoardState> {
     let state = boards.get(id)
     if (!state) {
         console.log(`Loading board ${id} into memory`)
-        const { board, accessTokens } = await fetchBoard(id)
-        state = {
-            board,
-            accessTokens,
-            recentEvents: [],
-            storingEvents: [],
-            locks: Locks((changedLocks) => broadcastItemLocks(id, changedLocks)),
-            cursorsMoved: false,
-            cursorPositions: {},
+        const fetchState = async () => {            
+            const { board, accessTokens } = await fetchBoard(id)
+            return {
+                ready: true,
+                board,
+                accessTokens,
+                recentEvents: [],
+                storingEvents: [],
+                locks: Locks((changedLocks) => broadcastItemLocks(id, changedLocks)),
+                cursorsMoved: false,
+                cursorPositions: {},
+            } as ServerSideBoardState
         }
-        boards.set(board.id, state)
+        const fetch = fetchState()
+        const temporaryState = {
+            ready: false as const,
+            fetch
+        }
+        boards.set(id, temporaryState)
+        const finalState = await fetch
+        boards.set(id, finalState)             
+        return finalState
+    } else if (!state.ready) {
+        return await state.fetch
+    } else {
+        return state
     }
-    return state
 }
 
 export function maybeGetBoard(id: Id): ServerSideBoardState | undefined {
-    return boards.get(id)
+    const state = boards.get(id)
+    if (state?.ready) return state
 }
 
 export async function updateBoards(appEvent: BoardHistoryEntry) {
@@ -61,6 +82,7 @@ export async function addBoard(board: Board, createToken?: boolean): Promise<Ser
     await createBoard(board)
     const accessTokens = createToken ? [await createAccessToken(board)] : []
     const boardState = {
+        ready: true as const,
         board,
         serial: 0,
         recentEvents: [],
@@ -75,7 +97,7 @@ export async function addBoard(board: Board, createToken?: boolean): Promise<Ser
 }
 
 export function getActiveBoards() {
-    return boards
+    return [...boards.values()].filter(b => b.ready) as ServerSideBoardState[]
 }
 
 let savingPromise: Promise<void> = saveBoards()
@@ -83,7 +105,7 @@ let savingPromise: Promise<void> = saveBoards()
 async function saveBoards() {
     await sleep(1000)
     for (let state of boards.values()) {
-        await saveBoardChanges(state)
+        if (state.ready) await saveBoardChanges(state)
     }
     savingPromise = saveBoards()
 }

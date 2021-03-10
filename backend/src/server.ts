@@ -71,8 +71,12 @@ const configureServer = () => {
         res.sendFile(path.resolve("../frontend/dist/index.html"))
     })
 
-    ws.app.ws('/socket/board', (socket, req) => {    
-        connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) })(WsWrapper(socket))
+    const handler = connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) })
+    ws.app.ws('/socket/lobby', (socket, req) => { 
+        handler(WsWrapper(socket))
+    });
+    ws.app.ws('/socket/board/:boardId', (socket, req) => {    
+        handler(WsWrapper(socket))
     });
 
     return http

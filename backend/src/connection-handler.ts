@@ -144,7 +144,6 @@ async function handleAppEvent(
                     }
                     await associateUserWithBoard(session.userInfo.userId, appEvent.boardId)
                 }
-
                 await addSessionToBoard(board, socket, appEvent.initAtSerial)
                 return
             case "board.associate": {

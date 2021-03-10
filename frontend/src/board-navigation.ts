@@ -30,7 +30,7 @@ export function BoardNavigation(connection: ServerConnection, bs: BoardStore) {
     boardIdChanges.forEach((id) => {
         // Switch socket per board. This terminates the unnecessary board session on server.
         // Also, is preparation for load balancing solution.
-        connection.newSocket()
+        connection.newSocket(id)
         adjustURL(id)
     })
 
@@ -42,12 +42,6 @@ export function BoardNavigation(connection: ServerConnection, bs: BoardStore) {
             history.pushState({}, "", "/")
         }
     }
-
-    function boardIdFromPath() {
-        const match = document.location.pathname.match(/b\/(.*)/)
-        return (match && match[1]) || undefined
-    }
-
     const navigateToBoard = (id: Id | undefined) => {
         boardIdNavigationRequests.push(id)
     }
@@ -59,4 +53,9 @@ export function BoardNavigation(connection: ServerConnection, bs: BoardStore) {
         boardId,
         navigateToBoard,
     }
+}
+
+export function boardIdFromPath() {
+    const match = document.location.pathname.match(/b\/(.*)/)
+    return (match && match[1]) || undefined
 }
