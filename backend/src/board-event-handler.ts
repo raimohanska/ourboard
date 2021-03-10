@@ -8,6 +8,8 @@ import { addSessionToBoard, broadcastBoardEvent, getSession } from "./sessions"
 import { associateUserWithBoard } from "./user-store"
 import { WsWrapper } from "./ws-wrapper"
 
+const IGNORE_ACCESS_POLICY = process.env.IGNORE_ACCESS_POLICY === "true"
+
 export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: string) => string) => async (
     socket: WsWrapper,
     appEvent: AppEvent,
@@ -48,7 +50,7 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
                     return true
                 }
                 const board = await getBoard(appEvent.boardId)
-                if (board.board.accessPolicy) {
+                if (!IGNORE_ACCESS_POLICY && board.board.accessPolicy) {
                     const session = getSession(socket)
                     if (!session) {
                         return true
