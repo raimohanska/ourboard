@@ -1,6 +1,5 @@
 import * as L from "lonna"
-import io from "socket.io-client"
-import { AppEvent, Id, Serial } from "../../../common/src/domain"
+import { AppEvent, Id, isPersistableBoardItemEvent, Serial } from "../../../common/src/domain"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
 
 type QueueState = {
@@ -20,9 +19,8 @@ export default function (socket: Sender | null) {
 
     function sendIfPossible() {
         state.modify((s) => {
-            if (s.sent.length > 0 || s.queue.length === 0) return s
-            //console.log("Sending", s.queue)
-            socket!.send(JSON.stringify(s.queue)) // TODO: ack?!
+            if (s.sent.length > 0 || s.queue.length === 0) return s            
+            socket!.send(JSON.stringify(s.queue))
             return {
                 queue: [],
                 sent: s.queue,
@@ -56,5 +54,6 @@ export default function (socket: Sender | null) {
         setSocket(newSocket: Sender) {
             socket = newSocket
         },
+        ack
     }
 }

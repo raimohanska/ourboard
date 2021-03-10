@@ -1,4 +1,3 @@
-import IO from "socket.io"
 import { Id, BoardItemEvent, isPersistableBoardItemEvent, getItemIds, ItemLocks } from "../../common/src/domain"
 import { getActiveBoards, ServerSideBoardState } from "./board-state"
 import { AutoExpiringMap } from "./expiring-map"
@@ -47,7 +46,7 @@ export function obtainLock(locks: ServerSideBoardState["locks"], e: BoardItemEve
     }
 }
 
-export function releaseLocksFor(socket: IO.Socket) {
+export function releaseLocksFor(socket: WsWrapper) {
     getActiveBoards().forEach((state) => {
         const locks = state.locks
         for (const [itemId, sessionId] of locks.entries()) {

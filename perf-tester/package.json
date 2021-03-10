@@ -9,7 +9,6 @@
     "@types/lodash": "^4.14.161",
     "@types/md5": "^2.2.1",
     "@types/pretty-ms": "^5.0.1",
-    "@types/socket.io-client": "^1.4.33",
     "cookie": "^0.4.1",
     "email-validator": "^2.0.4",
     "harmaja": "^0.17",
@@ -19,8 +18,8 @@
     "material-design-icons-iconfont": "^6.1.0",
     "md5": "^2.3.0",
     "pretty-ms": "^7.0.1",
-    "socket.io-client": "^2.3.0",
-    "uuid": "^8.3.0"
+    "uuid": "^8.3.0",
+    "ws": "^7.4.4"
   },
   "scripts": {
     "watch": "tsc --watch --noEmit",
@@ -33,8 +32,8 @@
     "@types/uuid": "^8.3.0",
     "cssnano": "^4.1.10",
     "nodemon": "^2.0.4",
-    "typescript": "^4.0.2",
     "npm-run-all": "^4.1.5",
-    "tsc-watch": "^4.2.9"
+    "tsc-watch": "^4.2.9",
+    "typescript": "^4.0.2"
   }
 }

@@ -1,4 +1,3 @@
-import IO from "socket.io"
 import {
     BoardHistoryEntry,
     CursorPosition,

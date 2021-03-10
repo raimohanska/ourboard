@@ -10,7 +10,6 @@
     "@types/md5": "^2.2.1",
     "@types/pretty-ms": "^5.0.1",
     "@types/sanitize-html": "^1.27.1",
-    "@types/socket.io-client": "^1.4.33",
     "cookie": "^0.4.1",
     "email-validator": "^2.0.4",
     "esbuild": "^0.8.57",
@@ -25,7 +24,6 @@
     "rimraf": "^3.0.2",
     "sanitize-html": "^2.3.2",
     "sass": "^1.32.8",
-    "socket.io-client": "^2.3.0",
     "uuid": "^8.3.0"
   },
   "scripts": {

@@ -134,7 +134,7 @@ const CreateBoard = ({
         }
         const newBoard = generateFromTemplate(boardName.get(), template)
         dispatch({ action: "board.add", payload: newBoard })
-        navigateToBoard(newBoard.id)
+        setTimeout(() => navigateToBoard(newBoard.id), 100) // TODO: some ack based solution would be more reliable
     }
 
     const { templates, templateOptions, defaultTemplate } = getUserTemplates()

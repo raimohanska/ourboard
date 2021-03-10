@@ -5,7 +5,6 @@ import expressWs from "express-ws"
 import * as Http from "http"
 import * as Https from "https"
 import * as path from "path"
-import IO from "socket.io"
 import { connectionHandler } from "./connection-handler"
 import { initDB } from "./db"
 import fs from "fs"
@@ -72,8 +71,7 @@ const configureServer = () => {
         res.sendFile(path.resolve("../frontend/dist/index.html"))
     })
 
-    ws.app.ws('/socket/board', (socket, req) => {
-        console.log('Websocket connection');        
+    ws.app.ws('/socket/board', (socket, req) => {    
         connectionHandler({ getSignedPutUrl: createGetSignedPutUrl(config.storageBackend) })(WsWrapper(socket))
     });
 

@@ -1,4 +1,3 @@
-import IO from "socket.io"
 import {
     AppEvent,
     isBoardItemEvent,
@@ -41,12 +40,11 @@ export type ConnectionHandlerParams = Readonly<{
 export const connectionHandler = ({ getSignedPutUrl }: ConnectionHandlerParams) => (socket: WsWrapper) => {
     startSession(socket)
     socket.ws.addEventListener('error', e => { 
-        console.error("Web socket error", e); 
+        //console.error("Web socket error", e);
+        socket.ws.close() 
     });
     socket.ws.addEventListener('message', async str => { 
         const event = JSON.parse(str.data)
-        console.log("received", event)
-        socket.send({"action": "ack"})
         let serialsToAck: Record<Id, Serial> = {}
         for (const e of event as AppEvent[]) {
             const serialAck = await handleAppEvent(socket, e, getSignedPutUrl)
@@ -54,46 +52,20 @@ export const connectionHandler = ({ getSignedPutUrl }: ConnectionHandlerParams) 
                 serialsToAck[serialAck.boardId] = serialAck.serial
             }
         }
+        socket.send({"action": "ack"})
         Object.entries(serialsToAck).forEach(([boardId, serial]) => {
             socket.send({ action: "board.serial.ack", boardId, serial } as BoardSerialAck)
         })
     });
 
     socket.ws.addEventListener('close', () => {
-        console.log("Socket disconnected")                   
-    });
-
-    /*
-    socket.on("message", async (kind: string, event: any, ackFn) => {
-        // console.log("Received", kind, event)
-        if (kind === "app-events") {
-            let serialsToAck: Record<Id, Serial> = {}
-            for (const e of event as AppEvent[]) {
-                const serialAck = await handleAppEvent(socket, e, getSignedPutUrl)
-                if (serialAck) {
-                    serialsToAck[serialAck.boardId] = serialAck.serial
-                }
-            }
-            Object.entries(serialsToAck).forEach(([boardId, serial]) => {
-                socket.send("app-event", { action: "board.serial.ack", boardId, serial } as BoardSerialAck)
-            })
-            ackFn?.("ack")
-            return
-        }
-        console.warn("Unhandled message", kind, event)
-    })
-
-    startSession(socket)
-
-    socket.on("disconnect", () => {
         endSession(socket)
         getActiveBoards().forEach((state) => {
             delete state.cursorPositions[socket.id]
             state.cursorsMoved = true
         })
         releaseLocksFor(socket)
-    })
-    */
+    });
 }
 
 setInterval(() => {

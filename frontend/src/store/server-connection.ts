@@ -1,6 +1,5 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
-import io from "socket.io-client"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
 import { EventFromServer, isLocalUIEvent, UIEvent } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
@@ -30,19 +29,21 @@ export function serverConnection() {
     let socket = initSocket()
 
     async function reconnect(reconnectSocket: WebSocket) {
-        await sleep(100)
+        await sleep(1000)
         if (reconnectSocket === socket) {
-            console.log("reconnecting")
-            initSocket()
+            console.log("reconnecting...")
+            socket = initSocket()
         }
     }
 
+
     function initSocket() {
-        console.log("New socket")
-        const ws = new WebSocket(`ws://${location.host}/socket/board`)
+        let ws: WebSocket
+        ws = new WebSocket(`ws://${location.host}/socket/board`)
 
         ws.addEventListener('error', e => { 
-            console.error("Web socket error", e); 
+            console.error("Web socket error"); 
+            reconnect(ws)
         });
         ws.addEventListener('open', () => { 
             console.log("Websocket connected"); 
@@ -51,7 +52,11 @@ export function serverConnection() {
         });
         ws.addEventListener('message', str => { 
             const event = JSON.parse(str.data)
-            serverEvents.push(event)
+            if (event.action === "ack") {
+                messageQueue.ack()
+            } else {
+                serverEvents.push(event)
+            }
         });
 
         ws.addEventListener('close', () => {
