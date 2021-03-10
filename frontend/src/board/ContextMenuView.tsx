@@ -17,12 +17,10 @@ import { NOTE_COLORS } from "../../../common/src/colors"
 import { BoardFocus } from "./board-focus"
 
 export const ContextMenuView = ({
-    latestNote,
     dispatch,
     board,
     focus,
 }: {
-    latestNote: L.Atom<Note>
     dispatch: Dispatch
     board: L.Property<Board>
     focus: L.Property<BoardFocus>
@@ -208,10 +206,6 @@ export const ContextMenuView = ({
 
         function setColor(color: Color) {
             const b = board.get()
-
-            // To remember color selection for creating new notes.
-            latestNote.modify((n) => ({ ...n, color }))
-
             const updated = coloredItems.get().map((item) => ({ ...item, color }))
             dispatch({ action: "item.update", boardId: b.id, items: updated })
         }
@@ -236,10 +230,6 @@ export const ContextMenuView = ({
             const b = board.get()
             const items = shapedItems.get()
             const shape = items[0].shape === "round" ? "square" : "round"
-
-            // To remember color selection for creating new notes.
-            latestNote.modify((n) => ({ ...n, shape }))
-
             const updated = items.map((item) => ({ ...item, shape })) as ShapedItem[]
             dispatch({ action: "item.update", boardId: b.id, items: updated })
         }

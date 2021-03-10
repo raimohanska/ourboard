@@ -200,6 +200,9 @@ a {
                 .note {
                     @extend .item;
                     width: 1em;
+                    &.round {
+                        border-radius: 50%;
+                    }
                 }
                 .container {
                     @extend .item;

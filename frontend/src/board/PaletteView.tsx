@@ -44,7 +44,7 @@ export const NewNote = ({ latestNote, onAdd }: { latestNote: L.Property<Note>; o
             data-test={L.view(color, (c) => `palette-new-note-${c}`)}
             title="Drag to add new text note"
             onDragEnd={() => onAdd(newSimilarNote(latestNote.get()))}
-            className="note palette-item"
+            className={L.view(latestNote, (n) => `note palette-item ${n.shape}`)}
             draggable={true}
             style={L.view(color, (c) => ({ background: c }))}
         />

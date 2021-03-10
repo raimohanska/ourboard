@@ -3,7 +3,16 @@ import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
 import _ from "lodash"
 import { boardCoordinateHelper } from "./board-coordinates"
-import { Id, Image, Item, newNote, newSimilarNote, Note, UserCursorPosition } from "../../../common/src/domain"
+import {
+    findItem,
+    Id,
+    Image,
+    Item,
+    newNote,
+    newSimilarNote,
+    Note,
+    UserCursorPosition,
+} from "../../../common/src/domain"
 import { ItemView } from "./ItemView"
 import { Dispatch, UserSessionState } from "../store/user-session-store"
 import { ContextMenuView } from "./ContextMenuView"
@@ -40,6 +49,8 @@ export type ControlSettings = {
     hasUserManuallySetMode: boolean
 }
 
+const emptyNote = newNote("")
+
 export const BoardView = ({
     boardId,
     cursors,
@@ -70,7 +81,11 @@ export const BoardView = ({
     })
     const boardElement = L.atom<HTMLElement | null>(null)
     const scrollElement = L.atom<HTMLElement | null>(null)
-    const latestNote = L.atom(newNote("Hello"))
+    const latestNoteId = L.atom<Id | null>(null)
+    const latestNote = L.view(latestNoteId, board, (id, b) => {
+        const note = id ? findItem(b)(id) : null
+        return (note as Note) || emptyNote
+    })
     const focus = synchronizeFocusWithServer(board, locks, sessionId, dispatch)
     const coordinateHelper = boardCoordinateHelper(boardElement, scrollElement, zoom)
     const controlSettings = localStorageAtom<ControlSettings>("controlSettings", {
@@ -87,7 +102,7 @@ export const BoardView = ({
             dispatch({ action: "item.front", boardId: board.get().id, itemIds })
             const item = getSelectedItem(board.get())(f)
             if (item && item.type === "note") {
-                latestNote.set(item)
+                latestNoteId.set(item.id)
             }
         }
     })
@@ -200,7 +215,7 @@ export const BoardView = ({
                         />
                         <RectangularDragSelection {...{ rect: selectionRect }} />
                         <CursorsView {...{ cursors, sessions }} />
-                        <ContextMenuView {...{ latestNote, dispatch, board, focus }} />
+                        <ContextMenuView {...{ dispatch, board, focus }} />
                     </div>
                 </div>
             </div>
