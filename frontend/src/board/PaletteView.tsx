@@ -9,16 +9,14 @@ export const PaletteView = ({
     board,
     dispatch,
 }: {
-    latestNote: L.Atom<Note>
+    latestNote: L.Property<Note>
     onAdd: (item: Item) => void
     board: L.Property<Board>
     dispatch: Dispatch
 }) => {
     return (
         <span className="palette">
-            {L.view(latestNote, (latestNote) => (
-                <NewNote {...{ onAdd, latestNote }} />
-            ))}
+            <NewNote {...{ onAdd, latestNote }} />
             <NewContainer {...{ onAdd }} />
             <NewText {...{ onAdd }} />
         </span>
@@ -39,15 +37,16 @@ export const NewText = ({ onAdd }: { onAdd: (i: Item) => void }) => {
     )
 }
 
-export const NewNote = ({ latestNote, onAdd }: { latestNote: Note; onAdd: (i: Item) => void }) => {
+export const NewNote = ({ latestNote, onAdd }: { latestNote: L.Property<Note>; onAdd: (i: Item) => void }) => {
+    const color = L.view(latestNote, "color")
     return (
         <span
-            data-test={`palette-new-note-${latestNote.color}`}
+            data-test={L.view(color, (c) => `palette-new-note-${c}`)}
             title="Drag to add new text note"
-            onDragEnd={() => onAdd(newSimilarNote(latestNote))}
+            onDragEnd={() => onAdd(newSimilarNote(latestNote.get()))}
             className="note palette-item"
             draggable={true}
-            style={{ background: latestNote.color }}
+            style={L.view(color, (c) => ({ background: c }))}
         />
     )
 }
