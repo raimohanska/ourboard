@@ -3,6 +3,7 @@ import { globalScope } from "lonna"
 import io from "socket.io-client"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
 import { EventFromServer, isLocalUIEvent, UIEvent } from "../../../common/src/domain"
+import { sleep } from "../../../common/src/sleep"
 import MessageQueue from "./message-queue"
 
 export type Dispatch = (e: UIEvent) => void
@@ -26,9 +27,19 @@ export function serverConnection() {
 
     const connected = L.atom(false)
     const messageQueue = MessageQueue(null)
+    let socket = initSocket()
+
+    async function reconnect(reconnectSocket: SocketIOClient.Socket) {
+        await sleep(100)
+        if (reconnectSocket === socket) {
+            console.log("reconnecting")
+            socket.connect()
+        }
+    }
 
     function initSocket() {
-        const socket = io()
+        console.log("New socket")
+        const socket = io({ reconnection: true, reconnectionDelay: 100 })
         messageQueue.setSocket(socket)
 
         socket.on("connect", () => {
@@ -39,6 +50,7 @@ export function serverConnection() {
         socket.on("disconnect", () => {
             console.log("Socket disconnected")
             connected.set(false)
+            reconnect(socket)
         })
         socket.on("message", function (kind: string, event: EventFromServer) {
             if (kind === "app-event") {
@@ -47,8 +59,6 @@ export function serverConnection() {
         })
         return socket
     }
-
-    let socket = initSocket()
 
     function newSocket() {
         console.log("New socket")

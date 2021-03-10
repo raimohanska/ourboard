@@ -25,7 +25,7 @@ import {
 import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory, verifyContinuity } from "./board-store"
 import { randomProfession } from "./professions"
-import { sleep } from "./sleep"
+import { sleep } from "../../common/src/sleep"
 import { getUserIdForEmail } from "./user-store"
 type UserSession = {
     readonly sessionId: Id

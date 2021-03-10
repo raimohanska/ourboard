@@ -4,7 +4,7 @@ import { Locks } from "./locker"
 import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./board-store"
 import { broadcastItemLocks, getBoardSessionCount } from "./sessions"
 import { compactBoardHistory } from "./compact-history"
-import { sleep } from "./sleep"
+import { sleep } from "../../common/src/sleep"
 
 // A mutable state object for server side state
 export type ServerSideBoardState = {
