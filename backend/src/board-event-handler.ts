@@ -20,7 +20,7 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
         if (gotLock) {
             if (isPersistableBoardItemEvent(appEvent)) {
                 const session = getSession(socket)
-                if (!session || session.isOnBoard(appEvent.boardId)) {
+                if (!session || !session.isOnBoard(appEvent.boardId)) {
                     console.warn("Trying to send event to board without session")
                 } else {
                     let historyEntry: BoardHistoryEntry = {
