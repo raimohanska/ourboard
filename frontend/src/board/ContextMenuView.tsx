@@ -1,7 +1,17 @@
 import { h, ListView } from "harmaja"
 import * as L from "lonna"
 import _ from "lodash"
-import { Board, Color, findItem, isColoredItem, Item, isTextItem, Note } from "../../../common/src/domain"
+import {
+    Board,
+    Color,
+    findItem,
+    isColoredItem,
+    Item,
+    isTextItem,
+    Note,
+    isShapedItem,
+    ShapedItem,
+} from "../../../common/src/domain"
 import { Dispatch } from "../store/user-session-store"
 import { NOTE_COLORS } from "../../../common/src/colors"
 import { BoardFocus } from "./board-focus"
@@ -45,7 +55,7 @@ export const ContextMenuView = ({
         }
     })
 
-    const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes()]
+    const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes(), menuShapes()]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
 
     return L.view(
@@ -203,6 +213,34 @@ export const ContextMenuView = ({
             latestNote.modify((n) => ({ ...n, color }))
 
             const updated = coloredItems.get().map((item) => ({ ...item, color }))
+            dispatch({ action: "item.update", boardId: b.id, items: updated })
+        }
+    }
+
+    function menuShapes() {
+        const shapedItems = L.view(focusedItems, (items) => items.filter(isShapedItem))
+        const anyColored = L.view(shapedItems, (items) => items.length > 0)
+        const currentShape = L.view(shapedItems, (items) => items[0]?.shape || "square")
+
+        return L.view(anyColored, (anyColored) => {
+            return !anyColored
+                ? []
+                : [
+                      <div className="shapes">
+                          <span className={L.view(currentShape, (s) => `icon ${s}`)} onClick={changeShape} />
+                      </div>,
+                  ]
+        })
+
+        function changeShape() {
+            const b = board.get()
+            const items = shapedItems.get()
+            const shape = items[0].shape === "round" ? "square" : "round"
+
+            // To remember color selection for creating new notes.
+            latestNote.modify((n) => ({ ...n, shape }))
+
+            const updated = items.map((item) => ({ ...item, shape })) as ShapedItem[]
             dispatch({ action: "item.update", boardId: b.id, items: updated })
         }
     }

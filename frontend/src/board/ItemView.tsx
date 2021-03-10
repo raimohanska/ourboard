@@ -76,16 +76,28 @@ export const ItemView = ({
                 (s, b) => `${type} ${"color-" + b.replace("#", "").toLowerCase()} ${s ? "selected" : ""}`,
             )}
             style={item.pipe(
-                L.map((p: Item) => ({
-                    top: 0,
-                    left: 0,
-                    height: p.height + "em",
-                    width: p.width + "em",
-                    transform: `translate(${p.x}em, ${p.y}em)`,
-                    zIndex: p.z,
-                    background: getItemBackground(p),
-                    position: "absolute",
-                })),
+                L.map((p: Item) => {
+                    const background = getItemBackground(p)
+                    const common = {
+                        top: 0,
+                        left: 0,
+                        height: p.height + "em",
+                        width: p.width + "em",
+                        transform: `translate(${p.x}em, ${p.y}em)`,
+                        zIndex: p.z,
+                        background,
+                        position: "absolute",
+                    }
+                    const shape =
+                        p.type === "note" && p.shape === "round"
+                            ? {
+                                  borderRadius: "50%",
+                                  border: `${p.height / 10}em solid ${background}`,
+                                  boxSizing: "content-box",
+                              }
+                            : {}
+                    return { ...common, ...shape }
+                }),
             )}
         >
             {(type === "note" || type === "text" || type === "container") && (

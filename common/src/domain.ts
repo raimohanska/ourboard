@@ -96,13 +96,18 @@ export const ITEM_TYPES = {
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
 export type TextItemProperties = ItemProperties & { text: string; fontSize?: number }
-export type Note = TextItemProperties & { type: typeof ITEM_TYPES.NOTE; color: Color }
+export type Note = TextItemProperties & {
+    type: typeof ITEM_TYPES.NOTE
+    color: Color
+    shape: "round" | "square" | undefined
+}
 export type Text = TextItemProperties & { type: typeof ITEM_TYPES.TEXT }
 export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string }
 export type Container = TextItemProperties & { type: typeof ITEM_TYPES.CONTAINER; color: Color }
 
 export type TextItem = Note | Text | Container
 export type ColoredItem = Item & { color: Color }
+export type ShapedItem = Note
 export type Item = TextItem | Image
 export type ItemLocks = Record<Id, Id>
 
@@ -222,13 +227,14 @@ export function newNote(
     y: number = 20,
     width: number = 5,
     height: number = 5,
+    shape: "round" | "square" = "square",
     z: number = 0,
 ): Note {
-    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z }
+    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z, shape }
 }
 
 export function newSimilarNote(note: Note) {
-    return newNote("HELLO", note.color, 20, 20, note.width, note.height)
+    return newNote("HELLO", note.color, 20, 20, note.width, note.height, note.shape)
 }
 
 export function newText(
@@ -283,6 +289,10 @@ export function isSameUser(a: EventUserInfo, b: EventUserInfo) {
 
 export function isColoredItem(i: Item): i is ColoredItem {
     return i.type === "note" || i.type === "container"
+}
+
+export function isShapedItem(i: Item): i is ShapedItem {
+    return i.type === "note"
 }
 
 export function isTextItem(i: Item): i is TextItem {

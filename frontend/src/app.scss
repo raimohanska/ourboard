@@ -629,6 +629,9 @@ a {
                     }
                 }
             }
+            .shapes {
+                margin-left: 0.5em;
+            }
         }
     }
 
@@ -767,6 +770,12 @@ a {
     }
     &.minus {
         background-image: url(img/remove.svg);
+    }
+    &.round {
+        background-image: url(img/round.svg);
+    }
+    &.square {
+        background-image: url(img/square.svg);
     }
     &.disabled {
         pointer-events: none;
