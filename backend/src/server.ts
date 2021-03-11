@@ -73,6 +73,8 @@ const configureServer = () => {
         res.sendFile(path.resolve("../frontend/dist/index.html"))
     })
 
+    app.use(apiRoutes.handler())
+
     ws.app.ws("/socket/lobby", (socket, req) => {
         connectionHandler(WsWrapper(socket), handleCommonEvent)
     })
