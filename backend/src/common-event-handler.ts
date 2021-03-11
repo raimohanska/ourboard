@@ -79,6 +79,10 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
             await addBoard(board)
             return true
         }
+        case "ping": {
+            console.log("Got ping")
+            return true
+        }
     }
     return false
 }

@@ -158,12 +158,14 @@ export type ClientToServerRequest =
     | AssetPutUrlResponse
     | AuthLogin
     | AuthLogout
+    | Ping
 
 export type LoginResponse =
     | { action: "auth.login.response"; success: false }
     | { action: "auth.login.response"; success: true; userId: string }
 export type AuthLogin = { action: "auth.login"; name: string; email: string; token: string }
 export type AuthLogout = { action: "auth.logout" }
+export type Ping = { action: "ping" }
 export type AddItem = { action: "item.add"; boardId: Id; items: Item[] }
 export type UpdateItem = { action: "item.update"; boardId: Id; items: Item[] }
 export type MoveItem = {

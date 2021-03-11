@@ -28,6 +28,12 @@ export function serverConnection(initialBoardId: Id | undefined) {
     const messageQueue = MessageQueue(null)
     let socket = initSocket(initialBoardId)
 
+    setInterval(() => {
+        if (!document.hidden) {
+            messageQueue.enqueue({ action: "ping" })
+        }
+    }, 30000)
+
     function initSocket(boardId: Id | undefined) {
         let ws: WebSocket
         const protocol = location.protocol === "http:" ? "ws:" : "wss:"
