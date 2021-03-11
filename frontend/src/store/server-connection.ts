@@ -30,7 +30,8 @@ export function serverConnection(initialBoardId: Id | undefined) {
 
     function initSocket(boardId: Id | undefined) {
         let ws: WebSocket
-        ws = new WebSocket(`ws://${location.host}/socket/${boardId ? "board/" + boardId : "lobby"}`)
+        const protocol = location.protocol === "http:" ? "ws:" : "wss:"
+        ws = new WebSocket(`${protocol}//${location.host}/socket/${boardId ? "board/" + boardId : "lobby"}`)
 
         ws.addEventListener("error", (e) => {
             console.error("Web socket error")
