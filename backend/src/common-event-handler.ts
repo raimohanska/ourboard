@@ -80,7 +80,6 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
             return true
         }
         case "ping": {
-            console.log("Got ping")
             return true
         }
     }
