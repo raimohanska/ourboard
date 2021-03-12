@@ -1,11 +1,11 @@
 import * as L from "lonna"
 export const API_KEY = process.env.GOOGLE_API_KEY || null
 export const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || null
-const SUPPORTED = !!(CLIENT_ID && API_KEY)
-
 declare global {
     const gapi: any
 }
+
+const SUPPORTED = !!(CLIENT_ID && API_KEY && (window as any).gapi)
 
 let GoogleAuth: any
 var SCOPE = "email"
