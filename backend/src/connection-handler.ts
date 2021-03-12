@@ -1,35 +1,7 @@
-import {
-    AppEvent,
-    isBoardItemEvent,
-    isPersistableBoardItemEvent,
-    defaultBoardSize,
-    isFullyFormedBoard,
-    Serial,
-    BoardHistoryEntry,
-    Id,
-    BoardSerialAck,
-} from "../../common/src/domain"
-import { addBoard, getActiveBoards, getBoard, maybeGetBoard, updateBoards } from "./board-state"
-import {
-    addSessionToBoard,
-    broadcastBoardEvent,
-    endSession,
-    startSession,
-    broadcastCursorPositions,
-    setNicknameForSession,
-    getSession,
-    setVerifiedUserForSession,
-    logoutUser,
-} from "./sessions"
-import { obtainLock, releaseLocksFor } from "./locker"
-import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
-import { updateBoard } from "./board-store"
-import {
-    associateUserWithBoard,
-    dissociateUserWithBoard,
-    getUserAssociatedBoards,
-    getUserIdForEmail,
-} from "./user-store"
+import { AppEvent, BoardSerialAck, Id, Serial } from "../../common/src/domain"
+import { getActiveBoards } from "./board-state"
+import { releaseLocksFor } from "./locker"
+import { broadcastCursorPositions, endSession, startSession } from "./sessions"
 import { WsWrapper } from "./ws-wrapper"
 
 export type ConnectionHandlerParams = Readonly<{
