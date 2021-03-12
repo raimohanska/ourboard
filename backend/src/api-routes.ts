@@ -14,7 +14,7 @@ import {
     BoardAccessPolicyCodec,
 } from "../../common/src/domain"
 import { addBoard, getBoard, updateBoards, ServerSideBoardState } from "./board-state"
-import { updateBoard } from "./board-store"
+import { getBoardHistory, getFullBoardHistory, updateBoard } from "./board-store"
 import { broadcastBoardEvent } from "./sessions"
 import { encode as htmlEncode } from "html-entities"
 import _ from "lodash"
@@ -25,6 +25,7 @@ import { body, headers } from "typera-express/parser"
 import { badRequest, internalServerError, ok } from "typera-common/response"
 import * as t from "io-ts"
 import { NonEmptyString } from "io-ts-types"
+import { withDBClient } from "./db"
 
 const route = applyMiddleware(wrapNative(bodyParser.json()))
 const apiTokenHeader = headers(t.partial({ api_token: t.string }))
@@ -126,6 +127,16 @@ const itemCreate = route
         }),
     )
 
+const historyGet = route
+    .get("/api/v1/board/:boardId/history")
+    .use(apiTokenHeader)
+    .handler((request) =>
+        checkBoardAPIAccess(request, async (board) => {
+            const history = await withDBClient((client) => getFullBoardHistory(board.board.id, client))
+            return ok({ history })
+        }),
+    )
+
 const itemCreateOrUpdate = route
     .put("/api/v1/board/:boardId/item/:itemId")
     .use(
@@ -180,7 +191,7 @@ const itemCreateOrUpdate = route
         }),
     )
 
-export default router(boardCreate, boardUpdate, githubWebhook, itemCreate, itemCreateOrUpdate)
+export default router(boardCreate, boardUpdate, githubWebhook, itemCreate, itemCreateOrUpdate, historyGet)
 
 // Utils
 
