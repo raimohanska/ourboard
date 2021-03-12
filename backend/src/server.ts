@@ -28,8 +28,8 @@ const configureServer = () => {
 
     const redirectURL = process.env.REDIRECT_URL
     if (redirectURL) {
-        app.get('*',function(req,res,next) {
-            if (req.headers['x-forwarded-proto'] !== "https") {
+        app.get("*", function (req, res, next) {
+            if (req.headers["x-forwarded-proto"] !== "https") {
                 res.redirect(redirectURL)
             } else {
                 next()
