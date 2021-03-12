@@ -115,9 +115,8 @@ export type RecentBoardAttributes = { id: Id; name: string }
 export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEmail: string | null }
 
 export type BoardEvent = { boardId: Id }
-// TODO: Undo, Redo at least shouldn't be EventFromServer!
-export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
-export type LocalUIEvent = Undo | Redo
+export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent 
+export type LocalUIEvent = Undo | Redo | BoardJoining
 export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse
 export type Serial = number
 export type AppEvent = BoardItemEvent | BoardStateSyncEvent | LocalUIEvent | ClientToServerRequest | LoginResponse
@@ -210,6 +209,7 @@ export type AssetPutUrlRequest = { action: "asset.put.request"; assetId: string 
 export type AssetPutUrlResponse = { action: "asset.put.response"; assetId: string; signedUrl: string }
 export type Undo = { action: "ui.undo" }
 export type Redo = { action: "ui.redo" }
+export type BoardJoining = { action: "ui.board.joining", boardId: Id }
 
 export const CURSOR_POSITIONS_ACTION_TYPE = "c" as const
 export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE; p: Record<Id, UserCursorPosition> }
@@ -283,7 +283,7 @@ export function getCurrentTime(): ISOTimeStamp {
 export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent =>
     a.action.startsWith("item.") || a.action === "board.rename"
 
-export const isPersistableBoardItemEvent = (e: AppEvent): e is PersistableBoardItemEvent =>
+export const isPersistableBoardItemEvent = (e: any): e is PersistableBoardItemEvent =>
     isBoardItemEvent(e) && !["item.lock", "item.unlock"].includes(e.action)
 
 export const isBoardHistoryEntry = (e: AppEvent): e is BoardHistoryEntry =>

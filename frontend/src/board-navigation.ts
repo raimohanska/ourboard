@@ -5,7 +5,7 @@ import "./app.scss"
 import { BoardStore } from "./store/board-store"
 import { ServerConnection } from "./store/server-connection"
 
-export function BoardNavigation(connection: ServerConnection, bs: BoardStore) {
+export function BoardNavigation(connection: ServerConnection) {
     const nicknameFromURL = new URLSearchParams(location.search).get("nickname")
     if (nicknameFromURL) {
         localStorage.nickname = nicknameFromURL
@@ -20,17 +20,9 @@ export function BoardNavigation(connection: ServerConnection, bs: BoardStore) {
     const boardIdChanges = L.merge(boardIdFromPopState, boardIdNavigationRequests)
     const boardId = boardIdChanges.pipe(L.scan(initialBoardId, (prev, next) => next, globalScope))
 
-    connection.connected.onChange((connected) => {
-        const bid = boardId.get()
-        if (bid && connected) {
-            bs.joinBoard(bid)
-        }
-    })
-    // React to board id changes from server (when creating new board at least)
     boardIdChanges.forEach((id) => {
         // Switch socket per board. This terminates the unnecessary board session on server.
         // Also, is preparation for load balancing solution.
-        connection.newSocket(id)
         adjustURL(id)
     })
 
@@ -45,9 +37,6 @@ export function BoardNavigation(connection: ServerConnection, bs: BoardStore) {
     const navigateToBoard = (id: Id | undefined) => {
         boardIdNavigationRequests.push(id)
     }
-
-    const title = L.view(bs.state, (s) => (s.board ? `${s.board.name} - R-Board` : "R-Board"))
-    title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
     return {
         boardId,

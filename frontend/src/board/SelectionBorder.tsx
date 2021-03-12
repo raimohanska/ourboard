@@ -4,7 +4,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { Board, Item } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
-import { Dispatch } from "../store/user-session-store"
+import { Dispatch } from "../store/server-connection"
 
 type Horizontal = "left" | "right"
 type Vertical = "top" | "bottom"

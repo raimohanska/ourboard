@@ -1,8 +1,6 @@
 import * as L from "lonna"
 import { AppEvent, AssetPutUrlResponse, Board } from "../../../common/src/domain"
-import { UserSessionStore } from "./user-session-store"
 import md5 from "md5"
-import { BoardStore } from "./board-store"
 import { ServerConnection } from "./server-connection"
 
 export type AssetId = string
@@ -50,7 +48,7 @@ export function assetStore(
 
                         console.log("PUT REQ")
 
-                        connection.send({ action: "asset.put.request", assetId })
+                        connection.enqueue({ action: "asset.put.request", assetId })
                         const signedUrl = await getAssetPutResponse(assetId, events)
 
                         const response = await fetch(signedUrl, {

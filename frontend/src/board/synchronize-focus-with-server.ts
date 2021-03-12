@@ -1,7 +1,7 @@
 import * as L from "lonna"
 import * as _ from "lodash"
 import { Board, Id, ItemLocks } from "../../../common/src/domain"
-import { Dispatch } from "../store/user-session-store"
+import { Dispatch } from "../store/server-connection"
 import { BoardFocus, getSelectedIds, removeFromSelection, removeNonExistingFromSelection } from "./board-focus"
 import { componentScope } from "harmaja"
 

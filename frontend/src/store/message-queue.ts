@@ -1,6 +1,7 @@
 import * as L from "lonna"
 import { AppEvent, Id, isPersistableBoardItemEvent, Serial } from "../../../common/src/domain"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
+import { localStorageAtom } from "../board/local-storage-atom"
 
 type QueueState = {
     queue: AppEvent[]
@@ -11,16 +12,17 @@ type Sender = {
     send: (...args: any[]) => any
 }
 
-// TODO : make this persistent to prevent losing local state when working offline
-// The queues should be board specific though, maybe?
-
-export default function (socket: Sender) {
-    const state = L.atom<QueueState>({
+export default function (socket: Sender, boardId: Id | undefined) {
+    let connected = false
+    let canFlush = boardId ? false : true
+    const localStorageKey = `queue_${boardId}`    
+    const state = localStorageAtom<QueueState>(localStorageKey, {
         queue: [],
         sent: [],
     })
 
     function sendIfPossible() {
+        if (!connected || !canFlush) return
         state.modify((s) => {
             if (s.sent.length > 0 || s.queue.length === 0) return s
             socket.send(JSON.stringify(s.queue))
@@ -29,6 +31,10 @@ export default function (socket: Sender) {
                 sent: s.queue,
             }
         })
+    }    
+
+    function startFlushing() {
+        canFlush = true
     }
 
     function ack() {
@@ -41,9 +47,14 @@ export default function (socket: Sender) {
         sendIfPossible()
     }
 
+    function sendImmediately(event: AppEvent) {
+        socket.send(JSON.stringify([event]))
+    }
+
     function onConnect() {
         // Stop waiting for acks for messages from earlier sessions, no way to know whether they
         // were received or not.
+        connected = true
         state.modify((s) => ({ ...s, sent: [] }))
         sendIfPossible()
     }
@@ -51,7 +62,9 @@ export default function (socket: Sender) {
     const queueSize = L.view(state, (s) => s.queue.length + s.sent.length)
 
     return {
+        startFlushing,
         enqueue,
+        sendImmediately,
         onConnect,
         queueSize: queueSize,
         ack,

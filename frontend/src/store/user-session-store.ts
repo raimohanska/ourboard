@@ -56,8 +56,6 @@ export type LoggedIn = BaseSessionState &
 
 export type UserSessionStore = ReturnType<typeof UserSessionStore>
 
-export type Dispatch = (e: UIEvent) => void
-
 export function UserSessionStore(connection: ServerConnection, localStorage: Storage) {
     const { events } = connection
 
@@ -112,7 +110,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 }
             } else if (event.status === "signed-out") {
                 if (state.status === "logging-in-server" || state.status == "logged-in") {
-                    connection.send({ action: "auth.logout" })
+                    connection.sendImmediately({ action: "auth.logout" })
                 }
 
                 return {
@@ -148,15 +146,15 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
 
     function sendLoginAndNickname(state: UserSessionState) {
         if (state.status === "logging-in-server" || state.status === "logged-in") {
-            connection.send({ action: "nickname.set", nickname: state.name })
-            connection.send({
+            connection.sendImmediately({ action: "nickname.set", nickname: state.name })
+            connection.sendImmediately({
                 action: "auth.login",
                 name: state.name,
                 email: state.email,
                 token: state.token,
             })
         } else if (state.nickname) {
-            connection.send({ action: "nickname.set", nickname: state.nickname })
+            connection.sendImmediately({ action: "nickname.set", nickname: state.nickname })
         }
         return state
     }

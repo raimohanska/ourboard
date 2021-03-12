@@ -12,7 +12,7 @@ import {
     isShapedItem,
     ShapedItem,
 } from "../../../common/src/domain"
-import { Dispatch } from "../store/user-session-store"
+import { Dispatch } from "../store/server-connection"
 import { NOTE_COLORS } from "../../../common/src/colors"
 import { BoardFocus } from "./board-focus"
 

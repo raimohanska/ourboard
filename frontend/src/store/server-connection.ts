@@ -61,7 +61,7 @@ export function serverConnection(initialBoardId: Id | undefined) {
             reconnect()
         })
 
-        return [ws, MessageQueue(ws)] as const
+        return [ws, MessageQueue(ws, boardId)] as const
 
         async function reconnect() {
             await sleep(1000)
@@ -86,12 +86,14 @@ export function serverConnection(initialBoardId: Id | undefined) {
 
     return {
         uiEvents,
-        send: (e: AppEvent) => messageQueue.enqueue(e),
+        enqueue: (e: AppEvent) => messageQueue.enqueue(e),
+        sendImmediately: (e: AppEvent) => messageQueue.sendImmediately(e),
         bufferedServerEvents,
         dispatch,
         connected,
         events,
         queueSize: messageQueue.queueSize,
         newSocket,
+        startFlushing: () => messageQueue.startFlushing()
     }
 }

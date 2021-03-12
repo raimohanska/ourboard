@@ -14,7 +14,8 @@ import {
     UserCursorPosition,
 } from "../../../common/src/domain"
 import { ItemView } from "./ItemView"
-import { Dispatch, UserSessionState } from "../store/user-session-store"
+import { UserSessionState } from "../store/user-session-store"
+import { Dispatch } from "../store/server-connection"
 import { ContextMenuView } from "./ContextMenuView"
 import { PaletteView } from "./PaletteView"
 import { CursorsView } from "./CursorsView"

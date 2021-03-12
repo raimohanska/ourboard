@@ -1,8 +1,9 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { canLogin, Dispatch, UserSessionState, LoggingInServer } from "../store/user-session-store"
+import { canLogin, UserSessionState, LoggingInServer } from "../store/user-session-store"
 import { EditableSpan } from "./EditableSpan"
 import { signIn, signOut } from "../google-auth"
+import { Dispatch } from "../store/server-connection"
 
 export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessionState>; dispatch: Dispatch }) => {
     return (

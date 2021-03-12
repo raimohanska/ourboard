@@ -17,10 +17,13 @@ import { RecentBoardAttributes } from "../../common/src/domain"
 const App = () => {
     const connection = serverConnection(boardIdFromPath())
     const sessionStore = UserSessionStore(connection, localStorage)
-    const boardStore = BoardStore(connection, sessionStore.sessionState)
-    const { boardId, navigateToBoard } = BoardNavigation(connection, boardStore)
+    const { boardId, navigateToBoard } = BoardNavigation(connection)
+    const boardStore = BoardStore(boardId, connection, sessionStore.sessionState)
     const recentBoards = RecentBoards(connection, sessionStore)
     const assets = assetStore(connection, L.view(boardStore.state, "board"), connection.events)
+
+    const title = L.view(boardStore.state, (s) => (s.board ? `${s.board.name} - R-Board` : "R-Board"))
+    title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
     boardStore.state
         .pipe(

@@ -1,7 +1,7 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import { Board, Item, newContainer, newSimilarNote, newText, Note } from "../../../common/src/domain"
-import { Dispatch } from "../store/user-session-store"
+import { Dispatch } from "../store/server-connection"
 
 export const PaletteView = ({
     latestNote,

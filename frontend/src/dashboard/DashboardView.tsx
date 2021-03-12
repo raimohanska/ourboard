@@ -3,10 +3,11 @@ import * as L from "lonna"
 import { exampleBoard, Id } from "../../../common/src/domain"
 import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components"
-import { canLogin, Dispatch, UserSessionState } from "../store/user-session-store"
+import { canLogin, UserSessionState } from "../store/user-session-store"
 import _ from "lodash"
 import { signIn, signOut } from "../google-auth"
 import { RecentBoards } from "../store/recent-boards"
+import { Dispatch } from "../store/server-connection"
 
 export const DashboardView = ({
     sessionState,
