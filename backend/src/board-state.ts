@@ -65,8 +65,7 @@ export function maybeGetBoard(id: Id): ServerSideBoardState | undefined {
     if (state?.ready) return state
 }
 
-export async function updateBoards(appEvent: BoardHistoryEntry) {
-    const boardState = await getBoard(appEvent.boardId)
+export function updateBoards(boardState: ServerSideBoardState, appEvent: BoardHistoryEntry) {
     const currentSerial = boardState.board.serial
     const serial = currentSerial + 1
     if (appEvent.serial !== undefined) {

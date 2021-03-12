@@ -93,11 +93,11 @@ const githubWebhook = route
                     const color = isBug ? RED : YELLOW
                     if (!existingItem) {
                         console.log(`Github webhook call board ${boardId}: New item`)
-                        await addItem(board.board, "note", linkHTML, color, "New issues")
+                        addItem(board, "note", linkHTML, color, "New issues")
                     } else {
                         console.log(`Github webhook call board ${boardId}: Item exists`)
                         const updatedItem: Note = { ...existingItem, color }
-                        await dispatchSystemAppEvent({ action: "item.update", boardId, items: [updatedItem] })
+                        dispatchSystemAppEvent(board, { action: "item.update", boardId, items: [updatedItem] })
                     }
                 }
             }
@@ -122,7 +122,7 @@ const itemCreate = route
         checkBoardAPIAccess(request, async (board) => {
             const { type, text, color, container } = request.body
             console.log(`POST item for board ${board.board.id}: ${JSON.stringify(request.req.body)}`)
-            await addItem(board.board, type, text, color, container)
+            addItem(board, type, text, color, container)
             return ok({ ok: true })
         }),
     )
@@ -172,8 +172,8 @@ const itemCreateOrUpdate = route
             console.log(`PUT item for board ${board.board.id} item ${itemId}: ${JSON.stringify(request.req.body)}`)
             const existingItem = board.board.items.find((i) => i.id === itemId)
             if (existingItem) {
-                await updateItem(
-                    board.board,
+                updateItem(
+                    board,
                     type,
                     text,
                     color,
@@ -185,7 +185,7 @@ const itemCreateOrUpdate = route
                 )
             } else {
                 console.log(`Adding new item`)
-                await addItem(board.board, type, text, color, container, itemId)
+                addItem(board, type, text, color, container, itemId)
             }
             return ok({ ok: true })
         }),
@@ -258,8 +258,8 @@ function getItemAttributesForContainer(container: string | undefined, board: Boa
     return {}
 }
 
-async function addItem(
-    board: Board,
+function addItem(
+    board: ServerSideBoardState,
     type: "note",
     text: string,
     color: Color,
@@ -269,16 +269,16 @@ async function addItem(
     if (type !== "note") throw new InvalidRequest("Expecting type: note")
     if (typeof text !== "string" || text.length === 0) throw new InvalidRequest("Expecting non zero-length text")
 
-    let itemAttributes: object = getItemAttributesForContainer(container, board)
+    let itemAttributes: object = getItemAttributesForContainer(container, board.board)
     if (itemId) itemAttributes = { ...itemAttributes, id: itemId }
 
     const item: Note = { ...newNote(text, color || YELLOW), ...itemAttributes }
-    const appEvent: AppEvent = { action: "item.add", boardId: board.id, items: [item] }
-    dispatchSystemAppEvent(appEvent)
+    const appEvent: AppEvent = { action: "item.add", boardId: board.board.id, items: [item] }
+    dispatchSystemAppEvent(board, appEvent)
 }
 
-async function updateItem(
-    board: Board,
+function updateItem(
+    board: ServerSideBoardState,
     type: "note",
     text: string,
     color: Color,
@@ -288,15 +288,15 @@ async function updateItem(
     replaceColorIfExists: boolean | undefined,
     replaceContainerIfExists: boolean | undefined,
 ) {
-    const existingItem = board.items.find((i) => i.id === itemId)!
+    const existingItem = board.board.items.find((i) => i.id === itemId)!
     if (!isNote(existingItem)) {
         throw new InvalidRequest("Unexpected item type")
     }
-    const containerItem = findContainer(container, board)
-    const currentContainer = findContainer(existingItem.containerId, board)
+    const containerItem = findContainer(container, board.board)
+    const currentContainer = findContainer(existingItem.containerId, board.board)
     const containerAttrs =
         replaceContainerIfExists && containerItem !== currentContainer
-            ? getItemAttributesForContainer(container, board)
+            ? getItemAttributesForContainer(container, board.board)
             : {}
 
     let updatedItem: Note = {
@@ -307,18 +307,18 @@ async function updateItem(
     }
     if (!_.isEqual(updatedItem, existingItem)) {
         console.log(`Updating existing item`)
-        await dispatchSystemAppEvent({ action: "item.update", boardId: board.id, items: [updatedItem] })
+        dispatchSystemAppEvent(board, { action: "item.update", boardId: board.board.id, items: [updatedItem] })
     } else {
         console.log(`Not updating: item not changed`)
     }
 }
 
-async function dispatchSystemAppEvent(appEvent: PersistableBoardItemEvent) {
+function dispatchSystemAppEvent(board: ServerSideBoardState, appEvent: PersistableBoardItemEvent) {
     const user: EventUserInfo = { userType: "system", nickname: "Github webhook" }
     let historyEntry: BoardHistoryEntry = { ...appEvent, user, timestamp: new Date().toISOString() }
     console.log(JSON.stringify(historyEntry))
     // TODO: refactor, this is the same sequence as done in connection-handler for messages from clients
-    const serial = await updateBoards(historyEntry)
+    const serial = updateBoards(board, historyEntry)
     historyEntry = { ...historyEntry, serial }
     broadcastBoardEvent(historyEntry)
 }

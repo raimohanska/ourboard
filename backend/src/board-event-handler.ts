@@ -30,7 +30,7 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
                         user: session.userInfo,
                         timestamp: new Date().toISOString(),
                     }
-                    const serial = await updateBoards(historyEntry)
+                    const serial = updateBoards(state, historyEntry)
                     historyEntry = { ...historyEntry, serial }
                     broadcastBoardEvent(historyEntry, session)
                     if (appEvent.action === "board.rename") {
