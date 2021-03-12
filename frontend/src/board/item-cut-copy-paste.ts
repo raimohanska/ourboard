@@ -1,10 +1,12 @@
 import _ from "lodash"
 import * as L from "lonna"
 import * as uuid from "uuid"
-import { Board, Item, findItemsRecursively } from "../../../common/src/domain"
+import { Board, Item, findItemsRecursively, newNote, newText } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 import { Dispatch } from "../store/server-connection"
+import { YELLOW } from "../../../common/src/colors"
+import { sanitizeHTML } from "../components/sanitizeHTML"
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
@@ -65,7 +67,18 @@ export function cutCopyPasteHandler(
                 if (currentFocus.status === "editing") return
                 const rboardData = e.clipboardData?.getData("application/rboard")
                 if (!rboardData) {
-                    if (e.clipboardData) {
+                    const html = e.clipboardData?.getData("text/html") || e.clipboardData?.getData("text/plain")
+                    if (html) {
+                        const sanitized = sanitizeHTML(html)
+                        const currentCenter = coordinateHelper.currentBoardCoordinates.get()
+                        let toCreate
+                        if (sanitized.length > 50) {
+                            toCreate = [newText(sanitized, currentCenter.x, currentCenter.y)]
+                        } else {
+                            toCreate = [newNote(sanitized, YELLOW, currentCenter.x, currentCenter.y)]
+                        }
+                        dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate })
+                    } else if (e.clipboardData) {
                         console.log(
                             "Unsupported data from clipboard.",
                             Object.fromEntries(e.clipboardData.types.map((t) => [t, e.clipboardData?.getData(t)])),
