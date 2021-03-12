@@ -426,9 +426,11 @@ a {
             cursor: initial;
             align-items: flex-start;
             justify-content: flex-start;
-            .text {
+            
+            > .text {
                 margin-left: 0.5em;
                 margin-top: 0.5em;
+                z-index: 1;
             }
 
             .edge-drag {

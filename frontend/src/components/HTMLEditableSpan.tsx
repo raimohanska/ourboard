@@ -59,13 +59,7 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
     const onKeyPress = (e: JSX.KeyboardEvent) => {
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
-    const onClick = (e: JSX.MouseEvent) => {
-        if (e.shiftKey) return // Don't mess with multi-select
-        e.stopPropagation()
-        if (e.target instanceof HTMLAnchorElement) return // Allow links to work
-        e.preventDefault()
-        editingThis.set(true)
-    }
+
     const onKeyDown = (e: JSX.KeyboardEvent) => {
         if (e.ctrlKey || e.metaKey) {
             if (e.key === "b") {
@@ -110,7 +104,7 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
     }
 
     return (
-        <span onClick={onClick} style={{ cursor: "pointer" }} {...rest}>
+        <span style={{ cursor: "pointer" }} {...rest}>
             {!!props.showIcon && <span className="icon edit" style={{ marginRight: "0.3em", fontSize: "0.8em" }} />}
             <span
                 className="editable"
@@ -125,6 +119,8 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
                 onPaste={onPaste}
                 onDoubleClick={(e) => {
                     e.stopPropagation()
+                    e.preventDefault()
+                    editingThis.set(true)
                 }}
             ></span>
         </span>
