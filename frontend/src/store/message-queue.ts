@@ -15,14 +15,14 @@ type Sender = {
 export default function (socket: Sender, boardId: Id | undefined) {
     let connected = false
     let canFlush = boardId ? false : true
-    const localStorageKey = `queue_${boardId}`    
+    const localStorageKey = `queue_${boardId}`
     const state = localStorageAtom<QueueState>(localStorageKey, {
         queue: [],
         sent: [],
     })
 
     function sendIfPossible() {
-        if (!connected || !canFlush) return
+        if (!connected || !canFlush) return
         state.modify((s) => {
             if (s.sent.length > 0 || s.queue.length === 0) return s
             socket.send(JSON.stringify(s.queue))
@@ -31,7 +31,7 @@ export default function (socket: Sender, boardId: Id | undefined) {
                 sent: s.queue,
             }
         })
-    }    
+    }
 
     function startFlushing() {
         canFlush = true

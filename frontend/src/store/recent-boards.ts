@@ -18,7 +18,7 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
 
     function removeRecentBoard(board: RecentBoard) {
         storeRecentBoards((boards) => boards.filter((b) => b.id !== board.id))
-        connection.dispatch({ action: "board.dissociate", boardId: board.id })
+        connection.enqueue({ action: "board.dissociate", boardId: board.id })
     }
 
     function storeRecentBoards(fn: (boards: RecentBoard[]) => RecentBoard[]) {
@@ -34,7 +34,7 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
             const boardsOnlyFoundLocally = localBoards.filter((b) => !boardsFromServer.some((bs) => bs.id === b.id))
             const boardsToSend = boardsOnlyFoundLocally.filter((b) => !b.userEmail || b.userEmail === e.email)
             boardsToSend.forEach((b) =>
-                connection.dispatch({ action: "board.associate", boardId: b.id, lastOpened: b.opened }),
+                connection.enqueue({ action: "board.associate", boardId: b.id, lastOpened: b.opened }),
             )
             storeRecentBoards(() => [...boardsFromServer, ...boardsOnlyFoundLocally])
         }

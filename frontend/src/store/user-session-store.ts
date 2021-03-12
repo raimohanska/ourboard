@@ -12,6 +12,8 @@ export type UserSessionState =
     | LoggedOut
     | LoginFailedDueToTechnicalProblem
 
+export type StateId = UserSessionState["status"]
+
 export type BaseSessionState = {
     sessionId: Id | null
     nickname: string | undefined
@@ -189,6 +191,10 @@ export function canLogin(state: UserSessionState): boolean {
     if (state.status === "logged-out" || state.status === "login-failed") return true
     if (state.status === "anonymous" && state.loginSupported) return true
     return false
+}
+
+export function isLoginInProgress(state: StateId): boolean {
+    return state === "logging-in-local" || state === "logging-in-server"
 }
 
 export function getAuthenticatedUser(state: UserSessionState): GoogleAuthenticatedUser | null {

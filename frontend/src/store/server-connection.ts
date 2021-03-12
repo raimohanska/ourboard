@@ -11,7 +11,7 @@ const SERVER_EVENTS_BUFFERING_MILLIS = 20
 
 export type ServerConnection = ReturnType<typeof serverConnection>
 
-export function serverConnection(initialBoardId: Id | undefined) {
+export function serverConnection(currentBoardId: Id | undefined) {
     const uiEvents = L.bus<UIEvent>()
     const dispatch: Dispatch = uiEvents.push
     const serverEvents = L.bus<EventFromServer>()
@@ -25,7 +25,7 @@ export function serverConnection(initialBoardId: Id | undefined) {
     )
 
     const connected = L.atom(false)
-    let [socket, messageQueue] = initSocket(initialBoardId)
+    let [socket, messageQueue] = initSocket(currentBoardId)
 
     setInterval(() => {
         if (!document.hidden) {
@@ -42,7 +42,7 @@ export function serverConnection(initialBoardId: Id | undefined) {
             reconnect()
         })
         ws.addEventListener("open", () => {
-            console.log("Websocket connected")
+            console.log("Socket connected")
             messageQueue.onConnect()
             connected.set(true)
         })
@@ -72,10 +72,13 @@ export function serverConnection(initialBoardId: Id | undefined) {
         }
     }
 
-    function newSocket(boardId: Id | undefined) {
-        console.log("New socket")
-        socket.close()
-        ;[socket, messageQueue] = initSocket(boardId)
+    function setBoardId(boardId: Id | undefined) {
+        if (boardId != currentBoardId) {
+            connected.set(false)
+            currentBoardId = boardId
+            socket.close()
+            ;[socket, messageQueue] = initSocket(boardId)
+        }
     }
     uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach((e) => messageQueue.enqueue(e))
 
@@ -93,7 +96,7 @@ export function serverConnection(initialBoardId: Id | undefined) {
         connected,
         events,
         queueSize: messageQueue.queueSize,
-        newSocket,
-        startFlushing: () => messageQueue.startFlushing()
+        setBoardId,
+        startFlushing: () => messageQueue.startFlushing(),
     }
 }

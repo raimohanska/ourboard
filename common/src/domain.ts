@@ -115,8 +115,8 @@ export type RecentBoardAttributes = { id: Id; name: string }
 export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEmail: string | null }
 
 export type BoardEvent = { boardId: Id }
-export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent 
-export type LocalUIEvent = Undo | Redo | BoardJoining
+export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
+export type LocalUIEvent = Undo | Redo | BoardJoinRequest
 export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse
 export type Serial = number
 export type AppEvent = BoardItemEvent | BoardStateSyncEvent | LocalUIEvent | ClientToServerRequest | LoginResponse
@@ -209,7 +209,7 @@ export type AssetPutUrlRequest = { action: "asset.put.request"; assetId: string 
 export type AssetPutUrlResponse = { action: "asset.put.response"; assetId: string; signedUrl: string }
 export type Undo = { action: "ui.undo" }
 export type Redo = { action: "ui.redo" }
-export type BoardJoining = { action: "ui.board.joining", boardId: Id }
+export type BoardJoinRequest = { action: "ui.board.join.request"; boardId: Id | undefined }
 
 export const CURSOR_POSITIONS_ACTION_TYPE = "c" as const
 export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE; p: Record<Id, UserCursorPosition> }

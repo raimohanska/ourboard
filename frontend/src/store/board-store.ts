@@ -26,7 +26,7 @@ import {
 import { mkBootStrapEvent } from "../../../common/src/migration"
 import { clearBoardState, getInitialBoardState, storeBoardState } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
-import { UserSessionState } from "./user-session-store"
+import { isLoginInProgress, UserSessionState } from "./user-session-store"
 
 export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardAccessStatus =
@@ -44,7 +44,11 @@ export type BoardState = {
     locks: ItemLocks
     users: UserSessionInfo[]
 }
-export function BoardStore(boardId: L.Property<Id | undefined>, connection: ServerConnection, sessionInfo: L.Property<UserSessionState>) {
+export function BoardStore(
+    boardId: L.Property<Id | undefined>,
+    connection: ServerConnection,
+    sessionInfo: L.Property<UserSessionState>,
+) {
     type BoardStoreEvent =
         | BoardHistoryEntry
         | TransientBoardItemEvent
@@ -63,7 +67,6 @@ export function BoardStore(boardId: L.Property<Id | undefined>, connection: Ser
             timestamp: new Date().toISOString(),
         }
     }
-
 
     const eventsReducer = (state: BoardState, event: BoardStoreEvent): BoardState => {
         if (event.action === "ui.undo") {
@@ -154,7 +157,7 @@ export function BoardStore(boardId: L.Property<Id | undefined>, connection: Ser
                     }
                 } catch (e) {
                     console.error("Error initializing board. Fetching as new board...", e)
-                    connection.dispatch({
+                    connection.sendImmediately({
                         action: "board.join",
                         boardId,
                     })
@@ -190,7 +193,10 @@ export function BoardStore(boardId: L.Property<Id | undefined>, connection: Ser
         } else if (event.action === "userinfo.set") {
             const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
             return { ...state, users }
-        } else if (event.action === "ui.board.joining") {
+        } else if (event.action === "ui.board.join.request") {
+            if (!event.boardId) {
+                return state
+            }
             return {
                 ...initialState,
                 status: "loading",
@@ -200,7 +206,7 @@ export function BoardStore(boardId: L.Property<Id | undefined>, connection: Ser
             console.error("Failed to apply previous action. Resetting to server-side state...")
             if (state.board) {
                 clearBoardState(state.board.id)
-                dispatchJoinBoard(state.board.id)
+                doJoin(state.board.id)
             }
             return state
         } else {
@@ -242,52 +248,35 @@ export function BoardStore(boardId: L.Property<Id | undefined>, connection: Ser
     )
     localBoardToSave.forEach(storeBoardState)
 
-    L.view(sessionInfo, (s) => s.status).onChange((status) => {
-        const board = state.get().board
-        const loginInProgress = status === "logging-in-local" || status === "logging-in-server"
-        if (board && !loginInProgress) {
-            const wasDenied = ["denied-temporarily", "denied-permanently", "login-required"].includes(
-                state.get().status,
-            )
-            if (status === "logged-out") {
-                console.log("Trying to re-join board after logout")
-                dispatchJoinBoard(board.id)
-            } else if (wasDenied) {
-                console.log("Trying to re-join board after login")
-                dispatchJoinBoard(board.id)
-            }
-        }
+    boardId.forEach((boardId) => {
+        // Switch socket per board. This terminates the unnecessary board session on server.
+        // Also, is preparation for load balancing solution.
+        connection.setBoardId(boardId)
+        connection.dispatch({ action: "ui.board.join.request", boardId })
+        checkReadyToJoin()
     })
 
-    function dispatchJoinBoard(boardId: Id) {
-        // TODO: switch connection per board here, in preparation for load-balancing.
-        // Will also remove the need to introduce LeaveBoard messages for clearing listeners for earlier boards!
+    const sessionStatus = L.view(sessionInfo, (s) => s.status)
+    sessionStatus.onChange(checkReadyToJoin)
+    connection.connected.onChange(checkReadyToJoin)
 
-        console.log("Joining board", boardId)
-        connection.dispatch({ action: "ui.board.joining", boardId })
+    function checkReadyToJoin() {
+        const bid = boardId.get()
+        if (bid && connection.connected.get() && !isLoginInProgress(sessionStatus.get())) {
+            doJoin(bid)
+        }
+    }
+
+    function doJoin(boardId: Id) {
         connection.sendImmediately({
-            action: "board.join", // this is handled in the reducer above indeed
-            boardId,
+            action: "board.join",
+            boardId: boardId,
             initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
         })
     }
 
-    boardId.onChange((id) => {
-        // Switch socket per board. This terminates the unnecessary board session on server.
-        // Also, is preparation for load balancing solution.
-        connection.newSocket(id)
-    })
-
-    // TODO: make the newSocket -> join -> flush queue sequence more explicit somehow
-    connection.connected.onChange((connected) => {
-        const bid = boardId.get()
-        if (bid && connected) {
-            dispatchJoinBoard(bid)
-        }
-    })
-
     return {
-        state
+        state,
     }
 }
 
