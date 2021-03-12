@@ -43,13 +43,13 @@ export const ContextMenuView = ({
         return itemIds.flatMap((id) => findItem(board.get())(id) || [])
     })
 
-    const focusItem = L.view(focusedItems, (items) => {
+    const style = L.view(focusedItems, (items) => {
         if (items.length === 0) return null
         const minY = _.min(items.map((i) => i.y)) || 0
         const maxY = _.max(items.map((i) => i.y + i.height)) || 0
         return {
-            x: _.mean(items.map((i) => i.x)),
-            y: minY > 3 ? minY : maxY + 4,
+            left: _.mean(items.map((i) => i.x)) + "em",
+            top: minY > 3 ? minY + "em" : `calc(${maxY}em + 4rem)`,
         }
     })
 
@@ -61,13 +61,7 @@ export const ContextMenuView = ({
         (ws) => ws.length === 0,
         (hide) =>
             hide ? null : (
-                <div
-                    className="context-menu-positioner"
-                    style={L.combineTemplate({
-                        left: L.view(focusItem, (p) => (p ? p.x + "em" : 0)),
-                        top: L.view(focusItem, (p) => (p ? p.y + "em" : 0)),
-                    })}
-                >
+                <div className="context-menu-positioner" style={style}>
                     <div className="context-menu">
                         <ListView observable={activeWidgets} renderItem={(x) => x} getKey={(x) => x} />
                     </div>
