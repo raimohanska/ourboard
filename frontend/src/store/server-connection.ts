@@ -1,7 +1,7 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
-import { EventFromServer, Id, isLocalUIEvent, UIEvent } from "../../../common/src/domain"
+import { AppEvent, EventFromServer, Id, isLocalUIEvent, UIEvent } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
 import MessageQueue from "./message-queue"
 
@@ -25,8 +25,7 @@ export function serverConnection(initialBoardId: Id | undefined) {
     )
 
     const connected = L.atom(false)
-    const messageQueue = MessageQueue(null)
-    let socket = initSocket(initialBoardId)
+    let [socket, messageQueue] = initSocket(initialBoardId)
 
     setInterval(() => {
         if (!document.hidden) {
@@ -35,9 +34,8 @@ export function serverConnection(initialBoardId: Id | undefined) {
     }, 30000)
 
     function initSocket(boardId: Id | undefined) {
-        let ws: WebSocket
         const protocol = location.protocol === "http:" ? "ws:" : "wss:"
-        ws = new WebSocket(`${protocol}//${location.host}/socket/${boardId ? "board/" + boardId : "lobby"}`)
+        const ws = new WebSocket(`${protocol}//${location.host}/socket/${boardId ? "board/" + boardId : "lobby"}`)
 
         ws.addEventListener("error", (e) => {
             console.error("Web socket error")
@@ -63,14 +61,13 @@ export function serverConnection(initialBoardId: Id | undefined) {
             reconnect()
         })
 
-        messageQueue.setSocket(ws)
-        return ws
+        return [ws, MessageQueue(ws)] as const
 
         async function reconnect() {
             await sleep(1000)
             if (ws === socket) {
                 console.log("reconnecting...")
-                socket = initSocket(boardId)
+                ;[socket, messageQueue] = initSocket(boardId)
             }
         }
     }
@@ -78,9 +75,9 @@ export function serverConnection(initialBoardId: Id | undefined) {
     function newSocket(boardId: Id | undefined) {
         console.log("New socket")
         socket.close()
-        socket = initSocket(boardId)
+        ;[socket, messageQueue] = initSocket(boardId)
     }
-    uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach(messageQueue.enqueue)
+    uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach((e) => messageQueue.enqueue(e))
 
     // uiEvents.log("UI")
     // serverEvents.log("Server")
@@ -89,7 +86,7 @@ export function serverConnection(initialBoardId: Id | undefined) {
 
     return {
         uiEvents,
-        messageQueue,
+        send: (e: AppEvent) => messageQueue.enqueue(e),
         bufferedServerEvents,
         dispatch,
         connected,

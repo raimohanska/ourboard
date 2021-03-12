@@ -112,7 +112,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 }
             } else if (event.status === "signed-out") {
                 if (state.status === "logging-in-server" || state.status == "logged-in") {
-                    connection.messageQueue.enqueue({ action: "auth.logout" })
+                    connection.send({ action: "auth.logout" })
                 }
 
                 return {
@@ -148,15 +148,15 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
 
     function sendLoginAndNickname(state: UserSessionState) {
         if (state.status === "logging-in-server" || state.status === "logged-in") {
-            connection.messageQueue.enqueue({ action: "nickname.set", nickname: state.name })
-            connection.messageQueue.enqueue({
+            connection.send({ action: "nickname.set", nickname: state.name })
+            connection.send({
                 action: "auth.login",
                 name: state.name,
                 email: state.email,
                 token: state.token,
             })
         } else if (state.nickname) {
-            connection.messageQueue.enqueue({ action: "nickname.set", nickname: state.nickname })
+            connection.send({ action: "nickname.set", nickname: state.nickname })
         }
         return state
     }

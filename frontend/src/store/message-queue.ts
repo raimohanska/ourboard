@@ -11,7 +11,10 @@ type Sender = {
     send: (...args: any[]) => any
 }
 
-export default function (socket: Sender | null) {
+// TODO : make this persistent to prevent losing local state when working offline
+// The queues should be board specific though, maybe?
+
+export default function (socket: Sender) {
     const state = L.atom<QueueState>({
         queue: [],
         sent: [],
@@ -20,7 +23,7 @@ export default function (socket: Sender | null) {
     function sendIfPossible() {
         state.modify((s) => {
             if (s.sent.length > 0 || s.queue.length === 0) return s
-            socket!.send(JSON.stringify(s.queue))
+            socket.send(JSON.stringify(s.queue))
             return {
                 queue: [],
                 sent: s.queue,
@@ -51,9 +54,6 @@ export default function (socket: Sender | null) {
         enqueue,
         onConnect,
         queueSize: queueSize,
-        setSocket(newSocket: Sender) {
-            socket = newSocket
-        },
         ack,
     }
 }

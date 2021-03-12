@@ -69,7 +69,7 @@ export function BoardStore(connection: ServerConnection, sessionInfo: L.Property
         if (event.action === "ui.undo") {
             if (!undoStack.length) return state
             const undoOperation = undoStack.pop()!
-            connection.messageQueue.enqueue(undoOperation)
+            connection.send(undoOperation)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 tagWithUserFromState(undoOperation),
@@ -79,7 +79,7 @@ export function BoardStore(connection: ServerConnection, sessionInfo: L.Property
         } else if (event.action === "ui.redo") {
             if (!redoStack.length) return state
             const redoOperation = redoStack.pop()!
-            connection.messageQueue.enqueue(redoOperation)
+            connection.send(redoOperation)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 tagWithUserFromState(redoOperation),

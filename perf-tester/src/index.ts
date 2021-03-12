@@ -12,14 +12,14 @@ function createTester(nickname: string) {
     const radius = 10 + Math.random() * 10
     const increment = Math.random() * 4 - 2
     const boardId = "default"
-    const messageQueue = MessageQueue(null)
-    let socket = initSocket()
+
+    let [socket, messageQueue] = initSocket()
 
     async function reconnect(reconnectSocket: WebSocket) {
         await sleep(1000)
         if (reconnectSocket === socket) {
             console.log("reconnecting...")
-            socket = initSocket()
+            ;[socket, messageQueue] = initSocket()
         }
     }
     function initSocket() {
@@ -64,9 +64,7 @@ function createTester(nickname: string) {
             console.log("Socket disconnected")
             reconnect(ws)
         })
-
-        messageQueue.setSocket(ws)
-        return ws
+        return [ws, MessageQueue(ws)] as const
     }
 }
 

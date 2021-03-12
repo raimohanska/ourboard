@@ -9,7 +9,7 @@ export type AssetId = string
 export type AssetURL = string
 
 export function assetStore(
-    socket: ServerConnection,
+    connection: ServerConnection,
     board: L.Property<Board | undefined>,
     events: L.EventStream<AppEvent>,
 ) {
@@ -50,7 +50,7 @@ export function assetStore(
 
                         console.log("PUT REQ")
 
-                        socket.messageQueue.enqueue({ action: "asset.put.request", assetId })
+                        connection.send({ action: "asset.put.request", assetId })
                         const signedUrl = await getAssetPutResponse(assetId, events)
 
                         const response = await fetch(signedUrl, {
