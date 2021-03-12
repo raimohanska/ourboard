@@ -1,9 +1,10 @@
 import * as WebSocket from "ws"
 import * as uuid from "uuid"
+import { EventFromServer } from "../../common/src/domain"
 
 export const WsWrapper = (ws: WebSocket) => {
     return {
-        send: (msg: any) => {
+        send: (msg: EventFromServer) => {
             try {
                 ws.send(JSON.stringify(msg))
             } catch (e) {

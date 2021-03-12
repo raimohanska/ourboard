@@ -141,9 +141,12 @@ export type BoardStateSyncEvent =
     | GotBoardLocks
     | CursorPositions
     | JoinedBoard
+    | AuthLogin
     | AckJoinBoard
     | DeniedJoinBoard
     | UserInfoUpdate
+    | AssetPutUrlResponse
+    | Ack
 
 export type ClientToServerRequest =
     | CursorMove
@@ -155,7 +158,6 @@ export type ClientToServerRequest =
     | DissociateBoard
     | SetNickname
     | AssetPutUrlRequest
-    | AssetPutUrlResponse
     | AuthLogin
     | AuthLogout
     | Ping
@@ -188,6 +190,7 @@ export type DissociateBoard = { action: "board.dissociate"; boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
 export type DeniedJoinBoard = { action: "board.join.denied"; boardId: Id; reason: "unauthorized" | "forbidden" }
 export type RecentBoardsFromServer = { action: "user.boards"; email: string; boards: RecentBoard[] }
+export type Ack = { action: "ack" }
 export type BoardSerialAck = { action: "board.serial.ack"; boardId: Id; serial: Serial }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
 export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo

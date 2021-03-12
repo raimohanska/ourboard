@@ -103,7 +103,7 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
             case "asset.put.request": {
                 const { assetId } = appEvent
                 const signedUrl = getSignedPutUrl(assetId)
-                socket.send({ action: "asset.put.response", assetId, signedUrl } as AppEvent)
+                socket.send({ action: "asset.put.response", assetId, signedUrl })
                 return true
             }
         }

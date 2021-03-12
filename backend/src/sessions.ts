@@ -16,7 +16,7 @@ import {
     AckJoinBoard,
     AppEvent,
     UserCursorPosition,
-    PersistableBoardItemEvent,
+    EventFromServer,
     isPersistableBoardItemEvent,
     isBoardHistoryEntry,
     EventUserInfoAuthenticated,
@@ -31,7 +31,7 @@ type UserSession = {
     readonly sessionId: Id
     readonly boards: UserSessionBoardEntry[]
     userInfo: EventUserInfo
-    sendEvent: (event: AppEvent) => void
+    sendEvent: (event: EventFromServer) => void
     isOnBoard(boardId: Id): boolean
     close(): void
 }
@@ -62,7 +62,7 @@ export function startSession(socket: WsWrapper) {
 function userSession(socket: WsWrapper) {
     const boards: UserSessionBoardEntry[] = []
     const sessionId = socket.id
-    function sendEvent(event: AppEvent) {
+    function sendEvent(event: EventFromServer) {
         if (isBoardHistoryEntry(event)) {
             const entry = boards.find((b) => b.boardId === event.boardId)
             if (!entry) throw Error("Board " + event.boardId + " not found for session " + sessionId)
