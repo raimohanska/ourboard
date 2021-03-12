@@ -24,7 +24,7 @@ import {
     UserSessionInfo,
 } from "../../../common/src/domain"
 import { mkBootStrapEvent } from "../../../common/src/migration"
-import { getInitialBoardState, storeBoardState } from "./board-local-store"
+import { clearBoardState, getInitialBoardState, storeBoardState } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { UserSessionState } from "./user-session-store"
 
@@ -194,6 +194,13 @@ export function BoardStore(connection: ServerConnection, sessionInfo: L.Property
                 status: "loading",
                 board: { id: event.boardId, name: "", ...defaultBoardSize, items: [], serial: 0 },
             }
+        } else if (event.action === "board.action.apply.failed") {
+            console.error("Failed to apply previous action. Resetting to server-side state...")
+            if (state.board) {
+                clearBoardState(state.board.id)
+                joinBoard(state.board.id)
+            }
+            return state
         } else {
             // Ignore other events
             return state

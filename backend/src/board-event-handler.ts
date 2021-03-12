@@ -30,14 +30,20 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
                         user: session.userInfo,
                         timestamp: new Date().toISOString(),
                     }
-                    const serial = updateBoards(state, historyEntry)
-                    historyEntry = { ...historyEntry, serial }
-                    broadcastBoardEvent(historyEntry, session)
-                    if (appEvent.action === "board.rename") {
-                        // special case: keeping name up to date as it's in a separate column
-                        await updateBoard({ boardId: appEvent.boardId, name: appEvent.name })
+                    try {
+                        const serial = updateBoards(state, historyEntry)
+                        historyEntry = { ...historyEntry, serial }
+                        broadcastBoardEvent(historyEntry, session)
+                        if (appEvent.action === "board.rename") {
+                            // special case: keeping name up to date as it's in a separate column
+                            await updateBoard({ boardId: appEvent.boardId, name: appEvent.name })
+                        }
+                        return { boardId, serial }
+                    } catch (e) {
+                        console.warn(`Error applying event ${JSON.stringify(appEvent)}: ${e} -> forcing board refresh`)
+                        session.sendEvent({ action: "board.action.apply.failed" })
+                        return true
                     }
-                    return { boardId, serial }
                 }
             }
         }

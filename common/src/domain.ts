@@ -145,6 +145,7 @@ export type BoardStateSyncEvent =
     | AckJoinBoard
     | DeniedJoinBoard
     | UserInfoUpdate
+    | ActionApplyFailed
     | AssetPutUrlResponse
     | Ack
 
@@ -192,6 +193,7 @@ export type DeniedJoinBoard = { action: "board.join.denied"; boardId: Id; reason
 export type RecentBoardsFromServer = { action: "user.boards"; email: string; boards: RecentBoard[] }
 export type Ack = { action: "ack" }
 export type BoardSerialAck = { action: "board.serial.ack"; boardId: Id; serial: Serial }
+export type ActionApplyFailed = { action: "board.action.apply.failed" }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
 export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo
 export type InitBoardNew = { action: "board.init"; board: Board }

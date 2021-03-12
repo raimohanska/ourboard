@@ -33,3 +33,8 @@ export function storeBoardState(newState: LocalStorageBoard) {
     //console.log(`Storing ${JSON.stringify(state).length} characters`)
     localStorage[getStorageKey(state.boardWithHistory.board.id)] = JSON.stringify(state)
 }
+
+export function clearBoardState(boardId: Id) {
+    state = undefined
+    delete localStorage[getStorageKey(boardId)]
+}
