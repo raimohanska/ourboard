@@ -202,7 +202,8 @@ export const BoardView = ({
         L.view(board, "items"),
         L.view(board, "connections"),
         focus,
-        (is: Item[], cs: Connection[], f) =>
+        zoom,
+        (is: Item[], cs: Connection[], f, z) =>
             cs.map((c) => {
                 let from: Point = is.find((i) => i.id === c.from)!
                 let to = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
