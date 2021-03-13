@@ -58,6 +58,7 @@ describe("Migration", () => {
             expect(board).toEqual({
                 ...legacyBoard,
                 ...defaultBoardSize,
+                connections: [],
                 items: [
                     { ...containedNoteWithNoType, type: "note", containerId: "d", z: 0 },
                     { ...containedNote2, containerId: "d", z: 0 },
