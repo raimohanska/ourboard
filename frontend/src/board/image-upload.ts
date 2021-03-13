@@ -35,7 +35,7 @@ export function imageUploadHandler(
         if (focus.get().status === "dragging") {
             return // was dragging an item
         }
-        console.log("Drop")
+
         const url = e.dataTransfer?.getData("URL")
         if (url) {
             // Try direct fetch first, and on CORS error fall back to letting the server request it
