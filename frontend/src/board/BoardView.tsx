@@ -1,54 +1,39 @@
 import * as H from "harmaja"
 import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
-import _ from "lodash"
-import { boardCoordinateHelper } from "./board-coordinates"
-import {
-    findItem,
-    Id,
-    Image,
-    Connection,
-    isPoint,
-    Item,
-    newNote,
-    Note,
-    UserCursorPosition,
-    RenderableConnection,
-    AttachmentLocation,
-    Point,
-    isItem,
-} from "../../../common/src/domain"
-import { ItemView } from "./ItemView"
-import { UserSessionState } from "../store/user-session-store"
-import { Dispatch } from "../store/server-connection"
-import { ContextMenuView } from "./ContextMenuView"
-import { PaletteView } from "./PaletteView"
-import { CursorsView } from "./CursorsView"
-import { ImageView } from "./ImageView"
-import { imageUploadHandler } from "./image-upload"
-import { AssetStore } from "../store/asset-store"
-import { cutCopyPasteHandler } from "./item-cut-copy-paste"
-import { RectangularDragSelection } from "./RectangularDragSelection"
-import * as G from "./geometry"
-import { withCurrentContainer } from "./item-setcontainer"
-import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
-import { BoardFocus, getSelectedIds, getSelectedItem } from "./board-focus"
-import { itemDeleteHandler } from "./item-delete"
-import { itemUndoHandler } from "./item-undo-redo"
-import { BoardMenu } from "./BoardMenu"
-import { UserInfoView } from "../components/UserInfoView"
-import { MiniMapView } from "./MiniMapView"
-import { HistoryView } from "./HistoryView"
-import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
-import { boardDragHandler } from "./board-drag"
-import { onClickOutside } from "../components/onClickOutside"
-import { itemSelectAllHandler } from "./item-select-all"
-import { localStorageAtom } from "./local-storage-atom"
+import { findItem, Id, Image, Item, newNote, Note, UserCursorPosition } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
-import { itemCreateHandler } from "./item-create"
-import { BoardAccessStatus, BoardState } from "../store/board-store"
+import { onClickOutside } from "../components/onClickOutside"
+import { UserInfoView } from "../components/UserInfoView"
 import { signIn } from "../google-auth"
-import { existingConnectionHandler } from "./item-connect"
+import { AssetStore } from "../store/asset-store"
+import { BoardAccessStatus, BoardState } from "../store/board-store"
+import { Dispatch } from "../store/server-connection"
+import { UserSessionState } from "../store/user-session-store"
+import { boardCoordinateHelper } from "./board-coordinates"
+import { boardDragHandler } from "./board-drag"
+import { BoardFocus, getSelectedIds, getSelectedItem } from "./board-focus"
+import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
+import { BoardMenu } from "./BoardMenu"
+import { ConnectionsView } from "./ConnectionsView"
+import { ContextMenuView } from "./ContextMenuView"
+import { CursorsView } from "./CursorsView"
+import * as G from "./geometry"
+import { HistoryView } from "./HistoryView"
+import { imageUploadHandler } from "./image-upload"
+import { ImageView } from "./ImageView"
+import { itemCreateHandler } from "./item-create"
+import { cutCopyPasteHandler } from "./item-cut-copy-paste"
+import { itemDeleteHandler } from "./item-delete"
+import { itemSelectAllHandler } from "./item-select-all"
+import { withCurrentContainer } from "./item-setcontainer"
+import { itemUndoHandler } from "./item-undo-redo"
+import { ItemView } from "./ItemView"
+import { localStorageAtom } from "./local-storage-atom"
+import { MiniMapView } from "./MiniMapView"
+import { PaletteView } from "./PaletteView"
+import { RectangularDragSelection } from "./RectangularDragSelection"
+import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 
 export type Tool = "pan" | "select" | "connect"
 export type ControlSettings = {
@@ -194,40 +179,6 @@ export const BoardView = ({
     const boardAccessStatus = L.view(boardState, (s) => s.status)
     const tool = L.view(controlSettings, "tool")
 
-    // Item position might change but connection doesn't -- need to rerender connections anyway
-    // Connection objects normally only hold the ID to the "from" and "to" items
-    // This populates the actual object in place of the ID
-
-    const connectionsWithItemsPopulated = L.combine(
-        L.view(board, "items"),
-        L.view(board, "connections"),
-        focus,
-        zoom,
-        (is: Item[], cs: Connection[], f, z) =>
-            cs.map((c) => {
-                const fromItem: Point = is.find((i) => i.id === c.from)!
-                const toItemOrPoint = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
-                const from = findNearestAttachmentLocationForConnectionNode(fromItem, toItemOrPoint)
-                const to = findNearestAttachmentLocationForConnectionNode(toItemOrPoint, fromItem)
-                return {
-                    ...c,
-                    from,
-                    to,
-                    selected: f.status === "connection-selected" && f.id === c.id,
-                }
-            }),
-    )
-
-    // We want to render round draggable nodes at the end of edges (paths),
-    // But SVG elements are not draggable by default, so get a flat list of
-    // nodes and render them as regular HTML elements
-    const connectionNodes = L.view(connectionsWithItemsPopulated, (cs) =>
-        cs.flatMap((c) => [
-            { id: c.id, type: "from" as const, node: c.from, selected: c.selected },
-            { id: c.id, type: "to" as const, node: c.to, selected: c.selected },
-        ]),
-    )
-
     const boardDimensionsStyle = L.combineTemplate({
         width: L.view(board, (b) => b.width + "em"),
         height: L.view(board, (b) => b.height + "em"),
@@ -236,14 +187,6 @@ export const BoardView = ({
     const borderContainerStyle = L.view(boardDimensionsStyle, zoom, (dimensions, z) => ({
         ...dimensions,
         fontSize: z + "em",
-    }))
-
-    const svgElementStyle = L.view(boardDimensionsStyle, (dimensions) => ({
-        ...dimensions,
-        position: "absolute",
-        top: 0,
-        left: 0,
-        pointerEvents: "none",
     }))
 
     return (
@@ -273,43 +216,7 @@ export const BoardView = ({
                         <RectangularDragSelection {...{ rect: selectionRect }} />
                         <CursorsView {...{ cursors, sessions }} />
                         <ContextMenuView {...{ latestNote, dispatch, board, focus }} />
-                        <ListView<ConnectionNodeProps, string>
-                            observable={connectionNodes}
-                            renderObservable={ConnectionNode}
-                            getKey={(c) => c.id + c.type}
-                        />
-                        <svg style={svgElementStyle}>
-                            <ListView<RenderableConnection, string>
-                                observable={connectionsWithItemsPopulated}
-                                renderObservable={(key, conn: L.Property<RenderableConnection>) => {
-                                    const curve = L.combine(L.view(conn, "from"), L.view(conn, "to"), (from, to) => {
-                                        return G.quadraticCurveSVGPath(
-                                            {
-                                                x: coordinateHelper.emToPx(from.point.x),
-                                                y: coordinateHelper.emToPx(from.point.y),
-                                            },
-                                            {
-                                                x: coordinateHelper.emToPx(to.point.x),
-                                                y: coordinateHelper.emToPx(to.point.y),
-                                            },
-                                        )
-                                    })
-                                    return (
-                                        <g>
-                                            <path
-                                                id="curve"
-                                                d={curve}
-                                                stroke="black"
-                                                stroke-width="1"
-                                                stroke-linecap="round"
-                                                fill="transparent"
-                                            ></path>
-                                        </g>
-                                    )
-                                }}
-                                getKey={(c) => c.id}
-                            />
-                        </svg>
+                        <ConnectionsView {...{ board, zoom, dispatch, focus, coordinateHelper }} />
                     </div>
                 </div>
             </div>
@@ -379,55 +286,6 @@ export const BoardView = ({
 
                 <UserInfoView state={sessionState} dispatch={dispatch} />
             </header>
-        )
-    }
-
-    type ConnectionNodeProps = {
-        id: string
-        node: AttachmentLocation
-        type: "to" | "from"
-        selected: boolean
-    }
-    function ConnectionNode(key: string, cNode: L.Property<ConnectionNodeProps>) {
-        function onRef(el: Element) {
-            cNode.get().type === "to" &&
-                existingConnectionHandler(el, cNode.get().id, coordinateHelper, board, dispatch)
-        }
-
-        const id = L.view(cNode, (cn) => `connection-${cn.id}-${cn.type}`)
-
-        const style = L.view(cNode, (cn) => ({
-            top: coordinateHelper.emToPx(cn.node.point.y),
-            left: coordinateHelper.emToPx(cn.node.point.x),
-        }))
-
-        const selectThisConnection = () => {
-            focus.set({ status: "connection-selected", id: cNode.get().id })
-        }
-
-        return (
-            <div
-                ref={onRef}
-                draggable={true}
-                onClick={selectThisConnection}
-                onDragStart={selectThisConnection}
-                id={id}
-                className={L.view(cNode, (cn) => {
-                    let cls = ""
-                    if (cn.type === "from") {
-                        cls += "connection-node from-node "
-                    } else {
-                        cls += "connection-node to-node "
-                    }
-
-                    if (cn.selected) cls += "highlight "
-
-                    cls += `side-${cn.node.side}`
-
-                    return cls
-                })}
-                style={style}
-            ></div>
         )
     }
 
@@ -521,18 +379,4 @@ const BoardViewMessage = ({
         }
         return null
     })
-}
-
-function findNearestAttachmentLocationForConnectionNode(i: Point | Item, reference: Point): AttachmentLocation {
-    if (!isItem(i)) return { side: "none", point: i }
-    function p(x: number, y: number) {
-        return { x, y }
-    }
-    const options = [
-        { side: "top" as const, point: p(i.x + i.width / 2, i.y) },
-        { side: "left" as const, point: p(i.x, i.y + i.height / 2) },
-        { side: "right" as const, point: p(i.x + i.width, i.y + i.height / 2) },
-        { side: "bottom" as const, point: p(i.x + i.width / 2, i.y + i.height) },
-    ]
-    return _.minBy(options, (p) => G.distance(p.point, reference))!
 }
