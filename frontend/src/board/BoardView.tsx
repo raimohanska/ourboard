@@ -274,8 +274,6 @@ export const BoardView = ({
                             <ListView<RenderableConnection, string>
                                 observable={connectionsWithItemsPopulated}
                                 renderObservable={(key, conn: L.Property<RenderableConnection>) => {
-                                    console.log("rerenders every time because using renderItem")
-
                                     const curve = L.combine(L.view(conn, "from"), L.view(conn, "to"), (from, to) => {
                                         return G.quadraticCurveSVGPath(
                                             {
