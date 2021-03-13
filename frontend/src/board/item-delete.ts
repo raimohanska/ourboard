@@ -14,6 +14,12 @@ export function itemDeleteHandler(boardId: Id, dispatch: Dispatch, focus: L.Prop
                     // del or backspace
                     e.preventDefault()
                     if (eventName === "keyup") {
+                        const f = focus.get()
+                        if (f.status === "connection-selected") {
+                            dispatch({ action: "connection.delete", connectionId: f.id, boardId })
+                            return
+                        }
+
                         const itemIds = [...getSelectedIds(focus.get())]
                         if (itemIds.length) {
                             dispatch({ action: "item.delete", boardId, itemIds })

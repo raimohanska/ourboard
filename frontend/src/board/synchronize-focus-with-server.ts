@@ -52,6 +52,12 @@ export function synchronizeFocusWithServer(
 
     function narrowFocus(focus: BoardFocus, { locks, sessionId: sessionId, board }: CircumStances): BoardFocus {
         if (!sessionId) return { status: "none" }
+
+        // TODO consider selected connection in locking as well maybe
+        if (focus.status === "connection-selected") {
+            return removeNonExistingFromSelection(focus, new Set(board.connections.map((c) => c.id)))
+        }
+
         const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter((itemId) => locks[itemId] !== sessionId))
 
         return removeNonExistingFromSelection(

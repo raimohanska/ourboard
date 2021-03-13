@@ -197,11 +197,12 @@ export const BoardView = ({
     // Item position might change but connection doesn't -- need to rerender connections anyway
     // Connection objects normally only hold the ID to the "from" and "to" items
     // This populates the actual object in place of the ID
+
     const connectionsWithItemsPopulated = L.combine(
         L.view(board, "items"),
         L.view(board, "connections"),
-        zoom,
-        (is: Item[], cs: Connection[], z: number) =>
+        focus,
+        (is: Item[], cs: Connection[], f) =>
             cs.map((c) => {
                 let from: Point = is.find((i) => i.id === c.from)!
                 let to = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
@@ -211,6 +212,7 @@ export const BoardView = ({
                     ...c,
                     from,
                     to,
+                    selected: f.status === "connection-selected" && f.id === c.id,
                 }
             }),
     )
@@ -220,8 +222,8 @@ export const BoardView = ({
     // nodes and render them as regular HTML elements
     const connectionNodes = L.view(connectionsWithItemsPopulated, (cs) =>
         cs.flatMap((c) => [
-            { id: c.id, type: "from" as const, node: c.from },
-            { id: c.id, type: "to" as const, node: c.to },
+            { id: c.id, type: "from" as const, node: c.from, selected: c.selected },
+            { id: c.id, type: "to" as const, node: c.to, selected: c.selected },
         ]),
     )
 
@@ -383,6 +385,7 @@ export const BoardView = ({
         id: string
         node: Point
         type: "to" | "from"
+        selected: boolean
     }
     function ConnectionNode(key: string, cNode: L.Property<ConnectionNodeProps>) {
         function onRef(el: Element) {
@@ -397,7 +400,23 @@ export const BoardView = ({
             left: coordinateHelper.emToPx(cn.node.x),
         }))
 
-        return <div ref={onRef} draggable={true} onClick={console.log} id={id} className="connection-endpoint" style={style}></div>
+        const selectThisConnection = () => {
+            focus.set({ status: "connection-selected", id: cNode.get().id })
+        }
+
+        return (
+            <div
+                ref={onRef}
+                draggable={true}
+                onClick={selectThisConnection}
+                onDragStart={selectThisConnection}
+                id={id}
+                className={L.view(L.view(cNode, "selected"), (s) =>
+                    s ? "connection-endpoint highlight" : "connection-endpoint",
+                )}
+                style={style}
+            ></div>
+        )
     }
 
     function renderItem(id: string, item: L.Property<Item>) {

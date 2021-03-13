@@ -35,6 +35,8 @@ export const ContextMenuView = ({
                 return []
             case "selected":
                 return [...f.ids]
+            case "connection-selected":
+                return []
         }
     }
 

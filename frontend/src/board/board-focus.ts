@@ -5,6 +5,7 @@ export type BoardFocus =
     | { status: "none" }
     | { status: "selected"; ids: Set<Id> }
     | { status: "dragging"; ids: Set<Id> }
+    | { status: "connection-selected"; id: Id }
     | { status: "editing"; id: Id }
 
 export function getSelectedIds(f: BoardFocus): Set<Id> {
@@ -12,6 +13,8 @@ export function getSelectedIds(f: BoardFocus): Set<Id> {
         case "none":
             return new Set()
         case "editing":
+            return new Set([f.id])
+        case "connection-selected":
             return new Set([f.id])
         case "selected":
         case "dragging":
@@ -32,6 +35,7 @@ export function removeFromSelection(selection: BoardFocus, toRemove: Set<Id>): B
         case "none":
             return selection
         case "editing":
+        case "connection-selected":
             return toRemove.has(selection.id) ? { status: "none" } : selection
         case "dragging":
         case "selected":

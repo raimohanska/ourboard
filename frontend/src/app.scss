@@ -556,6 +556,9 @@ a {
             border: 1px solid #cccccc;
             $corner-offset: -7px;
 
+            &.highlight {
+                border: 2px solid #00f;
+            }
         }
 
         .cursor {
