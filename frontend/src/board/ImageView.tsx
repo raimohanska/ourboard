@@ -26,7 +26,7 @@ export const ImageView = ({
     image: L.Property<Image>
     isLocked: L.Property<boolean>
     focus: L.Atom<BoardFocus>
-    tool: L.Property<Tool>
+    tool: L.Atom<Tool>
     coordinateHelper: BoardCoordinateHelper
     dispatch: Dispatch
     assets: AssetStore

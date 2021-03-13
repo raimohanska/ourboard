@@ -21,7 +21,7 @@ export const DragBorder = ({
     coordinateHelper: BoardCoordinateHelper
     focus: L.Atom<BoardFocus>
     board: L.Property<Board>
-    tool: L.Property<Tool>
+    tool: L.Atom<Tool>
     dispatch: Dispatch
 }) => {
     return (

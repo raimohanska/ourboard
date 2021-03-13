@@ -13,7 +13,7 @@ export function itemDragToMove(
     id: string,
     board: L.Property<Board>,
     focus: L.Atom<BoardFocus>,
-    tool: L.Property<Tool>,
+    tool: L.Atom<Tool>,
     coordinateHelper: BoardCoordinateHelper,
     dispatch: Dispatch,
 ) {
@@ -58,6 +58,7 @@ export function itemDragToMove(
             },
             () => {
                 connector.endDrag()
+                tool.set("select")
             },
         )
 }
