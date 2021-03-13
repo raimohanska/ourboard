@@ -4,17 +4,16 @@ import * as L from "lonna"
 import { findItem, Id, Image, Item, newNote, Note, UserCursorPosition } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { onClickOutside } from "../components/onClickOutside"
-import { UserInfoView } from "../components/UserInfoView"
-import { signIn } from "../google-auth"
 import { AssetStore } from "../store/asset-store"
-import { BoardAccessStatus, BoardState } from "../store/board-store"
+import { BoardState } from "../store/board-store"
 import { Dispatch } from "../store/server-connection"
 import { UserSessionState } from "../store/user-session-store"
 import { boardCoordinateHelper } from "./board-coordinates"
 import { boardDragHandler } from "./board-drag"
 import { BoardFocus, getSelectedIds, getSelectedItem } from "./board-focus"
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
-import { BoardMenu } from "./BoardMenu"
+import { BoardViewHeader } from "./BoardViewHeader"
+import { BoardViewMessage } from "./BoardViewMessage"
 import { ConnectionsView } from "./ConnectionsView"
 import { ContextMenuView } from "./ContextMenuView"
 import { CursorsView } from "./CursorsView"
@@ -31,7 +30,6 @@ import { itemUndoHandler } from "./item-undo-redo"
 import { ItemView } from "./ItemView"
 import { localStorageAtom } from "./local-storage-atom"
 import { MiniMapView } from "./MiniMapView"
-import { PaletteView } from "./PaletteView"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 
@@ -179,25 +177,17 @@ export const BoardView = ({
     const boardAccessStatus = L.view(boardState, (s) => s.status)
     const tool = L.view(controlSettings, "tool")
 
-    const boardDimensionsStyle = L.combineTemplate({
+    const borderContainerStyle = L.combineTemplate({
         width: L.view(board, (b) => b.width + "em"),
         height: L.view(board, (b) => b.height + "em"),
+        fontSize: L.view(zoom, (z) => z + "em"),
     })
-
-    const borderContainerStyle = L.view(boardDimensionsStyle, zoom, (dimensions, z) => ({
-        ...dimensions,
-        fontSize: z + "em",
-    }))
 
     return (
         <div id="root" className={L.view(boardAccessStatus, (status) => `board-container ${status}`)}>
             <div className="scroll-container" ref={scrollElement.set}>
                 <BoardViewHeader
-                    boardId={boardId}
-                    boardState={boardState}
-                    sessionState={sessionState}
-                    dispatch={dispatch}
-                    controlSettings={controlSettings}
+                    {...{ board, sessionState, dispatch, controlSettings, navigateToBoard, onAdd, latestNote, zoom }}
                 />
                 <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
 
@@ -230,64 +220,6 @@ export const BoardView = ({
             )}
         </div>
     )
-
-    function BoardViewHeader({
-        boardId,
-        controlSettings,
-        boardState,
-        sessionState,
-        dispatch,
-    }: {
-        boardId: string
-        boardState: L.Property<BoardState>
-        sessionState: L.Property<UserSessionState>
-        controlSettings: L.Atom<ControlSettings>
-        dispatch: Dispatch
-    }) {
-        return (
-            <header>
-                <a
-                    href="/"
-                    onClick={(e) => {
-                        navigateToBoard(undefined)
-                        e.preventDefault()
-                    }}
-                >
-                    <span className="icon back" />
-                </a>
-                <BoardMenu boardId={boardId} state={boardState} dispatch={dispatch} />
-
-                <div className="controls">
-                    <span className="icon zoom_in" title="Zoom in" onClick={() => zoom.modify((z) => z * 1.1)}></span>
-                    <span className="icon zoom_out" title="Zoom out" onClick={() => zoom.modify((z) => z / 1.1)}></span>
-                    <PaletteView {...{ latestNote, onAdd, board, dispatch }} />
-                    <span className="icon undo" title="Undo" onClick={() => dispatch({ action: "ui.undo" })} />
-                    <span className="icon redo" title="Redo" onClick={() => dispatch({ action: "ui.redo" })} />
-                    <span
-                        className={L.view(controlSettings, (s) =>
-                            s.tool === "select" ? "icon cursor-arrow active" : "icon cursor-arrow",
-                        )}
-                        title="Select tool"
-                        onClick={() => controlSettings.set({ tool: "select", hasUserManuallySetTool: true })}
-                    />
-                    <span
-                        className={L.view(controlSettings, (s) => (s.tool === "pan" ? "icon pan active" : "icon pan"))}
-                        title="Pan tool"
-                        onClick={() => controlSettings.set({ tool: "pan", hasUserManuallySetTool: true })}
-                    />
-                    <span
-                        className={L.view(controlSettings, (s) =>
-                            s.tool === "connect" ? "icon connection active" : "icon connection",
-                        )}
-                        title="Connect tool"
-                        onClick={() => controlSettings.set({ tool: "connect", hasUserManuallySetTool: true })}
-                    />
-                </div>
-
-                <UserInfoView state={sessionState} dispatch={dispatch} />
-            </header>
-        )
-    }
 
     function renderItem(id: string, item: L.Property<Item>) {
         const isLocked = L.combineTemplate({ locks, sessionId }).pipe(
@@ -336,47 +268,4 @@ export const BoardView = ({
             }
         })
     }
-}
-
-const BoardViewMessage = ({
-    boardAccessStatus,
-    sessionState,
-}: {
-    boardAccessStatus: L.Property<BoardAccessStatus>
-    sessionState: L.Property<UserSessionState>
-}) => {
-    // TODO: login may be disabled due to Incognito mode or other reasons
-    return L.view(boardAccessStatus, (s) => {
-        if (s === "denied-permanently") {
-            return (
-                <div className="board-status-message">
-                    <div>
-                        <p>
-                            Sorry, access denied. Click <a onClick={signIn}>here</a> to sign in with another account.
-                        </p>
-                    </div>
-                </div>
-            )
-        }
-        if (s === "login-required") {
-            const ss = sessionState.get()
-            if (ss.status === "login-failed") {
-                return (
-                    <div className="board-status-message">
-                        <div>
-                            Something went wrong with logging in. Click <a onClick={signIn}>here</a> to try again.
-                        </div>
-                    </div>
-                )
-            }
-            return (
-                <div className="board-status-message">
-                    <div>
-                        This board is for authorized users only. Click <a onClick={signIn}>here</a> to sign in.
-                    </div>
-                </div>
-            )
-        }
-        return null
-    })
 }
