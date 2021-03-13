@@ -36,19 +36,13 @@ export const ConnectionsView = ({
     // This populates the actual object in place of the ID
 
     const connectionsWithItemsPopulated = L.view(
-        L.view(board, "items"),
-        L.view(board, "connections"),
+        L.view(board, (b) => ({ is: b.items, cs: b.connections })),
         focus,
         zoom,
-        (is: Item[], cs: Connection[], f, z) => {
+        ({ is, cs }, f, z) => {
             return cs.flatMap((c) => {
                 const fromItem: Point = is.find((i) => i.id === c.from)!
                 const toItemOrPoint = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
-                if (!fromItem || !toItemOrPoint) {
-                    // TODO: should not happen. Is there something wrong with Lonna as it seems to provide a temporary view where
-                    //       connections and items are out of sync.
-                    return []
-                }
                 const from = findNearestAttachmentLocationForConnectionNode(fromItem, toItemOrPoint)
                 const to = findNearestAttachmentLocationForConnectionNode(toItemOrPoint, fromItem)
                 return [
