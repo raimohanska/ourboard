@@ -35,6 +35,16 @@ export const ConnectionsView = ({
     // Connection objects normally only hold the ID to the "from" and "to" items
     // This populates the actual object in place of the ID
 
+    // TODO FIXME too tired to figure out why some points have stringified numbers as coordinates
+    function coerceCoordsToNumber(p: Point) {
+        if (typeof p.x === "number" && typeof p.y === "number") return p
+        return {
+            ...p,
+            x: Number(p.x),
+            y: Number(p.y),
+        }
+    }
+
     const connectionsWithItemsPopulated = L.view(
         L.view(board, (b) => ({ is: b.items, cs: b.connections })),
         focus,
@@ -47,6 +57,7 @@ export const ConnectionsView = ({
                 const to = G.findNearestAttachmentLocationForConnectionNode(toItemOrPoint, fromItem)
                 return {
                     ...c,
+                    controlPoints: c.controlPoints.map(coerceCoordsToNumber),
                     from,
                     to,
                     selected: f.status === "connection-selected" && f.id === c.id,
@@ -65,7 +76,7 @@ export const ConnectionsView = ({
             ...c.controlPoints.map((cp) => ({
                 id: c.id,
                 type: "control" as const,
-                node: { point: cp, side: "none" as const },
+                node: { point: coerceCoordsToNumber(cp), side: "none" as const },
                 selected: c.selected,
             })),
         ]),
@@ -152,12 +163,14 @@ export const ConnectionsView = ({
             if (!conn?.controlPoints.length) {
                 return null
             }
+
             const bez = G.bezierCurveFromPoints(conn.from.point, conn.controlPoints[0], conn.to.point)
             const derivative = bez.derivative(1) // tangent vector at the very end of the curve
             const angleInDegrees =
                 ((Math.atan2(derivative.y, derivative.x) - Math.atan2(0, Math.abs(derivative.x))) * 180) / Math.PI
             return Math.round(angleInDegrees)
         })
+        angle.forEach(console.log)
         const style = L.combine(cNode, angle, (cn, ang) => ({
             top: coordinateHelper.emToPx(cn.node.point.y),
             left: coordinateHelper.emToPx(cn.node.point.x),
