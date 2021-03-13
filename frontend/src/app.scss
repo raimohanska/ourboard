@@ -580,6 +580,7 @@ a {
         background: #eeeeee88;
         border: 0.3em solid #eeeeee88;
         box-sizing: content-box;
+        pointer-events: none;
         .viewarea {
             display: inline-block;
             position: absolute;
