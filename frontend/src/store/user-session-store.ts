@@ -161,11 +161,19 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
         return state
     }
 
-    const initialState: UserSessionState = {
-        status: "logging-in-local",
-        sessionId: null,
-        nickname: localStorage.nickname || undefined,
-    }
+    const initialState: UserSessionState =
+        googleUser.get().status === "not-supported"
+            ? {
+                  status: "anonymous",
+                  sessionId: null,
+                  nickname: localStorage.nickname || undefined,
+                  loginSupported: false,
+              }
+            : {
+                  status: "logging-in-local",
+                  sessionId: null,
+                  nickname: localStorage.nickname || undefined,
+              }
 
     const sessionState = L.merge(events, connection.connected.pipe(L.changes), googleUser.pipe(L.changes)).pipe(
         L.scan(initialState, eventsReducer, globalScope),
