@@ -66,7 +66,7 @@ export function quadraticCurveSVGPath(from: Coordinates, to: Coordinates, contro
         return "M" + from.x + " " + from.y + " Q " + controlPoint.x + " " + controlPoint.y + " " + to.x + " " + to.y
     } else {
         const peakPointOfCurve = controlPoints[0]
-        const bez = Bezier.quadraticFromPoints(from, peakPointOfCurve, to)
+        const bez = bezierCurveFromPoints(from, peakPointOfCurve, to)
         return bez
             .getLUT()
             .reduce(
@@ -89,4 +89,8 @@ export function findNearestAttachmentLocationForConnectionNode(i: Point | Item, 
         { side: "bottom" as const, point: p(i.x + i.width / 2, i.y + i.height) },
     ]
     return _.minBy(options, (p) => distance(p.point, reference))!
+}
+
+export function bezierCurveFromPoints(from: Point, middle: Point, to: Point): any {
+    return Bezier.quadraticFromPoints(from, middle, to)
 }

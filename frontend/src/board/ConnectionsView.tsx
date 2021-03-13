@@ -115,7 +115,6 @@ export const ConnectionsView = ({
                         return (
                             <g>
                                 <path
-                                    id="curve"
                                     d={curve}
                                     stroke="black"
                                     stroke-width="1"
@@ -147,9 +146,22 @@ export const ConnectionsView = ({
 
         const id = L.view(cNode, (cn) => `connection-${cn.id}-${cn.type}`)
 
-        const style = L.view(cNode, (cn) => ({
+        const angle = L.view(cNode, (cn) => {
+            if (cn.type !== "to") return null
+            const conn = connectionsWithItemsPopulated.get().find((c) => c.id === cn.id)
+            if (!conn?.controlPoints.length) {
+                return null
+            }
+            const bez = G.bezierCurveFromPoints(conn.from.point, conn.controlPoints[0], conn.to.point)
+            const derivative = bez.derivative(1) // tangent vector at the very end of the curve
+            const angleInDegrees =
+                ((Math.atan2(derivative.y, derivative.x) - Math.atan2(0, Math.abs(derivative.x))) * 180) / Math.PI
+            return Math.round(angleInDegrees)
+        })
+        const style = L.combine(cNode, angle, (cn, ang) => ({
             top: coordinateHelper.emToPx(cn.node.point.y),
             left: coordinateHelper.emToPx(cn.node.point.x),
+            transform: ang !== null ? `translate(-50%, -50%) rotate(${ang}deg)` : undefined,
         }))
 
         const selectThisConnection = () => {
@@ -170,7 +182,7 @@ export const ConnectionsView = ({
 
                     if (cn.selected) cls += "highlight "
 
-                    cls += `side-${cn.node.side}`
+                    cls += cn.node.side === "none" ? "unattached" : "attached"
 
                     return cls
                 })}
