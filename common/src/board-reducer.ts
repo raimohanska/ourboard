@@ -32,8 +32,15 @@ export function boardReducer(
             if (board.items.find((i) => event.items.some((a) => a.id === i.id))) {
                 throw new Error("Adding duplicate item " + JSON.stringify(event.items))
             }
+            const itemsToAdd = event.items.map((item) => {
+                if (item.containerId && !findItem(board)(item.containerId)) {
+                    // Add item but don't try to assign to a non-existing container
+                    return { ...item, containerId: undefined }
+                }
+                return item
+            })
             return [
-                { ...board, items: board.items.concat(event.items) },
+                { ...board, items: board.items.concat(itemsToAdd) },
                 { action: "item.delete", boardId: board.id, itemIds: event.items.map((i) => i.id) },
             ]
         case "item.font.increase":
@@ -102,7 +109,7 @@ export function boardReducer(
                 {
                     action: "item.add",
                     boardId: board.id,
-                    items: Array.from(idsToDelete).map(getItem(board)), // TODO: the deleted items should be assigned to containers when restoring. This happens now only if the container was removed too
+                    items: Array.from(idsToDelete).map(getItem(board)),
                 },
             ]
         }
