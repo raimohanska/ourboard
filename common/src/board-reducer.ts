@@ -10,6 +10,7 @@ import {
     PersistableBoardItemEvent,
     isTextItem,
     TextItem,
+    Connection,
 } from "./domain"
 
 export function boardReducer(
@@ -25,16 +26,7 @@ export function boardReducer(
     switch (event.action) {
         case "connection.add": {
             const { connection } = event
-            const fromItem = board.items.find((i) => i.id === connection.from)
-            if (!fromItem) {
-                throw Error(`Connection ${connection.id} refers to nonexisting origin item ${connection.from}`)
-            }
-            if (typeof connection.to === "string") {
-                const toItem = board.items.find((i) => i.id === connection.to)
-                if (!toItem) {
-                    throw Error(`Connection ${connection.id} refers to nonexisting destination item ${connection.to}`)
-                }
-            }
+            validateConnection(board, connection)
 
             if (board.connections.some((c) => c.id === connection.id)) {
                 throw Error(`Connection ${connection.id} already exists on board ${board.id}`)
@@ -47,16 +39,7 @@ export function boardReducer(
         }
         case "connection.modify": {
             const { connection } = event
-            const fromItem = board.items.find((i) => i.id === connection.from)
-            if (!fromItem) {
-                throw Error(`Connection ${connection.id} refers to nonexisting origin item ${connection.from}`)
-            }
-            if (typeof connection.to === "string") {
-                const toItem = board.items.find((i) => i.id === connection.to)
-                if (!toItem) {
-                    throw Error(`Connection ${connection.id} refers to nonexisting destination item ${connection.to}`)
-                }
-            }
+            validateConnection(board, connection)
 
             const existingConnection = board.connections.find((c) => c.id === connection.id)
             if (!existingConnection) {
@@ -206,6 +189,19 @@ export function boardReducer(
         default:
             console.warn("Unknown event", event)
             return [board, null]
+    }
+}
+
+function validateConnection(board: Board, connection: Connection) {
+    const fromItem = board.items.find((i) => i.id === connection.from)
+    if (!fromItem) {
+        throw Error(`Connection ${connection.id} refers to nonexisting origin item ${connection.from}`)
+    }
+    if (typeof connection.to === "string") {
+        const toItem = board.items.find((i) => i.id === connection.to)
+        if (!toItem) {
+            throw Error(`Connection ${connection.id} refers to nonexisting destination item ${connection.to}`)
+        }
     }
 }
 
