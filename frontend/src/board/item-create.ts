@@ -41,6 +41,7 @@ export function itemCreateHandler(
     }
 
     function shouldCreate(event: JSX.HarmajaEvent) {
+        console.log("should?")
         if (event.target === boardElement.get()! || boardElement.get()!.contains(event.target as Node)) {
             const f = focus.get()
             const selectedElement = getSelectedItem(board.get())(focus.get())

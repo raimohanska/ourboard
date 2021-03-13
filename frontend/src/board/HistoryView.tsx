@@ -85,7 +85,9 @@ export const HistoryView = ({
                 <td className="action">{L.view(entry, (e) => `${e.user.nickname} ${e.actionText}`)}</td>
                 <td className="revert">
                     {L.view(entry, (e) =>
-                        e.revertAction ? <a className="icon undo" title="Revert" onClick={() => dispatch(e.revertAction!)}></a> : null,
+                        e.revertAction ? (
+                            <a className="icon undo" title="Revert" onClick={() => dispatch(e.revertAction!)}></a>
+                        ) : null,
                     )}
                 </td>
             </tr>

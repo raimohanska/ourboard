@@ -81,11 +81,7 @@ export const BoardView = ({
     const sessionId = L.view(sessionState, (s) => s.sessionId)
     const sessions = L.view(boardState, (s) => s.users)
     const zoom = L.atom(1)
-    const style = L.combineTemplate({
-        fontSize: L.view(zoom, (z) => z + "em"),
-        width: L.view(board, (b) => b.width + "em"),
-        height: L.view(board, (b) => b.height + "em"),
-    })
+
     const boardElement = L.atom<HTMLElement | null>(null)
     const scrollElement = L.atom<HTMLElement | null>(null)
     const latestNoteId = L.atom<Id | null>(null)
@@ -229,6 +225,23 @@ export const BoardView = ({
         ]),
     )
 
+    const boardDimensionsStyle = L.combineTemplate({
+        width: L.view(board, (b) => b.width + "em"),
+        height: L.view(board, (b) => b.height + "em"),
+    })
+
+    const borderContainerStyle = L.view(boardDimensionsStyle, zoom, (dimensions, z) => ({
+        ...dimensions,
+        fontSize: z + "em",
+    }))
+
+    const svgElementStyle = L.view(boardDimensionsStyle, (dimensions) => ({
+        ...dimensions,
+        position: "absolute",
+        top: 0,
+        left: 0,
+    }))
+
     return (
         <div id="root" className={L.view(boardAccessStatus, (status) => `board-container ${status}`)}>
             <div className="scroll-container" ref={scrollElement.set}>
@@ -241,7 +254,7 @@ export const BoardView = ({
                 />
                 <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
 
-                <div className="border-container" style={style}>
+                <div className="border-container" style={borderContainerStyle}>
                     <div
                         className={L.view(controlSettings, (s) => "board " + s.tool)}
                         draggable={isFirefox ? L.view(focus, (f) => f.status !== "editing") : true}
@@ -261,16 +274,7 @@ export const BoardView = ({
                             renderObservable={ConnectionNode}
                             getKey={(c) => c.id + c.type}
                         />
-                        <svg
-                            style={{
-                                border: "1px solid red",
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                width: "10000em", // lol todo
-                                height: "10000em",
-                            }}
-                        >
+                        <svg style={svgElementStyle}>
                             <ListView<RenderableConnection, string>
                                 observable={connectionsWithItemsPopulated}
                                 renderObservable={(key, conn: L.Property<RenderableConnection>) => {
