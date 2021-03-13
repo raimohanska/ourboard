@@ -44,9 +44,7 @@ export async function start() {
         })
 
         GoogleAuth = gapi.auth2.getAuthInstance()
-        console.log("*** init g")
         GoogleAuth.isSignedIn.listen(updateSigninStatus)
-        console.log("*** initial update")
         updateSigninStatus()
     } catch (e) {
         console.warn("Google auth init failed", e)
@@ -73,7 +71,6 @@ async function fetchUserInfo(): Promise<{ name: string; email: string }> {
 }
 
 async function updateSigninStatus() {
-    console.log("*** update")
     const user = GoogleAuth.currentUser.get()
     const isAuthorized = user.hasGrantedScopes(SCOPE)
     if (isAuthorized) {
@@ -82,8 +79,6 @@ async function updateSigninStatus() {
         console.log("Google sign-in successful")
         userInfoAtom.set(userInfo)
     } else {
-        let authResponse = user.getAuthResponse()
-        console.log("*** resp", authResponse)
         userInfoAtom.set({ status: "signed-out" })
     }
 }
