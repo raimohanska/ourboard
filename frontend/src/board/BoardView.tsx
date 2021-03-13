@@ -220,7 +220,7 @@ export const BoardView = ({
                     </div>
                 </div>
             </div>
-            <HistoryView board={board} history={history} focus={focus} />
+            <HistoryView {...{ board, history, focus, dispatch }} />
             {L.view(
                 viewRect,
                 (r) => r != null,

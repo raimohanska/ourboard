@@ -10,13 +10,16 @@ import {
     getItemText,
     EventUserInfo,
     ISOTimeStamp,
+    PersistableBoardItemEvent,
+    findItem,
 } from "../../../common/src/domain"
 import prettyMs from "pretty-ms"
-import _ from "lodash"
+import _, { some } from "lodash"
 import { boardReducer } from "../../../common/src/board-reducer"
 import { getItem } from "../../../common/src/domain"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 import { Checkbox } from "../components/components"
+import { Dispatch } from "../store/server-connection"
 
 type ParsedHistoryEntry = {
     timestamp: ISOTimeStamp
@@ -24,16 +27,19 @@ type ParsedHistoryEntry = {
     user: EventUserInfo
     kind: "added" | "moved into" | "renamed" | "deleted" | "changed"
     actionText: string // TODO: this should include links to items for selecting by click.
+    revertAction?: PersistableBoardItemEvent
 }
 
 export const HistoryView = ({
     history,
     board,
     focus,
+    dispatch,
 }: {
     history: L.Property<BoardHistoryEntry[]>
     board: L.Property<Board>
     focus: L.Property<BoardFocus>
+    dispatch: Dispatch
 }) => {
     const expanded = L.atom(false)
 
@@ -77,6 +83,11 @@ export const HistoryView = ({
             <tr className="row">
                 <td className="timestamp">{L.view(entry, (e) => renderTimestamp(e.timestamp))}</td>
                 <td className="action">{L.view(entry, (e) => `${e.user.nickname} ${e.actionText}`)}</td>
+                <td className="revert">
+                    {L.view(entry, (e) =>
+                        e.revertAction ? <a onClick={() => dispatch(e.revertAction!)}>revert</a> : null,
+                    )}
+                </td>
             </tr>
         )
     }
@@ -102,16 +113,28 @@ export const HistoryView = ({
     function parseFullHistory(history: BoardHistoryEntry[]): ParsedHistoryEntry[] {
         // Note: the history is not necessarily full, just what we have available locally. It will always start with a bootstrapping
         // action though, so it will be consistent.
+        const currentBoard = board.get()
         const initAtSerial = (history[0]?.serial || 1) - 1
         const init = {
-            board: { ...createBoard("tmp"), serial: initAtSerial },
+            board: { ...currentBoard, items: [], serial: initAtSerial } as Board,
             parsedHistory: [] as ParsedHistoryEntry[],
         }
         const { parsedHistory } = history.reduce(({ board, parsedHistory }, event) => {
-            const boardAfter = boardReducer(board, event)[0]
-            const parsedEntry = parseHistory(event, board, boardAfter)
+            const [boardAfter, revertAction] = boardReducer(board, event)
+            let parsedEntry = parseHistory(event, board, boardAfter)
+            if (
+                parsedEntry &&
+                revertAction &&
+                event.action === "item.delete" &&
+                !event.itemIds.some((id) => {
+                    const found = findItem(currentBoard)(id)
+                    if (found) console.log("FOUND", id)
+                    return !!found
+                })
+            )
+                parsedEntry = { ...parsedEntry, revertAction }
             const newHistory = parsedEntry !== null ? [...parsedHistory, parsedEntry] : parsedHistory
-            return { board: boardAfter, parsedHistory: newHistory }
+            return { board: boardAfter, parsedHistory: newHistory, revertAction }
         }, init)
         return parsedHistory
     }
