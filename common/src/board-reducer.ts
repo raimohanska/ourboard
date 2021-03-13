@@ -144,7 +144,9 @@ export function boardReducer(
             const idsToDelete = findItemIdsRecursively(event.itemIds, board)
 
             const connectionsToKeep = board.connections.filter(
-                (c) => !idsToDelete.has(c.from) && (typeof c.to !== "string" || !idsToDelete.has(c.to)),
+                (c) =>
+                    (typeof c.from !== "string" || !idsToDelete.has(c.from)) &&
+                    (typeof c.to !== "string" || !idsToDelete.has(c.to)),
             )
             return [
                 {

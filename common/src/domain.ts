@@ -110,7 +110,7 @@ export type Point = { x: number; y: number }
 export const isPoint = (u: unknown): u is Point => typeof u === "object" && !!u && "x" in u && "y" in u
 export type Connection = {
     id: Id
-    from: Id
+    from: Id | Point
     controlPoints: Point[]
     to: Id | Point
 }

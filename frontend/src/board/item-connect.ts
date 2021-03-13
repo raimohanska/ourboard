@@ -1,5 +1,5 @@
 import * as L from "lonna"
-import { Board, Connection } from "../../../common/src/domain"
+import { Board, Connection, Item, Point } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Dispatch } from "../store/server-connection"
 import * as uuid from "uuid"
@@ -12,11 +12,8 @@ DND_GHOST_HIDING_IMAGE.src =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 
 export function drawConnectionHandler(
-    elem: HTMLElement,
-    id: string,
     board: L.Property<Board>,
     coordinateHelper: BoardCoordinateHelper,
-    tool: L.Atom<Tool>,
     dispatch: Dispatch,
 ) {
     let localConnection = L.atom<Connection | null>(null)
@@ -25,7 +22,6 @@ export function drawConnectionHandler(
         if (!c) {
             return
         }
-
         const existing = board.get().connections.find((co) => co.id === c.id)
         if (!existing) {
             dispatch({ action: "connection.add", boardId: board.get().id, connection: c })
@@ -34,49 +30,39 @@ export function drawConnectionHandler(
         }
     })
 
-    function whileDragging(e: MouseEvent) {
-        if (tool.get() !== "connect") return
-        e.stopPropagation()
-        const to = coordinateHelper.currentBoardCoordinates.get()
+    function whileDragging(item: Item, currentPos: Point) {
         localConnection.modify((c) => {
             if (c === null) {
-                throw Error(`Invariant violation: trying to modify null connection`)
+                return newConnection(item)
             }
 
             const items = board.get().items
-            const target = items.find((i) => containedBy({ ...to, width: 0, height: 0 }, i))
+            const target = items.find((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i))
 
             return {
                 ...c,
-                to: target ? target.id : to,
+                to: target ? target.id : currentPos,
             }
         })
     }
 
-    function newConnection(): Connection {
+    function newConnection(from: Item): Connection {
         return {
             id: uuid.v4(),
-            from: id,
+            from: from.id,
             controlPoints: [],
             to: coordinateHelper.currentBoardCoordinates.get(),
         }
     }
 
-    elem.addEventListener("dragstart", (e) => {
-        if (tool.get() !== "connect") return
-        e.stopPropagation()
-        e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
-        localConnection.set(newConnection())
-    })
-
-    elem.addEventListener("drag", whileDragging)
-
-    elem.addEventListener("dragend", (e) => {
-        if (tool.get() !== "connect") return
-        e.stopPropagation()
-        tool.set("select")
+    const endDrag = () => {
         localConnection.set(null)
-    })
+    }
+
+    return {
+        endDrag,
+        whileDragging,
+    }
 }
 
 export function existingConnectionHandler(

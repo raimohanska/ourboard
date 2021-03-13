@@ -18,7 +18,6 @@ import { Dispatch } from "../store/server-connection"
 import { contrastingColor } from "./contrasting-color"
 import { DragBorder } from "./DragBorder"
 import { itemDragToMove } from "./item-dragmove"
-import { drawConnectionHandler } from "./item-connect"
 import { itemSelectionHandler } from "./item-selection"
 import { SelectionBorder } from "./SelectionBorder"
 import { Tool } from "./BoardView"
@@ -51,7 +50,6 @@ export const ItemView = ({
 
     const ref = (el: HTMLElement) => {
         type !== "container" && itemDragToMove(id, board, focus, tool, coordinateHelper, dispatch)(el)
-        type !== "container" && drawConnectionHandler(el, id, board, coordinateHelper, tool, dispatch)
         element.set(el)
     }
 
