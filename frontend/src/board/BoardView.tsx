@@ -14,6 +14,7 @@ import {
     Note,
     UserCursorPosition,
     RenderableConnection,
+    AttachmentLocation,
     Point,
     isItem,
 } from "../../../common/src/domain"
@@ -48,7 +49,6 @@ import { itemCreateHandler } from "./item-create"
 import { BoardAccessStatus, BoardState } from "../store/board-store"
 import { signIn } from "../google-auth"
 import { existingConnectionHandler } from "./item-connect"
-import { item } from "lonna"
 
 export type Tool = "pan" | "select" | "connect"
 export type ControlSettings = {
@@ -205,10 +205,10 @@ export const BoardView = ({
         zoom,
         (is: Item[], cs: Connection[], f, z) =>
             cs.map((c) => {
-                let from: Point = is.find((i) => i.id === c.from)!
-                let to = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
-                from = findNearestConnectionPoint(from, to)
-                to = findNearestConnectionPoint(to, from)
+                const fromItem: Point = is.find((i) => i.id === c.from)!
+                const toItemOrPoint = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
+                const from = findNearestAttachmentLocationForConnectionNode(fromItem, toItemOrPoint)
+                const to = findNearestAttachmentLocationForConnectionNode(toItemOrPoint, fromItem)
                 return {
                     ...c,
                     from,
@@ -285,12 +285,12 @@ export const BoardView = ({
                                     const curve = L.combine(L.view(conn, "from"), L.view(conn, "to"), (from, to) => {
                                         return G.quadraticCurveSVGPath(
                                             {
-                                                x: coordinateHelper.emToPx(from.x),
-                                                y: coordinateHelper.emToPx(from.y),
+                                                x: coordinateHelper.emToPx(from.point.x),
+                                                y: coordinateHelper.emToPx(from.point.y),
                                             },
                                             {
-                                                x: coordinateHelper.emToPx(to.x),
-                                                y: coordinateHelper.emToPx(to.y),
+                                                x: coordinateHelper.emToPx(to.point.x),
+                                                y: coordinateHelper.emToPx(to.point.y),
                                             },
                                         )
                                     })
@@ -384,7 +384,7 @@ export const BoardView = ({
 
     type ConnectionNodeProps = {
         id: string
-        node: Point
+        node: AttachmentLocation
         type: "to" | "from"
         selected: boolean
     }
@@ -397,8 +397,8 @@ export const BoardView = ({
         const id = L.view(cNode, (cn) => `connection-${cn.id}-${cn.type}`)
 
         const style = L.view(cNode, (cn) => ({
-            top: coordinateHelper.emToPx(cn.node.y),
-            left: coordinateHelper.emToPx(cn.node.x),
+            top: coordinateHelper.emToPx(cn.node.point.y),
+            left: coordinateHelper.emToPx(cn.node.point.x),
         }))
 
         const selectThisConnection = () => {
@@ -412,9 +412,20 @@ export const BoardView = ({
                 onClick={selectThisConnection}
                 onDragStart={selectThisConnection}
                 id={id}
-                className={L.view(L.view(cNode, "selected"), (s) =>
-                    s ? "connection-endpoint highlight" : "connection-endpoint",
-                )}
+                className={L.view(cNode, (cn) => {
+                    let cls = ""
+                    if (cn.type === "from") {
+                        cls += "connection-node from-node "
+                    } else {
+                        cls += "connection-node to-node "
+                    }
+
+                    if (cn.selected) cls += "highlight "
+
+                    cls += `side-${cn.node.side}`
+
+                    return cls
+                })}
                 style={style}
             ></div>
         )
@@ -512,16 +523,16 @@ const BoardViewMessage = ({
     })
 }
 
-function findNearestConnectionPoint(i: Point | Item, reference: Point) {
-    if (!isItem(i)) return i
+function findNearestAttachmentLocationForConnectionNode(i: Point | Item, reference: Point): AttachmentLocation {
+    if (!isItem(i)) return { side: "none", point: i }
     function p(x: number, y: number) {
         return { x, y }
     }
     const options = [
-        p(i.x + i.width / 2, i.y),
-        p(i.x, i.y + i.height / 2),
-        p(i.x + i.width, i.y + i.height / 2),
-        p(i.x + i.width / 2, i.y + i.height),
+        { side: "top" as const, point: p(i.x + i.width / 2, i.y) },
+        { side: "left" as const, point: p(i.x, i.y + i.height / 2) },
+        { side: "right" as const, point: p(i.x + i.width, i.y + i.height / 2) },
+        { side: "bottom" as const, point: p(i.x + i.width / 2, i.y + i.height) },
     ]
-    return _.minBy(options, (p) => G.distance(p, reference))!
+    return _.minBy(options, (p) => G.distance(p.point, reference))!
 }

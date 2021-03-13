@@ -541,9 +541,9 @@ a {
             }
         }
 
-        .connection-endpoint {
+        .connection-node {
             position: absolute;
-            z-index: 666;
+            z-index: 100000;
             transform: translate(-50%, -50%);
 
             @extend .dropshadow-shallow;
@@ -551,13 +551,79 @@ a {
             display: block;
             width: 10px;
             height: 10px;
-            background: white;
-            border-radius: 50%;
-            border: 1px solid #cccccc;
-            $corner-offset: -7px;
 
-            &.highlight {
-                border: 2px solid #00f;
+            &.from-node {
+                background: white;
+                border-radius: 50%;
+                border: 1px solid #cccccc;
+                $corner-offset: -7px;
+
+                &.highlight {
+                    border: 2px solid #00f;
+                }
+            }
+
+            &.to-node {
+                box-shadow: none;
+                background: transparent;
+                &.side-none {
+                    background: white;
+                    border-radius: 50%;
+                    border: 1px solid #cccccc;
+                    $corner-offset: -7px;
+
+                    &.highlight {
+                        border: 2px solid #00f;
+                    }
+                }
+
+                &.side-left {
+                    width: 0;
+                    height: 0;
+                    border-top: 5px solid transparent;
+                    border-left: 10px solid black;
+                    border-bottom: 5px solid transparent;
+
+                    &.highlight {
+                        border-left: 10px solid #00f;
+                    }
+                }
+
+                &.side-right {
+                    width: 0;
+                    height: 0;
+                    border-top: 5px solid transparent;
+                    border-right: 10px solid black;
+                    border-bottom: 5px solid transparent;
+
+                    &.highlight {
+                        border-right: 10px solid #00f;
+                    }
+                }
+
+                &.side-top {
+                    width: 0;
+                    height: 0;
+                    border-left: 5px solid transparent;
+                    border-right: 5px solid transparent;
+                    border-top: 10px solid black;
+
+                    &.highlight {
+                        border-top: 10px solid #00f;
+                    }
+                }
+
+                &.side-bottom {
+                    width: 0;
+                    height: 0;
+                    border-left: 5px solid transparent;
+                    border-right: 5px solid transparent;
+                    border-bottom: 10px solid black;
+
+                    &.highlight {
+                        border-bottom: 10px solid #00f;
+                    }
+                }
             }
         }
 

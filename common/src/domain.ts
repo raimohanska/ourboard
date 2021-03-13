@@ -114,9 +114,12 @@ export type Connection = {
     controlPoints: Point[]
     to: Id | Point
 }
+
+export type AttachmentLocation = { side: "left" | "right" | "top" | "bottom" | "none"; point: Point }
+
 export type RenderableConnection = Omit<Connection, "from" | "to"> & {
-    from: Point
-    to: Point
+    from: AttachmentLocation
+    to: AttachmentLocation
 }
 
 export type TextItem = Note | Text | Container
