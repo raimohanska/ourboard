@@ -40,19 +40,27 @@ export const ConnectionsView = ({
         L.view(board, "connections"),
         focus,
         zoom,
-        (is: Item[], cs: Connection[], f, z) =>
-            cs.map((c) => {
+        (is: Item[], cs: Connection[], f, z) => {
+            return cs.flatMap((c) => {
                 const fromItem: Point = is.find((i) => i.id === c.from)!
                 const toItemOrPoint = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
+                if (!fromItem || !toItemOrPoint) {
+                    // TODO: should not happen. Is there something wrong with Lonna as it seems to provide a temporary view where
+                    //       connections and items are out of sync.
+                    return []
+                }
                 const from = findNearestAttachmentLocationForConnectionNode(fromItem, toItemOrPoint)
                 const to = findNearestAttachmentLocationForConnectionNode(toItemOrPoint, fromItem)
-                return {
-                    ...c,
-                    from,
-                    to,
-                    selected: f.status === "connection-selected" && f.id === c.id,
-                }
-            }),
+                return [
+                    {
+                        ...c,
+                        from,
+                        to,
+                        selected: f.status === "connection-selected" && f.id === c.id,
+                    },
+                ]
+            })
+        },
     )
 
     // We want to render round draggable nodes at the end of edges (paths),
