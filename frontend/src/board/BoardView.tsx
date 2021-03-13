@@ -265,19 +265,20 @@ export const BoardView = ({
                         >
                             <ListView<RenderableConnection, string>
                                 observable={connectionsWithItemsPopulated}
-                                renderItem={(conn: RenderableConnection) => {
+                                renderObservable={(key, conn: L.Property<RenderableConnection>) => {
                                     console.log("rerenders every time because using renderItem")
-                                    const { from, to } = conn
-                                    const curve = G.quadraticCurveSVGPath(
-                                        {
-                                            x: coordinateHelper.emToPx(from.x),
-                                            y: coordinateHelper.emToPx(from.y),
-                                        },
-                                        {
-                                            x: coordinateHelper.emToPx(to.x),
-                                            y: coordinateHelper.emToPx(to.y),
-                                        },
-                                    )
+                                    const curve = L.combine(L.view(conn, "from"), L.view(conn, "to"), (from, to) => {
+                                        return G.quadraticCurveSVGPath(
+                                            {
+                                                x: coordinateHelper.emToPx(from.x),
+                                                y: coordinateHelper.emToPx(from.y),
+                                            },
+                                            {
+                                                x: coordinateHelper.emToPx(to.x),
+                                                y: coordinateHelper.emToPx(to.y),
+                                            },
+                                        )
+                                    })
                                     return (
                                         <g>
                                             <path
