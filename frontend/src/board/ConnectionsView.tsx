@@ -76,7 +76,7 @@ export const ConnectionsView = ({
             ...c.controlPoints.map((cp) => ({
                 id: c.id,
                 type: "control" as const,
-                node: { point: coerceCoordsToNumber(cp), side: "none" as const },
+                node: { point: cp, side: "none" as const },
                 selected: c.selected,
             })),
         ]),
@@ -170,7 +170,7 @@ export const ConnectionsView = ({
                 ((Math.atan2(derivative.y, derivative.x) - Math.atan2(0, Math.abs(derivative.x))) * 180) / Math.PI
             return Math.round(angleInDegrees)
         })
-        angle.forEach(console.log)
+
         const style = L.combine(cNode, angle, (cn, ang) => ({
             top: coordinateHelper.emToPx(cn.node.point.y),
             left: coordinateHelper.emToPx(cn.node.point.x),
