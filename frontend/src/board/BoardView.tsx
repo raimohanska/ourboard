@@ -206,11 +206,17 @@ export const BoardView = ({
         L.view(board, "connections"),
         zoom,
         (is: Item[], cs: Connection[], z: number) =>
-            cs.map((c) => ({
-                ...c,
-                from: is.find((i) => i.id === c.from)!,
-                to: isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!,
-            })),
+            cs.map((c) => {
+                let from: Point = is.find((i) => i.id === c.from)!
+                let to = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
+                from = findNearestConnectionPoint(from, to)
+                to = findNearestConnectionPoint(to, from)
+                return {
+                    ...c,
+                    from,
+                    to,
+                }
+            }),
     )
 
     // We want to render round draggable nodes at the end of edges (paths),
@@ -269,22 +275,8 @@ export const BoardView = ({
                                 observable={connectionsWithItemsPopulated}
                                 renderObservable={(key, conn: L.Property<RenderableConnection>) => {
                                     console.log("rerenders every time because using renderItem")
-                                    function findNearestConnectionPoint(i: Point | Item, reference: Point) {
-                                        if (!isItem(i)) return i
-                                        function p(x: number, y: number) {
-                                            return { x, y }
-                                        }
-                                        const options = [
-                                            p(i.x + i.width / 2, i.y),
-                                            p(i.x, i.y + i.height / 2),
-                                            p(i.x + i.width, i.y + i.height / 2),
-                                            p(i.x + i.width / 2, i.y + i.height),
-                                        ]
-                                        return _.minBy(options, (p) => G.distance(p, reference))!
-                                    }
+
                                     const curve = L.combine(L.view(conn, "from"), L.view(conn, "to"), (from, to) => {
-                                        from = findNearestConnectionPoint(from, to)
-                                        to = findNearestConnectionPoint(to, from)
                                         return G.quadraticCurveSVGPath(
                                             {
                                                 x: coordinateHelper.emToPx(from.x),
@@ -502,4 +494,18 @@ const BoardViewMessage = ({
         }
         return null
     })
+}
+
+function findNearestConnectionPoint(i: Point | Item, reference: Point) {
+    if (!isItem(i)) return i
+    function p(x: number, y: number) {
+        return { x, y }
+    }
+    const options = [
+        p(i.x + i.width / 2, i.y),
+        p(i.x, i.y + i.height / 2),
+        p(i.x + i.width, i.y + i.height / 2),
+        p(i.x + i.width / 2, i.y + i.height),
+    ]
+    return _.minBy(options, (p) => G.distance(p, reference))!
 }
