@@ -541,6 +541,23 @@ a {
             }
         }
 
+        .connection-endpoint {
+            position: absolute;
+            z-index: 666;
+            transform: translate(-50%, -50%);
+
+            @extend .dropshadow-shallow;
+            position: absolute;
+            display: block;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            border: 1px solid #cccccc;
+            $corner-offset: -7px;
+
+        }
+
         .cursor {
             z-index: $z-index-cursors;
             pointer-events: none;

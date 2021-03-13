@@ -393,18 +393,11 @@ export const BoardView = ({
         const id = L.view(cNode, (cn) => `connection-${cn.id}-${cn.type}`)
 
         const style = L.view(cNode, (cn) => ({
-            backgroundColor: "blue",
-            width: "0.3em",
-            height: "0.3em",
-            position: "absolute",
-            borderRadius: "50%",
-            zIndex: 666,
             top: coordinateHelper.emToPx(cn.node.y),
             left: coordinateHelper.emToPx(cn.node.x),
-            transform: "translate(-50%, -50%)",
         }))
 
-        return <div ref={onRef} draggable={true} onClick={console.log} id={id} style={style}></div>
+        return <div ref={onRef} draggable={true} onClick={console.log} id={id} className="connection-endpoint" style={style}></div>
     }
 
     function renderItem(id: string, item: L.Property<Item>) {
