@@ -15,6 +15,7 @@ import {
     UserCursorPosition,
     RenderableConnection,
     Point,
+    isItem,
 } from "../../../common/src/domain"
 import { ItemView } from "./ItemView"
 import { UserSessionState } from "../store/user-session-store"
@@ -47,6 +48,7 @@ import { itemCreateHandler } from "./item-create"
 import { BoardAccessStatus, BoardState } from "../store/board-store"
 import { signIn } from "../google-auth"
 import { existingConnectionHandler } from "./item-connect"
+import { item } from "lonna"
 
 export type Tool = "pan" | "select" | "connect"
 export type ControlSettings = {
@@ -267,7 +269,22 @@ export const BoardView = ({
                                 observable={connectionsWithItemsPopulated}
                                 renderObservable={(key, conn: L.Property<RenderableConnection>) => {
                                     console.log("rerenders every time because using renderItem")
+                                    function findNearestConnectionPoint(i: Point | Item, reference: Point) {
+                                        if (!isItem(i)) return i
+                                        function p(x: number, y: number) {
+                                            return { x, y }
+                                        }
+                                        const options = [
+                                            p(i.x + i.width / 2, i.y),
+                                            p(i.x, i.y + i.height / 2),
+                                            p(i.x + i.width, i.y + i.height / 2),
+                                            p(i.x + i.width / 2, i.y + i.height),
+                                        ]
+                                        return _.minBy(options, (p) => G.distance(p, reference))!
+                                    }
                                     const curve = L.combine(L.view(conn, "from"), L.view(conn, "to"), (from, to) => {
+                                        from = findNearestConnectionPoint(from, to)
+                                        to = findNearestConnectionPoint(to, from)
                                         return G.quadraticCurveSVGPath(
                                             {
                                                 x: coordinateHelper.emToPx(from.x),
