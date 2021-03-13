@@ -4,7 +4,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { Dispatch } from "../store/server-connection"
 import * as uuid from "uuid"
 import { Tool } from "./BoardView"
-import { containedBy } from "./geometry"
+import { containedBy, findNearestAttachmentLocationForConnectionNode } from "./geometry"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -37,11 +37,23 @@ export function drawConnectionHandler(
             }
 
             const items = board.get().items
-            const target = items.find((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i))
+            const targetExistingItem = items.find((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i))
+
+            const destinationPoint = targetExistingItem ?? currentPos
+
+            const midpointFromReference = findNearestAttachmentLocationForConnectionNode(item, destinationPoint)
+            const midpointToReference = findNearestAttachmentLocationForConnectionNode(destinationPoint, item)
+            const midpoint = {
+                x: (midpointFromReference.point.x + midpointToReference.point.x) * 0.5,
+                y: (midpointFromReference.point.y + midpointToReference.point.y) * 0.5,
+            }
+
+            // console.log({ item, midpoint, to: targetExistingItem ?? currentPos })
 
             return {
                 ...c,
-                to: target ? target.id : currentPos,
+                controlPoints: [midpoint],
+                to: targetExistingItem ? targetExistingItem.id : currentPos,
             }
         })
     }
@@ -68,6 +80,7 @@ export function drawConnectionHandler(
 export function existingConnectionHandler(
     endNode: Element,
     connectionId: string,
+    type: "to" | "control",
     coordinateHelper: BoardCoordinateHelper,
     board: L.Property<Board>,
     dispatch: Dispatch,
@@ -78,8 +91,16 @@ export function existingConnectionHandler(
         const items = board.get().items
         const coords = coordinateHelper.currentBoardCoordinates.get()
 
-        const hitsItem = items.find((i) => containedBy({ ...coords, width: 0, height: 0 }, i))
-        const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
-        dispatch({ action: "connection.modify", boardId: board.get().id, connection: { ...connection, to } })
+        if (type === "to") {
+            const hitsItem = items.find((i) => containedBy({ ...coords, width: 0, height: 0 }, i))
+            const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
+            dispatch({ action: "connection.modify", boardId: board.get().id, connection: { ...connection, to } })
+        } else {
+            dispatch({
+                action: "connection.modify",
+                boardId: board.get().id,
+                connection: { ...connection, controlPoints: [coords] },
+            })
+        }
     })
 }

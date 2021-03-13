@@ -1,3 +1,8 @@
+import * as _ from "lodash"
+import { AttachmentLocation, isItem, Item, Point } from "../../../common/src/domain"
+// @ts-ignore
+import { Bezier } from "bezier-js"
+
 export type Coordinates = { x: number; y: number }
 export type Dimensions = { width: number; height: number }
 export type Rect = { x: number; y: number; width: number; height: number }
@@ -44,26 +49,44 @@ export function rectFromPoints(a: Coordinates, b: Coordinates) {
     return { x, y, width, height }
 }
 
-export function quadraticCurveSVGPath(a: Coordinates, b: Coordinates) {
-    const p1x = a.x
-    const p1y = a.y
-    const p2x = b.x
-    const p2y = b.y
+export function quadraticCurveSVGPath(from: Coordinates, to: Coordinates, controlPoints: Coordinates[]) {
+    if (!controlPoints || !controlPoints.length) {
+        // fallback if no control points, just create a curve with a hardcoded offset
+        const midpointX = (to.x + from.x) * 0.5
+        const midpointY = (to.y + from.y) * 0.5
 
-    // mid-point of line:
-    var mpx = (p2x + p1x) * 0.5
-    var mpy = (p2y + p1y) * 0.5
+        // angle of perpendicular to line:
+        const theta = Math.atan2(to.y - from.y, to.x - from.x) - Math.PI / 2
 
-    // angle of perpendicular to line:
-    var theta = Math.atan2(p2y - p1y, p2x - p1x) - Math.PI / 2
+        // distance of control point from mid-point of line:
+        const offset = 30
 
-    // distance of control point from mid-point of line:
-    var offset = 30
+        // location of control point:
+        const controlPoint = { x: midpointX + offset * Math.cos(theta), y: midpointY + offset * Math.sin(theta) }
+        return "M" + from.x + " " + from.y + " Q " + controlPoint.x + " " + controlPoint.y + " " + to.x + " " + to.y
+    } else {
+        const peakPointOfCurve = controlPoints[0]
+        const bez = Bezier.quadraticFromPoints(from, peakPointOfCurve, to)
+        return bez
+            .getLUT()
+            .reduce(
+                (acc: string, p: Point, i: number) =>
+                    i === 0 ? (acc += `M ${p.x} ${p.y}`) : (acc += `L ${p.x} ${p.y}`),
+                "",
+            )
+    }
+}
 
-    // location of control point:
-    var c1x = mpx + offset * Math.cos(theta)
-    var c1y = mpy + offset * Math.sin(theta)
-
-    // construct the command to draw a quadratic curve
-    return "M" + p1x + " " + p1y + " Q " + c1x + " " + c1y + " " + p2x + " " + p2y
+export function findNearestAttachmentLocationForConnectionNode(i: Point | Item, reference: Point): AttachmentLocation {
+    if (!isItem(i)) return { side: "none", point: i }
+    function p(x: number, y: number) {
+        return { x, y }
+    }
+    const options = [
+        { side: "top" as const, point: p(i.x + i.width / 2, i.y) },
+        { side: "left" as const, point: p(i.x, i.y + i.height / 2) },
+        { side: "right" as const, point: p(i.x + i.width, i.y + i.height / 2) },
+        { side: "bottom" as const, point: p(i.x + i.width / 2, i.y + i.height) },
+    ]
+    return _.minBy(options, (p) => distance(p.point, reference))!
 }

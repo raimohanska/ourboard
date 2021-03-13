@@ -10,6 +10,7 @@
     "@types/md5": "^2.2.1",
     "@types/pretty-ms": "^5.0.1",
     "@types/sanitize-html": "^1.27.1",
+    "bezier-js": "^4.0.3",
     "cookie": "^0.4.1",
     "email-validator": "^2.0.4",
     "esbuild": "^0.8.57",

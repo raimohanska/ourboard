@@ -40,19 +40,17 @@ export const ConnectionsView = ({
         focus,
         zoom,
         ({ is, cs }, f, z) => {
-            return cs.flatMap((c) => {
+            return cs.map((c) => {
                 const fromItem: Point = is.find((i) => i.id === c.from)!
                 const toItemOrPoint = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
-                const from = findNearestAttachmentLocationForConnectionNode(fromItem, toItemOrPoint)
-                const to = findNearestAttachmentLocationForConnectionNode(toItemOrPoint, fromItem)
-                return [
-                    {
-                        ...c,
-                        from,
-                        to,
-                        selected: f.status === "connection-selected" && f.id === c.id,
-                    },
-                ]
+                const from = G.findNearestAttachmentLocationForConnectionNode(fromItem, toItemOrPoint)
+                const to = G.findNearestAttachmentLocationForConnectionNode(toItemOrPoint, fromItem)
+                return {
+                    ...c,
+                    from,
+                    to,
+                    selected: f.status === "connection-selected" && f.id === c.id,
+                }
             })
         },
     )
@@ -64,6 +62,12 @@ export const ConnectionsView = ({
         cs.flatMap((c) => [
             { id: c.id, type: "from" as const, node: c.from, selected: c.selected },
             { id: c.id, type: "to" as const, node: c.to, selected: c.selected },
+            ...c.controlPoints.map((cp) => ({
+                id: c.id,
+                type: "control" as const,
+                node: { point: cp, side: "none" as const },
+                selected: c.selected,
+            })),
         ]),
     )
 
@@ -87,18 +91,27 @@ export const ConnectionsView = ({
                 <ListView<RenderableConnection, string>
                     observable={connectionsWithItemsPopulated}
                     renderObservable={(key, conn: L.Property<RenderableConnection>) => {
-                        const curve = L.combine(L.view(conn, "from"), L.view(conn, "to"), (from, to) => {
-                            return G.quadraticCurveSVGPath(
-                                {
-                                    x: coordinateHelper.emToPx(from.point.x),
-                                    y: coordinateHelper.emToPx(from.point.y),
-                                },
-                                {
-                                    x: coordinateHelper.emToPx(to.point.x),
-                                    y: coordinateHelper.emToPx(to.point.y),
-                                },
-                            )
-                        })
+                        const curve = L.combine(
+                            L.view(conn, "from"),
+                            L.view(conn, "to"),
+                            L.view(conn, "controlPoints"),
+                            (from, to, cps) => {
+                                return G.quadraticCurveSVGPath(
+                                    {
+                                        x: coordinateHelper.emToPx(from.point.x),
+                                        y: coordinateHelper.emToPx(from.point.y),
+                                    },
+                                    {
+                                        x: coordinateHelper.emToPx(to.point.x),
+                                        y: coordinateHelper.emToPx(to.point.y),
+                                    },
+                                    cps.map((cp) => ({
+                                        x: coordinateHelper.emToPx(cp.x),
+                                        y: coordinateHelper.emToPx(cp.y),
+                                    })),
+                                )
+                            },
+                        )
                         return (
                             <g>
                                 <path
@@ -121,13 +134,15 @@ export const ConnectionsView = ({
     type ConnectionNodeProps = {
         id: string
         node: AttachmentLocation
-        type: "to" | "from"
+        type: "to" | "from" | "control"
         selected: boolean
     }
     function ConnectionNode(key: string, cNode: L.Property<ConnectionNodeProps>) {
         function onRef(el: Element) {
-            cNode.get().type === "to" &&
-                existingConnectionHandler(el, cNode.get().id, coordinateHelper, board, dispatch)
+            const { id, type } = cNode.get()
+            if (type !== "from") {
+                existingConnectionHandler(el, id, type, coordinateHelper, board, dispatch)
+            }
         }
 
         const id = L.view(cNode, (cn) => `connection-${cn.id}-${cn.type}`)
@@ -149,12 +164,9 @@ export const ConnectionsView = ({
                 onDragStart={selectThisConnection}
                 id={id}
                 className={L.view(cNode, (cn) => {
-                    let cls = ""
-                    if (cn.type === "from") {
-                        cls += "connection-node from-node "
-                    } else {
-                        cls += "connection-node to-node "
-                    }
+                    let cls = "connection-node "
+
+                    cls += `${cn.type}-node `
 
                     if (cn.selected) cls += "highlight "
 
@@ -166,18 +178,4 @@ export const ConnectionsView = ({
             ></div>
         )
     }
-}
-
-function findNearestAttachmentLocationForConnectionNode(i: Point | Item, reference: Point): AttachmentLocation {
-    if (!isItem(i)) return { side: "none", point: i }
-    function p(x: number, y: number) {
-        return { x, y }
-    }
-    const options = [
-        { side: "top" as const, point: p(i.x + i.width / 2, i.y) },
-        { side: "left" as const, point: p(i.x, i.y + i.height / 2) },
-        { side: "right" as const, point: p(i.x + i.width, i.y + i.height / 2) },
-        { side: "bottom" as const, point: p(i.x + i.width / 2, i.y + i.height) },
-    ]
-    return _.minBy(options, (p) => G.distance(p.point, reference))!
 }
