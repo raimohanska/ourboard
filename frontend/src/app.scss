@@ -577,27 +577,15 @@ a {
             &.to-node {
                 box-shadow: none;
                 background: transparent;
-                &.unattached {
-                    background: white;
-                    border-radius: 50%;
-                    border: 1px solid #cccccc;
-                    $corner-offset: -7px;
 
-                    &.highlight {
-                        border: 2px solid $link-color;
-                    }
-                }
+                width: 0;
+                height: 0;
+                border-top: 5px solid transparent;
+                border-left: 14px solid black;
+                border-bottom: 5px solid transparent;
 
-                &.attached {
-                    width: 0;
-                    height: 0;
-                    border-top: 5px solid transparent;
-                    border-left: 14px solid black;
-                    border-bottom: 5px solid transparent;
-
-                    &.highlight {
-                        border-left: 10px solid $link-color;
-                    }
+                &.highlight {
+                    border-left: 14px solid $link-color;
                 }
             }
         }
