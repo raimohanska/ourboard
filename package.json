@@ -37,15 +37,17 @@
     "start:dev:backend": "yarn --cwd backend start:dev",
     "start": "yarn start:backend",
     "start:backend": "yarn --cwd backend start",
-    "build": "yarn build:frontend && yarn build:backend",
+    "build": "yarn build:frontend && yarn build:backend && yarn build:perf-tester",
     "build:frontend": "yarn --cwd frontend build",
     "build:backend": "yarn --cwd backend build",
+    "build:perf-tester": "yarn --cwd perf-tester build",
     "test-unit": "npm-run-all --parallel test-unit-common",
     "test-unit-common": "TEST_TARGET=common jest",
     "test-e2e:dev": "cypress run --headed || true",
     "cypress": "cypress open",
     "prettier:check": "prettier --check .",
     "typecheck:dev:frontend": "cd frontend && tsc --noEmit --preserveWatchOutput --watch",
+    "perf-test:prod": "node perf-tester/dist/perf-tester/src/index.js",
     "format": "prettier --write ."
   }
 }
