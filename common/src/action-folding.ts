@@ -61,6 +61,8 @@ export function foldActions(a: AppEvent, b: AppEvent): AppEvent | null {
         if (b.action === "item.update" && b.boardId === a.boardId && everyItemMatches(b, a)) return b
     } else if (a.action === "item.lock" || a.action === "item.unlock") {
         if (b.action === a.action && b.boardId === a.boardId && b.itemId === a.itemId) return b
+    } else if (a.action === "connection.modify" && b.action === "connection.modify") {
+        if (a.boardId === b.boardId && a.connection.id === b.connection.id) return b
     }
     return null
 }
