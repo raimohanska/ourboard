@@ -379,7 +379,7 @@ export const getItem = (board: Board | Item[]) => (id: Id) => {
 }
 
 export const findItem = (board: Board | Item[]) => (id: Id) => {
-    const items: Item[] = board instanceof Array ? board : board.items
+    const items: Item[] = getItems(board)
     const item = items.find((i) => i.id === id)
     return item || null
 }
@@ -398,3 +398,16 @@ export function findItemsRecursively(ids: Id[], board: Board): Item[] {
     const recursiveIds = findItemIdsRecursively(ids, board)
     return [...recursiveIds].map(getItem(board))
 }
+
+export const isContainedBy = (board: Board | Item[], parentCandidate: Item) => (i: Item): boolean => {
+    if (!i.containerId) return false
+    if (i.containerId === parentCandidate!.id) return true
+    const itemsOnBoard = getItems(board)
+    const parent = findItem(itemsOnBoard)(i.containerId)
+    if (i.containerId === i.id) throw Error("Self-contained")
+    if (parent == i) throw Error("self parent")
+    if (!parent) return false // Don't fail here, because when folding create+move, the action is run in an incomplete board context
+    return isContainedBy(board, parentCandidate)(parent)
+}
+
+const getItems = (board: Board | Item[]) => (board instanceof Array ? board : board.items)

@@ -11,6 +11,7 @@ import {
     isTextItem,
     TextItem,
     Connection,
+    isContainedBy,
 } from "./domain"
 
 export function boardReducer(
@@ -228,18 +229,9 @@ const moveItemWithChildren = (itemsOnBoard: Item[], id: Id, x: number, y: number
     const xDiff = x - mainItem.x
     const yDiff = y - mainItem.y
 
-    function containedByMainItem(i: Item): boolean {
-        if (!i.containerId) return false
-        if (i.containerId === mainItem!.id) return true
-        const parent = findItem(itemsOnBoard)(i.containerId)
-        if (i.containerId === i.id) throw Error("Self-contained")
-        if (parent == i) throw Error("self parent")
-        if (!parent) return false // Don't fail here, because when folding create+move, the action is run in an incomplete board context
-        return containedByMainItem(parent)
-    }
     const movedItems = new Set(
         itemsOnBoard
-            .filter(containedByMainItem)
+            .filter(isContainedBy(itemsOnBoard, mainItem))
             .map((i) => i.id)
             .concat(id),
     )

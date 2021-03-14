@@ -1,5 +1,5 @@
 import * as L from "lonna"
-import { Board, Connection, Item, Point } from "../../../common/src/domain"
+import { Board, Connection, Item, Point, isContainedBy } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Dispatch } from "../store/server-connection"
 import * as uuid from "uuid"
@@ -16,46 +16,48 @@ export function drawConnectionHandler(
     coordinateHelper: BoardCoordinateHelper,
     dispatch: Dispatch,
 ) {
-    let localConnection = L.atom<Connection | null>(null)
-
-    localConnection.forEach((c) => {
-        if (!c) {
-            return
-        }
-        const existing = board.get().connections.find((co) => co.id === c.id)
-        if (!existing) {
-            dispatch({ action: "connection.add", boardId: board.get().id, connection: c })
-        } else {
-            dispatch({ action: "connection.modify", boardId: board.get().id, connection: c })
-        }
-    })
+    let localConnection: Connection | null = null
 
     function whileDragging(item: Item, currentPos: Point) {
-        localConnection.modify((c) => {
-            if (c === null) {
-                return newConnection(item)
+        const boardId = board.get().id
+        const items = board.get().items
+        const targetExistingItem = items
+            .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i))
+            .find((i) => !isContainedBy(items, i)(item))
+
+        if (targetExistingItem === item) {
+            if (localConnection !== null) {
+                // Remove current connection, because connect-to-self is not allowed at least for now
+                dispatch({ action: "connection.delete", boardId, connectionId: localConnection.id })
+                localConnection = null
             }
+        } else {
+            if (localConnection === null) {
+                // Start new connection
+                localConnection = newConnection(item)
+                dispatch({ action: "connection.add", boardId, connection: localConnection })
+            } else {
+                // Change current connection endpoint
+                const destinationPoint = targetExistingItem ?? currentPos
 
-            const items = board.get().items
-            const targetExistingItem = items.find((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i))
+                const midpointFromReference = findNearestAttachmentLocationForConnectionNode(item, destinationPoint)
+                const midpointToReference = findNearestAttachmentLocationForConnectionNode(destinationPoint, item)
+                const midpoint = {
+                    x: (midpointFromReference.point.x + midpointToReference.point.x) * 0.5,
+                    y: (midpointFromReference.point.y + midpointToReference.point.y) * 0.5,
+                }
 
-            const destinationPoint = targetExistingItem ?? currentPos
+                // console.log({ item, midpoint, to: targetExistingItem ?? currentPos })
 
-            const midpointFromReference = findNearestAttachmentLocationForConnectionNode(item, destinationPoint)
-            const midpointToReference = findNearestAttachmentLocationForConnectionNode(destinationPoint, item)
-            const midpoint = {
-                x: (midpointFromReference.point.x + midpointToReference.point.x) * 0.5,
-                y: (midpointFromReference.point.y + midpointToReference.point.y) * 0.5,
+                localConnection = {
+                    ...localConnection,
+                    controlPoints: [midpoint],
+                    to: targetExistingItem ? targetExistingItem.id : currentPos,
+                }
+
+                dispatch({ action: "connection.modify", boardId: board.get().id, connection: localConnection })
             }
-
-            // console.log({ item, midpoint, to: targetExistingItem ?? currentPos })
-
-            return {
-                ...c,
-                controlPoints: [midpoint],
-                to: targetExistingItem ? targetExistingItem.id : currentPos,
-            }
-        })
+        }
     }
 
     function newConnection(from: Item): Connection {
@@ -68,7 +70,7 @@ export function drawConnectionHandler(
     }
 
     const endDrag = () => {
-        localConnection.set(null)
+        localConnection = null
     }
 
     return {
