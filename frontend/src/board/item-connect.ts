@@ -1,5 +1,5 @@
 import * as L from "lonna"
-import { Board, Connection, Item, Point, isContainedBy } from "../../../common/src/domain"
+import { Board, Connection, Item, Point, isContainedBy, Id, isItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Dispatch } from "../store/server-connection"
 import * as uuid from "uuid"
@@ -19,17 +19,11 @@ export function drawConnectionHandler(
 ) {
     let localConnection: Connection | null = null
 
-    const items = L.view(board, "items")
-    const itemsList = L.view(items, Object.values)
-
     function whileDragging(item: Item, currentPos: Point) {
-        const boardId = board.get().id
+        const b = board.get()
+        const boardId = b.id
 
-        const targetExistingItem = itemsList
-            .get()
-            .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i))
-            .sort((a, b) => (isContainedBy(items.get(), a)(b) ? 1 : -1))
-            .find((i) => !isContainedBy(items.get(), i)(item))
+        const targetExistingItem = findTarget(b.items, item, currentPos)
 
         if (targetExistingItem === item) {
             if (localConnection !== null) {
@@ -61,7 +55,7 @@ export function drawConnectionHandler(
                     to: targetExistingItem ? targetExistingItem.id : currentPos,
                 }
 
-                dispatch({ action: "connection.modify", boardId: board.get().id, connection: localConnection })
+                dispatch({ action: "connection.modify", boardId: b.id, connection: localConnection })
             }
         }
     }
@@ -95,20 +89,30 @@ export function existingConnectionHandler(
 ) {
     endNode.addEventListener("drag", (e) => {
         e.stopPropagation()
-        const connection = board.get().connections.find((c) => c.id === connectionId)!
-        const itemsList = L.view(L.view(board, "items"), Object.values)
+        const b = board.get()
+        const connection = b.connections.find((c) => c.id === connectionId)!
+        const items = b.items
         const coords = coordinateHelper.currentBoardCoordinates.get()
 
         if (type === "to") {
-            const hitsItem = itemsList.get().find((i) => containedBy({ ...coords, width: 0, height: 0 }, i))
+            const hitsItem = findTarget(items, connection.from, coords)
             const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
-            dispatch({ action: "connection.modify", boardId: board.get().id, connection: { ...connection, to } })
+            dispatch({ action: "connection.modify", boardId: b.id, connection: { ...connection, to } })
         } else {
             dispatch({
                 action: "connection.modify",
-                boardId: board.get().id,
+                boardId: b.id,
                 connection: { ...connection, controlPoints: [coords] },
             })
         }
     })
+}
+
+function findTarget(items: Record<Id, Item>, from: Item | Id | Point, currentPos: Point) {
+    const fromItem = typeof from === "string" ? items[from] : isItem(from) ? from : null
+
+    return Object.values(items)
+        .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i)) // match coordinates
+        .sort((a, b) => (isContainedBy(items, a)(b) ? 1 : -1)) // most innermost first (containers last)
+        .find((i) => !fromItem || !isContainedBy(items, i)(fromItem)) // does not contain the "from" item
 }
