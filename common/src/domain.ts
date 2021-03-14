@@ -111,10 +111,11 @@ export type Point = { x: number; y: number }
 export const isPoint = (u: unknown): u is Point => typeof u === "object" && !!u && "x" in u && "y" in u
 export type Connection = {
     id: Id
-    from: Id | Point
+    from: ConnectionEndPoint
     controlPoints: Point[]
-    to: Id | Point
+    to: ConnectionEndPoint
 }
+export type ConnectionEndPoint = Id | Point
 
 export type AttachmentLocation = { side: "left" | "right" | "top" | "bottom" | "none"; point: Point }
 

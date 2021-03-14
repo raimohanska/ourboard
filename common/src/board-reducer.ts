@@ -1,3 +1,4 @@
+import { Rect } from "../../frontend/src/board/geometry"
 import {
     AppEvent,
     Board,
@@ -13,6 +14,8 @@ import {
     Connection,
     isContainedBy,
     MoveItem,
+    ConnectionEndPoint,
+    Point,
 } from "./domain"
 import { arrayToObject } from "./migration"
 
@@ -241,9 +244,9 @@ function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[
     }
 }
 
-function moveItems(board: Board, event: MoveItem) {
-    type Move = { xDiff: number; yDiff: number; containerChanged: boolean; containerId: Id | undefined }
+type Move = { xDiff: number; yDiff: number; containerChanged: boolean; containerId: Id | undefined }
 
+function moveItems(board: Board, event: MoveItem) {
     const moves: Record<Id, Move> = {}
     const itemsOnBoard = board.items
 
@@ -266,6 +269,26 @@ function moveItems(board: Board, event: MoveItem) {
         }
     }
 
+    const connectionMoves: Record<Id, Move> = {}
+    for (let connection of board.connections) {
+        const move =
+            findAffectingMove(moves, itemsOnBoard, connection.from) &&
+            findAffectingMove(moves, itemsOnBoard, connection.to)
+        if (move) {
+            connectionMoves[connection.id] = move
+        }
+    }
+    let connections = board.connections.map((connection) => {
+        const move = connectionMoves[connection.id]
+        if (!move) return connection
+        return {
+            ...connection,
+            from: moveEndPoint(connection.from, move),
+            to: moveEndPoint(connection.to, move),
+            controlPoints: connection.controlPoints.map((cp) => moveEndPoint(cp, move)),
+        } as Connection
+    })
+
     const updatedItems = Object.entries(moves).reduce(
         (items, [id, move]) => {
             const item = items[id]
@@ -280,5 +303,32 @@ function moveItems(board: Board, event: MoveItem) {
     return {
         ...board,
         items: updatedItems,
+        connections,
     }
+}
+
+function moveEndPoint(endPoint: ConnectionEndPoint, move: Move) {
+    if (typeof endPoint === "string") {
+        return endPoint // points to an item
+    }
+    return { ...endPoint, x: endPoint.x + move.xDiff, y: endPoint.y + move.yDiff }
+}
+
+function findAffectingMove(
+    moves: Record<Id, Move>,
+    itemsOnBoard: Record<Id, Item>,
+    endPoint: ConnectionEndPoint,
+): Move | null {
+    if (typeof endPoint === "string") {
+        return moves[endPoint] // Check if item found
+    }
+    for (let id in moves) {
+        const item = itemsOnBoard[id]
+        if (containedBy(endPoint, item)) return moves[id]
+    }
+    return null
+}
+
+export function containedBy(a: Point, b: Rect) {
+    return a.x > b.x && a.y > b.y && a.x < b.x + b.width && a.y < b.y + b.height
 }

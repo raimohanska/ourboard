@@ -112,6 +112,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 }
             } else if (event.status === "signed-out") {
                 if (state.status === "logging-in-server" || state.status == "logged-in") {
+                    console.log("Send logout")
                     connection.sendImmediately({ action: "auth.logout" })
                 }
 
@@ -148,6 +149,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
 
     function sendLoginAndNickname(state: UserSessionState) {
         if (state.status === "logging-in-server" || state.status === "logged-in") {
+            console.log("Send nick & login")
             connection.sendImmediately({ action: "nickname.set", nickname: state.name })
             connection.sendImmediately({
                 action: "auth.login",
@@ -156,6 +158,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 token: state.token,
             })
         } else if (state.nickname) {
+            console.log("Send nick")
             connection.sendImmediately({ action: "nickname.set", nickname: state.nickname })
         }
         return state
