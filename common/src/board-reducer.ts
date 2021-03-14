@@ -268,10 +268,10 @@ const moveItemWithChildren = (
             .concat(id),
     )
 
-    const updated = [...movedItems].reduce((acc: Record<string, Item>, id) => {
-        const i = itemsOnBoard[id]
+    const updated = [...movedItems].reduce((acc: Record<string, Item>, movedId) => {
+        const i = itemsOnBoard[movedId]
         const u = { ...i, x: i.x + xDiff, y: i.y + yDiff }
-        acc[u.id] = u
+        acc[u.id] = movedId === id ? { ...u, containerId } : u
         return acc
     }, {})
 
@@ -280,3 +280,28 @@ const moveItemWithChildren = (
         ...updated,
     }
 }
+
+/*
+const moveItemWithChildrenOrig = (itemsOnBoard: Item[], id: Id, x: number, y: number, containerId: Id | undefined) => {
+    const mainItem = itemsOnBoard.find((i) => i.id === id)
+    if (mainItem === undefined) {
+        console.warn("Moving unknown item", id)
+        return itemsOnBoard
+    }
+    const xDiff = x - mainItem.x
+    const yDiff = y - mainItem.y
+
+    const movedItems = new Set(
+        itemsOnBoard
+            .filter(isContainedBy(itemsOnBoard, mainItem))
+            .map((i) => i.id)
+            .concat(id),
+    )
+
+    return itemsOnBoard.map((i) => {
+        if (!movedItems.has(i.id)) return i
+        const updated = { ...i, x: i.x + xDiff, y: i.y + yDiff }
+        return i.id === id ? { ...updated, containerId } : updated
+    })
+}
+*/
