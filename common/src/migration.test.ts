@@ -1,5 +1,5 @@
 import { defaultBoardSize } from "./domain"
-import { migrateBoard } from "./migration"
+import { arrayToObject, migrateBoard } from "./migration"
 
 describe("Migration", () => {
     describe("Migrate board", () => {
@@ -59,12 +59,12 @@ describe("Migration", () => {
                 ...legacyBoard,
                 ...defaultBoardSize,
                 connections: [],
-                items: [
+                items: arrayToObject("id", [
                     { ...containedNoteWithNoType, type: "note", containerId: "d", z: 0 },
                     { ...containedNote2, containerId: "d", z: 0 },
                     { ...unContainedNoteWithNoDimensions, width: 5, height: 5, z: 0 },
                     { type: "container", id: "d", x: 0, y: 0, width: 5, height: 5, z: 0, text: "" },
-                ],
+                ]),
             })
         })
     })
