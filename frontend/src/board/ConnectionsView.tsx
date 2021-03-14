@@ -51,8 +51,8 @@ export const ConnectionsView = ({
         zoom,
         ({ is, cs }, f, z) => {
             return cs.map((c) => {
-                const fromItem: Point = is.find((i) => i.id === c.from)!
-                const toItemOrPoint = isPoint(c.to) ? c.to : is.find((i) => i.id === c.to)!
+                const fromItem: Point = isPoint(c.from) ? c.from : is[c.from]
+                const toItemOrPoint = isPoint(c.to) ? c.to : is[c.to]
                 const from = G.findNearestAttachmentLocationForConnectionNode(fromItem, toItemOrPoint)
                 const to = G.findNearestAttachmentLocationForConnectionNode(toItemOrPoint, fromItem)
                 return {

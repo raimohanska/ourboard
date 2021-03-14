@@ -1,13 +1,13 @@
 import * as uuid from "uuid"
 import { Board, BoardStub, Item, isFullyFormedBoard } from "../../../common/src/domain"
-import { migrateBoard } from "../../../common/src/migration"
+import { migrateBoard, arrayToObject } from "../../../common/src/migration"
 
 export function generateFromTemplate(boardName: string, tmpl: Board | BoardStub): Board | BoardStub {
     if (!isFullyFormedBoard(tmpl)) {
         return { name: boardName, id: uuid.v4() }
     }
     const itemMapper = new Map<string, string>()
-    tmpl.items.forEach((i) => {
+    Object.values(tmpl.items).forEach((i) => {
         itemMapper.set(i.id, uuid.v4())
     })
 
@@ -28,7 +28,7 @@ export function generateFromTemplate(boardName: string, tmpl: Board | BoardStub)
         ...tmpl,
         id: uuid.v4(),
         name: boardName,
-        items: tmpl.items.map(newId),
+        items: arrayToObject("id", Object.values(tmpl.items).map(newId)),
     }
 }
 

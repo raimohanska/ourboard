@@ -200,7 +200,7 @@ export function BoardStore(
             return {
                 ...initialState,
                 status: "loading",
-                board: { id: event.boardId, name: "", ...defaultBoardSize, items: [], connections: [], serial: 0 },
+                board: { id: event.boardId, name: "", ...defaultBoardSize, items: {}, connections: [], serial: 0 },
             }
         } else if (event.action === "board.action.apply.failed") {
             console.error("Failed to apply previous action. Resetting to server-side state...")

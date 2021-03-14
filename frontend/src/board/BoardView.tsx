@@ -97,10 +97,12 @@ export const BoardView = ({
 
     doOnUnmount.push(cutCopyPasteHandler(board, focus, coordinateHelper, dispatch))
 
+    const itemsList = L.view(L.view(board, "items"), Object.values)
+
     const boardRef = (el: HTMLElement) => {
         boardElement.set(el)
         function onURL(assetId: string, url: string) {
-            board.get().items.forEach((i) => {
+            itemsList.get().forEach((i) => {
                 if (i.type === "image" && i.assetId === assetId && i.src != url) {
                     dispatch({ action: "item.update", boardId, items: [{ ...i, src: url }] })
                 }
@@ -199,7 +201,7 @@ export const BoardView = ({
                         onClick={onClick}
                     >
                         <ListView
-                            observable={L.view(board, "items")}
+                            observable={L.view(L.view(board, "items"), Object.values)}
                             renderObservable={renderItem}
                             getKey={(i) => i.id}
                         />

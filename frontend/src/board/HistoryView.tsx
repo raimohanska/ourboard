@@ -118,7 +118,7 @@ export const HistoryView = ({
         const currentBoard = board.get()
         const initAtSerial = (history[0]?.serial || 1) - 1
         const init = {
-            board: { ...currentBoard, items: [], serial: initAtSerial } as Board,
+            board: { ...currentBoard, items: {}, serial: initAtSerial } as Board,
             parsedHistory: [] as ParsedHistoryEntry[],
         }
         const { parsedHistory } = history.reduce(({ board, parsedHistory }, event) => {

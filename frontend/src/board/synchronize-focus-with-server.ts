@@ -62,7 +62,7 @@ export function synchronizeFocusWithServer(
 
         return removeNonExistingFromSelection(
             removeFromSelection(focus, itemsWhereSomeoneElseHasLock),
-            new Set(board.items.map((i) => i.id)),
+            new Set(Object.keys(board.items)),
         )
     }
 

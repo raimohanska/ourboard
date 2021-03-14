@@ -13,6 +13,7 @@ import {
     Connection,
     isContainedBy,
 } from "./domain"
+import { arrayToObject } from "./migration"
 
 export function boardReducer(
     board: Board,
@@ -71,18 +72,20 @@ export function boardReducer(
             //if (board.items.length > 0) throw Error("Trying to bootstrap non-empty board")
             return [{ ...board, items: event.items }, null]
         case "item.add":
-            if (board.items.find((i) => event.items.some((a) => a.id === i.id))) {
+            if (event.items.some((a) => board.items[a.id])) {
                 throw new Error("Adding duplicate item " + JSON.stringify(event.items))
             }
-            const itemsToAdd = event.items.map((item) => {
+            const itemsToAdd = event.items.reduce((acc: Record<string, Item>, item) => {
                 if (item.containerId && !findItem(board)(item.containerId)) {
                     // Add item but don't try to assign to a non-existing container
-                    return { ...item, containerId: undefined }
+                    acc[item.id] = { ...item, containerId: undefined }
+                    return acc
                 }
-                return item
-            })
+                acc[item.id] = item
+                return acc
+            }, {})
             return [
-                { ...board, items: board.items.concat(itemsToAdd) },
+                { ...board, items: { ...board.items, ...itemsToAdd } },
                 { action: "item.delete", boardId: board.id, itemIds: event.items.map((i) => i.id) },
             ]
         case "item.font.increase":
@@ -107,15 +110,15 @@ export function boardReducer(
                     action: "item.font.increase",
                 },
             ]
-        case "item.update":
+        case "item.update": {
+            const updated = arrayToObject("id", event.items)
             return [
                 {
                     ...board,
-                    items: board.items.map((p) => {
-                        const updated = event.items.find((i) => i.id === p.id)
-                        if (updated) return updated
-                        return p
-                    }),
+                    items: {
+                        ...board.items,
+                        ...updated,
+                    },
                 },
                 {
                     action: "item.update",
@@ -123,6 +126,7 @@ export function boardReducer(
                     items: event.items.map((item) => getItem(board)(item.id)),
                 },
             ]
+        }
         case "item.move":
             return [
                 {
@@ -149,11 +153,16 @@ export function boardReducer(
                     (typeof c.from !== "string" || !idsToDelete.has(c.from)) &&
                     (typeof c.to !== "string" || !idsToDelete.has(c.to)),
             )
+
+            const updatedItems = { ...board.items }
+            idsToDelete.forEach((id) => {
+                delete updatedItems[id]
+            })
             return [
                 {
                     ...board,
                     connections: connectionsToKeep,
-                    items: board.items.filter((i) => !idsToDelete.has(i.id)),
+                    items: updatedItems,
                 },
                 {
                     action: "item.add",
@@ -165,7 +174,8 @@ export function boardReducer(
         case "item.front":
             let maxZ = 0
             let maxZCount = 0
-            for (let i of board.items) {
+            const itemsList = Object.values(board.items)
+            for (let i of itemsList) {
                 if (i.z > maxZ) {
                     maxZCount = 1
                     maxZ = i.z
@@ -176,16 +186,25 @@ export function boardReducer(
             const isFine = (item: Item) => {
                 return !event.itemIds.includes(item.id) || item.z === maxZ
             }
-            if (maxZCount === event.itemIds.length && board.items.every(isFine)) {
+            if (maxZCount === event.itemIds.length && itemsList.every(isFine)) {
                 // Requested items already on front
                 return [board, null]
             }
+
+            const updated = event.itemIds.reduce((acc: Record<string, Item>, id) => {
+                const item = board.items[id]
+                const u = item.type !== "container" ? { ...item, z: maxZ + 1 } : item
+                acc[u.id] = u
+                return acc
+            }, {})
+
             return [
                 {
                     ...board,
-                    items: board.items.map((i) =>
-                        i.type !== "container" && event.itemIds.includes(i.id) ? { ...i, z: maxZ + 1 } : i,
-                    ),
+                    items: {
+                        ...board.items,
+                        ...updated,
+                    },
                 },
                 null,
             ] // TODO: return item.back
@@ -196,32 +215,43 @@ export function boardReducer(
 }
 
 function validateConnection(board: Board, connection: Connection) {
-    const fromItem = board.items.find((i) => i.id === connection.from)
+    const fromItem = typeof connection.from === "string" && board.items[connection.from]
     if (!fromItem) {
         throw Error(`Connection ${connection.id} refers to nonexisting origin item ${connection.from}`)
     }
     if (typeof connection.to === "string") {
-        const toItem = board.items.find((i) => i.id === connection.to)
+        const toItem = board.items[connection.to]
         if (!toItem) {
             throw Error(`Connection ${connection.id} refers to nonexisting destination item ${connection.to}`)
         }
     }
 }
 
-function applyFontSize(items: Item[], factor: number, itemIds: Id[]) {
-    return items.map((p) => {
-        const updated = itemIds.find((i) => i === p.id && isTextItem(p))
-        if (updated)
-            return {
-                ...p,
-                fontSize: ((p as TextItem).fontSize || 1) * factor,
+function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[]) {
+    const updated = itemIds.reduce((acc: Record<string, Item>, id) => {
+        const u = items[id] && isTextItem(items[id]) ? (items[id] as TextItem) : null
+        if (u) {
+            acc[u.id] = {
+                ...u,
+                fontSize: ((u as TextItem).fontSize || 1) * factor,
             }
-        return p
-    })
+        }
+        return acc
+    }, {})
+    return {
+        ...items,
+        ...updated,
+    }
 }
 
-const moveItemWithChildren = (itemsOnBoard: Item[], id: Id, x: number, y: number, containerId: Id | undefined) => {
-    const mainItem = itemsOnBoard.find((i) => i.id === id)
+const moveItemWithChildren = (
+    itemsOnBoard: Record<string, Item>,
+    id: Id,
+    x: number,
+    y: number,
+    containerId: Id | undefined,
+) => {
+    const mainItem = itemsOnBoard[id]
     if (mainItem === undefined) {
         console.warn("Moving unknown item", id)
         return itemsOnBoard
@@ -230,15 +260,21 @@ const moveItemWithChildren = (itemsOnBoard: Item[], id: Id, x: number, y: number
     const yDiff = y - mainItem.y
 
     const movedItems = new Set(
-        itemsOnBoard
+        Object.values(itemsOnBoard)
             .filter(isContainedBy(itemsOnBoard, mainItem))
             .map((i) => i.id)
             .concat(id),
     )
 
-    return itemsOnBoard.map((i) => {
-        if (!movedItems.has(i.id)) return i
-        const updated = { ...i, x: i.x + xDiff, y: i.y + yDiff }
-        return i.id === id ? { ...updated, containerId } : updated
-    })
+    const updated = [...movedItems].reduce((acc: Record<string, Item>, id) => {
+        const i = itemsOnBoard[id]
+        const u = { ...i, x: i.x + xDiff, y: i.y + yDiff }
+        acc[u.id] = u
+        return acc
+    }, {})
+
+    return {
+        ...itemsOnBoard,
+        ...updated,
+    }
 }

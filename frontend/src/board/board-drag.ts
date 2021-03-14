@@ -72,6 +72,8 @@ export function boardDragHandler({
             }
         })
 
+        const itemsList = L.view(L.view(board, "items"), Object.values)
+
         el.addEventListener(
             "drag",
             _.throttle(
@@ -83,9 +85,9 @@ export function boardDragHandler({
                     const da = dragAction.get()
                     if (da.action === "select") {
                         // Do not select container if drag originates from within container
-                        const overlapping = board
+                        const overlapping = itemsList
                             .get()
-                            .items.filter((i) => !isContainerWhereDragStarted(i) && overlaps(i, bounds))
+                            .filter((i) => !isContainerWhereDragStarted(i) && overlaps(i, bounds))
                         if (da.dragStartedOn === null) {
                             if (overlapping[0]?.type === "container") {
                                 da.dragStartedOn = overlapping[0]

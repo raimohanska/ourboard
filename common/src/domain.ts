@@ -1,6 +1,7 @@
 import _ from "lodash"
 import * as uuid from "uuid"
 import * as t from "io-ts"
+import { arrayToObject } from "./migration"
 
 export type Id = string
 export type ISOTimeStamp = string
@@ -14,7 +15,7 @@ export type BoardAttributes = {
 }
 
 export type Board = BoardAttributes & {
-    items: Item[]
+    items: Record<Id, Item>
     connections: Connection[]
     serial: Serial
 }
@@ -202,7 +203,7 @@ export type IncreaseItemFont = { action: "item.font.increase"; boardId: Id; item
 export type DecreaseItemFont = { action: "item.font.decrease"; boardId: Id; itemIds: Id[] }
 export type BringItemToFront = { action: "item.front"; boardId: Id; itemIds: Id[] }
 export type DeleteItem = { action: "item.delete"; boardId: Id; itemIds: Id[] }
-export type BootstrapBoard = { action: "item.bootstrap"; boardId: Id; items: Item[] }
+export type BootstrapBoard = { action: "item.bootstrap"; boardId: Id; items: Record<Id, Item> }
 export type LockItem = { action: "item.lock"; boardId: Id; itemId: Id }
 export type UnlockItem = { action: "item.unlock"; boardId: Id; itemId: Id }
 export type GotBoardLocks = { action: "board.locks"; boardId: Id; locks: ItemLocks }
@@ -240,7 +241,11 @@ export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE; p: 
 export const exampleBoard: Board = {
     id: "default",
     name: "Test Board",
-    items: [newNote("Hello", "pink", 10, 5), newNote("World", "cyan", 20, 10), newNote("Welcome", "cyan", 5, 14)],
+    items: arrayToObject("id", [
+        newNote("Hello", "pink", 10, 5),
+        newNote("World", "cyan", 20, 10),
+        newNote("Welcome", "cyan", 5, 14),
+    ]),
     connections: [],
     ...defaultBoardSize,
     serial: 0,
@@ -248,7 +253,7 @@ export const exampleBoard: Board = {
 
 export function createBoard(name: string, accessPolicy?: BoardAccessPolicy): Board {
     const id = uuid.v4()
-    return { id: uuid.v4(), name, items: [], accessPolicy, connections: [], ...defaultBoardSize, serial: 0 }
+    return { id: uuid.v4(), name, items: {}, accessPolicy, connections: [], ...defaultBoardSize, serial: 0 }
 }
 
 export function newNote(
@@ -363,7 +368,7 @@ export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id
         case "item.add":
             return e.items.map((i) => i.id)
         case "item.bootstrap":
-            return e.items.map((i) => i.id)
+            return Object.keys(e.items)
         case "board.rename":
         case "connection.add":
         case "connection.modify":
@@ -372,15 +377,15 @@ export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id
     }
 }
 
-export const getItem = (board: Board | Item[]) => (id: Id) => {
-    const item = findItem(board)(id)
+export const getItem = (boardOrItems: Board | Record<string, Item>) => (id: Id) => {
+    const item = findItem(boardOrItems)(id)
     if (!item) throw Error("Item not found: " + id)
     return item
 }
 
-export const findItem = (board: Board | Item[]) => (id: Id) => {
-    const items: Item[] = getItems(board)
-    const item = items.find((i) => i.id === id)
+export const findItem = (boardOrItems: Board | Record<string, Item>) => (id: Id) => {
+    const items = getItems(boardOrItems)
+    const item = items[id]
     return item || null
 }
 
@@ -388,7 +393,7 @@ export function findItemIdsRecursively(ids: Id[], board: Board): Set<Id> {
     const recursiveIds = new Set<Id>()
     const addIdRecursively = (id: Id) => {
         recursiveIds.add(id)
-        board.items.forEach((i) => i.containerId === id && addIdRecursively(i.id))
+        Object.values(board.items).forEach((i) => i.containerId === id && addIdRecursively(i.id))
     }
     ids.forEach(addIdRecursively)
     return recursiveIds
@@ -399,15 +404,20 @@ export function findItemsRecursively(ids: Id[], board: Board): Item[] {
     return [...recursiveIds].map(getItem(board))
 }
 
-export const isContainedBy = (board: Board | Item[], parentCandidate: Item) => (i: Item): boolean => {
+export const isContainedBy = (boardOrItems: Board | Record<string, Item>, parentCandidate: Item) => (
+    i: Item,
+): boolean => {
     if (!i.containerId) return false
     if (i.containerId === parentCandidate!.id) return true
-    const itemsOnBoard = getItems(board)
+    const itemsOnBoard = getItems(boardOrItems)
     const parent = findItem(itemsOnBoard)(i.containerId)
     if (i.containerId === i.id) throw Error("Self-contained")
     if (parent == i) throw Error("self parent")
     if (!parent) return false // Don't fail here, because when folding create+move, the action is run in an incomplete board context
-    return isContainedBy(board, parentCandidate)(parent)
+    return isContainedBy(boardOrItems, parentCandidate)(parent)
 }
 
-const getItems = (board: Board | Item[]) => (board instanceof Array ? board : board.items)
+const isBoard = (u: unknown): u is Board => typeof u === "object" && !!u && "items" in u
+
+const getItems = (boardOrItems: Board | Record<string, Item>) =>
+    isBoard(boardOrItems) ? boardOrItems.items : boardOrItems

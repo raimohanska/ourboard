@@ -42,13 +42,13 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
                         `Error fetching board history for snapshot update for board ${id}. Rebooting snaphot...`,
                     )
                     history = await getFullBoardHistory(id, client)
-                    initialBoard = { ...snapshot, items: [] }
+                    initialBoard = { ...snapshot, items: {} }
                 }
             } else {
                 console.warn(`Found legacy board snapshot for ${id}. You should not see this message.`) // TODO remove this legacy branch
                 history = await getFullBoardHistory(id, client)
                 console.log(`Fetched full history for board ${id}, consisting of ${history.length} events`)
-                initialBoard = { ...snapshot, items: [] }
+                initialBoard = { ...snapshot, items: {} }
             }
             const board = history.reduce((b, e) => boardReducer(b, e)[0], migrateBoard(initialBoard))
             const serial = (history.length > 0 ? history[history.length - 1].serial : snapshot.serial) || 0

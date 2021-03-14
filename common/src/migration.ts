@@ -23,7 +23,7 @@ export function migrateBoardWithHistory(
     const { items, ...boardAttributes } = board
     if (history.length > 0) {
         try {
-            const emptyBoard = { ...boardAttributes, items: [] as Item[] } as Board
+            const emptyBoard = { ...boardAttributes, items: {} } as Board
             history.reduce((b, e) => boardReducer(b, e)[0], emptyBoard) // To verify consistency of history
             return { boardAttributes, history }
         } catch (e) {
@@ -50,7 +50,7 @@ function migrateHistory(historyToMigrate: BoardHistoryEntry[]) {
 }
 
 export function buildBoardFromHistory(boardAttributes: BoardAttributes, history: BoardHistoryEntry[]): Board {
-    const emptyBoard = { ...boardAttributes, items: [] as Item[] } as Board
+    const emptyBoard = { ...boardAttributes, items: {} } as Board
     const resultBoard = history.reduce((b, e) => boardReducer(b, e)[0], emptyBoard)
     return resultBoard
 }
@@ -61,20 +61,28 @@ export function toCompactBoardHistory(board: BoardWithHistory, initAtSerial?: Se
     return { boardAttributes, history }
 }
 
+export function arrayToObject<T, K extends keyof T>(key: K, arr: T[]) {
+    return arr.reduce((acc: Record<string, T>, elem: T) => {
+        const k = String(elem[key])
+        acc[k] = elem
+        return acc
+    }, {} as Record<string, T>)
+}
+
 export function migrateBoard(board: Board) {
     const items: Item[] = []
     const width = Math.max(board.width || 0, defaultBoardSize.width)
     const height = Math.max(board.height || 0, defaultBoardSize.height)
-    for (const item of board.items) {
+    for (const item of Object.values(board.items)) {
         if (items.find((i) => i.id === item.id)) {
             console.warn("Duplicate item", item, "found on table", board.name)
         } else {
             items.push(migrateItem(item, items, board.items))
         }
     }
-    return { ...board, connections: board.connections ?? [], width, height, items }
+    return { ...board, connections: board.connections ?? [], width, height, items: arrayToObject("id", items) }
 
-    function migrateItem(item: Item, migratedItems: Item[], boardItems: Item[]): Item {
+    function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {
         const { width, height, z, type, ...rest } = item
 
         // Force type, width and height for all items
@@ -88,8 +96,7 @@ export function migrateBoard(board: Board) {
                 const ids = container.items
                 delete container.items
                 ids.forEach((i) => {
-                    const containedItem =
-                        migratedItems.find((mi) => mi.id === i) || boardItems.find((bi) => bi.id === i)
+                    const containedItem = migratedItems.find((mi) => mi.id === i) || boardItems[i]
                     containedItem && (containedItem.containerId = container.id)
                 })
             }

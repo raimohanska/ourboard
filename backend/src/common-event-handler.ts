@@ -74,7 +74,7 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
         case "board.add": {
             const { payload } = appEvent
             const board = !isFullyFormedBoard(payload)
-                ? { ...defaultBoardSize, ...payload, items: [], connections: [], serial: 0 }
+                ? { ...defaultBoardSize, ...payload, items: {}, connections: [], serial: 0 }
                 : payload
             await addBoard(board)
             return true

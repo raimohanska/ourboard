@@ -86,9 +86,9 @@ const githubWebhook = route
                 } else {
                     const linkStart = `<a href=${url}>`
                     const linkHTML = `${linkStart}${htmlEncode(number)}</a> ${htmlEncode(title)}`
-                    const existingItem = board.board.items.find((i) => i.type === "note" && i.text.includes(url)) as
-                        | Note
-                        | undefined
+                    const existingItem = Object.values(board.board.items).find(
+                        (i) => i.type === "note" && i.text.includes(url),
+                    ) as Note | undefined
                     const isBug = body.issue.labels.some((l) => l.name === "bug")
                     const color = isBug ? RED : YELLOW
                     if (!existingItem) {
@@ -170,7 +170,7 @@ const itemCreateOrUpdate = route
                 replaceContainerIfExists = true,
             } = request.body
             console.log(`PUT item for board ${board.board.id} item ${itemId}: ${JSON.stringify(request.req.body)}`)
-            const existingItem = board.board.items.find((i) => i.id === itemId)
+            const existingItem = board.board.items[itemId]
             if (existingItem) {
                 updateItem(
                     board,
@@ -234,7 +234,7 @@ function findContainer(container: string | undefined, board: Board): Container |
         if (typeof container !== "string") {
             throw new InvalidRequest("Expecting container to be undefined, or an id or name of an Container item")
         }
-        const containerItem = board.items.find(
+        const containerItem = Object.values(board.items).find(
             (i) => i.type === "container" && (i.text.toLowerCase() === container.toLowerCase() || i.id === container),
         )
         if (!containerItem) {
@@ -288,7 +288,7 @@ function updateItem(
     replaceColorIfExists: boolean | undefined,
     replaceContainerIfExists: boolean | undefined,
 ) {
-    const existingItem = board.board.items.find((i) => i.id === itemId)!
+    const existingItem = board.board.items[itemId]
     if (!isNote(existingItem)) {
         throw new InvalidRequest("Unexpected item type")
     }

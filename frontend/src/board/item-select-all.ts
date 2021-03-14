@@ -12,7 +12,7 @@ export function itemSelectAllHandler(board: L.Property<Board>, focus: L.Atom<Boa
                 if ((e.ctrlKey || e.metaKey) && e.key === "a") {
                     e.preventDefault()
                     if (eventName === "keydown") {
-                        focus.set({ status: "selected", ids: new Set(board.get().items.map((i) => i.id)) })
+                        focus.set({ status: "selected", ids: new Set(Object.keys(board.get().items)) })
                     }
                 }
             })

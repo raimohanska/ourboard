@@ -25,7 +25,7 @@ export function onBoardItemDrag(
     doOnDrop?: (b: Board, current: Item[]) => void,
 ) {
     let dragStart: DragEvent | null = null
-    let dragStartPositions: Item[]
+    let dragStartPositions: Record<string, Item>
     let currentPos: { x: number; y: number } | null = null
 
     elem.addEventListener("dragstart", (e) => {
@@ -61,8 +61,8 @@ export function onBoardItemDrag(
 
         const b = board.get()
         const items = [...f.ids].map((id) => {
-            const current = b.items.find((i) => i.id === id)
-            const dragStartPosition = dragStartPositions.find((i) => i.id === id)
+            const current = b.items[id]
+            const dragStartPosition = dragStartPositions[id]
             if (!current || !dragStartPosition) throw Error("Item not found: " + id)
             return {
                 current,
