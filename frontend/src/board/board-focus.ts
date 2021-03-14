@@ -11,10 +11,9 @@ export type BoardFocus =
 export function getSelectedIds(f: BoardFocus): Set<Id> {
     switch (f.status) {
         case "none":
+        case "connection-selected":
             return new Set()
         case "editing":
-            return new Set([f.id])
-        case "connection-selected":
             return new Set([f.id])
         case "selected":
         case "dragging":
