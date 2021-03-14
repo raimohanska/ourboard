@@ -12,6 +12,7 @@ import {
     TextItem,
     Connection,
     isContainedBy,
+    MoveItem,
 } from "./domain"
 import { arrayToObject } from "./migration"
 
@@ -129,13 +130,7 @@ export function boardReducer(
         }
         case "item.move":
             return [
-                {
-                    ...board,
-                    items: event.items.reduce(
-                        (itemsBeforeMove, i) => moveItemWithChildren(itemsBeforeMove, i.id, i.x, i.y, i.containerId),
-                        board.items,
-                    ),
-                },
+                moveItems(board, event),
                 {
                     action: "item.move",
                     boardId: board.id,
@@ -246,37 +241,44 @@ function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[
     }
 }
 
-const moveItemWithChildren = (
-    itemsOnBoard: Record<string, Item>,
-    id: Id,
-    x: number,
-    y: number,
-    containerId: Id | undefined,
-): Record<Id, Item> => {
-    const mainItem = itemsOnBoard[id]
-    if (mainItem === undefined) {
-        console.warn("Moving unknown item", id)
-        return itemsOnBoard
-    }
-    const xDiff = x - mainItem.x
-    const yDiff = y - mainItem.y
+function moveItems(board: Board, event: MoveItem) {
+    type Move = { xDiff: number; yDiff: number; containerChanged: boolean; containerId: Id | undefined }
 
-    const movedItems = new Set(
-        Object.values(itemsOnBoard)
-            .filter(isContainedBy(itemsOnBoard, mainItem))
-            .map((i) => i.id)
-            .concat(id),
+    const moves: Record<Id, Move> = {}
+    const itemsOnBoard = board.items
+
+    for (let mainItemMove of event.items) {
+        const { id, x, y, containerId } = mainItemMove
+        const mainItem = itemsOnBoard[id]
+        if (mainItem === undefined) {
+            console.warn("Moving unknown item", id)
+            continue
+        }
+        const xDiff = x - mainItem.x
+        const yDiff = y - mainItem.y
+
+        for (let movedItem of Object.values(itemsOnBoard)) {
+            const movedId = movedItem.id
+            if (movedId === id || isContainedBy(itemsOnBoard, mainItem)(movedItem)) {
+                const move = { xDiff, yDiff, containerChanged: movedId === id, containerId }
+                moves[movedId] = move
+            }
+        }
+    }
+
+    const updatedItems = Object.entries(moves).reduce(
+        (items, [id, move]) => {
+            const item = items[id]
+            const updated = { ...item, x: item.x + move.xDiff, y: item.y + move.yDiff }
+            if (move.containerChanged) updated.containerId = move.containerId
+            items[id] = updated
+            return items
+        },
+        { ...board.items },
     )
 
-    const updated = [...movedItems].reduce((acc: Record<string, Item>, movedId) => {
-        const i = itemsOnBoard[movedId]
-        const u = { ...i, x: i.x + xDiff, y: i.y + yDiff }
-        acc[u.id] = movedId === id ? { ...u, containerId } : u
-        return acc
-    }, {})
-
     return {
-        ...itemsOnBoard,
-        ...updated,
+        ...board,
+        items: updatedItems,
     }
 }
