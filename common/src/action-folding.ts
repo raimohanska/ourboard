@@ -13,15 +13,24 @@ import {
 } from "./domain"
 import { boardReducer } from "./board-reducer"
 import { getItem } from "./domain"
+
+type FoldOptions = {
+    foldAddUpdate: boolean
+}
+
+const defaultOptions = {
+    foldAddUpdate: true,
+}
+
 /*
 Folding can be done if in any given state S, applying actions A and B consecutively can be replaced with a single action C.
 This function should return that composite action or null if folding is not possible.
 */
-export function foldActions(a: AppEvent, b: AppEvent): AppEvent | null {
+export function foldActions(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
     if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
         if (!isSameUser(a.user, b.user)) return null
     }
-    if (a.action === "item.add") {
+    if (options.foldAddUpdate && a.action === "item.add") {
         if (isPersistableBoardItemEvent(b) && b.action !== "item.delete" && a.boardId === b.boardId) {
             const createdItemIds = new Set(getItemIds(a))
             if (getItemIds(b).every((id) => createdItemIds.has(id))) {

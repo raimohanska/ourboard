@@ -73,6 +73,7 @@ export function BoardStore(
             if (!undoStack.length) return state
             const undoOperation = undoStack.pop()!
             connection.enqueue(undoOperation)
+            console.log("APPLY-R", undoOperation)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 tagWithUserFromState(undoOperation),
@@ -83,6 +84,7 @@ export function BoardStore(
             if (!redoStack.length) return state
             const redoOperation = redoStack.pop()!
             connection.enqueue(redoOperation)
+            console.log("APPLY-R", redoOperation)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 tagWithUserFromState(redoOperation),
@@ -90,6 +92,7 @@ export function BoardStore(
             if (reverse) undoStack = addToStack(reverse, undoStack)
             return { ...state, board, history }
         } else if (isPersistableBoardItemEvent(event)) {
+            console.log("APPLY", event)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 event,
@@ -98,6 +101,7 @@ export function BoardStore(
                 console.warn(`Received board update ${event.serial} while in status ${state.status}`)
             }
             if (reverse && event.serial == undefined) {
+                console.log("REVERSE", reverse)
                 // No serial == is local event. TODO: maybe a nicer way to recognize this?
                 redoStack = []
                 undoStack = addToStack(reverse, undoStack)
@@ -283,7 +287,7 @@ export function BoardStore(
 function addToStack(event: PersistableBoardItemEvent, b: PersistableBoardItemEvent[]): PersistableBoardItemEvent[] {
     const latest = b[b.length - 1]
     if (latest) {
-        const folded = foldActions(event, latest) // The order is like this, because when applied the new event would be applied before the one in the stack
+        const folded = foldActions(event, latest, { foldAddUpdate: false }) // The order is like this, because when applied the new event would be applied before the one in the stack
         if (folded) {
             // Replace top of stack with folded
             return [...b.slice(0, b.length - 1), folded] as any // TODO: can we get better types?
