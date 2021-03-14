@@ -37,12 +37,17 @@ export function autoFontSize(
     const elFont = coordinateHelper.elementFont(element)
     return L.view(
         L.view(item, "type"),
+        L.view(item, (i) => i.type === "note" && i.shape === "round"),
         L.view(item, "width"),
         L.view(item, "height"),
         fontSize,
         text,
-        (t, w, h, fs, text) => {
+        (t, isRound, w, h, fs, text) => {
             if (t !== "note") return fs + "em"
+
+            const width = isRound ? Math.sqrt(w ** 2 / 2) : w // pythagoras bullshit
+            const height = isRound ? Math.sqrt(h ** 2 / 2) : h
+
             const referenceFont = elFont.get()
             const plainText = toPlainText(text)
             const split = plainText.split(/\s/)
@@ -51,8 +56,8 @@ export function autoFontSize(
                 .filter((s) => s)
                 .map((s) => getTextDimensions(s, referenceFont))
             const spaceCharSize = getTextDimensions("", referenceFont)
-            const widthTarget = coordinateHelper.emToPx(w) * fullOptions.widthTarget
-            const heightTarget = coordinateHelper.emToPx(h) * fullOptions.heightTarget
+            const widthTarget = coordinateHelper.emToPx(width) * fullOptions.widthTarget
+            const heightTarget = coordinateHelper.emToPx(height) * fullOptions.heightTarget
 
             const maxWidth = widthTarget
             const lineSpacingEm = 0.4
