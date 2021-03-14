@@ -82,7 +82,7 @@ export function drawConnectionHandler(
 export function existingConnectionHandler(
     endNode: Element,
     connectionId: string,
-    type: "to" | "control",
+    type: "from" | "to" | "control",
     coordinateHelper: BoardCoordinateHelper,
     board: L.Property<Board>,
     dispatch: Dispatch,
@@ -93,11 +93,14 @@ export function existingConnectionHandler(
         const connection = b.connections.find((c) => c.id === connectionId)!
         const items = b.items
         const coords = coordinateHelper.currentBoardCoordinates.get()
-
         if (type === "to") {
             const hitsItem = findTarget(items, connection.from, coords)
             const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
             dispatch({ action: "connection.modify", boardId: b.id, connection: { ...connection, to } })
+        } else if (type === "from") {
+            const hitsItem = findTarget(items, connection.to, coords)
+            const from = hitsItem && hitsItem.id !== connection.to ? hitsItem.id : coords
+            dispatch({ action: "connection.modify", boardId: b.id, connection: { ...connection, from } })
         } else {
             dispatch({
                 action: "connection.modify",

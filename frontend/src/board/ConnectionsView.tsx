@@ -152,9 +152,7 @@ export const ConnectionsView = ({
     function ConnectionNode(key: string, cNode: L.Property<ConnectionNodeProps>) {
         function onRef(el: Element) {
             const { id, type } = cNode.get()
-            if (type !== "from") {
-                existingConnectionHandler(el, id, type, coordinateHelper, board, dispatch)
-            }
+            existingConnectionHandler(el, id, type, coordinateHelper, board, dispatch)
         }
 
         const id = L.view(cNode, (cn) => `connection-${cn.id}-${cn.type}`)

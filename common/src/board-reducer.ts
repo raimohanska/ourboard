@@ -215,14 +215,16 @@ export function boardReducer(
 }
 
 function validateConnection(board: Board, connection: Connection) {
-    const fromItem = typeof connection.from === "string" && board.items[connection.from]
-    if (!fromItem) {
-        throw Error(`Connection ${connection.id} refers to nonexisting origin item ${connection.from}`)
-    }
-    if (typeof connection.to === "string") {
-        const toItem = board.items[connection.to]
+    validateEndPoint(board, connection, "from")
+    validateEndPoint(board, connection, "to")
+}
+
+function validateEndPoint(board: Board, connection: Connection, key: "to" | "from") {
+    const endPoint = connection[key]
+    if (typeof endPoint === "string") {
+        const toItem = board.items[endPoint]
         if (!toItem) {
-            throw Error(`Connection ${connection.id} refers to nonexisting destination item ${connection.to}`)
+            throw Error(`Connection ${connection.id} refers to nonexisting item ${endPoint}`)
         }
     }
 }
