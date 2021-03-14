@@ -17,7 +17,7 @@ import {
     ConnectionEndPoint,
     Point,
 } from "./domain"
-
+import _ from "lodash"
 import { arrayToObject } from "./migration"
 
 export function boardReducer(
@@ -89,8 +89,21 @@ export function boardReducer(
                 acc[item.id] = item
                 return acc
             }, {})
+
+            const boardWithAddedItems = { ...board, items: { ...board.items, ...itemsToAdd } }
+
+            const connectionsToAdd = event.connections || []
+
+            connectionsToAdd.forEach((connection) => {
+                validateConnection(boardWithAddedItems, connection)
+
+                if (board.connections.some((c) => c.id === connection.id)) {
+                    throw Error(`Connection ${connection.id} already exists on board ${board.id}`)
+                }
+            })
+
             return [
-                { ...board, items: { ...board.items, ...itemsToAdd } },
+                { ...boardWithAddedItems, connections: [...board.connections, ...connectionsToAdd] },
                 { action: "item.delete", boardId: board.id, itemIds: event.items.map((i) => i.id) },
             ]
         case "item.font.increase":
@@ -147,7 +160,8 @@ export function boardReducer(
         case "item.delete": {
             const idsToDelete = findItemIdsRecursively(event.itemIds, board)
 
-            const connectionsToKeep = board.connections.filter(
+            const [connectionsToKeep, connectionsDeleted] = _.partition(
+                board.connections,
                 (c) =>
                     (typeof c.from !== "string" || !idsToDelete.has(c.from)) &&
                     (typeof c.to !== "string" || !idsToDelete.has(c.to)),
@@ -167,6 +181,7 @@ export function boardReducer(
                     action: "item.add",
                     boardId: board.id,
                     items: Array.from(idsToDelete).map(getItem(board)),
+                    connections: connectionsDeleted,
                 },
             ]
         }

@@ -148,7 +148,7 @@ export const BoardView = ({
         const { x, y } = item.type !== "container" ? G.add(point, { x: -item.width / 2, y: -item.height / 2 }) : point
         item = withCurrentContainer({ ...item, x, y }, board.get())
 
-        dispatch({ action: "item.add", boardId, items: [item] })
+        dispatch({ action: "item.add", boardId, items: [item], connections: [] })
 
         if (item.type === "note" || item.type === "text") {
             focus.set({ status: "editing", id: item.id })
