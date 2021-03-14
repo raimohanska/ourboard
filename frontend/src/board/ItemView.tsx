@@ -96,7 +96,7 @@ export const ItemView = ({
                             ? {
                                   borderRadius: "50%",
                                   border: `${p.height / 10}em solid ${background}`,
-                                  boxSizing: "content-box",
+                                  boxSizing: "border-box",
                               }
                             : {}
                     return { ...common, ...shape }
