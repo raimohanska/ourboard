@@ -53,8 +53,10 @@ export const ConnectionsView = ({
             return cs.map((c) => {
                 const fromItem: Point = isPoint(c.from) ? c.from : is[c.from]
                 const toItemOrPoint = isPoint(c.to) ? c.to : is[c.to]
-                const from = G.findNearestAttachmentLocationForConnectionNode(fromItem, toItemOrPoint)
-                const to = G.findNearestAttachmentLocationForConnectionNode(toItemOrPoint, fromItem)
+                const firstControlPoint = c.controlPoints[0] || fromItem
+                const lastControlPoint = c.controlPoints[c.controlPoints.length - 1] || toItemOrPoint
+                const from = G.findNearestAttachmentLocationForConnectionNode(fromItem, firstControlPoint)
+                const to = G.findNearestAttachmentLocationForConnectionNode(toItemOrPoint, lastControlPoint)
                 return {
                     ...c,
                     controlPoints: c.controlPoints.map(coerceCoordsToNumber),
