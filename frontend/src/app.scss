@@ -559,7 +559,7 @@ a {
                 $corner-offset: -7px;
 
                 &.highlight {
-                    border: 2px solid #00f;
+                    border: 2px solid $link-color;
                 }
             }
 
@@ -570,7 +570,7 @@ a {
                 $corner-offset: -7px;
 
                 &.highlight {
-                    border: 2px solid #00f;
+                    border: 2px solid $link-color;
                 }
             }
 
@@ -584,7 +584,7 @@ a {
                     $corner-offset: -7px;
 
                     &.highlight {
-                        border: 2px solid #00f;
+                        border: 2px solid $link-color;
                     }
                 }
 
@@ -596,7 +596,7 @@ a {
                     border-bottom: 5px solid transparent;
 
                     &.highlight {
-                        border-left: 10px solid #00f;
+                        border-left: 10px solid $link-color;
                     }
                 }
             }
