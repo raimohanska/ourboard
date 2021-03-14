@@ -252,7 +252,7 @@ const moveItemWithChildren = (
     x: number,
     y: number,
     containerId: Id | undefined,
-) => {
+): Record<Id, Item> => {
     const mainItem = itemsOnBoard[id]
     if (mainItem === undefined) {
         console.warn("Moving unknown item", id)
@@ -280,28 +280,3 @@ const moveItemWithChildren = (
         ...updated,
     }
 }
-
-/*
-const moveItemWithChildrenOrig = (itemsOnBoard: Item[], id: Id, x: number, y: number, containerId: Id | undefined) => {
-    const mainItem = itemsOnBoard.find((i) => i.id === id)
-    if (mainItem === undefined) {
-        console.warn("Moving unknown item", id)
-        return itemsOnBoard
-    }
-    const xDiff = x - mainItem.x
-    const yDiff = y - mainItem.y
-
-    const movedItems = new Set(
-        itemsOnBoard
-            .filter(isContainedBy(itemsOnBoard, mainItem))
-            .map((i) => i.id)
-            .concat(id),
-    )
-
-    return itemsOnBoard.map((i) => {
-        if (!movedItems.has(i.id)) return i
-        const updated = { ...i, x: i.x + xDiff, y: i.y + yDiff }
-        return i.id === id ? { ...updated, containerId } : updated
-    })
-}
-*/
