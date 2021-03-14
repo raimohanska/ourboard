@@ -3,19 +3,8 @@ import * as L from "lonna"
 import * as _ from "lodash"
 import { Coordinates, subtract } from "./geometry"
 
-const COORDINATES_PROTOTYPE = {
-    x: 0,
-    y: 0,
-    // serialize to 2 decimal points precision
-    toJSON() {
-        return { x: this.x.toFixed(2), y: this.y.toFixed(2) }
-    },
-}
 const newCoordinates = (x: number, y: number): Coordinates => {
-    const coords = Object.create(COORDINATES_PROTOTYPE)
-    coords.x = x
-    coords.y = y
-    return coords
+    return { x, y }
 }
 
 // HTML client coordinates: relative to viewport

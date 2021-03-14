@@ -2,22 +2,12 @@ import * as H from "harmaja"
 import { Fragment, h, ListView } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
-import {
-    AttachmentLocation,
-    Board,
-    Connection,
-    isItem,
-    isPoint,
-    Item,
-    Point,
-    RenderableConnection,
-} from "../../../common/src/domain"
+import { AttachmentLocation, Board, isPoint, Point, RenderableConnection } from "../../../common/src/domain"
 import { Dispatch } from "../store/server-connection"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
 import * as G from "./geometry"
 import { existingConnectionHandler } from "./item-connect"
-import { coerceCoordsToNumber } from "../../../common/src/board-reducer"
 
 export const ConnectionsView = ({
     board,
@@ -50,7 +40,6 @@ export const ConnectionsView = ({
                 const to = G.findNearestAttachmentLocationForConnectionNode(toItemOrPoint, lastControlPoint)
                 return {
                     ...c,
-                    controlPoints: c.controlPoints.map(coerceCoordsToNumber),
                     from,
                     to,
                     selected: f.status === "connection-selected" && f.id === c.id,

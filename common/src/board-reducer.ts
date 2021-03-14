@@ -312,7 +312,6 @@ function moveEndPoint(endPoint: ConnectionEndPoint, move: Move) {
     if (typeof endPoint === "string") {
         return endPoint // points to an item
     }
-    endPoint = coerceCoordsToNumber(endPoint)
     const x = endPoint.x + move.xDiff
     const y = endPoint.y + move.yDiff
     return { ...endPoint, x, y }
@@ -335,14 +334,4 @@ function findAffectingMove(
 
 export function containedBy(a: Point, b: Rect) {
     return a.x > b.x && a.y > b.y && a.x < b.x + b.width && a.y < b.y + b.height
-}
-
-// TODO FIXME too tired to figure out why some points have stringified numbers as coordinates
-export function coerceCoordsToNumber(p: Point) {
-    if (typeof p.x === "number" && typeof p.y === "number") return p
-    return {
-        ...p,
-        x: Number(p.x),
-        y: Number(p.y),
-    }
 }
