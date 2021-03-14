@@ -66,7 +66,7 @@ async function build() {
     await esbuild.build({
         entryPoints: [path.resolve(CWD, "src", "index.tsx")],
         bundle: true,
-        minify: true,
+        minify: mode !== "watch",
         outfile,
         sourcemap: true,
         platform: "browser",
