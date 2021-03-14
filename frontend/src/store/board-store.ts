@@ -73,7 +73,6 @@ export function BoardStore(
             if (!undoStack.length) return state
             const undoOperation = undoStack.pop()!
             connection.enqueue(undoOperation)
-            console.log("APPLY-R", undoOperation)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 tagWithUserFromState(undoOperation),
@@ -84,7 +83,6 @@ export function BoardStore(
             if (!redoStack.length) return state
             const redoOperation = redoStack.pop()!
             connection.enqueue(redoOperation)
-            console.log("APPLY-R", redoOperation)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 tagWithUserFromState(redoOperation),
@@ -92,7 +90,6 @@ export function BoardStore(
             if (reverse) undoStack = addToStack(reverse, undoStack)
             return { ...state, board, history }
         } else if (isPersistableBoardItemEvent(event)) {
-            console.log("APPLY", event)
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
                 event,
@@ -101,7 +98,6 @@ export function BoardStore(
                 console.warn(`Received board update ${event.serial} while in status ${state.status}`)
             }
             if (reverse && event.serial == undefined) {
-                console.log("REVERSE", reverse)
                 // No serial == is local event. TODO: maybe a nicer way to recognize this?
                 redoStack = []
                 undoStack = addToStack(reverse, undoStack)
