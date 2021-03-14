@@ -17,6 +17,7 @@ import {
     ConnectionEndPoint,
     Point,
 } from "./domain"
+
 import { arrayToObject } from "./migration"
 
 export function boardReducer(
@@ -311,7 +312,10 @@ function moveEndPoint(endPoint: ConnectionEndPoint, move: Move) {
     if (typeof endPoint === "string") {
         return endPoint // points to an item
     }
-    return { ...endPoint, x: endPoint.x + move.xDiff, y: endPoint.y + move.yDiff }
+    endPoint = coerceCoordsToNumber(endPoint)
+    const x = endPoint.x + move.xDiff
+    const y = endPoint.y + move.yDiff
+    return { ...endPoint, x, y }
 }
 
 function findAffectingMove(
@@ -331,4 +335,14 @@ function findAffectingMove(
 
 export function containedBy(a: Point, b: Rect) {
     return a.x > b.x && a.y > b.y && a.x < b.x + b.width && a.y < b.y + b.height
+}
+
+// TODO FIXME too tired to figure out why some points have stringified numbers as coordinates
+export function coerceCoordsToNumber(p: Point) {
+    if (typeof p.x === "number" && typeof p.y === "number") return p
+    return {
+        ...p,
+        x: Number(p.x),
+        y: Number(p.y),
+    }
 }

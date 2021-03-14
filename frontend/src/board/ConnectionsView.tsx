@@ -17,6 +17,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
 import * as G from "./geometry"
 import { existingConnectionHandler } from "./item-connect"
+import { coerceCoordsToNumber } from "../../../common/src/board-reducer"
 
 export const ConnectionsView = ({
     board,
@@ -34,16 +35,6 @@ export const ConnectionsView = ({
     // Item position might change but connection doesn't -- need to rerender connections anyway
     // Connection objects normally only hold the ID to the "from" and "to" items
     // This populates the actual object in place of the ID
-
-    // TODO FIXME too tired to figure out why some points have stringified numbers as coordinates
-    function coerceCoordsToNumber(p: Point) {
-        if (typeof p.x === "number" && typeof p.y === "number") return p
-        return {
-            ...p,
-            x: Number(p.x),
-            y: Number(p.y),
-        }
-    }
 
     const connectionsWithItemsPopulated = L.view(
         L.view(board, (b) => ({ is: b.items, cs: b.connections })),
