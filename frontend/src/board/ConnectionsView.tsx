@@ -100,7 +100,7 @@ export const ConnectionsView = ({
                             L.view(conn, "to"),
                             L.view(conn, "controlPoints"),
                             (from, to, cps) => {
-                                return G.quadraticCurveSVGPath(
+                                return quadraticCurveSVGPath(
                                     {
                                         x: coordinateHelper.emToPx(from.point.x),
                                         y: coordinateHelper.emToPx(from.point.y),
@@ -155,7 +155,7 @@ export const ConnectionsView = ({
                 return null
             }
 
-            const bez = G.bezierCurveFromPoints(conn.from.point, conn.controlPoints[0], conn.to.point)
+            const bez = bezierCurveFromPoints(conn.from.point, conn.controlPoints[0], conn.to.point)
             const derivative = bez.derivative(1) // tangent vector at the very end of the curve
             const angleInDegrees =
                 ((Math.atan2(derivative.y, derivative.x) - Math.atan2(0, Math.abs(derivative.x))) * 180) / Math.PI
@@ -194,4 +194,39 @@ export const ConnectionsView = ({
             ></div>
         )
     }
+}
+
+// @ts-ignore
+import { Bezier } from "bezier-js"
+
+function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
+    if (!controlPoints || !controlPoints.length) {
+        // fallback if no control points, just create a curve with a hardcoded offset
+        const midpointX = (to.x + from.x) * 0.5
+        const midpointY = (to.y + from.y) * 0.5
+
+        // angle of perpendicular to line:
+        const theta = Math.atan2(to.y - from.y, to.x - from.x) - Math.PI / 2
+
+        // distance of control point from mid-point of line:
+        const offset = 30
+
+        // location of control point:
+        const controlPoint = { x: midpointX + offset * Math.cos(theta), y: midpointY + offset * Math.sin(theta) }
+        return "M" + from.x + " " + from.y + " Q " + controlPoint.x + " " + controlPoint.y + " " + to.x + " " + to.y
+    } else {
+        const peakPointOfCurve = controlPoints[0]
+        const bez = bezierCurveFromPoints(from, peakPointOfCurve, to)
+        return bez
+            .getLUT()
+            .reduce(
+                (acc: string, p: Point, i: number) =>
+                    i === 0 ? (acc += `M ${p.x} ${p.y}`) : (acc += `L ${p.x} ${p.y}`),
+                "",
+            )
+    }
+}
+
+function bezierCurveFromPoints(from: Point, middle: Point, to: Point): any {
+    return Bezier.quadraticFromPoints(from, middle, to)
 }

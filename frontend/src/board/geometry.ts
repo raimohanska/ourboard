@@ -1,8 +1,5 @@
 import * as _ from "lodash"
 import { AttachmentLocation, isItem, Item, Point } from "../../../common/src/domain"
-// @ts-ignore
-import { Bezier } from "bezier-js"
-
 export type Coordinates = { x: number; y: number }
 export type Dimensions = { width: number; height: number }
 export type Rect = { x: number; y: number; width: number; height: number }
@@ -49,34 +46,6 @@ export function rectFromPoints(a: Coordinates, b: Coordinates) {
     return { x, y, width, height }
 }
 
-export function quadraticCurveSVGPath(from: Coordinates, to: Coordinates, controlPoints: Coordinates[]) {
-    if (!controlPoints || !controlPoints.length) {
-        // fallback if no control points, just create a curve with a hardcoded offset
-        const midpointX = (to.x + from.x) * 0.5
-        const midpointY = (to.y + from.y) * 0.5
-
-        // angle of perpendicular to line:
-        const theta = Math.atan2(to.y - from.y, to.x - from.x) - Math.PI / 2
-
-        // distance of control point from mid-point of line:
-        const offset = 30
-
-        // location of control point:
-        const controlPoint = { x: midpointX + offset * Math.cos(theta), y: midpointY + offset * Math.sin(theta) }
-        return "M" + from.x + " " + from.y + " Q " + controlPoint.x + " " + controlPoint.y + " " + to.x + " " + to.y
-    } else {
-        const peakPointOfCurve = controlPoints[0]
-        const bez = bezierCurveFromPoints(from, peakPointOfCurve, to)
-        return bez
-            .getLUT()
-            .reduce(
-                (acc: string, p: Point, i: number) =>
-                    i === 0 ? (acc += `M ${p.x} ${p.y}`) : (acc += `L ${p.x} ${p.y}`),
-                "",
-            )
-    }
-}
-
 export function findNearestAttachmentLocationForConnectionNode(i: Point | Item, reference: Point): AttachmentLocation {
     if (!isItem(i)) return { side: "none", point: i }
     function p(x: number, y: number) {
@@ -89,8 +58,4 @@ export function findNearestAttachmentLocationForConnectionNode(i: Point | Item, 
         { side: "bottom" as const, point: p(i.x + i.width / 2, i.y + i.height) },
     ]
     return _.minBy(options, (p) => distance(p.point, reference))!
-}
-
-export function bezierCurveFromPoints(from: Point, middle: Point, to: Point): any {
-    return Bezier.quadraticFromPoints(from, middle, to)
 }
