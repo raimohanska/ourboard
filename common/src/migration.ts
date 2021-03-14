@@ -14,51 +14,16 @@ import {
 } from "./domain"
 import { boardReducer } from "./board-reducer"
 
-export function migrateBoardWithHistory(
-    boardToMigrate: Board,
-    historyToMigrate: BoardHistoryEntry[],
-): CompactBoardHistory {
-    const board = migrateBoard(boardToMigrate)
-    const history = migrateHistory(historyToMigrate)
-    const { items, ...boardAttributes } = board
-    if (history.length > 0) {
-        try {
-            const emptyBoard = { ...boardAttributes, items: {} } as Board
-            history.reduce((b, e) => boardReducer(b, e)[0], emptyBoard) // To verify consistency of history
-            return { boardAttributes, history }
-        } catch (e) {
-            console.warn("Board history check fail, bootstrapping", e)
-        }
-    }
-    const bootstrappedHistory = [mkBootStrapEvent(board.id, board)] as BoardHistoryEntry[]
-    return { boardAttributes, history: bootstrappedHistory }
-}
-
 export function mkBootStrapEvent(boardId: Id, snapshot: Board, serial: Serial = 1) {
     return {
         action: "item.bootstrap",
         boardId,
         items: snapshot.items,
+        connections: snapshot.connections,
         timestamp: new Date().toISOString(),
         user: { nickname: "admin", userType: "system" },
         serial,
     } as BoardHistoryEntry
-}
-
-function migrateHistory(historyToMigrate: BoardHistoryEntry[]) {
-    return historyToMigrate
-}
-
-export function buildBoardFromHistory(boardAttributes: BoardAttributes, history: BoardHistoryEntry[]): Board {
-    const emptyBoard = { ...boardAttributes, items: {} } as Board
-    const resultBoard = history.reduce((b, e) => boardReducer(b, e)[0], emptyBoard)
-    return resultBoard
-}
-
-export function toCompactBoardHistory(board: BoardWithHistory, initAtSerial?: Serial) {
-    const { items, ...boardAttributes } = board.board
-    const history = initAtSerial ? board.history.filter((e) => (e.serial || 0) > initAtSerial) : board.history
-    return { boardAttributes, history }
 }
 
 export function arrayToObject<T, K extends keyof T>(key: K, arr: T[]) {

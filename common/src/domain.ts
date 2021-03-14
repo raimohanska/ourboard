@@ -422,3 +422,13 @@ const isBoard = (u: unknown): u is Board => typeof u === "object" && !!u && "ite
 
 const getItems = (boardOrItems: Board | Record<string, Item>) =>
     isBoard(boardOrItems) ? boardOrItems.items : boardOrItems
+
+export function getBoardAttributes(board: Board): BoardAttributes {
+    return {
+        id: board.id,
+        name: board.name,
+        width: board.width,
+        height: board.height,
+        accessPolicy: board.accessPolicy,
+    }
+}

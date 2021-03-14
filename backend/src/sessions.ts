@@ -20,6 +20,7 @@ import {
     isPersistableBoardItemEvent,
     isBoardHistoryEntry,
     EventUserInfoAuthenticated,
+    getBoardAttributes,
 } from "../../common/src/domain"
 import { ServerSideBoardState } from "./board-state"
 import { getBoardHistory, verifyContinuity } from "./board-store"
@@ -122,7 +123,7 @@ export async function addSessionToBoard(
         // 1. Add session to the board with "buffering" status, to collect all events that were meant to be sent during this async initialization
         session.boards.push(entry)
         try {
-            const { items, serial, ...boardAttributes } = boardState.board
+            const boardAttributes = getBoardAttributes(boardState.board)
 
             //console.log(`Starting session at ${initAtSerial}`)
             // 2. capture all board events that haven't yet been flushed to the DB
