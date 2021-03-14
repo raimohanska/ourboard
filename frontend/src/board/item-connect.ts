@@ -5,6 +5,7 @@ import { Dispatch } from "../store/server-connection"
 import * as uuid from "uuid"
 import { Tool } from "./BoardView"
 import { containedBy, findNearestAttachmentLocationForConnectionNode } from "./geometry"
+import _ from "lodash"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -23,6 +24,7 @@ export function drawConnectionHandler(
         const items = board.get().items
         const targetExistingItem = items
             .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i))
+            .sort((a, b) => (isContainedBy(items, a)(b) ? 1 : -1))
             .find((i) => !isContainedBy(items, i)(item))
 
         if (targetExistingItem === item) {
