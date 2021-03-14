@@ -25,9 +25,6 @@ export function foldActions(a: AppEvent, b: AppEvent): AppEvent | null {
         if (
             isPersistableBoardItemEvent(b) &&
             b.action !== "item.delete" &&
-            b.action !== "connection.add" &&
-            b.action !== "connection.delete" &&
-            b.action !== "connection.modify" &&
             a.boardId === b.boardId
         ) {
             const createdItemIds = new Set(getItemIds(a))
