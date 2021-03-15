@@ -15,21 +15,26 @@ export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandl
         socket.ws.close()
     })
     socket.ws.addEventListener("message", async (str: any) => {
-        const event = JSON.parse(str.data)
-        let serialsToAck: Record<Id, Serial> = {}
-        for (const e of event as AppEvent[]) {
-            const serialAck = await handleMessage(socket, e)
-            if (serialAck === true) {
-            } else if (serialAck === false) {
-                console.warn("Unhandled app-event message", e)
-            } else {
-                serialsToAck[serialAck.boardId] = serialAck.serial
+        try {
+            const event = JSON.parse(str.data)
+            let serialsToAck: Record<Id, Serial> = {}
+            for (const e of event as AppEvent[]) {
+                const serialAck = await handleMessage(socket, e)
+                if (serialAck === true) {
+                } else if (serialAck === false) {
+                    console.warn("Unhandled app-event message", e)
+                } else {
+                    serialsToAck[serialAck.boardId] = serialAck.serial
+                }
             }
+            socket.send({ action: "ack" })
+            Object.entries(serialsToAck).forEach(([boardId, serial]) => {
+                socket.send({ action: "board.serial.ack", boardId, serial } as BoardSerialAck)
+            })
+        } catch (e) {
+            console.error("Error while handling event from client. Closing connection.", e)
+            socket.ws.close()
         }
-        socket.send({ action: "ack" })
-        Object.entries(serialsToAck).forEach(([boardId, serial]) => {
-            socket.send({ action: "board.serial.ack", boardId, serial } as BoardSerialAck)
-        })
     })
 
     socket.ws.addEventListener("close", () => {

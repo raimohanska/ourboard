@@ -50,9 +50,14 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
             fetch,
         }
         boards.set(id, temporaryState)
-        const finalState = await fetch
-        boards.set(id, finalState)
-        return finalState
+        try {
+            const finalState = await fetch
+            boards.set(id, finalState)
+            return finalState
+        } catch (e) {
+            boards.delete(id)
+            throw e
+        }
     } else if (!state.ready) {
         return await state.fetch
     } else {
