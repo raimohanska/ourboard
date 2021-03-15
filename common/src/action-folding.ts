@@ -48,7 +48,7 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
         if (
             isPersistableBoardItemEvent(b) &&
             b.action !== "item.delete" &&
-            !actionNamespaceIs("connection", b) &&
+            !actionNamespaceIs("connection", b) && // Notice that getItemIds is empty for connection events and thus the function would attempt to fold them with the item.add.
             a.boardId === b.boardId
         ) {
             const createdItemIds = new Set(getItemIds(a))
