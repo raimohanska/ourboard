@@ -195,7 +195,7 @@ export function BoardStore(
             return { ...state, users }
         } else if (event.action === "ui.board.join.request") {
             if (!event.boardId) {
-                return state
+                return initialState
             }
             return {
                 ...initialState,
