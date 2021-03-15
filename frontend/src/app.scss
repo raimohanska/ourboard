@@ -541,6 +541,17 @@ a {
             }
         }
 
+        $connection-color: #444444;
+
+        svg.connections {
+            .connection {
+                stroke: $connection-color;
+                stroke-width: max(0.1em, 1.5px);
+                stroke-linecap: round;
+                fill: transparent;
+            }
+        }
+
         .connection-node {
             position: absolute;
             z-index: 100000;
@@ -549,8 +560,8 @@ a {
             @extend .dropshadow-shallow;
             position: absolute;
             display: block;
-            width: 10px;
-            height: 10px;
+            width: max(0.4em, 3px);
+            height: max(0.4em, 3px);
 
             &.from-node {
                 background: white;
@@ -564,12 +575,16 @@ a {
             }
 
             &.control-node {
-                background: white;
+                background: $connection-color;
                 border-radius: 50%;
-                border: 1px solid #cccccc;
                 $corner-offset: -7px;
+                &:not(.highlight) {
+                    width: max(0.3em, 1.5px);
+                    height: max(0.3em, 1.5px);
+                }
 
                 &.highlight {
+                    background: white;
                     border: 2px solid $link-color;
                 }
             }
@@ -580,12 +595,12 @@ a {
 
                 width: 0;
                 height: 0;
-                border-top: 5px solid transparent;
-                border-left: 14px solid black;
-                border-bottom: 5px solid transparent;
+                border-top: max(0.2em, 3px) solid transparent;
+                border-left: max(0.6em, 8px) solid $connection-color;
+                border-bottom: max(0.2em, 3px) solid transparent;
 
                 &.highlight {
-                    border-left: 14px solid $link-color;
+                    border-left: max(0.6em, 8px) solid $link-color;
                 }
             }
         }

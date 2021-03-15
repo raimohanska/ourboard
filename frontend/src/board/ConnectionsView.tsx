@@ -80,7 +80,7 @@ export const ConnectionsView = ({
                 renderObservable={ConnectionNode}
                 getKey={(c) => c.id + c.type}
             />
-            <svg style={svgElementStyle}>
+            <svg className="connections" style={svgElementStyle}>
                 <ListView<RenderableConnection, string>
                     observable={connectionsWithItemsPopulated}
                     renderObservable={(key, conn: L.Property<RenderableConnection>) => {
@@ -107,13 +107,7 @@ export const ConnectionsView = ({
                         )
                         return (
                             <g>
-                                <path
-                                    d={curve}
-                                    stroke="black"
-                                    stroke-width="1"
-                                    stroke-linecap="round"
-                                    fill="transparent"
-                                ></path>
+                                <path className="connection" d={curve}></path>
                             </g>
                         )
                     }}
