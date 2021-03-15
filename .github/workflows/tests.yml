@@ -1,7 +1,7 @@
 name: tests
 on: [push]
 jobs:
-    check-formatting:
+    check-sources:
         runs-on: ubuntu-latest
         strategy:
             matrix:
@@ -14,8 +14,8 @@ jobs:
                   node-version: ${{ matrix.node-version }}
             - name: Install dependencies
               run: yarn install --frozen-lockfile
-            - name: Check code formatting
-              run: yarn prettier:check
+            - name: Check code formatting & generated files
+              run: yarn check-sources
     test:
         runs-on: ubuntu-latest
         services:

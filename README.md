@@ -53,6 +53,8 @@ Boards with restricted access can currently only be created using the POST API (
 
 ## API
 
+For a full list of API endpoints, see https://ourboard.io/api-docs.
+
 All POST and PUT endpoints accept application/json content.
 
 API requests against boards with restricted access require you to supply an API_TOKEN header with a valid API token.

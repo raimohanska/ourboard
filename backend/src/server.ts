@@ -8,6 +8,7 @@ import * as path from "path"
 import { connectionHandler } from "./connection-handler"
 import { initDB } from "./db"
 import fs from "fs"
+import * as swaggerUi from "swagger-ui-express"
 import { getConfig } from "./config"
 import { awaitSavingChanges as waitUntilChangesSaved } from "./board-state"
 import { createGetSignedPutUrl } from "./storage"
@@ -17,6 +18,7 @@ import apiRoutes from "./api-routes"
 import { WsWrapper } from "./ws-wrapper"
 import { handleCommonEvent } from "./common-event-handler"
 import { handleBoardEvent } from "./board-event-handler"
+import openapiDoc from "./openapi"
 
 const configureServer = () => {
     const config = getConfig()
@@ -85,6 +87,8 @@ const configureServer = () => {
     })
 
     app.use(apiRoutes.handler())
+
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiDoc))
 
     ws.app.ws("/socket/lobby", (socket, req) => {
         connectionHandler(WsWrapper(socket), handleCommonEvent)

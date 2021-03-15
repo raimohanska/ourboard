@@ -28,8 +28,13 @@ import { NonEmptyString } from "io-ts-types"
 import { withDBClient } from "./db"
 
 const route = applyMiddleware(wrapNative(bodyParser.json()))
-const apiTokenHeader = headers(t.partial({ api_token: t.string }))
+const apiTokenHeader = headers(t.partial({ API_TOKEN: t.string }))
 
+/**
+ * Creates a new board.
+ *
+ * @tags Board
+ */
 const boardCreate = route
     .post("/api/v1/board")
     .use(body(t.type({ name: NonEmptyString, accessPolicy: BoardAccessPolicyCodec })))
@@ -39,6 +44,11 @@ const boardCreate = route
         return ok({ id: boardWithHistory.board.id, accessToken: boardWithHistory.accessTokens[0] })
     })
 
+/**
+ * Changes board name and, optionally, access policy.
+ *
+ * @tags Board
+ */
 const boardUpdate = route
     .put("/api/v1/board/:boardId")
     .use(apiTokenHeader, body(t.type({ name: NonEmptyString, accessPolicy: BoardAccessPolicyCodec })))
@@ -52,6 +62,11 @@ const boardUpdate = route
     )
 
 // TODO: require API_TOKEN header for github too!
+/**
+ * GitHub webhook
+ *
+ * @tags Webhooks
+ */
 const githubWebhook = route
     .post("/api/v1/webhook/github/:boardId")
     .use(
@@ -112,6 +127,13 @@ const githubWebhook = route
         }
     })
 
+/**
+ * Creates a new item on given board. If you want to add the item onto a
+ * specific area/container element on the board, you can find the id of the
+ * container by inspecting with your browser.
+ *
+ * @tags Board
+ */
 const itemCreate = route
     .post("/api/v1/board/:boardId/item")
     .use(
@@ -127,6 +149,11 @@ const itemCreate = route
         }),
     )
 
+/**
+ * List the history of a board
+ *
+ * @tags Board
+ */
 const historyGet = route
     .get("/api/v1/board/:boardId/history")
     .use(apiTokenHeader)
@@ -137,6 +164,13 @@ const historyGet = route
         }),
     )
 
+/**
+ * Creates a new item on given board or updates an existing one.
+ * If you want to add the item onto a specific area/container element on the board, you can
+ * find the id of the container by inspecting with your browser.
+ *
+ * @tags Board
+ */
 const itemCreateOrUpdate = route
     .put("/api/v1/board/:boardId/item/:itemId")
     .use(
@@ -202,11 +236,11 @@ class InvalidRequest extends Error {
 }
 
 async function checkBoardAPIAccess<T>(
-    request: { routeParams: { boardId: string }; headers: { api_token?: string | undefined } },
+    request: { routeParams: { boardId: string }; headers: { API_TOKEN?: string | undefined } },
     fn: (board: ServerSideBoardState) => Promise<T>,
 ) {
     const boardId = request.routeParams.boardId
-    const apiToken = request.headers.api_token
+    const apiToken = request.headers.API_TOKEN
     try {
         const board = await getBoard(boardId)
         if (board.board.accessPolicy || board.accessTokens.length) {
