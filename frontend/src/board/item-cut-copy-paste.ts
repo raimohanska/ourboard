@@ -42,8 +42,8 @@ export function cutCopyPasteHandler(
         const notContained = items.filter((i) => !contained.some((c) => c.id === i.id))
         const oldToNewId: Record<Id, Id> = {}
         let toCreate: Item[] = []
+        // As a side effect makeCopy adds items to toCreate
         const toSelect = notContained.map(makeCopy)
-        toCreate = [...toCreate, ...toSelect]
         const connections = clipboard.connections.map((c) => {
             return {
                 ...c,
@@ -72,6 +72,7 @@ export function cutCopyPasteHandler(
         function makeCopy(i: Item): Item {
             const containerId = i.id
             const newContainer = flatCopy(i)
+            toCreate.push(newContainer)
             // TODO: this won't work for deep containment hierarchies
             contained
                 .filter((ctd) => ctd.containerId === containerId)
