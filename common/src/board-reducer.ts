@@ -207,6 +207,10 @@ export function boardReducer(
 
             const updated = event.itemIds.reduce((acc: Record<string, Item>, id) => {
                 const item = board.items[id]
+                if (!item) {
+                    console.warn(`Warning: trying to "item.front" nonexisting item ${id} on board ${board.id}`)
+                    return acc
+                }
                 const u = item.type !== "container" ? { ...item, z: maxZ + 1 } : item
                 acc[u.id] = u
                 return acc
