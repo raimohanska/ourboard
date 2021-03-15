@@ -151,11 +151,19 @@ export function cutCopyPasteHandler(
                         console.warn("Unexpected clipboard content", clipboard)
                         return
                     }
+                    const requiredMargin = 1
+                    const xDiffMin = -_.min(clipboard.items.map((i) => i.x))! + requiredMargin
+                    const yDiffMin = -_.min(clipboard.items.map((i) => i.y))! + requiredMargin
+                    const xDiffMax =
+                        board.get().width - _.max(clipboard.items.map((i) => i.x + i.width))! - requiredMargin
+                    const yDiffMax =
+                        board.get().height - _.max(clipboard.items.map((i) => i.y + i.height))! - requiredMargin
                     const xCenterOld = _.sum(clipboard.items.map((i) => i.x + i.width / 2)) / clipboard.items.length
                     const yCenterOld = _.sum(clipboard.items.map((i) => i.y + i.height / 2)) / clipboard.items.length
                     const currentCenter = coordinateHelper.currentBoardCoordinates.get()
-                    const xDiff = currentCenter.x - xCenterOld
-                    const yDiff = currentCenter.y - yCenterOld
+
+                    const xDiff = Math.min(Math.max(currentCenter.x - xCenterOld, xDiffMin), xDiffMax)
+                    const yDiff = Math.min(Math.max(currentCenter.y - yCenterOld, yDiffMin), yDiffMax)
                     const { toCreate, toSelect, connections } = makeCopies(clipboard, xDiff, yDiff)
                     dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate, connections })
                     focus.set({ status: "selected", ids: new Set(toSelect.map((it) => it.id)) })
