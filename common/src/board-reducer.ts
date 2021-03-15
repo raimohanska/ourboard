@@ -82,7 +82,11 @@ export function boardReducer(
                 throw new Error("Adding duplicate item " + JSON.stringify(event.items))
             }
             const itemsToAdd = event.items.reduce((acc: Record<string, Item>, item) => {
-                if (item.containerId && !findItem(board)(item.containerId)) {
+                if (
+                    item.containerId &&
+                    !findItem(board)(item.containerId) &&
+                    !findItem(arrayToObject("id", event.items))(item.containerId)
+                ) {
                     // Add item but don't try to assign to a non-existing container
                     acc[item.id] = { ...item, containerId: undefined }
                     return acc
