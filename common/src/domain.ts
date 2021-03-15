@@ -364,7 +364,7 @@ type Actions<Namespace extends string> = keyof {
 export function actionNamespaceIs<Namespace extends string>(
     ns: Namespace,
     a: { action: AppEvent["action"] },
-): a is { action: Actions<Namespace> } {
+): a is Actions<Namespace> extends never ? never : { action: Actions<Namespace> } {
     return a.action.startsWith(ns)
 }
 
