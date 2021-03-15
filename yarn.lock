@@ -3132,10 +3132,10 @@ harmaja@^0.17:
   resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.17.0.tgz#fd69f2f353196dfe0c5fbd53a7fb9b7b7f945193"
   integrity sha512-5ypvfWOgAz3rULJZUppHN+JPmilIUDPrXYeN3IKtlYA0yBikUB0/2NBHQspfggR5GUWsQSLTpv24jxK3j0ZrLw==
 
-harmaja@^0.18.0:
-  version "0.18.0"
-  resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.18.0.tgz#c63dc74c0bc8a03d98b8a60c0145b9eeb7e4c700"
-  integrity sha512-hGvklNncC4w529ZT/P1dOWtkGVSKvRorMYUKVvD+jPYGci9tXr+GtVTqm7O56VZDQnPITiBrtWzlK0kWmTlvOA==
+harmaja@^0.19.0:
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.19.0.tgz#46e6c866314e40b0e2f3202c134220a51facd3de"
+  integrity sha512-ZfFeR62R9n3Kr3dlMkTwUtb9W/IApUX5DCfqmOXPxx3SvEMFpwc14C6XIIbtgOVqAuEuMclB28k1Kd6YT4EcMg==
 
 has-ansi@^2.0.0:
   version "2.0.0"
@@ -4654,17 +4654,10 @@ log-update@^4.0.0:
     slice-ansi "^4.0.0"
     wrap-ansi "^6.2.0"
 
-lonna@^0.8:
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.8.2.tgz#1a853ff3b8a23d099d133d98f9e6bf5290725b58"
-  integrity sha512-5PrWi5uTlU/YCjf4P5l6wmlv5a5ScvsZ7RCMAykBBoEEeFuCNMzX/26aQrSUQ1xbNQwnXm78vV0oZjAyqKS68A==
-  dependencies:
-    optics-ts "^1.2.0"
-
-lonna@^0.8.3:
-  version "0.8.3"
-  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.8.3.tgz#e524ee11520e80178a8664149a038d3f0cfd1e75"
-  integrity sha512-jQQ4YidF5/zdpjBRG0UetcsHAMyJH3gGtEJ+fnz7Elb83F/CVNWBA9mwNOPKSMdJC40c33myxLEcnJMVl2jXPA==
+lonna@^0.8.4:
+  version "0.8.4"
+  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.8.4.tgz#de6d32a151bcfe20901aad1be20e9080b2008d6b"
+  integrity sha512-HNEaRFEB2Hjt125vO5ib7vXWGTmOCKNYvp3VwVD/BWN9HtZdPNnneL7BHXbyH55Nv1F3exrr1ax4XW7C9ehArA==
   dependencies:
     optics-ts "^1.2.0"
 
