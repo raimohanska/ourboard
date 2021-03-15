@@ -444,3 +444,5 @@ export function getBoardAttributes(board: Board): BoardAttributes {
         accessPolicy: board.accessPolicy,
     }
 }
+
+export const BOARD_ITEM_BORDER_MARGIN = 0.5

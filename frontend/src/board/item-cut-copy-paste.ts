@@ -11,6 +11,7 @@ import {
     newNote,
     newText,
     ConnectionEndPoint,
+    BOARD_ITEM_BORDER_MARGIN,
 } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedIds } from "./board-focus"
@@ -151,7 +152,7 @@ export function cutCopyPasteHandler(
                         console.warn("Unexpected clipboard content", clipboard)
                         return
                     }
-                    const requiredMargin = 1
+                    const requiredMargin = BOARD_ITEM_BORDER_MARGIN
                     const xDiffMin = -_.min(clipboard.items.map((i) => i.x))! + requiredMargin
                     const yDiffMin = -_.min(clipboard.items.map((i) => i.y))! + requiredMargin
                     const xDiffMax =

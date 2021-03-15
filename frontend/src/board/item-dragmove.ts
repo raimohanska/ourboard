@@ -1,6 +1,6 @@
 import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Connection, Item, Point } from "../../../common/src/domain"
+import { Board, BOARD_ITEM_BORDER_MARGIN, Connection, Item, Point } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainer } from "./item-setcontainer"
@@ -39,7 +39,7 @@ export function itemDragToMove(
                     const { current, dragStartPosition } = items[0]
                     connector.whileDragging(current, coordinateHelper.currentBoardCoordinates.get())
                 } else {
-                    const margin = 0.5
+                    const margin = BOARD_ITEM_BORDER_MARGIN
                     const movedItems = items.map(({ dragStartPosition, current }) => {
                         const x = Math.min(
                             Math.max(dragStartPosition.x + xDiff, margin),
