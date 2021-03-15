@@ -64,6 +64,7 @@ export type BoardHistoryEntry = {
     user: EventUserInfo
     timestamp: ISOTimeStamp
     serial?: Serial
+    firstSerial?: Serial
 } & PersistableBoardItemEvent
 export type BoardWithHistory = { board: Board; history: BoardHistoryEntry[] }
 export type CompactBoardHistory = { boardAttributes: BoardAttributes; history: BoardHistoryEntry[] }

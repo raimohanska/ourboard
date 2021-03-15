@@ -1,5 +1,6 @@
 import {
     AppEvent,
+    BoardHistoryEntry,
     BringItemToFront,
     createBoard,
     CURSOR_POSITIONS_ACTION_TYPE,
@@ -22,11 +23,23 @@ const defaultOptions = {
     foldAddUpdate: true,
 }
 
+export function foldActions(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
+    if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
+        if (!isSameUser(a.user, b.user)) return null
+        const folded = foldActions_(a, b, options)
+        if (!folded) return null
+        const firstSerial = a.firstSerial ? a.firstSerial : a.serial
+        const serial = b.serial
+        return { ...(folded as BoardHistoryEntry), serial, firstSerial } as BoardHistoryEntry
+    } else {
+        return foldActions_(a, b, options)
+    }
+}
 /*
 Folding can be done if in any given state S, applying actions A and B consecutively can be replaced with a single action C.
 This function should return that composite action or null if folding is not possible.
 */
-export function foldActions(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
+export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
     if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
         if (!isSameUser(a.user, b.user)) return null
     }
