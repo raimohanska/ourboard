@@ -3,7 +3,7 @@ import { Board, Item } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
-import { Coordinates } from "./geometry"
+import * as _ from "lodash"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -45,32 +45,38 @@ export function onBoardItemDrag(
         dragStart = e
         dragStartPositions = board.get().items
     })
-    elem.addEventListener("drag", (e) => {
-        e.stopPropagation()
-        const f = focus.get()
-        if (f.status !== "dragging") {
-            e.preventDefault()
-            return
-        }
-        const newPos = coordinateHelper.boardCoordDiffFromThisClientPoint({ x: dragStart!.pageX, y: dragStart!.pageY })
-        if (currentPos && currentPos.x == newPos.x && currentPos.y === newPos.y) {
-            return
-        }
-        currentPos = newPos
-        const { x: xDiff, y: yDiff } = newPos
-
-        const b = board.get()
-        const items = [...f.ids].map((id) => {
-            const current = b.items[id]
-            const dragStartPosition = dragStartPositions[id]
-            if (!current || !dragStartPosition) throw Error("Item not found: " + id)
-            return {
-                current,
-                dragStartPosition,
+    elem.addEventListener(
+        "drag",
+        _.throttle((e) => {
+            e.stopPropagation()
+            const f = focus.get()
+            if (f.status !== "dragging") {
+                e.preventDefault()
+                return
             }
-        })
-        doWhileDragging(b, items, xDiff, yDiff)
-    })
+            const newPos = coordinateHelper.boardCoordDiffFromThisClientPoint({
+                x: dragStart!.pageX,
+                y: dragStart!.pageY,
+            })
+            if (currentPos && currentPos.x == newPos.x && currentPos.y === newPos.y) {
+                return
+            }
+            currentPos = newPos
+            const { x: xDiff, y: yDiff } = newPos
+
+            const b = board.get()
+            const items = [...f.ids].map((id) => {
+                const current = b.items[id]
+                const dragStartPosition = dragStartPositions[id]
+                if (!current || !dragStartPosition) throw Error("Item not found: " + id)
+                return {
+                    current,
+                    dragStartPosition,
+                }
+            })
+            doWhileDragging(b, items, xDiff, yDiff)
+        }, 30),
+    )
 
     elem.addEventListener("dragend", (e) => {
         e.stopPropagation()
