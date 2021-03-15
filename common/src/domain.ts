@@ -357,15 +357,15 @@ export function getItemBackground(i: Item) {
     return "none"
 }
 
-type Actions<Namespace extends string> = keyof {
-    [K in AppEvent["action"] as K extends `${Namespace}.${string}` ? K : never]: K
-}
+type NamespacedEvent<Namespace extends string, T = AppEvent> = T extends { action: `${Namespace}.${string}` }
+    ? T
+    : never
 
 export function actionNamespaceIs<Namespace extends string>(
     ns: Namespace,
-    a: { action: AppEvent["action"] },
-): a is Actions<Namespace> extends never ? never : { action: Actions<Namespace> } {
-    return a.action.startsWith(ns)
+    a: AppEvent,
+): a is NamespacedEvent<Namespace> {
+    return a.action.startsWith(ns + ".")
 }
 
 export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id[] {
