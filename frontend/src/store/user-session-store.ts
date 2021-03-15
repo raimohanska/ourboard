@@ -129,13 +129,17 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 }
             } else {
                 const { status, ...googleUser } = event
-                return sendLoginAndNickname({
+                const newStatus = {
                     status: "logging-in-server",
                     sessionId: state.sessionId,
                     nickname: googleUser.name,
                     ...googleUser,
                     retries: getRetries(state) + 1,
-                })
+                } as const
+                if (connection.connected.get()) {
+                    sendLoginAndNickname(newStatus)
+                }
+                return newStatus
             }
         }
     }
