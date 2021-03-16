@@ -115,20 +115,38 @@ export function boardScrollAndZoomHandler(
         coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
     }
 
-    function gestureZoom(e: any) {
-        typeof e.scale === "number" && adjustZoom(() => e.scale)
+    let scaleBus = L.bus<number>()
+    scaleBus.pipe(L.throttle(50, componentScope())).forEach((v) => adjustZoom(() => v))
+    let scaleStart: number = 1
+
+    function onGestureStart(e: any) {
         e.preventDefault()
+        const scale = typeof e.scale === "number" && (e.scale as number)
+        if (scale) {
+            scaleStart = zoom.get() / scale
+        }
     }
 
-    const gestureEvents = ["gesturestart", "gesturechange", "gestureend"]
+    function onGestureChange(e: any) {
+        e.preventDefault()
+        const scale = typeof e.scale === "number" && (e.scale as number)
+        if (scale) {
+            scaleBus.push(scale * scaleStart)
+        }
+    }
+
     H.onMount(() => {
         // have to use this for chrome: https://stackoverflow.com/questions/42101723/unable-to-preventdefault-inside-passive-event-listener
         window.addEventListener("wheel", wheelZoomHandler, { passive: false })
-        gestureEvents.forEach((e) => window.addEventListener(e, gestureZoom))
+        window.addEventListener("gesturestart", onGestureStart)
+        window.addEventListener("gesturechange", onGestureChange)
+        window.addEventListener("gestureend", onGestureChange)
     })
     H.onUnmount(() => {
         window.removeEventListener("wheel", wheelZoomHandler)
-        gestureEvents.forEach((e) => window.removeEventListener(e, gestureZoom))
+        window.removeEventListener("gesturestart", onGestureStart)
+        window.removeEventListener("gesturechange", onGestureChange)
+        window.removeEventListener("gestureend", onGestureChange)
     })
     return {
         viewRect,
