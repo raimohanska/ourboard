@@ -84,8 +84,8 @@ export function boardScrollAndZoomHandler(
         // Wheel-zoom, or two finger zoom gesture on trackpad
         if (ctrlOrCmd && event.deltaY !== 0) {
             event.preventDefault()
-            const step = 1.1
-            adjustZoom((z) => (event.deltaY < 0 ? z * step : z / step))
+            const step = Math.pow(1.01, -event.deltaY)
+            adjustZoom((z) => z * step)
         } else {
             // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
             // Let's set the mode to 'select' as a best-effort "works like you'd expect" UX thing
