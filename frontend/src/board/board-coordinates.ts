@@ -2,6 +2,7 @@ import { componentScope } from "harmaja"
 import * as L from "lonna"
 import * as _ from "lodash"
 import { Coordinates, subtract } from "./geometry"
+import { TOUCH_ONLY } from "../browser-features"
 
 const newCoordinates = (x: number, y: number): Coordinates => {
     return { x, y }
@@ -77,27 +78,41 @@ export function boardCoordinateHelper(
         if (!elem) {
             return
         }
-        elem.addEventListener(
-            "dragover",
-            _.throttle(
-                (e) => {
-                    currentClientPos.set({ x: e.pageX, y: e.pageY })
-                    e.preventDefault() // To disable Safari slow animation
-                },
-                16,
-                { leading: true, trailing: true },
-            ),
-        )
-        elem.addEventListener(
-            "mousemove",
-            _.throttle(
-                (e) => {
-                    currentClientPos.set({ x: e.pageX, y: e.pageY })
-                },
-                16,
-                { leading: true, trailing: true },
-            ),
-        )
+
+        if (TOUCH_ONLY) {
+            elem.addEventListener(
+                "gesturestart",
+                _.throttle(
+                    (e) => {
+                        currentClientPos.set({ x: e.pageX, y: e.pageY })
+                    },
+                    16,
+                    { leading: true, trailing: true },
+                ),
+            )
+        } else {
+            elem.addEventListener(
+                "dragover",
+                _.throttle(
+                    (e) => {
+                        currentClientPos.set({ x: e.pageX, y: e.pageY })
+                        e.preventDefault() // To disable Safari slow animation
+                    },
+                    16,
+                    { leading: true, trailing: true },
+                ),
+            )
+            elem.addEventListener(
+                "mousemove",
+                _.throttle(
+                    (e) => {
+                        currentClientPos.set({ x: e.pageX, y: e.pageY })
+                    },
+                    16,
+                    { leading: true, trailing: true },
+                ),
+            )
+        }
     })
 
     function scrollCursorToBoardCoordinates(coords: Coordinates) {
