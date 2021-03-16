@@ -134,16 +134,16 @@ export function boardScrollAndZoomHandler(
 
     H.onMount(() => {
         // have to use this for chrome: https://stackoverflow.com/questions/42101723/unable-to-preventdefault-inside-passive-event-listener
-        window.addEventListener("wheel", wheelZoomHandler, { passive: false })
-        window.addEventListener("gesturestart", onGestureStart)
-        window.addEventListener("gesturechange", onGestureChange)
-        window.addEventListener("gestureend", onGestureChange)
+        document.addEventListener("wheel", wheelZoomHandler, { passive: false })
+        document.addEventListener("gesturestart", onGestureStart)
+        document.addEventListener("gesturechange", onGestureChange)
+        document.addEventListener("gestureend", onGestureChange)
     })
     H.onUnmount(() => {
-        window.removeEventListener("wheel", wheelZoomHandler)
-        window.removeEventListener("gesturestart", onGestureStart)
-        window.removeEventListener("gesturechange", onGestureChange)
-        window.removeEventListener("gestureend", onGestureChange)
+        document.removeEventListener("wheel", wheelZoomHandler)
+        document.removeEventListener("gesturestart", onGestureStart)
+        document.removeEventListener("gesturechange", onGestureChange)
+        document.removeEventListener("gestureend", onGestureChange)
     })
     return {
         viewRect,
