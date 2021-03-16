@@ -31,6 +31,7 @@ export function BoardViewHeader({
         <header>
             <a
                 href="/"
+                className="navigation"
                 onClick={(e) => {
                     navigateToBoard(undefined)
                     e.preventDefault()

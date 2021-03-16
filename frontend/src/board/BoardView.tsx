@@ -4,6 +4,7 @@ import * as L from "lonna"
 import { findItem, Id, Image, Item, newNote, Note, UserCursorPosition } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { onClickOutside } from "../components/onClickOutside"
+import { isEmbedded } from "../embedding"
 import { AssetStore } from "../store/asset-store"
 import { BoardState } from "../store/board-store"
 import { Dispatch } from "../store/server-connection"
@@ -185,8 +186,13 @@ export const BoardView = ({
         fontSize: L.view(zoom, (z) => z + "em"),
     })
 
+    const className = L.view(
+        boardAccessStatus,
+        (status) => `board-container ${isEmbedded() ? "embedded" : ""} ${status}`,
+    )
+
     return (
-        <div id="root" className={L.view(boardAccessStatus, (status) => `board-container ${status}`)}>
+        <div id="root" className={className}>
             <div className="scroll-container" ref={scrollElement.set}>
                 <BoardViewHeader
                     {...{ board, sessionState, dispatch, controlSettings, navigateToBoard, onAdd, latestNote, zoom }}

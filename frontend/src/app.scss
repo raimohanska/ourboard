@@ -143,6 +143,21 @@ a {
         }
     }
 
+    &.embedded {
+        #board-name,
+        .navigation,
+        .user-info,
+        .history {
+            display: none;
+        }
+        > .scroll-container {
+            overflow: hidden; /* no scroll */
+            .border-container {
+                padding: 0;
+            }
+        }
+    }
+
     header {
         @extend .dropshadow;
 
