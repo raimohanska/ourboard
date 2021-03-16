@@ -151,7 +151,10 @@ a {
         #board-name,
         .navigation,
         .user-info,
-        .history {
+        .history,
+        .zoom_in,
+        .zoom_out,
+        .minimap {
             display: none;
         }
         > .scroll-container {
