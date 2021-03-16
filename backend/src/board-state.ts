@@ -56,6 +56,8 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
             return finalState
         } catch (e) {
             boards.delete(id)
+            console.error(`Board load failed for board ${id}. Running compact/fix.`)
+            await compactBoardHistory(id)
             throw e
         }
     } else if (!state.ready) {
