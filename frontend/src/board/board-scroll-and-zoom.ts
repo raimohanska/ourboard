@@ -85,10 +85,8 @@ export function boardScrollAndZoomHandler(
             // Wheel-zoom, or two finger zoom gesture on trackpad
             if (ctrlOrCmd && event.deltaY !== 0) {
                 event.preventDefault()
-                const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
                 const step = 1.1
-                zoom.modify((z) => _.clamp(event.deltaY < 0 ? z * step : z / step, 0.2, 10))
-                coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
+                adjustZoom((z) => (event.deltaY < 0 ? z * step : z / step))
             } else {
                 // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
                 // Let's set the mode to 'select' as a best-effort "works like you'd expect" UX thing
@@ -111,12 +109,26 @@ export function boardScrollAndZoomHandler(
         }
     }
 
+    function adjustZoom(fn: (previous: number) => number) {
+        const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
+        zoom.modify((z) => _.clamp(fn(z), 0.2, 10))
+        coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
+    }
+
+    function gestureZoom(e: any) {
+        typeof e.scale === "number" && adjustZoom(() => e.scale)
+        e.preventDefault()
+    }
+
+    const gestureEvents = ["gesturestart", "gesturechange", "gestureend"]
     H.onMount(() => {
         // have to use this for chrome: https://stackoverflow.com/questions/42101723/unable-to-preventdefault-inside-passive-event-listener
         window.addEventListener("wheel", wheelZoomHandler, { passive: false })
+        gestureEvents.forEach((e) => window.addEventListener(e, gestureZoom))
     })
     H.onUnmount(() => {
         window.removeEventListener("wheel", wheelZoomHandler)
+        gestureEvents.forEach((e) => window.removeEventListener(e, gestureZoom))
     })
     return {
         viewRect,
