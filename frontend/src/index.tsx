@@ -21,8 +21,7 @@ const App = () => {
     const boardStore = BoardStore(boardId, connection, sessionStore.sessionState)
     const recentBoards = RecentBoards(connection, sessionStore)
     const assets = assetStore(connection, L.view(boardStore.state, "board"), connection.events)
-
-    const title = L.view(boardStore.state, (s) => (s.board && s.board.name ? `${s.board.name} - R-Board` : "R-Board"))
+    const title = L.view(boardStore.state, (s) => (s.board && s.board.name ? `${s.board.name} - OurBoard` : "OurBoard"))
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
     boardStore.state

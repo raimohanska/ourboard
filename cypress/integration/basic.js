@@ -24,7 +24,7 @@ const getBoard = () => cy.get(`.ready .board`)
 describe("Initial screen", () => {
     it("Opens correctly", () => {
         cy.visit("http://localhost:1337")
-        cy.get('[data-test="app-title"').contains("R-Board").should("be.visible")
+        cy.get('[data-test="app-title"').contains("OurBoard").should("be.visible")
     })
 
     it("Navigating to example board works via link", () => {

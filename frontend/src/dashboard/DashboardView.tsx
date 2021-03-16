@@ -23,7 +23,7 @@ export const DashboardView = ({
     return (
         <div id="root" className="dashboard">
             <h1 id="app-title" data-test="app-title">
-                R-Board
+                OurBoard
             </h1>
             <p>
                 Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
