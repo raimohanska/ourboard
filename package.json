@@ -49,6 +49,7 @@
     "check-sources": "yarn prettier:check && yarn --cwd backend check-sources",
     "typecheck:dev:frontend": "cd frontend && tsc --noEmit --preserveWatchOutput --watch",
     "perf-test:prod": "node perf-tester/dist/perf-tester/src/index.js",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "compact-history": "cd backend && ts-node src/tools/history-compactor.ts"
   }
 }

@@ -42,7 +42,6 @@
   "scripts": {
     "start": "node --enable-source-maps .",
     "start:dev": "npm-run-all --parallel watch apidocs:dev",
-    "compact-history": "ts-node src/tools/history-compactor.ts",
     "build": "tsc",
     "watch": "tsc-watch --onSuccess \"node --enable-source-maps .\" --preserveWatchOutput",
     "apidocs": "typera-openapi --prettify src/api-routes.ts",
