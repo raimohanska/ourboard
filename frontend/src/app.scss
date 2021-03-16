@@ -25,9 +25,12 @@ $z-index-cursors: 400000000;
 }
 
 html {
-    font-size: min(4vw, 3vh, 20px);
     font-family: $font-family;
     color: $black;
+}
+
+#root {
+    font-size: min(4vw, 3vh, 20px);
 }
 
 h2 {
@@ -144,6 +147,7 @@ a {
     }
 
     &.embedded {
+        font-size: 100%;
         #board-name,
         .navigation,
         .user-info,
