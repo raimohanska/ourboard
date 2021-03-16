@@ -2,6 +2,7 @@ import _ from "lodash"
 import * as uuid from "uuid"
 import * as t from "io-ts"
 import { arrayToObject } from "./migration"
+import { LIGHT_BLUE, PINK, RED, YELLOW } from "./colors"
 
 export type Id = string
 export type ISOTimeStamp = string
@@ -244,9 +245,9 @@ export const exampleBoard: Board = {
     id: "default",
     name: "Test Board",
     items: arrayToObject("id", [
-        newNote("Hello", "pink", 10, 5),
-        newNote("World", "cyan", 20, 10),
-        newNote("Welcome", "cyan", 5, 14),
+        newNote("Hello", PINK, 10, 5),
+        newNote("World", LIGHT_BLUE, 20, 10),
+        newNote("Welcome", RED, 5, 14),
     ]),
     connections: [],
     ...defaultBoardSize,
@@ -260,7 +261,7 @@ export function createBoard(name: string, accessPolicy?: BoardAccessPolicy): Boa
 
 export function newNote(
     text: string,
-    color: Color = "#F5F18D",
+    color: Color = YELLOW,
     x: number = 20,
     y: number = 20,
     width: number = 5,
