@@ -79,32 +79,29 @@ export function boardScrollAndZoomHandler(
     )
 
     function wheelZoomHandler(event: WheelEvent) {
-        if (event.target === boardElement.get() || boardElement.get()!.contains(event.target as Node)) {
-            const ctrlOrCmd = event.ctrlKey || event.metaKey
+        const ctrlOrCmd = event.ctrlKey || event.metaKey
 
-            // Wheel-zoom, or two finger zoom gesture on trackpad
-            if (ctrlOrCmd && event.deltaY !== 0) {
-                event.preventDefault()
-                const step = 1.1
-                adjustZoom((z) => (event.deltaY < 0 ? z * step : z / step))
-            } else {
-                // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
-                // Let's set the mode to 'select' as a best-effort "works like you'd expect" UX thing
-                const settings = controlSettings.get()
-                if (settings.hasUserManuallySetTool || settings.tool === "select") {
-                    // Don't automatically make decisions for user if they have already set tool manually,
-                    // Or if the select tool is already on
-                    return
-                }
+        // Wheel-zoom, or two finger zoom gesture on trackpad
+        if (ctrlOrCmd && event.deltaY !== 0) {
+            event.preventDefault()
+            const step = 1.1
+            adjustZoom((z) => (event.deltaY < 0 ? z * step : z / step))
+        } else {
+            // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
+            // Let's set the mode to 'select' as a best-effort "works like you'd expect" UX thing
+            const settings = controlSettings.get()
+            if (settings.hasUserManuallySetTool || settings.tool === "select") {
+                // Don't automatically make decisions for user if they have already set tool manually,
+                // Or if the select tool is already on
+                return
+            }
 
-                // On Firefox event.deltaMode is 0 on trackpad, 1 on mouse. Other browsers always 0.
-                // So we guess that user using trackpad if deltaMode == 0 and both deltaY/deltaX are sufficiently small (mousewheel is more coarse)
-                const isTrackpad =
-                    event.deltaMode === 0 && Math.max(Math.abs(event.deltaX), Math.abs(event.deltaY)) <= 3
+            // On Firefox event.deltaMode is 0 on trackpad, 1 on mouse. Other browsers always 0.
+            // So we guess that user using trackpad if deltaMode == 0 and both deltaY/deltaX are sufficiently small (mousewheel is more coarse)
+            const isTrackpad = event.deltaMode === 0 && Math.max(Math.abs(event.deltaX), Math.abs(event.deltaY)) <= 3
 
-                if (isTrackpad) {
-                    controlSettings.set({ ...settings, tool: "select" })
-                }
+            if (isTrackpad) {
+                controlSettings.set({ ...settings, tool: "select" })
             }
         }
     }
