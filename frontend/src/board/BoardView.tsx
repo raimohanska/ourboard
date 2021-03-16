@@ -1,7 +1,7 @@
 import * as H from "harmaja"
 import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
-import { findItem, Id, Image, Item, newNote, Note, UserCursorPosition } from "../../../common/src/domain"
+import { Board, findItem, Id, Image, Item, newNote, Note, UserCursorPosition } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { onClickOutside } from "../components/onClickOutside"
 import { isEmbedded } from "../embedding"
@@ -59,7 +59,10 @@ export const BoardView = ({
     dispatch: Dispatch
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
-    const board = L.view(boardState, (s) => s.board!)
+    const board = boardState.pipe(
+        L.map((s: BoardState) => s.board!),
+        L.filter((b: Board) => !!b, componentScope()),
+    )
     const history = L.view(boardState, "history")
     const locks = L.view(boardState, (s) => s.locks)
     const sessionId = L.view(sessionState, (s) => s.sessionId)
