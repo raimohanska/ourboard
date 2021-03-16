@@ -1,6 +1,6 @@
 An online whiteboard.
 
-Feel free to try at https://r-board.herokuapp.com/
+Feel free to try at https://www.ourboard.io/
 
 ## Features and User Guide
 
@@ -43,9 +43,9 @@ Boards with restricted access can currently only be created using the POST API (
 
 ## Github Issues Integration
 
-1. Create an r-board and an Area named "new issues" (case insensitive) on the board.
+1. Create a board and an Area named "new issues" (case insensitive) on the board.
 2. Add a webhook to a git repo, namely
-    1. Use URL https://r-board.herokuapp.com/api/v1/webhook/github/{board-id}, with board-id from the URL of you board.
+    1. Use URL https://www.ourboard.io/api/v1/webhook/github/{board-id}, with board-id from the URL of you board.
     2. Use content type to application/json
     3. Select "Let me select individual events" and pick Issues only.
 3. Create a new issue or change labels of an existing issue.
