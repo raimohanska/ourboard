@@ -20,6 +20,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "lonna": "^0.9",
+    "maxrects-packer": "^2.7.2",
     "md5": "^2.3.0",
     "pretty-ms": "^7.0.1",
     "rimraf": "^3.0.2",
