@@ -78,7 +78,7 @@ export function cutCopyPasteHandler(
             contained
                 .filter((ctd) => ctd.containerId === containerId)
                 .forEach((ctd) => {
-                    toCreate.push(flatCopy({ ...ctd, containerId: newContainer.id }))
+                    toCreate.push(makeCopy({ ...ctd, containerId: newContainer.id }))
                 })
             return newContainer
         }

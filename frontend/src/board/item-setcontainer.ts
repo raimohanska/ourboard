@@ -1,10 +1,7 @@
-import { Board, isContainedBy, Item } from "../../../common/src/domain"
+import { Board, Item } from "../../../common/src/domain"
 import { containedBy } from "./geometry"
 
 export function maybeChangeContainer(item: Item, b: Board): Item | undefined {
-    if (item.type === "container") return undefined
-    const currentContainer = item.containerId && b.items[item.containerId]
-
     const candidates = Object.values(b.items)
         .filter((i) => i.type === "container" && i.id !== item.id && containedBy(item, i)) // contain the item coordinate-wise
         .sort((a, b) => (containedBy(b, a) ? 1 : -1)) // most innermost first (containers last)
