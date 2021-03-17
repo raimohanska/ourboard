@@ -253,6 +253,8 @@ export const HistoryView = ({
                 return item.text
             case "image":
                 return "an image"
+            case "video":
+                return "a video"
         }
     }
 }

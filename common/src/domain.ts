@@ -96,6 +96,7 @@ export const ITEM_TYPES = {
     NOTE: "note",
     TEXT: "text",
     IMAGE: "image",
+    VIDEO: "video",
     CONTAINER: "container",
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
@@ -107,6 +108,7 @@ export type Note = TextItemProperties & {
 }
 export type Text = TextItemProperties & { type: typeof ITEM_TYPES.TEXT }
 export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string }
+export type Video = ItemProperties & { type: typeof ITEM_TYPES.VIDEO; assetId: string; src?: string }
 export type Container = TextItemProperties & { type: typeof ITEM_TYPES.CONTAINER; color: Color }
 
 export type Point = { x: number; y: number }
@@ -129,7 +131,7 @@ export type RenderableConnection = Omit<Connection, "from" | "to"> & {
 export type TextItem = Note | Text | Container
 export type ColoredItem = Item & { color: Color }
 export type ShapedItem = Note
-export type Item = TextItem | Image
+export type Item = TextItem | Image | Video
 export type ItemLocks = Record<Id, Id>
 
 export type RecentBoardAttributes = { id: Id; name: string }
@@ -308,6 +310,17 @@ export function newImage(
     return { id: uuid.v4(), type: "image", assetId, x, y, width, height, z }
 }
 
+export function newVideo(
+    assetId: string,
+    x: number = 20,
+    y: number = 20,
+    width: number = 5,
+    height: number = 5,
+    z: number = 0,
+): Video {
+    return { id: uuid.v4(), type: "video", assetId, x, y, width, height, z }
+}
+
 export function getCurrentTime(): ISOTimeStamp {
     return new Date().toISOString()
 }
@@ -347,8 +360,8 @@ export function isItem(i: Point): i is Item {
 }
 
 export function getItemText(i: Item) {
-    if (i.type === "image") return ""
-    return i.text
+    if (isTextItem(i)) return i.text
+    return ""
 }
 
 export function getItemBackground(i: Item) {

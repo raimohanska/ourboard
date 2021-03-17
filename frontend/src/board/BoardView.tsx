@@ -1,7 +1,7 @@
 import * as H from "harmaja"
 import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
-import { Board, findItem, Id, Image, Item, newNote, Note, UserCursorPosition } from "../../../common/src/domain"
+import { Board, findItem, Id, Image, Item, newNote, Note, UserCursorPosition, Video } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { onClickOutside } from "../components/onClickOutside"
 import { isEmbedded } from "../embedding"
@@ -33,6 +33,7 @@ import { localStorageAtom } from "./local-storage-atom"
 import { MiniMapView } from "./MiniMapView"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
+import { VideoView } from "./VideoView"
 
 export type Tool = "pan" | "select" | "connect"
 export type ControlSettings = {
@@ -107,7 +108,7 @@ export const BoardView = ({
         boardElement.set(el)
         function onURL(assetId: string, url: string) {
             itemsList.get().forEach((i) => {
-                if (i.type === "image" && i.assetId === assetId && i.src != url) {
+                if ((i.type === "image" || i.type === "video") && i.assetId === assetId && i.src != url) {
                     dispatch({ action: "item.update", boardId, items: [{ ...i, src: url }] })
                 }
             })
@@ -264,6 +265,22 @@ export const BoardView = ({
                             {...{
                                 id,
                                 image: item as L.Property<Image>,
+                                assets,
+                                board,
+                                isLocked,
+                                focus,
+                                tool,
+                                coordinateHelper,
+                                dispatch,
+                            }}
+                        />
+                    )
+                case "video":
+                    return (
+                        <VideoView
+                            {...{
+                                id,
+                                video: item as L.Property<Video>,
                                 assets,
                                 board,
                                 isLocked,

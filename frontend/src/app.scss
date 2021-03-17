@@ -443,6 +443,58 @@ a {
             outline: none;
         }
 
+        $drag-edge-width: 1rem;
+
+        .video,
+        .container {
+            .edge-drag {
+                background: transparent;
+                cursor: grab;
+                position: absolute;
+
+                &.left {
+                    top: 0;
+                    left: 0;
+                    height: 100%;
+                    width: $drag-edge-width;
+
+                    &:hover {
+                        background: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
+                    }
+                }
+                &.right {
+                    top: 0;
+                    right: 0;
+                    height: 100%;
+                    width: $drag-edge-width;
+
+                    &:hover {
+                        background: linear-gradient(270deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
+                    }
+                }
+                &.top {
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: $drag-edge-width;
+
+                    &:hover {
+                        background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
+                    }
+                }
+                &.bottom {
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    height: $drag-edge-width;
+
+                    &:hover {
+                        background: linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
+                    }
+                }
+            }
+        }
+
         .container {
             @extend .item;
             cursor: initial;
@@ -454,54 +506,6 @@ a {
                 margin-top: 0.5em;
                 z-index: 1;
             }
-
-            .edge-drag {
-                background: transparent;
-                cursor: grab;
-                position: absolute;
-                $edge-width: 1rem;
-
-                &.left {
-                    top: 0;
-                    left: 0;
-                    height: 100%;
-                    width: $edge-width;
-
-                    &:hover {
-                        background: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
-                    }
-                }
-                &.right {
-                    top: 0;
-                    right: 0;
-                    height: 100%;
-                    width: $edge-width;
-
-                    &:hover {
-                        background: linear-gradient(270deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
-                    }
-                }
-                &.top {
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: $edge-width;
-
-                    &:hover {
-                        background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
-                    }
-                }
-                &.bottom {
-                    bottom: 0;
-                    left: 0;
-                    width: 100%;
-                    height: $edge-width;
-
-                    &:hover {
-                        background: linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
-                    }
-                }
-            }
         }
 
         .image {
@@ -509,6 +513,14 @@ a {
             img {
                 width: 100%;
                 height: 100%;
+            }
+        }
+
+        .video {
+            @extend .item;
+            video {
+                width: calc(100% - 2 * #{$drag-edge-width});
+                height: calc(100% - 2 * #{$drag-edge-width});
             }
         }
 

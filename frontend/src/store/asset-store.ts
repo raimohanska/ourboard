@@ -15,7 +15,11 @@ export function assetStore(
 
     function assetExists(assetId: string): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            if (Object.values(board.get()!.items).find((i) => i.type === "image" && i.assetId === assetId && i.src)) {
+            if (
+                Object.values(board.get()!.items).find(
+                    (i) => (i.type === "image" || i.type === "video") && i.assetId === assetId && i.src,
+                )
+            ) {
                 resolve(true)
             }
             const img = new Image()
