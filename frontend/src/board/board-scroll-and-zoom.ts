@@ -6,6 +6,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import * as G from "./geometry"
 import { ControlSettings } from "./BoardView"
 import { Board } from "../../../common/src/domain"
+import { isFirefox } from "../components/browser"
 
 export function boardScrollAndZoomHandler(
     board: L.Property<Board>,
@@ -84,7 +85,7 @@ export function boardScrollAndZoomHandler(
         // Wheel-zoom, or two finger zoom gesture on trackpad
         if (ctrlOrCmd && event.deltaY !== 0) {
             event.preventDefault()
-            const step = Math.pow(1.01, -event.deltaY)
+            const step = Math.pow(1.01, -event.deltaY * (isFirefox ? 4 : 1))
             adjustZoom((z) => z * step)
         } else {
             // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
