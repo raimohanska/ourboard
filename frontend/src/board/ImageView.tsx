@@ -52,7 +52,7 @@ export const ImageView = ({
                     } as any),
             )}
         >
-            <img src={L.view(image, (i) => assets.getAsset(i.assetId, i.src))} />
+            <img loading="lazy" src={L.view(image, (i) => assets.getAsset(i.assetId, i.src))} />
             {L.view(isLocked, (l) => l && <span className="lock">🔒</span>)}
             {L.view(
                 selected,
