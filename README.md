@@ -33,6 +33,7 @@ Command-C           Copy
 Command-X           Cut
 Command-Z           Undo
 Command-Shift-Z     Redo
+Command-D           Duplicate
 ```
 
 ### Board access controls

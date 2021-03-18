@@ -25,6 +25,7 @@ import { ImageView } from "./ImageView"
 import { itemCreateHandler } from "./item-create"
 import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { itemDeleteHandler } from "./item-delete"
+import { itemDuplicateHandler } from "./item-duplicate"
 import { itemSelectAllHandler } from "./item-select-all"
 import { withCurrentContainer } from "./item-setcontainer"
 import { itemUndoHandler } from "./item-undo-redo"
@@ -118,6 +119,7 @@ export const BoardView = ({
 
     itemCreateHandler(board, focus, latestNote, boardElement, onAdd)
     itemDeleteHandler(boardId, dispatch, focus)
+    itemDuplicateHandler(board, dispatch, focus)
     itemUndoHandler(dispatch)
     itemSelectAllHandler(board, focus)
 

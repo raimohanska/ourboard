@@ -330,6 +330,33 @@ describe("Board functionality", () => {
         })
     })
 
+    it("Can duplicate notes by pressing CONTROL-D", () => {
+        createNote("First note to duplicate", 250, 200)
+        createNote("Second note to duplicate", 150, 200)
+        createNote("Don't duplicate this note", 150, 200)
+
+        NotesWithText("First note to duplicate").click({ force: true })
+        NotesWithText("Second note to duplicate").click({ force: true, shiftKey: true })
+
+        SelectedNotes().then((els) => {
+            expect(els.length, "Two notes should be selected").to.equal(2)
+        })
+
+        // duplicate
+        cy.get("body").trigger("keydown", { key: "d", ctrlKey: true, force: true })
+
+        SelectedNotes().then((els) => {
+            expect(els.length, "New notes should be selected").to.equal(2)
+        })
+
+        // select all
+        cy.get("body").trigger("keydown", { key: "a", ctrlKey: true, force: false })
+
+        SelectedNotes().then((els) => {
+            expect(els.length, "Old and new notes should be selected").to.equal(5)
+        })
+    })
+
     it("Can delete notes with backspace key", () => {
         createNote("Monoids", 250, 200)
         createNote("World", 150, 200)
