@@ -357,6 +357,55 @@ describe("Board functionality", () => {
         })
     })
 
+    it("Can move notes with arrow keys", () => {
+        createNote("Note to move", 250, 200)
+        NotesWithText("Note to move").click({ force: true, shiftKey: true })
+        SelectedNotes().then((els) => {
+            expect(els.length, "One note should be selected").to.equal(1)
+        })
+        const { x: originalX, y: originalY } = getSelectedItemsXAndYCoordinates()
+
+        moveItemsAndAssertPosition("ArrowRight", originalX, originalY, (originalX, originalY, x, y) => {
+            expect(x[0], "Note should be at right horizontally").to.be.greaterThan(originalX[0])
+            expect(y[0], "Note should be at original position vertically").to.equal(originalY[0])
+        })
+
+        moveItemsAndAssertPosition("ArrowDown", originalX, originalY, (originalX, originalY, x, y) => {
+            expect(x[0], "Note should be at right horizontally").to.be.greaterThan(originalX[0])
+            expect(y[0], "Note should be down vertically").to.be.greaterThan(originalY[0])
+        })
+
+        moveItemsAndAssertPosition("ArrowLeft", originalX, originalY, (originalX, originalY, x, y) => {
+            expect(x[0], "Note should be at original position horizontally").to.equal(originalX[0])
+            expect(y[0], "Note should be down vertically").to.be.greaterThan(originalY[0])
+        })
+
+        moveItemsAndAssertPosition("ArrowUp", originalX, originalY, (originalX, originalY, x, y) => {
+            expect(x[0], "Note should be at original position horizontally").to.equal(originalX[0])
+            expect(y[0], "Note should be at original position vertically").to.equal(originalY[0])
+        })
+    })
+
+    function moveItemsAndAssertPosition(key, originalX, originalY, assertPosition) {
+        cy.get("body").trigger("keydown", { key, force: true })
+
+        const x = []
+        const y = []
+        SelectedNotes()
+            .then((els) => {
+                expect(els.length, "At least one note should be selected").to.be.greaterThan(0)
+                ;[...els].forEach((source) => {
+                    const rect = source.getBoundingClientRect()
+                    const parentRect = source.parentNode.getBoundingClientRect()
+                    x.push(rect.x - parentRect.x)
+                    y.push(rect.y - parentRect.y)
+                })
+            })
+            .then(() => {
+                assertPosition(originalX, originalY, x, y)
+            })
+    }
+
     it("Can delete notes with backspace key", () => {
         createNote("Monoids", 250, 200)
         createNote("World", 150, 200)
@@ -379,6 +428,27 @@ describe("Board functionality", () => {
         NotesWithText("World").should("not.exist")
     })
 
+    function getSelectedItemsXAndYCoordinates() {
+        const x = []
+        const y = []
+        console.log("checking selected notes")
+        //cy.get(".context-menu").scrollIntoView().should("be.visible")
+
+        SelectedNotes().then((els) => {
+            console.log("handle selected note", els)
+            expect(els.length, "At least one note should be selected").to.be.greaterThan(0)
+            ;[...els].forEach((source) => {
+                const rect = source.getBoundingClientRect()
+                const parentRect = source.parentNode.getBoundingClientRect()
+                console.log("rect.x", rect.x, "parentRect.x", parentRect.x)
+                console.log("rect.y", rect.y, "parentRect.y", parentRect.y)
+                x.push(rect.x - parentRect.x)
+                y.push(rect.y - parentRect.y)
+            })
+        })
+        return { x, y }
+    }
+
     function createNotesAndAlign(iconSelector) {
         createNote("ALIGN", 250, 120)
         createNote("ALL", 300, 100)
@@ -390,17 +460,10 @@ describe("Board functionality", () => {
         NotesWithText("THESE").click({ force: true, shiftKey: true })
         cy.get(".context-menu").scrollIntoView().should("be.visible")
 
-        const originalX = []
-        const originalY = []
         SelectedNotes().then((els) => {
             expect(els.length, "Three notes should be selected").to.equal(3)
-            ;[...els].forEach((source) => {
-                const rect = source.getBoundingClientRect()
-                const parentRect = source.parentNode.getBoundingClientRect()
-                originalX.push(rect.x - parentRect.x)
-                originalY.push(rect.y - parentRect.y)
-            })
         })
+        const { x: originalX, y: originalY } = getSelectedItemsXAndYCoordinates()
 
         cy.get(iconSelector).click()
 

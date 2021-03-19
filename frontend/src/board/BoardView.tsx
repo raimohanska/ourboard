@@ -35,6 +35,7 @@ import { MiniMapView } from "./MiniMapView"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 import { VideoView } from "./VideoView"
+import { itemMoveWithArrowKeysHandler } from "./item-move-with-arrow-keys"
 
 export type Tool = "pan" | "select" | "connect"
 export type ControlSettings = {
@@ -120,6 +121,7 @@ export const BoardView = ({
     itemCreateHandler(board, focus, latestNote, boardElement, onAdd)
     itemDeleteHandler(boardId, dispatch, focus)
     itemDuplicateHandler(board, dispatch, focus)
+    itemMoveWithArrowKeysHandler(board, dispatch, focus)
     itemUndoHandler(dispatch)
     itemSelectAllHandler(board, focus)
 
