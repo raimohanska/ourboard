@@ -167,7 +167,7 @@ describe("Board functionality", () => {
         createNote("Hello", 350, 200)
         cy.get(".text").contains("Hello").trigger("dblclick").type("Monoids")
         cy.get(".board .note").contains("Monoids").should("be.visible")
-        cy.get(".board .note").contains("Hello").should("not.be.visible")
+        cy.get(".board .note").contains("Hello").should("not.exist")
     })
 
     it("Persists changes", () => {
@@ -175,7 +175,7 @@ describe("Board functionality", () => {
         cy.get(".text").contains("Hello").trigger("dblclick").type("Monoids")
         cy.reload()
         cy.get(".board .note").contains("Monoids").should("be.visible")
-        cy.get(".board .note").contains("Hello").should("not.be.visible")
+        cy.get(".board .note").contains("Hello").should("not.exist")
     })
 
     it("Can drag note", () => {
