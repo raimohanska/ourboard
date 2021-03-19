@@ -207,27 +207,40 @@ export const ContextMenuView = ({
         }
     }
 
+    type Shape = "square" | "round"
+
     function menuShapes() {
         const shapedItems = L.view(focusedItems, (items) => items.filter(isShapedItem))
-        const anyColored = L.view(shapedItems, (items) => items.length > 0)
-        const currentShape = L.view(shapedItems, (items) => items[0]?.shape || "square")
+        const anyShaped = L.view(shapedItems, (items) => items.length > 0)
+        const currentShape = L.view(shapedItems, (items) =>
+            _.uniq(items.map((item) => item.shape)).length > 1 ? undefined : items[0]?.shape,
+        )
 
-        return L.view(anyColored, (anyColored) => {
-            return !anyColored
+        return L.view(anyShaped, (anyShaped) => {
+            return !anyShaped
                 ? []
                 : [
                       <div className="shapes">
-                          <span className={L.view(currentShape, (s) => `icon ${s}`)} onClick={changeShape} />
+                          {["square", "round"].map((shape) => (
+                              <span
+                                  className={L.view(
+                                      currentShape,
+                                      (s) => `icon ${shape} ${s === shape ? "active" : ""}`,
+                                  )}
+                                  onClick={changeShape(shape as Shape)}
+                              />
+                          ))}
                       </div>,
                   ]
         })
 
-        function changeShape() {
-            const b = board.get()
-            const items = shapedItems.get()
-            const shape = items[0].shape === "round" ? "square" : "round"
-            const updated = items.map((item) => ({ ...item, shape })) as ShapedItem[]
-            dispatch({ action: "item.update", boardId: b.id, items: updated })
+        function changeShape(newShape: Shape) {
+            return () => {
+                const b = board.get()
+                const items = shapedItems.get()
+                const updated = items.map((item) => ({ ...item, shape: newShape })) as ShapedItem[]
+                dispatch({ action: "item.update", boardId: b.id, items: updated })
+            }
         }
     }
 
