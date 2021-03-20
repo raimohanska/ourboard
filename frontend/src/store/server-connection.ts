@@ -11,6 +11,8 @@ const SERVER_EVENTS_BUFFERING_MILLIS = 20
 
 export type ServerConnection = ReturnType<typeof serverConnection>
 
+export type ConnectionStatus = "connecting" | "connected" | "sleeping" | "reconnecting"
+
 export function serverConnection(currentBoardId: Id | undefined) {
     const uiEvents = L.bus<UIEvent>()
     const dispatch: Dispatch = uiEvents.push
@@ -24,27 +26,44 @@ export function serverConnection(currentBoardId: Id | undefined) {
         }, globalScope),
     )
 
-    const connected = L.atom(false)
+    const connectionStatus = L.atom<ConnectionStatus>("connecting")
     let [socket, messageQueue] = initSocket(currentBoardId)
 
     setInterval(() => {
-        if (!document.hidden) {
+        if (documentHidden.get()) {
+            console.log("Document hidden, closing socket")
+            connectionStatus.set("sleeping")
+            socket.close()
+        } else {
             messageQueue.enqueue({ action: "ping" })
         }
     }, 30000)
 
+    const documentHidden = L.fromEvent(document, "visibilitychange").pipe(
+        L.toStatelessProperty(() => document.hidden || false),
+    )
+    documentHidden.onChange((hidden) => {
+        if (!hidden && connectionStatus.get() === "sleeping") {
+            console.log("Document shown, reconnecting.")
+            newSocket()
+        }
+    })
+
     function initSocket(boardId: Id | undefined) {
+        connectionStatus.set("connecting")
         const protocol = location.protocol === "http:" ? "ws:" : "wss:"
         const ws = new WebSocket(`${protocol}//${location.host}/socket/${boardId ? "board/" + boardId : "lobby"}`)
 
         ws.addEventListener("error", (e) => {
-            console.error("Web socket error")
-            reconnect()
+            if (ws === socket) {
+                console.error("Web socket error")
+                reconnect()
+            }
         })
         ws.addEventListener("open", () => {
             console.log("Socket connected")
             messageQueue.onConnect()
-            connected.set(true)
+            connectionStatus.set("connected")
         })
         ws.addEventListener("message", (str) => {
             const event = JSON.parse(str.data)
@@ -56,28 +75,37 @@ export function serverConnection(currentBoardId: Id | undefined) {
         })
 
         ws.addEventListener("close", () => {
-            console.log("Socket disconnected")
-            connected.set(false)
-            reconnect()
+            if (ws === socket) {
+                console.log("Socket disconnected")
+                reconnect()
+            }
         })
 
         return [ws, MessageQueue(ws, boardId)] as const
 
         async function reconnect() {
-            await sleep(1000)
-            if (ws === socket) {
-                console.log("reconnecting...")
-                ;[socket, messageQueue] = initSocket(boardId)
+            if (documentHidden.get()) {
+                connectionStatus.set("sleeping")
+            } else {
+                connectionStatus.set("reconnecting")
+                await sleep(1000)
+                if (ws === socket) {
+                    console.log("reconnecting...")
+                    newSocket()
+                }
             }
         }
     }
 
+    function newSocket() {
+        socket.close()
+        ;[socket, messageQueue] = initSocket(currentBoardId)
+    }
+
     function setBoardId(boardId: Id | undefined) {
         if (boardId != currentBoardId) {
-            connected.set(false)
             currentBoardId = boardId
-            socket.close()
-            ;[socket, messageQueue] = initSocket(boardId)
+            newSocket()
         }
     }
     uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach((e) => messageQueue.enqueue(e))
@@ -93,7 +121,7 @@ export function serverConnection(currentBoardId: Id | undefined) {
         sendImmediately: (e: AppEvent) => messageQueue.sendImmediately(e),
         bufferedServerEvents,
         dispatch,
-        connected,
+        connected: L.view(connectionStatus, (s) => s === "connected"),
         events,
         queueSize: messageQueue.queueSize,
         setBoardId,
