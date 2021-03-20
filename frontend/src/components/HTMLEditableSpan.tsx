@@ -7,7 +7,6 @@ export type EditableSpanProps = {
     value: L.Atom<string>
     editingThis: L.Atom<boolean>
     showIcon?: boolean
-    commit?: () => void
     cancel?: () => void
 } & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>
 
@@ -20,7 +19,7 @@ function clearSelection() {
 }
 
 export const HTMLEditableSpan = (props: EditableSpanProps) => {
-    let { value, editingThis, commit, cancel, ...rest } = props
+    let { value, editingThis, cancel, ...rest } = props
     const nameElement = L.atom<HTMLSpanElement | null>(null)
     editingThis.pipe(L.changes).forEach((editing) => {
         if (editing) {
@@ -70,22 +69,11 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
                 document.execCommand("italic", false)
                 e.preventDefault()
             }
-        } else if ((e.altKey || e.shiftKey) && e.keyCode === 13) {
-            const { atEnd } = getSelectionTextInfo(nameElement.get()!)
-            const linebreak = atEnd ? "<br><br>" : "<br>"
-            document.execCommand("insertHTML", false, linebreak)
-            e.preventDefault()
-        } else {
-            if (e.keyCode === 13) {
-                e.preventDefault()
-                commit && commit()
-                editingThis.set(false)
-            } else if (e.keyCode === 27) {
-                // esc
-                cancel && cancel()
-                editingThis.set(false)
-                nameElement.get()!.textContent = value.get()
-            }
+        } else if (e.keyCode === 27) {
+            // esc
+            cancel && cancel()
+            editingThis.set(false)
+            nameElement.get()!.textContent = value.get()
         }
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
