@@ -30,7 +30,7 @@ export function serverConnection(currentBoardId: Id | undefined) {
     let [socket, messageQueue] = initSocket(currentBoardId)
 
     setInterval(() => {
-        if (documentHidden.get()) {
+        if (documentHidden.get() && connectionStatus.get() === "connected") {
             console.log("Document hidden, closing socket")
             connectionStatus.set("sleeping")
             socket.close()
