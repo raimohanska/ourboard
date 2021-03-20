@@ -151,8 +151,13 @@ export const BoardView = ({
     )
 
     function onClick(e: JSX.MouseEvent) {
-        if (e.target === boardElement.get()) {
-            focus.set({ status: "none" })
+        const f = focus.get()
+        if (f.status === "adding") {
+            onAdd(f.item)
+        } else {
+            if (e.target === boardElement.get()) {
+                focus.set({ status: "none" })
+            }
         }
     }
 
@@ -223,6 +228,19 @@ export const BoardView = ({
                                 renderObservable={renderItem}
                                 getKey={(i) => i.id}
                             />
+                            {L.view(focus, (f) => {
+                                if (f.status !== "adding") return null
+                                const style = L.view(coordinateHelper.currentBoardCoordinates, (p) => ({
+                                    position: "absolute",
+                                    left: `${p.x}em`,
+                                    top: `${p.y}em`,
+                                }))
+                                return (
+                                    <span className="item-adding" style={style}>
+                                        {f.element}
+                                    </span>
+                                )
+                            })}
                             <RectangularDragSelection {...{ rect: selectionRect }} />
                             <CursorsView {...{ cursors, sessions }} />
                             <ContextMenuView {...{ latestNote, dispatch, board, focus }} />
@@ -237,7 +255,7 @@ export const BoardView = ({
                         <BackToAllBoardsLink {...{ navigateToBoard }} />
                     </div>
                     <div className="main-toolbar">
-                        <PaletteView {...{ latestNote, onAdd }} />
+                        <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
                         <ToolSelector {...{ controlSettings }} />
                     </div>
                     <div className="undo-redo-toolbar">

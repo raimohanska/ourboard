@@ -1,3 +1,4 @@
+import { HarmajaChild, HarmajaOutput } from "harmaja"
 import { Board, findItem, Id, Item } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
 
@@ -7,10 +8,12 @@ export type BoardFocus =
     | { status: "dragging"; ids: Set<Id> }
     | { status: "connection-selected"; id: Id }
     | { status: "editing"; id: Id }
+    | { status: "adding"; element: HarmajaChild; item: Item }
 
 export function getSelectedIds(f: BoardFocus): Set<Id> {
     switch (f.status) {
         case "none":
+        case "adding":
         case "connection-selected":
             return new Set()
         case "editing":
@@ -31,6 +34,7 @@ export const getSelectedItem = (b: Board) => (f: BoardFocus): Item | null => {
 
 export function removeFromSelection(selection: BoardFocus, toRemove: Set<Id>): BoardFocus {
     switch (selection.status) {
+        case "adding":
         case "none":
             return selection
         case "editing":

@@ -11,6 +11,7 @@ import {
     Note,
     isShapedItem,
     ShapedItem,
+    Id,
 } from "../../../common/src/domain"
 import { Dispatch } from "../store/server-connection"
 import { NOTE_COLORS } from "../../../common/src/colors"
@@ -25,18 +26,17 @@ export const ContextMenuView = ({
     board: L.Property<Board>
     focus: L.Property<BoardFocus>
 }) => {
-    function itemIdsForContextMenu(f: BoardFocus) {
+    function itemIdsForContextMenu(f: BoardFocus): Id[] {
         switch (f.status) {
+            case "none":
+            case "adding":
+            case "connection-selected":
             case "dragging":
                 return []
             case "editing":
                 return [f.id]
-            case "none":
-                return []
             case "selected":
                 return [...f.ids]
-            case "connection-selected":
-                return []
         }
     }
 

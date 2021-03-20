@@ -4,7 +4,7 @@ import { BoardFocus, getSelectedIds } from "./board-focus"
 
 export function itemSelectionHandler(id: string, type: ItemType, focus: L.Atom<BoardFocus>) {
     const itemFocus = L.view(focus, (f) => {
-        if (f.status === "none") return "none"
+        if (f.status === "none" || f.status === "adding") return "none"
         if (f.status === "selected") return f.ids.has(id) ? "selected" : "none"
         if (f.status === "dragging") return f.ids.has(id) ? "dragging" : "none"
         return f.id === id ? "editing" : "none"
