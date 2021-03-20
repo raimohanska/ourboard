@@ -86,25 +86,3 @@ export const EditableSpan = (props: EditableSpanProps) => {
         </span>
     )
 }
-
-export const If = ({
-    condition,
-    component,
-}: {
-    condition: L.Property<boolean>
-    component: () => H.HarmajaOutput
-}): HarmajaOutput => {
-    return condition.pipe(L.map((c) => (c ? component() : [])))
-}
-
-export const IfElse = ({
-    condition,
-    ifTrue,
-    ifFalse,
-}: {
-    condition: L.Property<boolean>
-    ifTrue: () => H.HarmajaOutput
-    ifFalse: () => H.HarmajaOutput
-}) => {
-    return condition.pipe(L.map((c) => (c ? ifTrue() : ifFalse())))
-}
