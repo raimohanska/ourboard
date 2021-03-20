@@ -129,6 +129,16 @@ export const BoardView = ({
     itemMoveWithArrowKeysHandler(board, dispatch, focus)
     itemUndoHandler(dispatch)
     itemSelectAllHandler(board, focus)
+    L.fromEvent<JSX.KeyboardEvent>(document, "keyup")
+        .pipe(L.applyScope(componentScope()))
+        .forEach((e) => {
+            if (e.keyCode === 27) {
+                // esc
+                tool.set("select") // TODO: use default tool based on mouse/trackpad
+                const f = focus.get()
+                focus.set({ status: "none" })
+            }
+        })
 
     L.fromEvent<JSX.KeyboardEvent>(window, "click")
         .pipe(L.applyScope(componentScope()))
