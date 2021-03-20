@@ -1,7 +1,7 @@
 import { componentScope } from "harmaja"
 import * as L from "lonna"
 import * as _ from "lodash"
-import { Coordinates, subtract } from "./geometry"
+import { add, Coordinates, subtract } from "./geometry"
 import { TOUCH_ONLY } from "../browser-features"
 
 const newCoordinates = (x: number, y: number): Coordinates => {
@@ -39,15 +39,22 @@ export function boardCoordinateHelper(
         return newCoordinates(a.x - b.x, a.y - b.y)
     }
 
-    const boardAbsolutePosition = L.view(boardElem, (b) => ({
-        offsetTop: b?.offsetTop ?? null,
-        offsetLeft: b?.offsetLeft ?? null,
-    }))
+    const boardAbsolutePosition = L.view(boardElem, (b) => {
+        return b ? offset(b) : { x: 0, y: 0 }
+    })
+
+    function offset(el: HTMLElement): Coordinates {
+        const o = { x: el.offsetLeft, y: el.offsetTop }
+        if (el.parentElement) {
+            return add(o, offset(el.parentElement))
+        }
+        return o
+    }
 
     function pageToBoardCoordinates(pageCoords: PageCoordinates): Coordinates {
         const scrollEl = scrollElem.get()
-        const { offsetTop, offsetLeft } = boardAbsolutePosition.get()
-        if (scrollEl === null || offsetTop === null || offsetLeft === null) {
+        const { y, x } = boardAbsolutePosition.get()
+        if (scrollEl === null) {
             return { x: 0, y: 0 } // Not the smartest move
         }
 
@@ -55,8 +62,8 @@ export function boardCoordinateHelper(
         // because drag-to-scroll uses CSS translate while dragging and we don't want that to affect the calculation.
 
         return newCoordinates(
-            pxToEm(pageCoords.x + scrollEl.scrollLeft - offsetLeft),
-            pxToEm(pageCoords.y + scrollEl.scrollTop - offsetTop),
+            pxToEm(pageCoords.x + scrollEl.scrollLeft - x),
+            pxToEm(pageCoords.y + scrollEl.scrollTop - y),
         )
     }
 
