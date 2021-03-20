@@ -21,7 +21,6 @@ export function itemSelectionHandler(
 
     function onClick(e: JSX.MouseEvent) {
         const f = focus.get()
-        console.log("Item click", f.status)
         const selectedIds = getSelectedIds(f)
         if (e.shiftKey && (f.status === "selected" || f.status === "editing")) {
             if (selectedIds.has(id)) {
