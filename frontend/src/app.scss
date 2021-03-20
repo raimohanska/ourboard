@@ -594,6 +594,7 @@ a {
             position: absolute;
             left: 1em;
             top: 1em;
+            font-size: 0.8em;
             a {
                 .icon {
                     vertical-align: top;
@@ -605,21 +606,28 @@ a {
         }
         .main-toolbar {
             @extend .toolbar;
+            padding: 0.5em 1em 0.2em;
             > span:not(:first-child) {
-                margin-left: 0.5em;
+                margin-left: 1.5em;
+            }
+            .tool-selector {
+                font-size: 1.5rem;
             }
         }
 
         .undo-redo-toolbar {
             @extend .toolbar;
             position: absolute;
+            font-size: 1.2em;
             left: 1em;
             bottom: 1em;
+            padding-bottom: 0.2em;
         }
 
         .zoom-toolbar {
             @extend .toolbar;
             position: absolute;
+            font-size: 1.2em;
             right: 1em;
             bottom: 1em;
         }
@@ -629,7 +637,7 @@ a {
             display: inline-block;
             position: absolute;
             bottom: 1rem;
-            right: 7rem;
+            right: 8rem;
             background: #eeeeee88;
             border: 0.3em solid #eeeeee88;
             box-sizing: content-box;
@@ -672,37 +680,37 @@ a {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            .item {
-                cursor: pointer;
-                margin-left: 0.5em;
-                height: 1em;
-            }
-            .note {
-                @extend .item;
-                width: 1em;
-                &.round {
-                    border-radius: 50%;
+
+            .new-item {
+                display: inline-flex;
+                flex-direction: column;
+                position: relative;
+                &:not(:last-child) {
+                    margin-right: 1em;
                 }
-            }
-            .container {
-                @extend .item;
-                width: 2em;
-                background: white;
-                border: 1px solid $black;
-                color: #888;
-                line-height: 1em;
-                display: inline-block;
-                box-sizing: content-box;
-                padding: 0.1em 0.2em;
-            }
-            .text {
-                @extend .item;
-                background: white;
-                color: $black;
-                line-height: 1em;
-                display: inline-block;
-                border: 0.1em solid white;
-                box-sizing: content-box;
+                .text {
+                    font-size: 0.8rem;
+                    margin-top: 0.4rem;
+                    text-align: center;
+                }
+                .icon {
+                    cursor: pointer;
+                    margin-left: 0.5em;
+                    height: 2em;
+                    width: 2em;
+                    margin: 0;
+                }
+                .plus-sign {
+                    position: absolute;
+                    top: -0.3em;
+                    right: -0.3em;
+                }
+                &.text {
+                }
+                &.container {
+                }
+                &.note {
+                }
             }
         }
 
