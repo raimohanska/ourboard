@@ -37,7 +37,7 @@ export const ItemView = ({
     board: L.Property<Board>
     history: L.Property<BoardHistoryEntry[]>
     id: string
-    type: string
+    type: ItemType
     item: L.Property<Item>
     isLocked: L.Property<boolean>
     focus: L.Atom<BoardFocus>
@@ -53,7 +53,7 @@ export const ItemView = ({
         element.set(el)
     }
 
-    const { itemFocus, selected, onClick } = itemSelectionHandler(id, focus, board, dispatch)
+    const { itemFocus, selected, onClick } = itemSelectionHandler(id, type, focus)
 
     const dataTest = L.combineTemplate({
         text: L.view(item, (i) => (i.type === "note" || i.type === "text" ? i.text : "")),

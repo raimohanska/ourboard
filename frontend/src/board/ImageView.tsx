@@ -31,7 +31,7 @@ export const ImageView = ({
     dispatch: Dispatch
     assets: AssetStore
 }) => {
-    const { selected, onClick } = itemSelectionHandler(id, focus, board, dispatch)
+    const { selected, onClick } = itemSelectionHandler(id, "image", focus)
 
     return (
         <span

@@ -1,15 +1,8 @@
-import { h } from "harmaja"
 import * as L from "lonna"
-import { Board } from "../../../common/src/domain"
-import { Dispatch } from "../store/server-connection"
+import { ItemType } from "../../../common/src/domain"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 
-export function itemSelectionHandler(
-    id: string,
-    focus: L.Atom<BoardFocus>,
-    board: L.Property<Board>,
-    dispatch: Dispatch,
-) {
+export function itemSelectionHandler(id: string, type: ItemType, focus: L.Atom<BoardFocus>) {
     const itemFocus = L.view(focus, (f) => {
         if (f.status === "none") return "none"
         if (f.status === "selected") return f.ids.has(id) ? "selected" : "none"
@@ -32,7 +25,7 @@ export function itemSelectionHandler(
             focus.set({ status: "selected", ids: new Set([id]) })
         } else if ((f.status === "selected" || f.status === "editing") && !selectedIds.has(id)) {
             focus.set({ status: "selected", ids: new Set([id]) })
-        } else if (f.status === "selected") {
+        } else if (f.status === "selected" && (type === "note" || type === "text")) {
             focus.set({ status: "editing", id })
         }
     }
