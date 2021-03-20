@@ -21,7 +21,10 @@ $z-index-cursors: 400000000;
 }
 
 *[contenteditable="true"] {
-    user-select: initial;
+    // Need this for safari
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/user-select
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 html {
@@ -904,13 +907,6 @@ a {
         pointer-events: none;
         color: $disabled-color;
     }
-}
-
-// Need this for safari
-// https://developer.mozilla.org/en-US/docs/Web/CSS/user-select
-[contenteditable] {
-    -webkit-user-select: text;
-    user-select: text;
 }
 
 select {
