@@ -15,7 +15,7 @@
     "email-validator": "^2.0.4",
     "esbuild": "^0.8.57",
     "fp-ts": "^2.9.5",
-    "harmaja": "^0.20.0",
+    "harmaja": "^0.21.0",
     "io-ts": "^2.2.15",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
