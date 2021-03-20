@@ -119,7 +119,7 @@ describe("Board functionality", () => {
     })
 
     it("Can select note by dragging on board with ALT pressed", () => {
-        createNote("HELLO", 120, 120)
+        createNote("HELLO", 420, 120)
 
         getBoard().then((board) => {
             const { x, y } = board[0].getBoundingClientRect()
@@ -130,8 +130,8 @@ describe("Board functionality", () => {
                 pageX: x + 10,
                 pageY: y + 10,
             })
-            getBoard().trigger("dragover", { force: true, pageX: x + 600, pageY: y + 300 })
-            getBoard().trigger("drag", { force: true, pageX: x + 600, pageY: y + 300 })
+            getBoard().trigger("dragover", { force: true, pageX: x + 1000, pageY: y + 300 })
+            getBoard().trigger("drag", { force: true, pageX: x + 1000, pageY: y + 300 })
 
             SelectedNoteTexts().then((els) => {
                 expect(els.length, "One note should be selected").to.equal(1)
@@ -141,8 +141,8 @@ describe("Board functionality", () => {
     })
 
     it("Can select multiple notes by clicking with SHIFT key", () => {
-        createNote("Item 1", 120, 120)
-        createNote("Item 2", 150, 150)
+        createNote("Item 1", 320, 120)
+        createNote("Item 2", 350, 150)
         NotesWithText("Item 1").click({ force: true })
         NotesWithText("Item 2").click({ force: true, shiftKey: true })
 
@@ -207,8 +207,8 @@ describe("Board functionality", () => {
     })
 
     it("Can drag multiple notes", () => {
-        createNote("World", 200, 200)
-        createNote("Monoids", 250, 200)
+        createNote("World", 400, 200)
+        createNote("Monoids", 450, 200)
         let originalX, originalY, originalX2, originalY2
         NotesWithText("World").then((elements) => {
             const source = elements[0]
@@ -251,7 +251,7 @@ describe("Board functionality", () => {
     })
 
     it("Can drag-to-resize note", () => {
-        createNote("Monoids", 250, 200)
+        createNote("Monoids", 450, 200)
 
         let originalWidth, originalHeight
         NotesWithText("Monoids").then((elements) => {
@@ -276,7 +276,7 @@ describe("Board functionality", () => {
     })
 
     it("Can change color of existing note from context menu", () => {
-        createNote("HELLO", 250, 200)
+        createNote("HELLO", 350, 200)
         let originalColor
         NotesWithText("HELLO").then((els) => {
             originalColor = els[0].style.background
@@ -302,7 +302,7 @@ describe("Board functionality", () => {
     })
 
     it.skip("Can cut, copy and paste note -- figure out how to work around native clipboard stuff not working with cypress", () => {
-        createNote("HELLO", 250, 200)
+        createNote("HELLO", 350, 200)
         NotesWithText("HELLO").click({ force: true }).trigger("cut", { force: true })
 
         cy.contains("HELLO").should("not.exist")
@@ -331,9 +331,9 @@ describe("Board functionality", () => {
     })
 
     it("Can duplicate notes by pressing CONTROL-D", () => {
-        createNote("First note to duplicate", 250, 200)
-        createNote("Second note to duplicate", 150, 200)
-        createNote("Don't duplicate this note", 150, 200)
+        createNote("First note to duplicate", 450, 200)
+        createNote("Second note to duplicate", 350, 200)
+        createNote("Don't duplicate this note", 350, 200)
 
         NotesWithText("First note to duplicate").click({ force: true })
         NotesWithText("Second note to duplicate").click({ force: true, shiftKey: true })
@@ -358,7 +358,7 @@ describe("Board functionality", () => {
     })
 
     it("Can move notes with arrow keys", () => {
-        createNote("Note to move", 250, 200)
+        createNote("Note to move", 350, 200)
         NotesWithText("Note to move").click({ force: true, shiftKey: true })
         SelectedNotes().then((els) => {
             expect(els.length, "One note should be selected").to.equal(1)
@@ -407,8 +407,8 @@ describe("Board functionality", () => {
     }
 
     it("Can delete notes with backspace key", () => {
-        createNote("Monoids", 250, 200)
-        createNote("World", 150, 200)
+        createNote("Monoids", 450, 200)
+        createNote("World", 350, 200)
         NotesWithText("Monoids").click({ force: true, shiftKey: true })
         NotesWithText("World").click({ force: true, shiftKey: true })
         NotesWithText("World").trigger("keyup", { keyCode: BACKSPACE, which: BACKSPACE, force: true })
@@ -418,8 +418,8 @@ describe("Board functionality", () => {
     })
 
     it("Can delete notes with delete key", () => {
-        createNote("Monoids", 250, 200)
-        createNote("World", 150, 200)
+        createNote("Monoids", 450, 200)
+        createNote("World", 350, 200)
         NotesWithText("Monoids").click({ force: true, shiftKey: true })
         NotesWithText("World").click({ force: true, shiftKey: true })
         NotesWithText("World").trigger("keyup", { keyCode: DELETE, which: DELETE, force: true })
