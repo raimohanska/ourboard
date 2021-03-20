@@ -13,7 +13,7 @@ import { boardCoordinateHelper } from "./board-coordinates"
 import { boardDragHandler } from "./board-drag"
 import { BoardFocus, getSelectedIds, getSelectedItem } from "./board-focus"
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
-import { BoardViewHeader } from "./BoardViewHeader"
+import { BoardViewHeader } from "./toolbars/BoardViewHeader"
 import { BoardViewMessage } from "./BoardViewMessage"
 import { ConnectionsView } from "./ConnectionsView"
 import { ContextMenuView } from "./ContextMenuView"
@@ -36,6 +36,11 @@ import { RectangularDragSelection } from "./RectangularDragSelection"
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 import { VideoView } from "./VideoView"
 import { itemMoveWithArrowKeysHandler } from "./item-move-with-arrow-keys"
+import { PaletteView } from "./toolbars/PaletteView"
+import { ToolSelector } from "./toolbars/ToolSelector"
+import { UndoRedo } from "./toolbars/UndoRedo"
+import { ZoomControls } from "./toolbars/ZoomControls"
+import { BackToAllBoardsLink } from "./toolbars/BackToAllBoardsLink"
 
 export type Tool = "pan" | "select" | "connect"
 export type ControlSettings = {
@@ -201,39 +206,56 @@ export const BoardView = ({
 
     return (
         <div id="root" className={className}>
-            <div className="scroll-container" ref={scrollElement.set}>
-                <BoardViewHeader
-                    {...{ board, sessionState, dispatch, controlSettings, navigateToBoard, onAdd, latestNote, zoom }}
-                />
-                <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
+            <BoardViewHeader
+                {...{ board, sessionState, dispatch, controlSettings, navigateToBoard, onAdd, latestNote, zoom }}
+            />
+            <div className="content-container">
+                <div className="scroll-container" ref={scrollElement.set}>
+                    <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
 
-                <div className="border-container" style={borderContainerStyle}>
-                    <div
-                        className={L.view(controlSettings, (s) => "board " + s.tool)}
-                        draggable={isFirefox ? L.view(focus, (f) => f.status !== "editing") : true}
-                        ref={boardRef}
-                        onClick={onClick}
-                    >
-                        <ListView
-                            observable={L.view(L.view(board, "items"), Object.values)}
-                            renderObservable={renderItem}
-                            getKey={(i) => i.id}
-                        />
-                        <RectangularDragSelection {...{ rect: selectionRect }} />
-                        <CursorsView {...{ cursors, sessions }} />
-                        <ContextMenuView {...{ latestNote, dispatch, board, focus }} />
-                        <ConnectionsView {...{ board, zoom, dispatch, focus, coordinateHelper }} />
+                    <div className="border-container" style={borderContainerStyle}>
+                        <div
+                            className={L.view(controlSettings, (s) => "board " + s.tool)}
+                            draggable={isFirefox ? L.view(focus, (f) => f.status !== "editing") : true}
+                            ref={boardRef}
+                            onClick={onClick}
+                        >
+                            <ListView
+                                observable={L.view(L.view(board, "items"), Object.values)}
+                                renderObservable={renderItem}
+                                getKey={(i) => i.id}
+                            />
+                            <RectangularDragSelection {...{ rect: selectionRect }} />
+                            <CursorsView {...{ cursors, sessions }} />
+                            <ContextMenuView {...{ latestNote, dispatch, board, focus }} />
+                            <ConnectionsView {...{ board, zoom, dispatch, focus, coordinateHelper }} />
+                        </div>
                     </div>
                 </div>
+                <div className="tool-layer">
+                    <div className="navigation-toolbar">
+                        <BackToAllBoardsLink {...{ navigateToBoard }} />
+                    </div>
+                    <div className="main-toolbar">
+                        <PaletteView {...{ latestNote, onAdd, board, dispatch }} />
+                        <ToolSelector {...{ controlSettings }} />
+                    </div>
+                    <div className="undo-redo-toolbar">
+                        <UndoRedo {...{ dispatch }} />
+                    </div>
+                    {L.view(
+                        viewRect,
+                        (r) => r != null,
+                        (r) => (
+                            <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />
+                        ),
+                    )}
+                    <div className="zoom-toolbar">
+                        <ZoomControls {...{ zoom }} />
+                    </div>
+                    <HistoryView {...{ board, history, focus, dispatch }} />
+                </div>
             </div>
-            <HistoryView {...{ board, history, focus, dispatch }} />
-            {L.view(
-                viewRect,
-                (r) => r != null,
-                (r) => (
-                    <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />
-                ),
-            )}
         </div>
     )
 

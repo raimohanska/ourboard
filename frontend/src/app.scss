@@ -10,7 +10,6 @@ $heading-height: 1.8em;
 $board-border-top: 2.8rem;
 $disabled-color: lightgrey;
 $z-index-menu: 400000002;
-$z-index-minimap: 400000001;
 $z-index-cursors: 400000000;
 
 @import "ui.scss";
@@ -133,13 +132,13 @@ a {
 }
 
 #root.board-container {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: calc(100vh - 1em);
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     &:not(.ready) {
         header .controls,
-        > .scroll-container > .border-container > .board,
+        > .content-container > .scroll-container > .border-container > .board,
         header .board-name {
             @extend .disabled-interaction;
         }
@@ -160,7 +159,7 @@ a {
         .minimap {
             display: none;
         }
-        > .scroll-container {
+        > .content-container > .scroll-container {
             overflow: hidden; /* no scroll */
             .border-container {
                 padding: 0;
@@ -170,159 +169,25 @@ a {
 
     header {
         @extend .dropshadow;
-
-        position: fixed;
         z-index: $z-index-menu;
-        padding: 0.2em $left-padding;
-        padding-right: 4em;
+        padding: 0.2em;
         width: 100%;
         display: flex;
-        align-items: center;
         background: #fffffff8;
         color: $black;
+
+        > * {
+            width: 33.3%;
+        }
 
         > #board-name {
             margin-left: 0.5em;
             margin-left: 1rem;
         }
 
-        .controls {
-            display: flex;
-            flex-grow: 1;
-            padding-left: $left-padding;
-            align-items: center;
-            .icon {
-                &:not(:first-child) {
-                    margin-left: 0.5em;
-                }
-                cursor: pointer;
-                position: relative;
-                &.active {
-                    &:after {
-                        content: "";
-                        position: absolute;
-                        pointer-events: none;
-                        border-bottom: 2px solid black;
-                        top: 0;
-                        margin-bottom: -4px;
-                        z-index: -1;
-                        bottom: 0;
-                        left: 0;
-                        right: 0;
-                    }
-                }
-            }
-            .palette {
-                margin-left: 0.5em;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                .item {
-                    cursor: pointer;
-                    margin-left: 0.5em;
-                    height: 1em;
-                }
-                .note {
-                    @extend .item;
-                    width: 1em;
-                    &.round {
-                        border-radius: 50%;
-                    }
-                }
-                .container {
-                    @extend .item;
-                    width: 2em;
-                    background: white;
-                    border: 1px solid black;
-                    color: #888;
-                    line-height: 1em;
-                    display: inline-block;
-                    box-sizing: content-box;
-                    padding: 0.1em 0.2em;
-                }
-                .text {
-                    @extend .item;
-                    background: white;
-                    color: $black;
-                    line-height: 1em;
-                    display: inline-block;
-                    border: 0.1em solid white;
-                    box-sizing: content-box;
-                }
-            }
-
-            .trackpad-mode-switch {
-                border: 1px solid black;
-                border-radius: 1px;
-                padding: 4px;
-                margin-left: 0.3em;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-
-                small {
-                    font-size: 0.5em;
-                }
-            }
-
-            .switch {
-                position: relative;
-                display: flex;
-                width: 30px;
-                height: 12px;
-                margin-right: 0.2em;
-            }
-
-            /* Hide default HTML checkbox */
-            .switch input {
-                opacity: 0;
-                width: 0;
-                height: 0;
-            }
-
-            .slider {
-                position: absolute;
-                cursor: pointer;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: #ccc;
-                -webkit-transition: 0.4s;
-                transition: 0.4s;
-                border-radius: 17px;
-            }
-
-            .slider:before {
-                position: absolute;
-                content: "";
-                height: 10px;
-                width: 10px;
-                left: 2px;
-                bottom: 1px;
-                background-color: white;
-                -webkit-transition: 0.4s;
-                transition: 0.4s;
-                border-radius: 50%;
-            }
-
-            input:checked + .slider {
-                background-color: #2196f3;
-            }
-
-            input:focus + .slider {
-                box-shadow: 0 0 1px #2196f3;
-            }
-
-            input:checked + .slider:before {
-                -webkit-transform: translateX(16px);
-                transform: translateX(16px);
-            }
-        }
-
         .user-info {
             display: flex;
-            align-items: center;
+            justify-content: flex-end;
             a.login,
             a.logout {
                 margin-left: 0.5em;
@@ -336,55 +201,31 @@ a {
         > * {
             color: $black;
         }
-
-        > .icon.menu {
-            cursor: pointer;
-
-            > .menu {
-                @extend .dropshadow;
-                font-family: $font-family;
-                position: absolute;
-                left: 2.2em;
-                top: 1.2em;
-                width: 20em;
-                background: white;
-                color: $black;
-                padding: 0.5em;
-                li {
-                    padding: 0.2em 0.5em;
-                    cursor: pointer;
-                    &:hover:not(.disabled) {
-                        background: #666666;
-                        color: white;
-                    }
-                    &.disabled {
-                        pointer-events: none;
-                        color: #aaaaaa;
-                        cursor: auto;
-                    }
-                }
-            }
-        }
     }
 
-    > .scroll-container {
+    > .content-container {
         flex-grow: 1;
-        overflow: auto;
-        background: $off-board-color;
-        .board-status-message {
+        height: 100%;
+        position: relative;
+        > .scroll-container {
             height: 100%;
-            width: 100%;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            > div {
-                max-width: 80%;
+            overflow: auto;
+            background: $off-board-color;
+            .board-status-message {
+                height: 100%;
+                width: 100%;
+                z-index: 100;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                > div {
+                    max-width: 80%;
+                }
             }
-        }
-        .border-container {
-            box-sizing: content-box;
-            padding: $board-border-top 1rem 1rem 1rem;
+            .border-container {
+                box-sizing: content-box;
+                padding: 1rem;
+            }
         }
     }
 
@@ -671,30 +512,6 @@ a {
         }
     }
 
-    .minimap {
-        z-index: $z-index-minimap;
-        font-size: 1vw;
-        display: inline-block;
-        position: absolute;
-        bottom: 1rem;
-        right: 4rem;
-        background: #eeeeee88;
-        border: 0.3em solid #eeeeee88;
-        box-sizing: content-box;
-        pointer-events: none;
-        .viewarea {
-            display: inline-block;
-            position: absolute;
-            background: #ffffff;
-        }
-        .item {
-            display: inline-block;
-            position: absolute;
-            background: #d8d8d8;
-            border: 2px solid #d8d8d8;
-        }
-    }
-
     .context-menu-positioner {
         @extend .ui-context-menu-positioner;
 
@@ -758,14 +575,160 @@ a {
         }
     }
 
-    > .history {
-        max-height: 100vh;
+    > .content-container > .tool-layer {
+        z-index: $z-index-menu;
+        position: absolute;
+        pointer-events: none;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 0.5em;
+
+        > * {
+            pointer-events: all;
+        }
+
+        .toolbar {
+            @extend .dropshadow-shallow;
+            display: inline-block;
+            background: white;
+            padding: 0.5em;
+            border-radius: 0.2em;
+        }
+
+        .navigation-toolbar {
+            position: absolute;
+            left: 1em;
+            top: 1em;
+            a {
+                .icon {
+                    vertical-align: top;
+                    margin-right: 0.5em;
+                }
+                text-decoration: none;
+                color: black;
+            }
+        }
+        .main-toolbar {
+            @extend .toolbar;
+            > span:not(:first-child) {
+                margin-left: 0.5em;
+            }
+        }
+
+        .undo-redo-toolbar {
+            @extend .toolbar;
+            position: absolute;
+            left: 1em;
+            bottom: 1em;
+        }
+
+        .zoom-toolbar {
+            @extend .toolbar;
+            position: absolute;
+            right: 1em;
+            bottom: 1em;
+        }
+
+        .minimap {
+            font-size: 1vw;
+            display: inline-block;
+            position: absolute;
+            bottom: 1rem;
+            right: 6rem;
+            background: #eeeeee88;
+            border: 0.3em solid #eeeeee88;
+            box-sizing: content-box;
+            pointer-events: none;
+            .viewarea {
+                display: inline-block;
+                position: absolute;
+                background: #ffffff;
+            }
+            .item {
+                display: inline-block;
+                position: absolute;
+                background: #d8d8d8;
+                border: 2px solid #d8d8d8;
+            }
+        }
+
+        .icon {
+            &:not(:first-child) {
+                margin-left: 0.5em;
+            }
+            cursor: pointer;
+            position: relative;
+            &.active {
+                &:after {
+                    content: "";
+                    position: absolute;
+                    pointer-events: none;
+                    border-bottom: 2px solid black;
+                    top: 0;
+                    margin-bottom: -4px;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                }
+            }
+        }
+        .palette {
+            margin-left: 0.5em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            .item {
+                cursor: pointer;
+                margin-left: 0.5em;
+                height: 1em;
+            }
+            .note {
+                @extend .item;
+                width: 1em;
+                &.round {
+                    border-radius: 50%;
+                }
+            }
+            .container {
+                @extend .item;
+                width: 2em;
+                background: white;
+                border: 1px solid black;
+                color: #888;
+                line-height: 1em;
+                display: inline-block;
+                box-sizing: content-box;
+                padding: 0.1em 0.2em;
+            }
+            .text {
+                @extend .item;
+                background: white;
+                color: $black;
+                line-height: 1em;
+                display: inline-block;
+                border: 0.1em solid white;
+                box-sizing: content-box;
+            }
+        }
+    }
+
+    > .content-container > .tool-layer > .history {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
         display: flex;
         flex-direction: column;
         z-index: $z-index-menu;
-        background: white;
-        padding: $board-border-top 1rem 1rem 1rem;
-        border-left: 1px solid #cccccc;
+        &.expanded {
+            background: white;
+            border-left: 1px solid #cccccc;
+        }
+        padding: 1rem;
         > .selection {
             margin-top: -1rem;
             margin-bottom: 1em;
