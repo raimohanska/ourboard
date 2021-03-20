@@ -1,19 +1,8 @@
 import { h, HarmajaChild } from "harmaja"
 import * as L from "lonna"
-import { Board, Item, newContainer, newSimilarNote, newText, Note } from "../../../../common/src/domain"
-import { Dispatch } from "../../store/server-connection"
+import { Item, newContainer, newSimilarNote, newText, Note } from "../../../../common/src/domain"
 
-export const PaletteView = ({
-    latestNote,
-    onAdd,
-    board,
-    dispatch,
-}: {
-    latestNote: L.Property<Note>
-    onAdd: (item: Item) => void
-    board: L.Property<Board>
-    dispatch: Dispatch
-}) => {
+export const PaletteView = ({ latestNote, onAdd }: { latestNote: L.Property<Note>; onAdd: (item: Item) => void }) => {
     return (
         <span className="palette">
             <NewNote {...{ onAdd, latestNote }} />
@@ -42,7 +31,7 @@ export const NewText = ({ onAdd }: { onAdd: (i: Item) => void }) => {
             title="Text"
             tooltip="Drag to add new text area"
             svg={svg}
-            onDragEnd={() => onAdd(newText())}
+            addItem={() => onAdd(newText())}
         />
     )
 }
@@ -51,13 +40,13 @@ export const NewItem = ({
     type,
     title,
     tooltip,
-    onDragEnd,
+    addItem,
     svg,
 }: {
     type: string
     title: string
     tooltip: string
-    onDragEnd: () => void
+    addItem: () => void
     svg: HarmajaChild
 }) => {
     return (
@@ -66,7 +55,7 @@ export const NewItem = ({
                 className="icon"
                 data-test={`palette-new-${type}`}
                 title={tooltip}
-                onDragEnd={onDragEnd}
+                onDragEnd={addItem}
                 draggable={true}
             >
                 {svg}
@@ -119,7 +108,7 @@ export const NewNote = ({ latestNote, onAdd }: { latestNote: L.Property<Note>; o
             title="Note"
             tooltip="Drag to add new text note"
             svg={svg}
-            onDragEnd={() => onAdd(newSimilarNote(latestNote.get()))}
+            addItem={() => onAdd(newSimilarNote(latestNote.get()))}
         />
     )
 }
@@ -140,7 +129,7 @@ export const NewContainer = ({ onAdd }: { onAdd: (i: Item) => void }) => {
             title="Area"
             tooltip="Drag to add new text note"
             svg={svg}
-            onDragEnd={() => onAdd(newContainer())}
+            addItem={() => onAdd(newContainer())}
         />
     )
 }

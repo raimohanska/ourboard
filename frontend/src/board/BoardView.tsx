@@ -237,7 +237,7 @@ export const BoardView = ({
                         <BackToAllBoardsLink {...{ navigateToBoard }} />
                     </div>
                     <div className="main-toolbar">
-                        <PaletteView {...{ latestNote, onAdd, board, dispatch }} />
+                        <PaletteView {...{ latestNote, onAdd }} />
                         <ToolSelector {...{ controlSettings }} />
                     </div>
                     <div className="undo-redo-toolbar">
