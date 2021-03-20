@@ -21,6 +21,7 @@ export function itemSelectionHandler(
 
     function onClick(e: JSX.MouseEvent) {
         const f = focus.get()
+        console.log("Item click", f.status)
         const selectedIds = getSelectedIds(f)
         if (e.shiftKey && (f.status === "selected" || f.status === "editing")) {
             if (selectedIds.has(id)) {
@@ -28,7 +29,7 @@ export function itemSelectionHandler(
             } else {
                 focus.set({ status: "selected", ids: new Set([...selectedIds].concat(id)) })
             }
-        } else if (f.status === "none") {
+        } else if (f.status === "none" || f.status === "connection-selected") {
             focus.set({ status: "selected", ids: new Set([id]) })
         } else if ((f.status === "selected" || f.status === "editing") && !selectedIds.has(id)) {
             focus.set({ status: "selected", ids: new Set([id]) })
