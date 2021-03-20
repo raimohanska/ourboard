@@ -1,6 +1,6 @@
 $left-padding: 1em;
-$black: #333366;
-$off-board-color: #dddddd;
+$black: #00263a;
+$off-board-color: #f4f4f6;
 $bottom-bar-height: 3em;
 $font-family: Roboto, sans-serif;
 $font-family-note: Montserrat, sans-serif;
@@ -133,7 +133,7 @@ a {
 
 #root.board-container {
     width: 100vw;
-    height: calc(100vh - 1em);
+    height: calc(100vh - 2em);
     display: flex;
     flex-direction: column;
     &:not(.ready) {
@@ -150,14 +150,13 @@ a {
 
     &.embedded {
         font-size: 100%;
-        #board-name,
+        header,
         .navigation,
-        .user-info,
         .history,
-        .zoom_in,
-        .zoom_out,
+        .zoom-toolbar,
+        .undo-redo-toolbar,
         .minimap {
-            display: none;
+            display: none !important;
         }
         > .content-container > .scroll-container {
             overflow: hidden; /* no scroll */
@@ -168,9 +167,10 @@ a {
     }
 
     header {
-        @extend .dropshadow;
+        border-bottom: 2px solid #e7e8e8;
+        font-size: 0.8em;
         z-index: $z-index-menu;
-        padding: 0.2em;
+        padding: 0.8em;
         width: 100%;
         display: flex;
         background: #fffffff8;
@@ -181,6 +181,7 @@ a {
         }
 
         > #board-name {
+            text-align: center;
             margin-left: 0.5em;
             margin-left: 1rem;
         }
@@ -188,9 +189,12 @@ a {
         .user-info {
             display: flex;
             justify-content: flex-end;
+            .icon {
+                margin-right: 0.5em;
+            }
             a.login,
             a.logout {
-                margin-left: 0.5em;
+                margin-left: 0.8em;
                 font-size: 0.6em;
             }
             &.logging-in-local,
@@ -211,17 +215,6 @@ a {
             height: 100%;
             overflow: auto;
             background: $off-board-color;
-            .board-status-message {
-                height: 100%;
-                width: 100%;
-                z-index: 100;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                > div {
-                    max-width: 80%;
-                }
-            }
             .border-container {
                 box-sizing: content-box;
                 padding: 1rem;
@@ -528,7 +521,7 @@ a {
                         content: "";
                         position: absolute;
                         pointer-events: none;
-                        border-bottom: 2px solid black;
+                        border-bottom: 2px solid $black;
                         top: 0;
                         margin-bottom: -4px;
                         bottom: 0;
@@ -592,11 +585,12 @@ a {
         }
 
         .toolbar {
-            @extend .dropshadow-shallow;
+            border: 2px solid $off-board-color;
+            box-shadow: 0px 2px 6px 0px #00263a0f;
             display: inline-block;
             background: white;
             padding: 0.5em;
-            border-radius: 0.2em;
+            border-radius: 6px;
         }
 
         .navigation-toolbar {
@@ -609,7 +603,7 @@ a {
                     margin-right: 0.5em;
                 }
                 text-decoration: none;
-                color: black;
+                color: $black;
             }
         }
         .main-toolbar {
@@ -638,7 +632,7 @@ a {
             display: inline-block;
             position: absolute;
             bottom: 1rem;
-            right: 6rem;
+            right: 7rem;
             background: #eeeeee88;
             border: 0.3em solid #eeeeee88;
             box-sizing: content-box;
@@ -667,7 +661,7 @@ a {
                     content: "";
                     position: absolute;
                     pointer-events: none;
-                    border-bottom: 2px solid black;
+                    border-bottom: 2px solid $black;
                     top: 0;
                     margin-bottom: -4px;
                     bottom: 0;
@@ -697,7 +691,7 @@ a {
                 @extend .item;
                 width: 2em;
                 background: white;
-                border: 1px solid black;
+                border: 1px solid $black;
                 color: #888;
                 line-height: 1em;
                 display: inline-block;
@@ -712,6 +706,18 @@ a {
                 display: inline-block;
                 border: 0.1em solid white;
                 box-sizing: content-box;
+            }
+        }
+
+        .board-status-message {
+            height: 100%;
+            width: 100%;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            > div {
+                max-width: 80%;
             }
         }
     }
@@ -827,7 +833,7 @@ a {
         background-image: url(img/arrow_drop_down.svg);
     }
     &.user {
-        background-image: url(img/face.svg);
+        background-image: url(img/user.svg);
     }
     &.history {
         background-image: url(img/history.svg);
@@ -874,7 +880,7 @@ a {
 
 select {
     border: 0;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid $black;
     font: 0.7em $font-family;
 
     &:focus {

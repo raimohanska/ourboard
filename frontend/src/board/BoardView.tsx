@@ -211,8 +211,6 @@ export const BoardView = ({
             />
             <div className="content-container">
                 <div className="scroll-container" ref={scrollElement.set}>
-                    <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
-
                     <div className="border-container" style={borderContainerStyle}>
                         <div
                             className={L.view(controlSettings, (s) => "board " + s.tool)}
@@ -233,6 +231,8 @@ export const BoardView = ({
                     </div>
                 </div>
                 <div className="tool-layer">
+                    <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
+
                     <div className="navigation-toolbar">
                         <BackToAllBoardsLink {...{ navigateToBoard }} />
                     </div>

@@ -14,6 +14,7 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                 (s) => `user-info ${s}`,
             )}
         >
+            <span className="icon user" />
             {L.view(
                 state,
                 (s) => s.status,
@@ -67,7 +68,6 @@ const NicknameEditor = ({ state, dispatch }: { state: L.Property<UserSessionStat
             n && (
                 <EditableSpan
                     title="Edit your nickname"
-                    showIcon={true}
                     className="nickname"
                     {...{ value: nicknameAtom as L.Atom<string>, editingThis }}
                 />
