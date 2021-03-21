@@ -130,28 +130,31 @@ export function existingConnectionHandler(
     board: L.Property<Board>,
     dispatch: Dispatch,
 ) {
-    endNode.addEventListener("drag", (e) => {
-        e.stopPropagation()
-        const b = board.get()
-        const connection = b.connections.find((c) => c.id === connectionId)!
-        const items = b.items
-        const coords = coordinateHelper.currentBoardCoordinates.get()
-        if (type === "to") {
-            const hitsItem = findTarget(items, connection.from, coords)
-            const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
-            dispatch({ action: "connection.modify", boardId: b.id, connection: { ...connection, to } })
-        } else if (type === "from") {
-            const hitsItem = findTarget(items, connection.to, coords)
-            const from = hitsItem && hitsItem.id !== connection.to ? hitsItem.id : coords
-            dispatch({ action: "connection.modify", boardId: b.id, connection: { ...connection, from } })
-        } else {
-            dispatch({
-                action: "connection.modify",
-                boardId: b.id,
-                connection: { ...connection, controlPoints: [coords] },
-            })
-        }
-    })
+    endNode.addEventListener("drag", (e) => e.stopPropagation())
+    endNode.addEventListener(
+        "drag",
+        _.throttle(() => {
+            const b = board.get()
+            const connection = b.connections.find((c) => c.id === connectionId)!
+            const items = b.items
+            const coords = coordinateHelper.currentBoardCoordinates.get()
+            if (type === "to") {
+                const hitsItem = findTarget(items, connection.from, coords)
+                const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
+                dispatch({ action: "connection.modify", boardId: b.id, connection: { ...connection, to } })
+            } else if (type === "from") {
+                const hitsItem = findTarget(items, connection.to, coords)
+                const from = hitsItem && hitsItem.id !== connection.to ? hitsItem.id : coords
+                dispatch({ action: "connection.modify", boardId: b.id, connection: { ...connection, from } })
+            } else {
+                dispatch({
+                    action: "connection.modify",
+                    boardId: b.id,
+                    connection: { ...connection, controlPoints: [coords] },
+                })
+            }
+        }, 20),
+    )
 }
 
 function findTarget(items: Record<Id, Item>, from: Item | Id | Point, currentPos: Point) {
