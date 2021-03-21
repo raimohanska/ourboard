@@ -140,7 +140,8 @@ a {
     &:not(.ready) {
         header .controls,
         > .content-container > .scroll-container > .border-container > .board,
-        header .board-name {
+        header .board-name,
+        .tool-layer {
             @extend .disabled-interaction;
         }
         > .history,
