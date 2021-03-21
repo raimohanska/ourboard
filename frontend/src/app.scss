@@ -15,12 +15,12 @@ $board-area-padding: 1rem;
 
 @import "ui.scss";
 
-* {
+.board-container * {
     box-sizing: border-box;
     user-select: none;
 }
 
-*[contenteditable="true"] {
+.board-container *[contenteditable="true"] {
     // Need this for safari
     // https://developer.mozilla.org/en-US/docs/Web/CSS/user-select
     -webkit-user-select: text;
