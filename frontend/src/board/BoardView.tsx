@@ -137,7 +137,9 @@ export const BoardView = ({
                 // esc
                 tool.set("select") // TODO: use default tool based on mouse/trackpad
                 const f = focus.get()
-                focus.set({ status: "none" })
+                if (f.status === "adding") {
+                    focus.set({ status: "none" })
+                }
             }
         })
 
