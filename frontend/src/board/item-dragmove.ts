@@ -16,7 +16,7 @@ export function itemDragToMove(
     coordinateHelper: BoardCoordinateHelper,
     dispatch: Dispatch,
 ) {
-    const connector = drawConnectionHandler(board, coordinateHelper, dispatch)
+    const connector = drawConnectionHandler(board, coordinateHelper, focus, dispatch)
     return (elem: HTMLElement) =>
         onBoardItemDrag(
             elem,

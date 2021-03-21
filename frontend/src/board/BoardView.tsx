@@ -354,6 +354,26 @@ export const BoardView = ({
                         </span>
                     )
                 })}
+
+                {L.view(focus, tool, (f, t) => {
+                    if (t !== "connect") return null
+                    const text =
+                        f.status === "connection-adding" ? "Finish by clicking on target" : "Click on an item to start"
+
+                    const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
+                        position: "absolute",
+                        left: `${p.x}px`,
+                        top: `${p.y + 20}px`,
+                        fontSize: "0.8rem",
+                        pointerEvents: "none",
+                        color: "#000000aa",
+                    }))
+                    return (
+                        <span className="item-adding" style={style}>
+                            {text} 
+                        </span>
+                    )
+                })}
             </div>
         )
     }

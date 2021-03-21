@@ -28,7 +28,7 @@ export function startConnecting(
     if (h) {
         endConnection()
     } else {
-        const h = drawConnectionHandler(board, coordinateHelper, dispatch)
+        const h = drawConnectionHandler(board, coordinateHelper, focus, dispatch)
         currentConnectionHandler.set(h)
         focus.set({ status: "connection-adding" })
         h.whileDragging(item, coordinateHelper.currentBoardCoordinates.get())
@@ -45,10 +45,6 @@ export function startConnecting(
         if (h) {
             h.endDrag()
             toolController.useDefaultTool()
-            const connection = h.getCurrentConnection()
-
-            focus.set(connection ? { status: "connection-selected", id: connection.id } : { status: "none" })
-
             currentConnectionHandler.set(null)
         }
     }
@@ -59,6 +55,7 @@ type ConnectionHandler = ReturnType<typeof drawConnectionHandler>
 export function drawConnectionHandler(
     board: L.Property<Board>,
     coordinateHelper: BoardCoordinateHelper,
+    focus: L.Atom<BoardFocus>,
     dispatch: Dispatch,
 ) {
     let localConnection: Connection | null = null
@@ -114,6 +111,7 @@ export function drawConnectionHandler(
     }
 
     const endDrag = () => {
+        focus.set(localConnection ? { status: "connection-selected", id: localConnection.id } : { status: "none" })
         localConnection = null
     }
 
