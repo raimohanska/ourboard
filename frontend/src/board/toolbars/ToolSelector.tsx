@@ -9,17 +9,17 @@ export const ToolSelector = ({ toolController }: { toolController: ToolControlle
             <span
                 className={L.view(tool, (s) => (s === "select" ? "icon cursor-arrow active" : "icon cursor-arrow"))}
                 title="Select tool"
-                onClick={() => toolController.controlSettings.set({ tool: "select", hasUserManuallySetTool: true })}
+                onClick={() => tool.set("select")}
             />
             <span
                 className={L.view(tool, (s) => (s === "pan" ? "icon pan active" : "icon pan"))}
                 title="Pan tool"
-                onClick={() => toolController.controlSettings.set({ tool: "pan", hasUserManuallySetTool: true })}
+                onClick={() => tool.set("pan")}
             />
             <span
                 className={L.view(tool, (s) => (s === "connect" ? "icon connection active" : "icon connection"))}
                 title="Connect tool"
-                onClick={() => toolController.controlSettings.set({ tool: "connect", hasUserManuallySetTool: true })}
+                onClick={() => tool.set("connect")}
             />
         </span>
     )

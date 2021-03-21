@@ -91,7 +91,7 @@ export function boardScrollAndZoomHandler(
             // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
             // Let's set the mode to 'select' as a best-effort "works like you'd expect" UX thing
             const settings = toolController.controlSettings.get()
-            if (settings.hasUserManuallySetTool || settings.tool === "select") {
+            if (settings.defaultTool || settings.tool === "select") {
                 // Don't automatically make decisions for user if they have already set tool manually,
                 // Or if the select tool is already on
                 return

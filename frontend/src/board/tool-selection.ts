@@ -5,7 +5,7 @@ import { componentScope } from "harmaja"
 export type Tool = "pan" | "select" | "connect"
 export type ControlSettings = {
     tool: Tool
-    hasUserManuallySetTool: boolean
+    defaultTool?: Tool
 }
 
 export type ToolController = ReturnType<typeof ToolController>
@@ -13,10 +13,14 @@ export type ToolController = ReturnType<typeof ToolController>
 export function ToolController() {
     const controlSettings = localStorageAtom<ControlSettings>("controlSettings", {
         tool: "pan",
-        hasUserManuallySetTool: false,
     })
-    const tool = L.view(controlSettings, "tool")
-    const defaultTool = tool.pipe(L.filter((t: Tool) => t === "pan" || t === "select", componentScope()))
+    const tool = L.atom(L.view(controlSettings, "tool"), (t) => {
+        controlSettings.modify((s) => ({
+            tool: t,
+            defaultTool: t === "pan" || t === "select" ? t : s.defaultTool,
+        }))
+    })
+    const defaultTool = L.view(controlSettings, (s) => s.defaultTool || "pan")
 
     const useDefaultTool = () => {
         tool.set(defaultTool.get())
