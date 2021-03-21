@@ -429,8 +429,8 @@ a {
             @extend .dropshadow-shallow;
             position: absolute;
             display: block;
-            width: max(0.4em, 3px);
-            height: max(0.4em, 3px);
+            width: max(0.4em, 6px);
+            height: max(0.4em, 6px);
             cursor: pointer;
 
             &.from-node {
@@ -438,8 +438,12 @@ a {
                 border-radius: 50%;
                 border: 1px solid #cccccc;
                 $corner-offset: -7px;
+                width: max(0.4em, 6px);
+                height: max(0.4em, 6px);
 
                 &.highlight {
+                    width: max(0.4em, 10px);
+                    height: max(0.4em, 10px);
                     border: 2px solid $link-color;
                 }
             }
@@ -448,9 +452,12 @@ a {
                 background: $connection-color;
                 border-radius: 50%;
                 $corner-offset: -7px;
-                &:not(.highlight) {
-                    width: max(0.3em, 1.5px);
-                    height: max(0.3em, 1.5px);
+                width: max(0.3em, 1.5px);
+                height: max(0.3em, 1.5px);
+                &.highlight {
+                    width: max(0.4em, 10px);
+                    height: max(0.4em, 10px);
+                    border: 2px solid $link-color;
                 }
 
                 &.highlight {
@@ -470,7 +477,9 @@ a {
                 border-bottom: max(0.2em, 3px) solid transparent;
 
                 &.highlight {
-                    border-left: max(0.6em, 8px) solid $link-color;
+                    border-top: max(0.3em, 4.5px) solid transparent;
+                    border-left: max(0.8em, 12px) solid $link-color;
+                    border-bottom: max(0.3em, 4.5px) solid transparent;
                 }
             }
         }
