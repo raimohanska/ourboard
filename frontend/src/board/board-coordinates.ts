@@ -21,8 +21,6 @@ export function boardCoordinateHelper(
     boardElem: L.Property<HTMLElement | null>,
     zoom: L.Property<number>,
 ) {
-    let currentClientPos = L.atom(origin)
-
     function pxToEm(px: number) {
         return px / baseFontSize()
     }
@@ -52,9 +50,13 @@ export function boardCoordinateHelper(
         return o
     }
 
+    function pageToPixelCoordinates(pp: PageCoordinates) {
+        return subtract(pp, boardAbsolutePosition.get())
+    }
+
     function pageToBoardCoordinates(pageCoords: PageCoordinates): Coordinates {
+        const pixelCoords = pageToPixelCoordinates(pageCoords)
         const scrollEl = scrollElem.get()
-        const { y, x } = boardAbsolutePosition.get()
         if (scrollEl === null) {
             return origin // Not the smartest move
         }
@@ -62,24 +64,20 @@ export function boardCoordinateHelper(
         // Use offsetLeft/offsetTop instead of getBoundingClientRect for getting board position
         // because drag-to-scroll uses CSS translate while dragging and we don't want that to affect the calculation.
 
-        return newCoordinates(
-            pxToEm(pageCoords.x + scrollEl.scrollLeft - x),
-            pxToEm(pageCoords.y + scrollEl.scrollTop - y),
-        )
+        return newCoordinates(pxToEm(pixelCoords.x + scrollEl.scrollLeft), pxToEm(pixelCoords.y + scrollEl.scrollTop))
     }
+
+    // Page coordinates of mouse pointer
+    let currentPageCoordinates = L.atom(origin)
+
+    // Position on the viewport, with relation to the top-left corner of the board area.
+    // If board is scrolled to top left corner, the top-left corner of actual board area (excluding borders) will be at (0, 0)
+    let currentBoardViewPortCoordinates = L.view(currentPageCoordinates, (pp) =>
+        subtract(pp, boardAbsolutePosition.get()),
+    )
 
     function pageCoordDiffToThisPoint(coords: PageCoordinates) {
-        return coordDiff(currentClientPos.get(), coords)
-    }
-
-    function getClippedCoordinate(coordinate: number, direction: "clientWidth" | "clientHeight", maxMargin: number) {
-        const elem = boardElem.get()
-        if (!elem) {
-            return coordinate
-        }
-        const clientSize = elem[direction]
-        const maxCoordinate = pxToEm(clientSize) - maxMargin
-        return Math.max(0, Math.min(coordinate, maxCoordinate))
+        return coordDiff(currentPageCoordinates.get(), coords)
     }
 
     L.view(boardElem, containerElem, (b, c) => [b, c]).forEach(([elem, container]) => {
@@ -92,7 +90,7 @@ export function boardCoordinateHelper(
                 "gesturestart",
                 _.throttle(
                     (e) => {
-                        currentClientPos.set({ x: e.pageX, y: e.pageY })
+                        currentPageCoordinates.set({ x: e.pageX, y: e.pageY })
                     },
                     16,
                     { leading: true, trailing: true },
@@ -103,7 +101,7 @@ export function boardCoordinateHelper(
                 "dragover",
                 _.throttle(
                     (e) => {
-                        currentClientPos.set({ x: e.pageX, y: e.pageY })
+                        currentPageCoordinates.set({ x: e.pageX, y: e.pageY })
                         e.preventDefault() // To disable Safari slow animation
                     },
                     16,
@@ -114,7 +112,7 @@ export function boardCoordinateHelper(
                 "mousemove",
                 _.throttle(
                     (e) => {
-                        currentClientPos.set(subtract({ x: e.pageX, y: e.pageY }, boardAbsolutePosition.get()))
+                        currentPageCoordinates.set({ x: e.pageX, y: e.pageY })
                     },
                     16,
                     { leading: true, trailing: true },
@@ -144,21 +142,23 @@ export function boardCoordinateHelper(
         L.changes,
         L.flatMapLatest((el) => L.fromEvent(el, "scroll"), componentScope()),
     )
-    const updateEvent = L.merge(scrollEvent, L.changes(zoom), L.changes(currentClientPos))
+    const updateEvent = L.merge(scrollEvent, L.changes(zoom), L.changes(currentPageCoordinates))
+
+    // Mouse position in board coordinates
     const currentBoardCoordinates = updateEvent.pipe(
         L.toStatelessProperty(() => {
-            return pageToBoardCoordinates(currentClientPos.get())
+            return pageToBoardCoordinates(currentPageCoordinates.get())
         }),
     )
 
     return {
         pageToBoardCoordinates,
         pageCoordDiffToThisPoint,
-        currentPageCoordinates: currentClientPos,
+        currentBoardViewPortCoordinates,
+        currentPageCoordinates,
         currentBoardCoordinates,
-        boardCoordDiffFromThisClientPoint: (coords: PageCoordinates) =>
+        boardCoordDiffFromThisPageCoordinate: (coords: PageCoordinates) =>
             coordDiff(currentBoardCoordinates.get(), pageToBoardCoordinates(coords)),
-        getClippedCoordinate,
         emToPx,
         pxToEm,
         scrollCursorToBoardCoordinates,

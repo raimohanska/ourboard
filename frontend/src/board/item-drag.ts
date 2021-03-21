@@ -52,7 +52,10 @@ export function onBoardItemDrag(
             e.preventDefault()
             return
         }
-        const newPos = coordinateHelper.boardCoordDiffFromThisClientPoint({ x: dragStart!.pageX, y: dragStart!.pageY })
+        const newPos = coordinateHelper.boardCoordDiffFromThisPageCoordinate({
+            x: dragStart!.pageX,
+            y: dragStart!.pageY,
+        })
         if (currentPos && currentPos.x == newPos.x && currentPos.y === newPos.y) {
             return
         }

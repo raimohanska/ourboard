@@ -11,6 +11,7 @@ $board-border-top: 2.8rem;
 $disabled-color: lightgrey;
 $z-index-menu: 400000002;
 $z-index-cursors: 400000000;
+$board-area-padding: 1rem;
 
 @import "ui.scss";
 
@@ -217,7 +218,7 @@ a {
             background: $off-board-color;
             .border-container {
                 box-sizing: content-box;
-                padding: 1rem;
+                padding: $board-area-padding;
             }
         }
     }
@@ -566,6 +567,7 @@ a {
     }
 
     > .content-container > .tool-layer {
+        margin: $board-area-padding;
         z-index: $z-index-menu;
         position: absolute;
         pointer-events: none;
@@ -575,7 +577,6 @@ a {
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding-top: 0.5em;
 
         > * {
             pointer-events: all;

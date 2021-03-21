@@ -346,10 +346,10 @@ export const BoardView = ({
 
                 {L.view(focus, (f) => {
                     if (f.status !== "adding") return null
-                    const style = L.view(coordinateHelper.currentPageCoordinates, (p) => ({
+                    const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
                         position: "absolute",
-                        left: `${p.x}px`,
-                        top: `${p.y}px`,
+                        left: `${p.x - 20}px`,
+                        top: `${p.y - 20}px`,
                         pointerEvents: "none",
                     }))
                     return (
