@@ -109,7 +109,7 @@ const RecentBoardsView = ({
 const Welcome = () => {
     return (
         <div>
-            <h2>Welcome to R-Board!</h2>
+            <h2>Welcome to OurBoard!</h2>
             <p>
                 Please try the <a href={`/b/${exampleBoard.id}`}>Example Board</a>, or create a new board below.
             </p>
