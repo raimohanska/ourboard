@@ -133,7 +133,7 @@ a {
 }
 
 #root.board-container {
-    width: 100vw;
+    width: 100%;
     height: calc(100vh - 2em);
     display: flex;
     flex-direction: column;
@@ -211,7 +211,7 @@ a {
 
     > .content-container {
         flex-grow: 1;
-        height: 100%;
+        height: 99%;
         position: relative;
         > .scroll-container {
             height: 100%;
@@ -578,7 +578,7 @@ a {
     }
 
     > .content-container > .tool-layer {
-        margin: $board-area-padding;
+        margin: 0;
         z-index: $z-index-menu;
         position: absolute;
         pointer-events: none;
@@ -618,6 +618,10 @@ a {
         }
         .main-toolbar {
             @extend .toolbar;
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
             padding: 0.5em 1em 0.2em;
             > span:not(:first-child) {
                 margin-left: 1.5em;
@@ -741,12 +745,20 @@ a {
         bottom: 0;
         display: flex;
         flex-direction: column;
+
+        > .history-icon-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         z-index: $z-index-menu;
+        min-width: 1rem;
+        background: white;
         &.expanded {
-            background: white;
             border-left: 1px solid #cccccc;
         }
-        padding: 1rem;
+        padding: 0;
+        padding-top: 1rem;
         > .selection {
             margin-top: -1rem;
             margin-bottom: 1em;

@@ -45,7 +45,9 @@ export const HistoryView = ({
 
     return (
         <div className={L.view(expanded, (e) => (e ? "history expanded" : "history"))}>
-            <span className="icon history" onClick={() => expanded.modify((e) => !e)} />
+            <div className="history-icon-wrapper">
+                <span className="icon history" onClick={() => expanded.modify((e) => !e)} />
+            </div>
             {L.view(expanded, (e) => e && <HistoryTable />)}
         </div>
     )
