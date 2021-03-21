@@ -8,7 +8,7 @@ import { AssetStore } from "../store/asset-store"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
 import { Dispatch } from "../store/server-connection"
-import { Tool } from "./BoardView"
+import { Tool, ToolController } from "./tool-selection"
 
 export const ImageView = ({
     id,
@@ -17,7 +17,7 @@ export const ImageView = ({
     board,
     isLocked,
     focus,
-    tool,
+    toolController,
     coordinateHelper,
     dispatch,
 }: {
@@ -26,18 +26,18 @@ export const ImageView = ({
     image: L.Property<Image>
     isLocked: L.Property<boolean>
     focus: L.Atom<BoardFocus>
-    tool: L.Atom<Tool>
+    toolController: ToolController
     coordinateHelper: BoardCoordinateHelper
     dispatch: Dispatch
     assets: AssetStore
 }) => {
     const { selected, onClick } = itemSelectionHandler(id, "image", focus)
-
+    const tool = toolController.tool
     return (
         <span
             className="image"
             onClick={onClick}
-            ref={itemDragToMove(id, board, focus, tool, coordinateHelper, dispatch) as any}
+            ref={itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch) as any}
             style={L.view(
                 image,
                 (p: Image) =>

@@ -5,15 +5,14 @@ import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainer } from "./item-setcontainer"
 import { Dispatch } from "../store/server-connection"
-import { Tool } from "./BoardView"
-import { containedBy } from "./geometry"
 import { drawConnectionHandler } from "./item-connect"
+import { Tool, ToolController } from "./tool-selection"
 
 export function itemDragToMove(
     id: string,
     board: L.Property<Board>,
     focus: L.Atom<BoardFocus>,
-    tool: L.Atom<Tool>,
+    toolController: ToolController,
     coordinateHelper: BoardCoordinateHelper,
     dispatch: Dispatch,
 ) {
@@ -27,7 +26,7 @@ export function itemDragToMove(
             coordinateHelper,
             (b, items, xDiff, yDiff) => {
                 // Cant drag when connect tool is active
-                const t = tool.get()
+                const t = toolController.tool.get()
 
                 // While dragging
                 const f = focus.get()
@@ -58,7 +57,7 @@ export function itemDragToMove(
             },
             () => {
                 connector.endDrag()
-                tool.set("select")
+                toolController.useDefaultTool()
             },
         )
 }

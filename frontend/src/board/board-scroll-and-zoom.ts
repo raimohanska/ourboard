@@ -4,9 +4,9 @@ import _ from "lodash"
 import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import * as G from "./geometry"
-import { ControlSettings } from "./BoardView"
 import { Board } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
+import { ToolController } from "./tool-selection"
 
 export function boardScrollAndZoomHandler(
     board: L.Property<Board>,
@@ -14,7 +14,7 @@ export function boardScrollAndZoomHandler(
     scrollElement: L.Property<HTMLElement | null>,
     zoom: L.Atom<number>,
     coordinateHelper: BoardCoordinateHelper,
-    controlSettings: L.Atom<ControlSettings>,
+    toolController: ToolController,
 ) {
     const scrollPos = scrollElement.pipe(
         L.changes,
@@ -90,7 +90,7 @@ export function boardScrollAndZoomHandler(
         } else {
             // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
             // Let's set the mode to 'select' as a best-effort "works like you'd expect" UX thing
-            const settings = controlSettings.get()
+            const settings = toolController.controlSettings.get()
             if (settings.hasUserManuallySetTool || settings.tool === "select") {
                 // Don't automatically make decisions for user if they have already set tool manually,
                 // Or if the select tool is already on
@@ -102,7 +102,7 @@ export function boardScrollAndZoomHandler(
             const isTrackpad = event.deltaMode === 0 && Math.max(Math.abs(event.deltaX), Math.abs(event.deltaY)) <= 3
 
             if (isTrackpad) {
-                controlSettings.set({ ...settings, tool: "select" })
+                toolController.tool.set("select")
             }
         }
     }

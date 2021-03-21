@@ -8,7 +8,7 @@ import { AssetStore } from "../store/asset-store"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
 import { Dispatch } from "../store/server-connection"
-import { Tool } from "./BoardView"
+import { Tool, ToolController } from "./tool-selection"
 import { DragBorder } from "./DragBorder"
 
 export const VideoView = ({
@@ -18,7 +18,7 @@ export const VideoView = ({
     board,
     isLocked,
     focus,
-    tool,
+    toolController,
     coordinateHelper,
     dispatch,
 }: {
@@ -27,18 +27,18 @@ export const VideoView = ({
     video: L.Property<Video>
     isLocked: L.Property<boolean>
     focus: L.Atom<BoardFocus>
-    tool: L.Atom<Tool>
+    toolController: ToolController
     coordinateHelper: BoardCoordinateHelper
     dispatch: Dispatch
     assets: AssetStore
 }) => {
     const { selected, onClick } = itemSelectionHandler(id, "video", focus)
-
+    const tool = toolController.tool
     return (
         <span
             className="video"
             onClick={onClick}
-            ref={itemDragToMove(id, board, focus, tool, coordinateHelper, dispatch) as any}
+            ref={itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch) as any}
             style={L.view(
                 video,
                 (p: Video) =>
@@ -67,7 +67,7 @@ export const VideoView = ({
                         <SelectionBorder {...{ id, item: video, coordinateHelper, board, focus, dispatch }} />
                     ),
             )}
-            <DragBorder {...{ id, board, tool, coordinateHelper, focus, dispatch }} />
+            <DragBorder {...{ id, board, toolController, coordinateHelper, focus, dispatch }} />
         </span>
     )
 }

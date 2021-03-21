@@ -41,12 +41,7 @@ import { ToolSelector } from "./toolbars/ToolSelector"
 import { UndoRedo } from "./toolbars/UndoRedo"
 import { ZoomControls } from "./toolbars/ZoomControls"
 import { BackToAllBoardsLink } from "./toolbars/BackToAllBoardsLink"
-
-export type Tool = "pan" | "select" | "connect"
-export type ControlSettings = {
-    tool: Tool
-    hasUserManuallySetTool: boolean
-}
+import { ToolController } from "./tool-selection"
 
 const emptyNote = newNote("")
 
@@ -87,10 +82,7 @@ export const BoardView = ({
     })
     const focus = synchronizeFocusWithServer(board, locks, sessionId, dispatch)
     const coordinateHelper = boardCoordinateHelper(containerElement, scrollElement, boardElement, zoom)
-    const controlSettings = localStorageAtom<ControlSettings>("controlSettings", {
-        tool: "pan",
-        hasUserManuallySetTool: false,
-    })
+    const toolController = ToolController()
 
     let previousFocus: BoardFocus | null = null
     focus.forEach((f) => {
@@ -135,7 +127,7 @@ export const BoardView = ({
         .forEach((e) => {
             if (e.keyCode === 27) {
                 // esc
-                tool.set("select") // TODO: use default tool based on mouse/trackpad
+                toolController.useDefaultTool()
                 const f = focus.get()
                 if (f.status === "adding") {
                     focus.set({ status: "none" })
@@ -162,7 +154,7 @@ export const BoardView = ({
         scrollElement,
         zoom,
         coordinateHelper,
-        controlSettings,
+        toolController,
     )
 
     function onClick(e: JSX.MouseEvent) {
@@ -177,7 +169,7 @@ export const BoardView = ({
     }
 
     function onAdd(item: Item) {
-        tool.set("select")
+        toolController.useDefaultTool()
         const point = coordinateHelper.currentBoardCoordinates.get()
         const { x, y } = item.type !== "container" ? G.add(point, { x: -item.width / 2, y: -item.height / 2 }) : point
         item = withCurrentContainer({ ...item, x, y }, board.get())
@@ -195,13 +187,15 @@ export const BoardView = ({
         dispatch({ action: "cursor.move", position, boardId })
     })
 
+    const tool = toolController.tool
+
     const { selectionRect } = boardDragHandler({
         ...{
             board,
             boardElem: boardElement,
             coordinateHelper,
             focus,
-            tool: L.view(controlSettings, (c) => c.tool),
+            tool,
             dispatch,
         },
     })
@@ -211,7 +205,6 @@ export const BoardView = ({
     })
 
     const boardAccessStatus = L.view(boardState, (s) => s.status)
-    const tool = L.view(controlSettings, "tool")
 
     const borderContainerStyle = L.combineTemplate({
         width: L.view(board, (b) => b.width + "em"),
@@ -226,14 +219,12 @@ export const BoardView = ({
 
     return (
         <div id="root" className={className}>
-            <BoardViewHeader
-                {...{ board, sessionState, dispatch, controlSettings, navigateToBoard, onAdd, latestNote, zoom }}
-            />
+            <BoardViewHeader {...{ board, sessionState, dispatch }} />
             <div className="content-container" ref={containerElement.set}>
                 <div className="scroll-container" ref={scrollElement.set}>
                     <div className="border-container" style={borderContainerStyle}>
                         <div
-                            className={L.view(controlSettings, (s) => "board " + s.tool)}
+                            className={L.view(tool, (t) => "board " + t)}
                             draggable={isFirefox ? L.view(focus, (f) => f.status !== "editing") : true}
                             ref={boardRef}
                             onClick={onClick}
@@ -277,7 +268,7 @@ export const BoardView = ({
                                 focus,
                                 coordinateHelper,
                                 dispatch,
-                                tool,
+                                toolController,
                             }}
                         />
                     )
@@ -291,7 +282,7 @@ export const BoardView = ({
                                 board,
                                 isLocked,
                                 focus,
-                                tool,
+                                toolController,
                                 coordinateHelper,
                                 dispatch,
                             }}
@@ -307,7 +298,7 @@ export const BoardView = ({
                                 board,
                                 isLocked,
                                 focus,
-                                tool,
+                                toolController,
                                 coordinateHelper,
                                 dispatch,
                             }}
@@ -329,7 +320,7 @@ export const BoardView = ({
                 </div>
                 <div className="main-toolbar">
                     <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
-                    <ToolSelector {...{ controlSettings }} />
+                    <ToolSelector {...{ toolController }} />
                 </div>
                 <div className="undo-redo-toolbar">
                     <UndoRedo {...{ dispatch }} />

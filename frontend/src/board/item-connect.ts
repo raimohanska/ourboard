@@ -3,7 +3,6 @@ import { Board, Connection, Item, Point, isContainedBy, Id, isItem } from "../..
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Dispatch } from "../store/server-connection"
 import * as uuid from "uuid"
-import { Tool } from "./BoardView"
 import { containedBy, findNearestAttachmentLocationForConnectionNode } from "./geometry"
 import _ from "lodash"
 

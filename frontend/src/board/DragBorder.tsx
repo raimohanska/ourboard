@@ -5,7 +5,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
 import { Dispatch } from "../store/server-connection"
 import { itemDragToMove } from "./item-dragmove"
-import { Tool } from "./BoardView"
+import { Tool, ToolController } from "./tool-selection"
 
 type Position = "left" | "right" | "top" | "bottom"
 
@@ -14,14 +14,14 @@ export const DragBorder = ({
     board,
     coordinateHelper,
     focus,
-    tool,
+    toolController,
     dispatch,
 }: {
     id: string
     coordinateHelper: BoardCoordinateHelper
     focus: L.Atom<BoardFocus>
     board: L.Property<Board>
-    tool: L.Atom<Tool>
+    toolController: ToolController
     dispatch: Dispatch
 }) => {
     return (
@@ -34,7 +34,7 @@ export const DragBorder = ({
     )
 
     function DragHandle({ position }: { position: Position }) {
-        const ref = (e: HTMLElement) => itemDragToMove(id, board, focus, tool, coordinateHelper, dispatch)(e)
+        const ref = (e: HTMLElement) => itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch)(e)
 
         return <span ref={ref} draggable={true} className={`edge-drag ${position}`} />
     }

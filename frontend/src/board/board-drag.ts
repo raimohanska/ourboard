@@ -6,7 +6,7 @@ import { BoardFocus } from "./board-focus"
 import { Rect, overlaps, rectFromPoints, Coordinates } from "./geometry"
 import * as _ from "lodash"
 import { componentScope } from "harmaja"
-import { Tool } from "./BoardView"
+import { Tool } from "./tool-selection"
 
 const ELSEWHERE = { type: "OTHER" } as const
 type Elsewhere = typeof ELSEWHERE

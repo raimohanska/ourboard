@@ -20,7 +20,7 @@ import { DragBorder } from "./DragBorder"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
 import { SelectionBorder } from "./SelectionBorder"
-import { Tool } from "./BoardView"
+import { Tool, ToolController } from "./tool-selection"
 
 export const ItemView = ({
     board,
@@ -32,7 +32,7 @@ export const ItemView = ({
     focus,
     coordinateHelper,
     dispatch,
-    tool,
+    toolController,
 }: {
     board: L.Property<Board>
     history: L.Property<BoardHistoryEntry[]>
@@ -43,13 +43,14 @@ export const ItemView = ({
     focus: L.Atom<BoardFocus>
     coordinateHelper: BoardCoordinateHelper
     dispatch: Dispatch
-    tool: L.Atom<Tool>
+    toolController: ToolController
 }) => {
+    const tool = toolController.tool
     const itemHistory = findItemHistory(history.get(), id) // Purposefully fixing to the first snapshot of history instead of reacting to changes. Would be a performance disaster most likely.
     const element = L.atom<HTMLElement | null>(null)
 
     const ref = (el: HTMLElement) => {
-        type !== "container" && itemDragToMove(id, board, focus, tool, coordinateHelper, dispatch)(el)
+        type !== "container" && itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch)(el)
         element.set(el)
     }
 
@@ -116,7 +117,9 @@ export const ItemView = ({
                         <SelectionBorder {...{ id, tool, item: item, coordinateHelper, board, focus, dispatch }} />
                     ),
             )}
-            {type === "container" && <DragBorder {...{ id, board, tool, coordinateHelper, focus, dispatch }} />}
+            {type === "container" && (
+                <DragBorder {...{ id, board, toolController, coordinateHelper, focus, dispatch }} />
+            )}
             {type === "note" && <AuthorInfo {...{ item: item as L.Property<TextItem>, itemHistory }} />}
         </span>
     )
