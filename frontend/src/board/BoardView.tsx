@@ -77,15 +77,16 @@ export const BoardView = ({
     const sessions = L.view(boardState, (s) => s.users)
     const zoom = L.atom(1)
 
-    const boardElement = L.atom<HTMLElement | null>(null)
+    const containerElement = L.atom<HTMLElement | null>(null)
     const scrollElement = L.atom<HTMLElement | null>(null)
+    const boardElement = L.atom<HTMLElement | null>(null)
     const latestNoteId = L.atom<Id | null>(null)
     const latestNote = L.view(latestNoteId, board, (id, b) => {
         const note = id ? findItem(b)(id) : null
         return (note as Note) || emptyNote
     })
     const focus = synchronizeFocusWithServer(board, locks, sessionId, dispatch)
-    const coordinateHelper = boardCoordinateHelper(boardElement, scrollElement, zoom)
+    const coordinateHelper = boardCoordinateHelper(containerElement, scrollElement, boardElement, zoom)
     const controlSettings = localStorageAtom<ControlSettings>("controlSettings", {
         tool: "pan",
         hasUserManuallySetTool: false,
@@ -149,7 +150,9 @@ export const BoardView = ({
             }
         })
 
-    onClickOutside(boardElement, () => focus.set({ status: "none" }))
+    onClickOutside(boardElement, () => {
+        focus.set({ status: "none" })
+    })
 
     const { viewRect } = boardScrollAndZoomHandler(
         board,
@@ -224,7 +227,7 @@ export const BoardView = ({
             <BoardViewHeader
                 {...{ board, sessionState, dispatch, controlSettings, navigateToBoard, onAdd, latestNote, zoom }}
             />
-            <div className="content-container">
+            <div className="content-container" ref={containerElement.set}>
                 <div className="scroll-container" ref={scrollElement.set}>
                     <div className="border-container" style={borderContainerStyle}>
                         <div
@@ -238,19 +241,6 @@ export const BoardView = ({
                                 renderObservable={renderItem}
                                 getKey={(i) => i.id}
                             />
-                            {L.view(focus, (f) => {
-                                if (f.status !== "adding") return null
-                                const style = L.view(coordinateHelper.currentBoardCoordinates, (p) => ({
-                                    position: "absolute",
-                                    left: `${p.x}em`,
-                                    top: `${p.y}em`,
-                                }))
-                                return (
-                                    <span className="item-adding" style={style}>
-                                        {f.element}
-                                    </span>
-                                )
-                            })}
                             <RectangularDragSelection {...{ rect: selectionRect }} />
                             <CursorsView {...{ cursors, sessions }} />
                             <ContextMenuView {...{ latestNote, dispatch, board, focus }} />
@@ -258,31 +248,7 @@ export const BoardView = ({
                         </div>
                     </div>
                 </div>
-                <div className="tool-layer">
-                    <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
-
-                    <div className="navigation-toolbar">
-                        <BackToAllBoardsLink {...{ navigateToBoard }} />
-                    </div>
-                    <div className="main-toolbar">
-                        <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
-                        <ToolSelector {...{ controlSettings }} />
-                    </div>
-                    <div className="undo-redo-toolbar">
-                        <UndoRedo {...{ dispatch }} />
-                    </div>
-                    {L.view(
-                        viewRect,
-                        (r) => r != null,
-                        (r) => (
-                            <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />
-                        ),
-                    )}
-                    <div className="zoom-toolbar">
-                        <ZoomControls {...{ zoom }} />
-                    </div>
-                    <HistoryView {...{ board, history, focus, dispatch }} />
-                </div>
+                <BoardToolLayer />
             </div>
         </div>
     )
@@ -349,5 +315,50 @@ export const BoardView = ({
                     throw Error("Unsupported item: " + t)
             }
         })
+    }
+
+    function BoardToolLayer() {
+        return (
+            <div className="tool-layer">
+                <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
+
+                <div className="navigation-toolbar">
+                    <BackToAllBoardsLink {...{ navigateToBoard }} />
+                </div>
+                <div className="main-toolbar">
+                    <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
+                    <ToolSelector {...{ controlSettings }} />
+                </div>
+                <div className="undo-redo-toolbar">
+                    <UndoRedo {...{ dispatch }} />
+                </div>
+                {L.view(
+                    viewRect,
+                    (r) => r != null,
+                    (r) => (
+                        <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />
+                    ),
+                )}
+                <div className="zoom-toolbar">
+                    <ZoomControls {...{ zoom }} />
+                </div>
+                <HistoryView {...{ board, history, focus, dispatch }} />
+
+                {L.view(focus, (f) => {
+                    if (f.status !== "adding") return null
+                    const style = L.view(coordinateHelper.currentPageCoordinates, (p) => ({
+                        position: "absolute",
+                        left: `${p.x}px`,
+                        top: `${p.y}px`,
+                        pointerEvents: "none",
+                    }))
+                    return (
+                        <span className="item-adding" style={style}>
+                            {f.element}
+                        </span>
+                    )
+                })}
+            </div>
+        )
     }
 }

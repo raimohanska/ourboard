@@ -23,7 +23,7 @@ export function boardScrollAndZoomHandler(
             (el: HTMLElement) => L.fromEvent(el, "scroll").pipe(L.map(() => ({ x: el.scrollLeft, y: el.scrollTop }))),
             componentScope(),
         ),
-        L.toProperty({ x: 0, y: 0 } as { x: number; y: number }, componentScope()),
+        L.toProperty(G.origin as { x: number; y: number }, componentScope()),
     )
 
     const scrollAndZoom = L.combine(scrollPos, zoom, (s, zoom) => ({ ...s, zoom }))

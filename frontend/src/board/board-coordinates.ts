@@ -1,7 +1,7 @@
 import { componentScope } from "harmaja"
 import * as L from "lonna"
 import * as _ from "lodash"
-import { add, Coordinates, subtract } from "./geometry"
+import { add, Coordinates, subtract, origin } from "./geometry"
 import { TOUCH_ONLY } from "../browser-features"
 
 const newCoordinates = (x: number, y: number): Coordinates => {
@@ -16,11 +16,12 @@ export type BoardCoordinates = Coordinates
 export type BoardCoordinateHelper = ReturnType<typeof boardCoordinateHelper>
 
 export function boardCoordinateHelper(
-    boardElem: L.Property<HTMLElement | null>,
+    containerElem: L.Property<HTMLElement | null>,
     scrollElem: L.Property<HTMLElement | null>,
+    boardElem: L.Property<HTMLElement | null>,
     zoom: L.Property<number>,
 ) {
-    let currentClientPos = L.atom({ x: 0, y: 0 })
+    let currentClientPos = L.atom(origin)
 
     function pxToEm(px: number) {
         return px / baseFontSize()
@@ -40,7 +41,7 @@ export function boardCoordinateHelper(
     }
 
     const boardAbsolutePosition = L.view(boardElem, (b) => {
-        return b ? offset(b) : { x: 0, y: 0 }
+        return b ? offset(b) : origin
     })
 
     function offset(el: HTMLElement): Coordinates {
@@ -55,7 +56,7 @@ export function boardCoordinateHelper(
         const scrollEl = scrollElem.get()
         const { y, x } = boardAbsolutePosition.get()
         if (scrollEl === null) {
-            return { x: 0, y: 0 } // Not the smartest move
+            return origin // Not the smartest move
         }
 
         // Use offsetLeft/offsetTop instead of getBoundingClientRect for getting board position
@@ -81,8 +82,8 @@ export function boardCoordinateHelper(
         return Math.max(0, Math.min(coordinate, maxCoordinate))
     }
 
-    boardElem.forEach((elem) => {
-        if (!elem) {
+    L.view(boardElem, containerElem, (b, c) => [b, c]).forEach(([elem, container]) => {
+        if (!elem || !container) {
             return
         }
 
@@ -109,11 +110,11 @@ export function boardCoordinateHelper(
                     { leading: true, trailing: true },
                 ),
             )
-            elem.addEventListener(
+            container.addEventListener(
                 "mousemove",
                 _.throttle(
                     (e) => {
-                        currentClientPos.set({ x: e.pageX, y: e.pageY })
+                        currentClientPos.set(subtract({ x: e.pageX, y: e.pageY }, boardAbsolutePosition.get()))
                     },
                     16,
                     { leading: true, trailing: true },

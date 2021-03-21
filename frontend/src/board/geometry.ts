@@ -1,5 +1,6 @@
 import * as _ from "lodash"
 import { AttachmentLocation, isItem, Item, Point } from "../../../common/src/domain"
+export const origin = { x: 0, y: 0 }
 export type Coordinates = { x: number; y: number }
 export type Dimensions = { width: number; height: number }
 export type Rect = { x: number; y: number; width: number; height: number }
