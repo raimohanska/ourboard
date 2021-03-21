@@ -1,4 +1,4 @@
-import { componentScope, h, HarmajaOutput } from "harmaja"
+import { componentScope, h } from "harmaja"
 import * as L from "lonna"
 import {
     Board,
@@ -20,7 +20,7 @@ import { DragBorder } from "./DragBorder"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
 import { SelectionBorder } from "./SelectionBorder"
-import { ToolController } from "./tool-selection"
+import { Tool, ToolController } from "./tool-selection"
 
 export const ItemView = ({
     board,

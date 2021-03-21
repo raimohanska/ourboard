@@ -12,13 +12,10 @@ import {
     isShapedItem,
     ShapedItem,
     Id,
-    Container,
 } from "../../../common/src/domain"
 import { Dispatch } from "../store/server-connection"
 import { NOTE_COLORS } from "../../../common/src/colors"
 import { BoardFocus } from "./board-focus"
-import { item } from "lonna"
-import { packItems } from "./area-packer"
 
 export const ContextMenuView = ({
     dispatch,
@@ -59,7 +56,7 @@ export const ContextMenuView = ({
         }
     })
 
-    const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes(), menuShapes(), areaTilingOptions()]
+    const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes(), menuShapes()]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
 
     return L.view(
@@ -245,32 +242,6 @@ export const ContextMenuView = ({
                 const updated = items.map((item) => ({ ...item, shape: newShape })) as ShapedItem[]
                 dispatch({ action: "item.update", boardId: b.id, items: updated })
             }
-        }
-    }
-
-    function areaTilingOptions() {
-        const areasSelected = L.view(focusedItems, (items) =>
-            items.filter((i: Item): i is Container => i.type === "container"),
-        )
-        return L.view(areasSelected, (areas) =>
-            areas.length !== 1
-                ? []
-                : [
-                      <div className="area-options">
-                          <span className="icon tile" onClick={() => packItemsInsideContainer(areas[0])} />
-                      </div>,
-                  ],
-        )
-
-        function packItemsInsideContainer(i: Container) {
-            const packResult = packItems(i, board.get())
-
-            if (!packResult.ok) {
-                console.error("Packing container failed: " + packResult.error)
-                return
-            }
-
-            dispatch({ action: "item.update", boardId: board.get().id, items: packResult.packedItems })
         }
     }
 

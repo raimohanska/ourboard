@@ -9,4 +9,3 @@ cypress/videos/
 backend/localfiles/
 /ignore
 .DS_Store
-latest.dump

@@ -883,9 +883,6 @@ a {
     &.square {
         background-image: url(img/square.svg);
     }
-    &.tile {
-        background-image: url(img/tile.svg);
-    }
     &.disabled {
         pointer-events: none;
         color: $disabled-color;
