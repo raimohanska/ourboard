@@ -83,10 +83,7 @@ export const ConnectionsView = ({
             <svg className="connections" style={svgElementStyle}>
                 <ListView<RenderableConnection, string>
                     observable={connectionsWithItemsPopulated}
-                    renderObservable={(id, conn: L.Property<RenderableConnection>) => {
-                        const selectThisConnection = () => {
-                            focus.set({ status: "connection-selected", id })
-                        }
+                    renderObservable={(key, conn: L.Property<RenderableConnection>) => {
                         const curve = L.combine(
                             L.view(conn, "from"),
                             L.view(conn, "to"),
@@ -110,12 +107,7 @@ export const ConnectionsView = ({
                         )
                         return (
                             <g>
-                                <path
-                                    style={{ pointerEvents: "all" }}
-                                    onClick={selectThisConnection}
-                                    className="connection"
-                                    d={curve}
-                                ></path>
+                                <path className="connection" d={curve}></path>
                             </g>
                         )
                     }}
