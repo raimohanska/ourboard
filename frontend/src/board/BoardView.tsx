@@ -358,7 +358,9 @@ export const BoardView = ({
                 {L.view(focus, tool, (f, t) => {
                     if (t !== "connect") return null
                     const text =
-                        f.status === "connection-adding" ? "Finish by clicking on target" : "Click on an item to start"
+                        f.status === "connection-adding"
+                            ? "Finish by clicking on target"
+                            : "Click on an item to make a connection"
 
                     const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
                         position: "absolute",
