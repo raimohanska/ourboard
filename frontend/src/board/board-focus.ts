@@ -9,11 +9,13 @@ export type BoardFocus =
     | { status: "connection-selected"; id: Id }
     | { status: "editing"; id: Id }
     | { status: "adding"; element: HarmajaChild; item: Item }
+    | { status: "connection-adding" }
 
 export function getSelectedIds(f: BoardFocus): Set<Id> {
     switch (f.status) {
         case "none":
         case "adding":
+        case "connection-adding":
         case "connection-selected":
             return new Set()
         case "editing":
@@ -36,6 +38,7 @@ export function removeFromSelection(selection: BoardFocus, toRemove: Set<Id>): B
     switch (selection.status) {
         case "adding":
         case "none":
+        case "connection-adding":
             return selection
         case "editing":
         case "connection-selected":

@@ -1,10 +1,23 @@
 import * as L from "lonna"
-import { ItemType } from "../../../common/src/domain"
+import { Board, ItemType } from "../../../common/src/domain"
+import { Dispatch } from "../store/server-connection"
+import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedIds } from "./board-focus"
+import { startConnecting } from "./item-connect"
+import { findSelectedItems } from "./item-cut-copy-paste"
+import { ToolController } from "./tool-selection"
 
-export function itemSelectionHandler(id: string, type: ItemType, focus: L.Atom<BoardFocus>) {
+export function itemSelectionHandler(
+    id: string,
+    type: ItemType,
+    focus: L.Atom<BoardFocus>,
+    toolController: ToolController,
+    board: L.Property<Board>,
+    coordinateHelper: BoardCoordinateHelper,
+    dispatch: Dispatch,
+) {
     const itemFocus = L.view(focus, (f) => {
-        if (f.status === "none" || f.status === "adding") return "none"
+        if (f.status === "none" || f.status === "adding" || f.status === "connection-adding") return "none"
         if (f.status === "selected") return f.ids.has(id) ? "selected" : "none"
         if (f.status === "dragging") return f.ids.has(id) ? "dragging" : "none"
         return f.id === id ? "editing" : "none"
@@ -15,7 +28,12 @@ export function itemSelectionHandler(id: string, type: ItemType, focus: L.Atom<B
     function onClick(e: JSX.MouseEvent) {
         const f = focus.get()
         const selectedIds = getSelectedIds(f)
-        if (e.shiftKey && (f.status === "selected" || f.status === "editing")) {
+        const tool = toolController.tool.get()
+        if (tool === "connect") {
+            const item = board.get().items[id]
+            startConnecting(board, coordinateHelper, dispatch, toolController, focus, item)
+            e.stopPropagation()
+        } else if (e.shiftKey && (f.status === "selected" || f.status === "editing")) {
             if (selectedIds.has(id)) {
                 focus.set({ status: "selected", ids: new Set([...selectedIds].filter((i) => i !== id)) })
             } else {

@@ -30,6 +30,7 @@ export const ContextMenuView = ({
         switch (f.status) {
             case "none":
             case "adding":
+            case "connection-adding":
             case "connection-selected":
             case "dragging":
                 return []

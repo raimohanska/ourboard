@@ -36,7 +36,6 @@ export function boardDragHandler({
         return rectFromPoints(s, c)
     })
 
-    // TODO make this an atom, lazy af
     const dragAction = L.atom<DragAction>({ action: "none" })
 
     function isContainerWhereDragStarted(i: Item) {

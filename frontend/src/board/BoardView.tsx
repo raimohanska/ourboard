@@ -159,7 +159,10 @@ export const BoardView = ({
 
     function onClick(e: JSX.MouseEvent) {
         const f = focus.get()
-        if (f.status === "adding") {
+        if (f.status === "connection-adding") {
+            console.log("click -> end")
+            toolController.useDefaultTool()
+        } else if (f.status === "adding") {
             onAdd(f.item)
         } else {
             if (e.target === boardElement.get()) {

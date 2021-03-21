@@ -54,7 +54,15 @@ export const ItemView = ({
         element.set(el)
     }
 
-    const { itemFocus, selected, onClick } = itemSelectionHandler(id, type, focus)
+    const { itemFocus, selected, onClick } = itemSelectionHandler(
+        id,
+        type,
+        focus,
+        toolController,
+        board,
+        coordinateHelper,
+        dispatch,
+    )
 
     const dataTest = L.combineTemplate({
         text: L.view(item, (i) => (i.type === "note" || i.type === "text" ? i.text : "")),

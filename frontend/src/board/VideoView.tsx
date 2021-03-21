@@ -32,7 +32,15 @@ export const VideoView = ({
     dispatch: Dispatch
     assets: AssetStore
 }) => {
-    const { selected, onClick } = itemSelectionHandler(id, "video", focus)
+    const { selected, onClick } = itemSelectionHandler(
+        id,
+        "video",
+        focus,
+        toolController,
+        board,
+        coordinateHelper,
+        dispatch,
+    )
     const tool = toolController.tool
     return (
         <span

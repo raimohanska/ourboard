@@ -5,11 +5,56 @@ import { Dispatch } from "../store/server-connection"
 import * as uuid from "uuid"
 import { containedBy, findNearestAttachmentLocationForConnectionNode } from "./geometry"
 import _ from "lodash"
+import { ToolController } from "./tool-selection"
+import { BoardFocus } from "./board-focus"
+import { globalScope } from "lonna"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
 DND_GHOST_HIDING_IMAGE.src =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+
+let currentConnectionHandler = L.atom<ConnectionHandler | null>(null)
+
+export function startConnecting(
+    board: L.Property<Board>,
+    coordinateHelper: BoardCoordinateHelper,
+    dispatch: Dispatch,
+    toolController: ToolController,
+    focus: L.Atom<BoardFocus>,
+    item: Item,
+) {
+    const h = currentConnectionHandler.get()
+    if (h) {
+        endConnection()
+    } else {
+        const h = drawConnectionHandler(board, coordinateHelper, dispatch)
+        currentConnectionHandler.set(h)
+        focus.set({ status: "connection-adding" })
+        h.whileDragging(item, coordinateHelper.currentBoardCoordinates.get())
+        const toWatch = [currentConnectionHandler, toolController.tool, focus] as L.Property<any>[]
+        const stop = L.merge(toWatch.map((p) => p.pipe(L.changes))).pipe(L.take(1, globalScope))
+        coordinateHelper.currentBoardCoordinates.pipe(L.takeUntil(stop)).forEach((pos) => {
+            h.whileDragging(item, pos)
+        })
+        stop.forEach(endConnection)
+    }
+
+    function endConnection() {
+        const h = currentConnectionHandler.get()
+        if (h) {
+            h.endDrag()
+            toolController.useDefaultTool()
+            const connection = h.getCurrentConnection()
+
+            focus.set(connection ? { status: "connection-selected", id: connection.id } : { status: "none" })
+
+            currentConnectionHandler.set(null)
+        }
+    }
+}
+
+type ConnectionHandler = ReturnType<typeof drawConnectionHandler>
 
 export function drawConnectionHandler(
     board: L.Property<Board>,
@@ -18,11 +63,11 @@ export function drawConnectionHandler(
 ) {
     let localConnection: Connection | null = null
 
-    function whileDragging(item: Item, currentPos: Point) {
+    function whileDragging(item: Item, currentBoardCoords: Point) {
         const b = board.get()
         const boardId = b.id
 
-        const targetExistingItem = findTarget(b.items, item, currentPos)
+        const targetExistingItem = findTarget(b.items, item, currentBoardCoords)
 
         if (targetExistingItem === item) {
             if (localConnection !== null) {
@@ -37,7 +82,7 @@ export function drawConnectionHandler(
                 dispatch({ action: "connection.add", boardId, connection: localConnection })
             } else {
                 // Change current connection endpoint
-                const destinationPoint = targetExistingItem ?? currentPos
+                const destinationPoint = targetExistingItem ?? currentBoardCoords
 
                 const midpointFromReference = findNearestAttachmentLocationForConnectionNode(item, destinationPoint)
                 const midpointToReference = findNearestAttachmentLocationForConnectionNode(destinationPoint, item)
@@ -51,7 +96,7 @@ export function drawConnectionHandler(
                 localConnection = {
                     ...localConnection,
                     controlPoints: [midpoint],
-                    to: targetExistingItem ? targetExistingItem.id : currentPos,
+                    to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
                 }
 
                 dispatch({ action: "connection.modify", boardId: b.id, connection: localConnection })
@@ -75,6 +120,7 @@ export function drawConnectionHandler(
     return {
         endDrag,
         whileDragging,
+        getCurrentConnection: () => localConnection,
     }
 }
 
