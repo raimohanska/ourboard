@@ -431,6 +431,7 @@ a {
             display: block;
             width: max(0.4em, 3px);
             height: max(0.4em, 3px);
+            cursor: pointer;
 
             &.from-node {
                 background: white;
