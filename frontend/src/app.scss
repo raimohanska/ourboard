@@ -418,6 +418,10 @@ a {
                 stroke-width: max(0.1em, 1.5px);
                 stroke-linecap: round;
                 fill: transparent;
+                &.phantom {
+                    stroke: yellow;
+                    stroke-width: max(0.5em, 15px);
+                }
             }
         }
 

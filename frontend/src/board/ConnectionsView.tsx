@@ -113,6 +113,12 @@ export const ConnectionsView = ({
                                 <path
                                     style={{ pointerEvents: "all" }}
                                     onClick={selectThisConnection}
+                                    className="connection phantom"
+                                    d={curve}
+                                ></path>
+                                <path
+                                    style={{ pointerEvents: "all" }}
+                                    onClick={selectThisConnection}
                                     className="connection"
                                     d={curve}
                                 ></path>
