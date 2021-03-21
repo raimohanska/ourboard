@@ -145,10 +145,13 @@ export const ConnectionsView = ({
             return Math.round(angleInDegrees)
         })
 
-        const style = L.combine(cNode, angle, (cn, ang) => ({
+        const wrapperStyle = L.view(cNode, (cn) => ({
             top: coordinateHelper.emToPx(cn.node.point.y),
             left: coordinateHelper.emToPx(cn.node.point.x),
-            transform: ang !== null ? `translate(-50%, -50%) rotate(${ang}deg)` : undefined,
+        }))
+
+        const nodeStyle = L.view(angle, (ang) => ({
+            transform: ang !== null ? `rotate(${ang}deg)` : undefined,
         }))
 
         const selectThisConnection = () => {
@@ -161,20 +164,25 @@ export const ConnectionsView = ({
                 draggable={true}
                 onClick={selectThisConnection}
                 onDragStart={selectThisConnection}
-                id={id}
-                className={L.view(cNode, (cn) => {
-                    let cls = "connection-node "
+                style={wrapperStyle}
+                className="connection-node-grabber-helper"
+            >
+                <div
+                    id={id}
+                    className={L.view(cNode, (cn) => {
+                        let cls = "connection-node "
 
-                    cls += `${cn.type}-node `
+                        cls += `${cn.type}-node `
 
-                    if (cn.selected) cls += "highlight "
+                        if (cn.selected) cls += "highlight "
 
-                    cls += cn.node.side === "none" ? "unattached" : "attached"
+                        cls += cn.node.side === "none" ? "unattached" : "attached"
 
-                    return cls
-                })}
-                style={style}
-            ></div>
+                        return cls
+                    })}
+                    style={nodeStyle}
+                ></div>
+            </div>
         )
     }
 }
