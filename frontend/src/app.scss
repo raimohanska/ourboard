@@ -12,6 +12,7 @@ $disabled-color: lightgrey;
 $z-index-menu: 400000002;
 $z-index-cursors: 400000000;
 $board-area-padding: 1rem;
+$main-toolbar-offset: 4rem;
 
 @import "ui.scss";
 
@@ -619,7 +620,7 @@ a {
         .main-toolbar {
             @extend .toolbar;
             position: fixed;
-            top: 60px;
+            top: $main-toolbar-offset;
             left: 50%;
             transform: translateX(-50%);
             padding: 0.5em 1em 0.2em;
