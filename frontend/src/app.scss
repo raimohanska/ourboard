@@ -35,7 +35,7 @@ html {
 }
 
 #root {
-    font-size: min(4vw, 3vh, 20px);
+    font-size: max(min(4vw, 3vh, 20px), 100%);
 }
 
 h2 {
