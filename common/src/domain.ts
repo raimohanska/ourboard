@@ -70,10 +70,6 @@ export type BoardHistoryEntry = {
 export type BoardWithHistory = { board: Board; history: BoardHistoryEntry[] }
 export type CompactBoardHistory = { boardAttributes: BoardAttributes; history: BoardHistoryEntry[] }
 
-export function isFullyFormedBoard(b: Board | BoardStub): b is Board {
-    return !!b.id && !!b.name && ["width", "height", "items"].every((prop) => prop in b)
-}
-
 export const defaultBoardSize = { width: 800, height: 600 }
 
 export interface CursorPosition {

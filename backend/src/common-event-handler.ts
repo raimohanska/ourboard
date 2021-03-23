@@ -1,4 +1,4 @@
-import { AppEvent, defaultBoardSize, isFullyFormedBoard } from "../../common/src/domain"
+import { AppEvent, defaultBoardSize } from "../../common/src/domain"
 import { addBoard } from "./board-state"
 import { MessageHandlerResult } from "./connection-handler"
 import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
@@ -73,9 +73,7 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
         }
         case "board.add": {
             const { payload } = appEvent
-            const board = !isFullyFormedBoard(payload)
-                ? { ...defaultBoardSize, ...payload, items: {}, connections: [], serial: 0 }
-                : payload
+            const board = { ...defaultBoardSize, ...payload, items: {}, connections: [], serial: 0 }
             await addBoard(board)
             return true
         }

@@ -1,13 +1,13 @@
-import { h, Fragment, ListView } from "harmaja"
+import { h, ListView } from "harmaja"
 import * as L from "lonna"
 import { exampleBoard, Id } from "../../../common/src/domain"
-import { generateFromTemplate, getUserTemplates } from "../board/templates"
 import { TextInput } from "../components/components"
 import { canLogin, UserSessionState } from "../store/user-session-store"
 import _ from "lodash"
 import { signIn, signOut } from "../google-auth"
 import { RecentBoards } from "../store/recent-boards"
 import { Dispatch } from "../store/server-connection"
+import * as uuid from "uuid"
 
 export const DashboardView = ({
     sessionState,
@@ -128,35 +128,15 @@ const CreateBoard = ({
 
     function createBoard(e: JSX.FormEvent) {
         e.preventDefault()
-        const templateName = chosenTemplate.get()
-        const template = templates[templateName]
-        if (!template) {
-            throw Error("Template" + templateName + "not found??")
-        }
-        const newBoard = generateFromTemplate(boardName.get(), template)
+        const newBoard = { name: boardName.get(), id: uuid.v4() }
         dispatch({ action: "board.add", payload: newBoard })
         setTimeout(() => navigateToBoard(newBoard.id), 100) // TODO: some ack based solution would be more reliable
     }
-
-    const { templates, templateOptions, defaultTemplate } = getUserTemplates()
-    const chosenTemplate = L.atom<string>(defaultTemplate.name)
 
     return (
         <form onSubmit={createBoard} className="create-board">
             <h2>Create a board</h2>
             <TextInput value={boardName} placeholder="Enter board name" />
-            {templateOptions.length > 1 && (
-                <>
-                    <small>
-                        <label htmlFor="template-select">Use template</label>
-                    </small>
-                    <select onChange={(e) => chosenTemplate.set(e.target.value)} name="templates" id="template-select">
-                        {templateOptions.map((name) => (
-                            <option value={name}>{name}</option>
-                        ))}
-                    </select>
-                </>
-            )}
             <button data-test="create-board-submit" type="submit" disabled={disabled}>
                 Create
             </button>
