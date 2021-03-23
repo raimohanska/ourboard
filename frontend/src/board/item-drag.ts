@@ -30,7 +30,13 @@ export function onBoardItemDrag(
     let currentPos: { x: number; y: number } | null = null
 
     elem.addEventListener("dragstart", (e) => {
-        if (e.target !== elem) return
+        if (e.target !== elem && (e.target as Element)?.nodeName !== "IMG") {
+            // Prevent multiple drag listeners from capturing the same drag event.
+            // Hack: when dragging images, the image itself is the drag target,
+            // but the parent span handles the drag behavior, so make an exception for those.
+            // FIXME: figure out better solution
+            return
+        }
         e.stopPropagation()
         e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
         const f = focus.get()
@@ -50,8 +56,16 @@ export function onBoardItemDrag(
     elem.addEventListener(
         "drag",
         throttle((e) => {
-            if (e.target !== elem) return
+            if (e.target !== elem && e.target?.nodeName !== "IMG") {
+                // Prevent multiple drag listeners from capturing the same drag event.
+                // Hack: when dragging images, the image itself is the drag target,
+                // but the parent span handles the drag behavior, so make an exception for those.
+                // FIXME: figure out better solution
+                return
+            }
+
             e.stopPropagation()
+
             const f = focus.get()
             if (f.status !== "dragging") {
                 e.preventDefault()
