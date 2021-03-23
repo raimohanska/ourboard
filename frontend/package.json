@@ -19,6 +19,7 @@
     "harmaja": "^0.21.0",
     "io-ts": "^2.2.15",
     "jsonwebtoken": "^8.5.1",
+    "localforage": "^1.9.0",
     "lodash": "^4.17.20",
     "lonna": "^0.9",
     "md5": "^2.3.0",

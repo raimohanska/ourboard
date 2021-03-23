@@ -24,7 +24,7 @@ import {
     UserSessionInfo,
 } from "../../../common/src/domain"
 import { mkBootStrapEvent } from "../../../common/src/migration"
-import { clearBoardState, getInitialBoardState, storeBoardState } from "./board-local-store"
+import { clearBoardState, getInitialBoardState, storeBoardState, storedBoardsLoaded } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
 
@@ -246,7 +246,9 @@ export function BoardStore(
             }
         }),
     )
-    localBoardToSave.forEach(storeBoardState)
+    localBoardToSave.forEach(async (board) => {
+        await storeBoardState(board)
+    })
 
     boardId.forEach((boardId) => {
         // Switch socket per board. This terminates the unnecessary board session on server.
@@ -268,10 +270,12 @@ export function BoardStore(
     }
 
     function doJoin(boardId: Id) {
-        connection.sendImmediately({
-            action: "board.join",
-            boardId: boardId,
-            initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
+        storedBoardsLoaded.finally(() => {
+            connection.sendImmediately({
+                action: "board.join",
+                boardId: boardId,
+                initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
+            })
         })
     }
 
