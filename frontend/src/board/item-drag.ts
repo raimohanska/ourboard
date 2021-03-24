@@ -1,4 +1,3 @@
-import { throttle } from "lodash"
 import * as L from "lonna"
 import { Board, Item } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
@@ -30,13 +29,6 @@ export function onBoardItemDrag(
     let currentPos: { x: number; y: number } | null = null
 
     elem.addEventListener("dragstart", (e) => {
-        if (e.target !== elem && (e.target as Element)?.nodeName !== "IMG") {
-            // Prevent multiple drag listeners from capturing the same drag event.
-            // Hack: when dragging images, the image itself is the drag target,
-            // but the parent span handles the drag behavior, so make an exception for those.
-            // FIXME: figure out better solution
-            return
-        }
         e.stopPropagation()
         e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
         const f = focus.get()
@@ -53,50 +45,37 @@ export function onBoardItemDrag(
         dragStart = e
         dragStartPositions = board.get().items
     })
-    elem.addEventListener(
-        "drag",
-        throttle((e) => {
-            if (e.target !== elem && e.target?.nodeName !== "IMG") {
-                // Prevent multiple drag listeners from capturing the same drag event.
-                // Hack: when dragging images, the image itself is the drag target,
-                // but the parent span handles the drag behavior, so make an exception for those.
-                // FIXME: figure out better solution
-                return
-            }
+    elem.addEventListener("drag", (e) => {
+        e.stopPropagation()
+        const f = focus.get()
+        if (f.status !== "dragging") {
+            e.preventDefault()
+            return
+        }
+        const newPos = coordinateHelper.boardCoordDiffFromThisPageCoordinate({
+            x: dragStart!.pageX,
+            y: dragStart!.pageY,
+        })
+        if (currentPos && currentPos.x == newPos.x && currentPos.y === newPos.y) {
+            return
+        }
+        currentPos = newPos
+        const { x: xDiff, y: yDiff } = newPos
 
-            e.stopPropagation()
-
-            const f = focus.get()
-            if (f.status !== "dragging") {
-                e.preventDefault()
-                return
+        const b = board.get()
+        const items = [...f.ids].map((id) => {
+            const current = b.items[id]
+            const dragStartPosition = dragStartPositions[id]
+            if (!current || !dragStartPosition) throw Error("Item not found: " + id)
+            return {
+                current,
+                dragStartPosition,
             }
-            const newPos = coordinateHelper.boardCoordDiffFromThisPageCoordinate({
-                x: dragStart!.pageX,
-                y: dragStart!.pageY,
-            })
-            if (currentPos && currentPos.x == newPos.x && currentPos.y === newPos.y) {
-                return
-            }
-            currentPos = newPos
-            const { x: xDiff, y: yDiff } = newPos
-
-            const b = board.get()
-            const items = [...f.ids].map((id) => {
-                const current = b.items[id]
-                const dragStartPosition = dragStartPositions[id]
-                if (!current || !dragStartPosition) throw Error("Item not found: " + id)
-                return {
-                    current,
-                    dragStartPosition,
-                }
-            })
-            doWhileDragging(b, items, xDiff, yDiff)
-        }, 50),
-    )
+        })
+        doWhileDragging(b, items, xDiff, yDiff)
+    })
 
     elem.addEventListener("dragend", (e) => {
-        if (e.target !== elem) return
         e.stopPropagation()
         focus.modify((f) => {
             if (f.status !== "dragging") {

@@ -20,7 +20,7 @@ export const storedBoardsLoaded = localForage
                     const stringState = await localForage.getItem<string>(k)
                     storedBoardStates[k] = JSON.parse(stringState!) as LocalStorageBoard
                 } catch (e) {
-                    console.error(`Getting key ${k} from IndexedDB failed`, err)
+                    console.error(`Getting key ${k} from IndexedDB failed`, e)
                 }
             }),
         ),
