@@ -442,8 +442,8 @@ a {
             align-items: center;
             justify-content: center;
             background: transparent;
-            width: 4em;
-            height: 4em;
+            width: min(4em, 4rem);
+            height: min(4em, 4rem);
             border-radius: 50%;
             cursor: pointer;
 
