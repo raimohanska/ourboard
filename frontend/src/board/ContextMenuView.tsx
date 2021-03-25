@@ -62,13 +62,16 @@ export const ContextMenuView = ({
     const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes(), menuShapes(), areaTilingOptions()]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
 
+    const captureEvents = (e: JSX.MouseEvent) => {
+        e.stopPropagation()
+    }
     return L.view(
         activeWidgets,
         (ws) => ws.length === 0,
         (hide) =>
             hide ? null : (
                 <div className="context-menu-positioner" style={style}>
-                    <div className="context-menu">
+                    <div className="context-menu" onDoubleClick={captureEvents} onClick={captureEvents}>
                         <ListView observable={activeWidgets} renderItem={(x) => x} getKey={(x) => x} />
                     </div>
                 </div>
