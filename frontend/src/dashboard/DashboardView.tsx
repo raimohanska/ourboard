@@ -68,7 +68,7 @@ const RecentBoardsView = ({
     const boardsToShow = L.view(recentBoards.recentboards, (bs) =>
         _.sortBy(bs, (b) => b.opened)
             .reverse()
-            .slice(0, 15),
+            .slice(0, 25),
     )
     return L.view(
         boardsToShow,
