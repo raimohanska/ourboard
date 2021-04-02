@@ -2,7 +2,7 @@ import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
 import { Board, Item, Container } from "../../../common/src/domain"
 import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
-import { BoardFocus } from "./board-focus"
+import { BoardFocus, getSelectedIds } from "./board-focus"
 import { Rect, overlaps, rectFromPoints, Coordinates, containedBy } from "./geometry"
 import * as _ from "lodash"
 import { componentScope } from "harmaja"
@@ -37,22 +37,16 @@ export function boardDragHandler({
         el.addEventListener("dragstart", (e) => {
             const t = tool.get()
             const shouldDragSelect = t === "pan" ? !!e.altKey : true
-            dragAction.set(!shouldDragSelect ? { action: "move" } : { action: "select", selectedAtStart: new Set() })
             e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
-
             const pos = coordinateHelper.pageToBoardCoordinates({ x: e.pageX, y: e.pageY })
             start.set(pos)
             current.set(pos)
-
-            const da = dragAction.get()
-            if (e.shiftKey && da.action === "select") {
-                const f = focus.get()
-
-                const selectedAtStart = f.status === "selected" ? f.ids : da.selectedAtStart
-                if (f.status === "selected") {
-                    dragAction.set({ ...da, selectedAtStart: f.ids })
-                }
+            if (!shouldDragSelect) {
+                dragAction.set({ action: "move" })
+            } else {
+                let selectedAtStart = e.shiftKey ? getSelectedIds(focus.get()) : new Set<string>()
                 focus.set(selectedAtStart.size > 0 ? { status: "selected", ids: selectedAtStart } : { status: "none" })
+                dragAction.set({ action: "select", selectedAtStart })
             }
         })
 
