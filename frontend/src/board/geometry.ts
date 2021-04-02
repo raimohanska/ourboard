@@ -33,8 +33,14 @@ export function distance(a: Coordinates, b: Coordinates) {
     return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2))
 }
 
-export function containedBy(a: Rect, b: Rect) {
-    return a.x > b.x && a.y > b.y && a.x + a.width < b.x + b.width && a.y + a.height < b.y + b.height
+export function containedBy(a: Point, b: Rect): boolean
+export function containedBy(a: Rect, b: Rect): boolean
+export function containedBy(a: Rect | Point, b: Rect) {
+    if ("width" in a) {
+        return a.x > b.x && a.y > b.y && a.x + a.width < b.x + b.width && a.y + a.height < b.y + b.height
+    } else {
+        return a.x > b.x && a.y > b.y && a.x < b.x + b.width && a.y < b.y + b.height
+    }
 }
 
 export function rectFromPoints(a: Coordinates, b: Coordinates) {

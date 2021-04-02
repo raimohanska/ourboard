@@ -3,18 +3,12 @@ import { Board, Item, Container } from "../../../common/src/domain"
 import * as L from "lonna"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { BoardFocus } from "./board-focus"
-import { Rect, overlaps, rectFromPoints, Coordinates } from "./geometry"
+import { Rect, overlaps, rectFromPoints, Coordinates, containedBy } from "./geometry"
 import * as _ from "lodash"
 import { componentScope } from "harmaja"
 import { Tool } from "./tool-selection"
 
-const ELSEWHERE = { type: "OTHER" } as const
-type Elsewhere = typeof ELSEWHERE
-
-export type DragAction =
-    | { action: "select"; selectedAtStart: Set<string>; dragStartedOn: Container | Elsewhere | null }
-    | { action: "move" }
-    | { action: "none" }
+export type DragAction = { action: "select"; selectedAtStart: Set<string> } | { action: "move" } | { action: "none" }
 
 export function boardDragHandler({
     boardElem,
@@ -38,21 +32,12 @@ export function boardDragHandler({
 
     const dragAction = L.atom<DragAction>({ action: "none" })
 
-    function isContainerWhereDragStarted(i: Item) {
-        const da = dragAction.get()
-        return da.action === "select" && da.dragStartedOn?.type === "container" && i === da.dragStartedOn
-    }
-
     boardElem.forEach((el) => {
         if (!el) return
         el.addEventListener("dragstart", (e) => {
             const t = tool.get()
             const shouldDragSelect = t === "pan" ? !!e.altKey : true
-            dragAction.set(
-                !shouldDragSelect
-                    ? { action: "move" }
-                    : { action: "select", selectedAtStart: new Set(), dragStartedOn: null },
-            )
+            dragAction.set(!shouldDragSelect ? { action: "move" } : { action: "select", selectedAtStart: new Set() })
             e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
 
             const pos = coordinateHelper.pageToBoardCoordinates({ x: e.pageX, y: e.pageY })
@@ -79,22 +64,14 @@ export function boardDragHandler({
                 (e: DragEvent) => {
                     const coords = coordinateHelper.currentBoardCoordinates.get()
                     current.set(coords)
-                    const bounds = rect.get()!
-
                     const da = dragAction.get()
                     if (da.action === "select") {
+                        const bounds = rect.get()!
+                        const startPoint = start.get()!
                         // Do not select container if drag originates from within container
                         const overlapping = itemsList
                             .get()
-                            .filter((i) => !isContainerWhereDragStarted(i) && overlaps(i, bounds))
-                        if (da.dragStartedOn === null) {
-                            if (overlapping[0]?.type === "container") {
-                                da.dragStartedOn = overlapping[0]
-                                overlapping.shift()
-                            } else {
-                                da.dragStartedOn = ELSEWHERE
-                            }
-                        }
+                            .filter((i) => overlaps(i, bounds) && !containedBy(startPoint, i))
 
                         const toBeSelected = new Set(overlapping.map((i) => i.id).concat([...da.selectedAtStart]))
 
