@@ -424,96 +424,6 @@ a {
             }
         }
 
-        $connection-color: #444444;
-
-        svg.connections {
-            .connection {
-                stroke: $connection-color;
-                stroke-width: max(0.1em, 1.5px);
-                stroke-linecap: round;
-                fill: transparent;
-            }
-        }
-
-        .connection-node-grabber-helper {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            z-index: 100000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            width: min(4em, 4rem);
-            height: min(4em, 4rem);
-            border-radius: 50%;
-            cursor: pointer;
-
-            &:hover {
-                background: rgba(0, 0, 0, 0.1);
-            }
-        }
-
-        .connection-node {
-            @extend .dropshadow-shallow;
-            display: block;
-            width: max(0.4em, 6px);
-            height: max(0.4em, 6px);
-            cursor: pointer;
-
-            &.from-node {
-                background: white;
-                border-radius: 50%;
-                border: 1px solid #cccccc;
-                $corner-offset: -7px;
-                width: max(0.4em, 6px);
-                height: max(0.4em, 6px);
-
-                &.highlight,
-                &:hover {
-                    width: max(0.4em, 10px);
-                    height: max(0.4em, 10px);
-                    border: 2px solid $link-color;
-                }
-            }
-
-            &.control-node {
-                background: $connection-color;
-                border-radius: 50%;
-                $corner-offset: -7px;
-                width: max(0.3em, 6px);
-                height: max(0.3em, 6px);
-                &.highlight {
-                    width: max(0.4em, 10px);
-                    height: max(0.4em, 10px);
-                    border: 2px solid $link-color;
-                }
-
-                &.highlight,
-                &:hover {
-                    background: white;
-                    border: 2px solid $link-color;
-                }
-            }
-
-            &.to-node {
-                box-shadow: none;
-                background: transparent;
-
-                width: 0;
-                height: 0;
-                border-top: max(0.2em, 3px) solid transparent;
-                border-left: max(0.6em, 8px) solid $connection-color;
-                border-bottom: max(0.2em, 3px) solid transparent;
-
-                &.highlight,
-                &:hover {
-                    border-top: max(0.3em, 4.5px) solid transparent;
-                    border-left: max(0.8em, 12px) solid $link-color;
-                    border-bottom: max(0.3em, 4.5px) solid transparent;
-                }
-            }
-        }
-
         .cursor {
             z-index: $z-index-cursors;
             pointer-events: none;
@@ -943,4 +853,109 @@ select {
     min-width: 1em;
     padding-left: 1.5em;
     color: $black; /* to prevent link-like coloring for contained text */
+}
+
+$connection-color: #444444;
+
+svg.connections {
+    .connection {
+        stroke: $connection-color;
+        stroke-width: max(0.1em, 1.5px);
+        stroke-linecap: round;
+        fill: transparent;
+    }
+}
+
+.connection-node {
+    @extend .dropshadow-shallow;
+    display: block;
+    width: max(0.4em, 6px);
+    height: max(0.4em, 6px);
+    cursor: pointer;
+
+    &.from-node {
+        background: white;
+        border-radius: 50%;
+        border: 1px solid #cccccc;
+        $corner-offset: -7px;
+        width: max(0.4em, 6px);
+        height: max(0.4em, 6px);
+
+        .board:not(.connect) & {
+            &.highlight,
+            &:hover {
+                width: max(0.4em, 10px);
+                height: max(0.4em, 10px);
+                border: 2px solid $link-color;
+            }
+        }
+    }
+
+    &.control-node {
+        background: $connection-color;
+        border-radius: 50%;
+        $corner-offset: -7px;
+        width: max(0.3em, 6px);
+        height: max(0.3em, 6px);
+        &.highlight {
+            width: max(0.4em, 10px);
+            height: max(0.4em, 10px);
+            border: 2px solid $link-color;
+        }
+
+        .board:not(.connect) & {
+            &.highlight,
+            &:hover {
+                background: white;
+                border: 2px solid $link-color;
+            }
+        }
+    }
+
+    &.to-node {
+        box-shadow: none;
+        background: transparent;
+
+        width: 0;
+        height: 0;
+        border-top: max(0.2em, 3px) solid transparent;
+        border-left: max(0.6em, 8px) solid $connection-color;
+        border-bottom: max(0.2em, 3px) solid transparent;
+
+        .board:not(.connect) & {
+            &.highlight,
+            &:hover {
+                border-top: max(0.3em, 4.5px) solid transparent;
+                border-left: max(0.8em, 12px) solid $link-color;
+                border-bottom: max(0.3em, 4.5px) solid transparent;
+            }
+        }
+    }
+}
+
+.connection-node-grabber-helper {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    width: min(4em, 4rem);
+    height: min(4em, 4rem);
+    border-radius: 50%;
+    cursor: pointer;
+    .board:not(.connect) & {
+        &:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+    }
+}
+
+.board.connect {
+    .item {
+        &:hover {
+            border: 1px solid black;
+        }
+    }
 }
