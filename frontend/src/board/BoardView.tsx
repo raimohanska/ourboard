@@ -332,10 +332,12 @@ export const BoardView = ({
         let startPos: Point | null = null
         let dragStartedAt: Point | null = null
         const onDragStart = (e: JSX.DragEvent) => {
+            if (e.target !== toolbarEl.get()) return
             dragStartedAt = coordinateHelper.currentPageCoordinates.get()
             startPos = toolbarEl.get()!.getBoundingClientRect()
         }
         const onDragEnd = (e: JSX.DragEvent) => {
+            if (!dragStartedAt) return
             const endPos = coordinateHelper.currentPageCoordinates.get()
             const diff = G.subtract(endPos, dragStartedAt!)
             const newPos = {
@@ -344,6 +346,7 @@ export const BoardView = ({
             }
             console.log(newPos)
             toolbarPosition.set({ ...newPos, orientation: newPos.x < 100 ? "vertical" : "horizontal" })
+            dragStartedAt = null
         }
         const toolbarStyle = L.view(toolbarPosition, (p) => ({
             top: p.y || undefined,
