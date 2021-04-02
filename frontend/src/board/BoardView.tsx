@@ -42,6 +42,7 @@ import { UndoRedo } from "./toolbars/UndoRedo"
 import { ZoomControls } from "./toolbars/ZoomControls"
 import { BackToAllBoardsLink } from "./toolbars/BackToAllBoardsLink"
 import { ToolController } from "./tool-selection"
+import { reduce } from "lodash"
 
 const emptyNote = newNote("")
 

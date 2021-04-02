@@ -4,7 +4,7 @@ export const origin = { x: 0, y: 0 }
 export type Coordinates = { x: number; y: number }
 export type Dimensions = { width: number; height: number }
 export type Rect = { x: number; y: number; width: number; height: number }
-
+export const ZERO_RECT = { x: 0, y: 0, height: 0, width: 0 }
 export function add(a: Coordinates, b: Coordinates) {
     return { x: a.x + b.x, y: a.y + b.y }
 }

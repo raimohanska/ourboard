@@ -5,7 +5,7 @@ import { Board, Item } from "../../../common/src/domain"
 import { Rect } from "./geometry"
 
 export const MiniMapView = ({ viewRect, board }: { viewRect: L.Property<Rect>; board: L.Property<Board> }) => {
-    const minimapDimensions = L.view(viewRect, (rect) => {
+    const minimapDimensions = L.view(board, (rect) => {
         const minimapWidthEm = 15
         return { width: minimapWidthEm, height: (minimapWidthEm / rect.width) * rect.height }
     })
@@ -21,12 +21,14 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Property<Rect>; b
     })
     return (
         <div className="minimap" style={minimapStyle}>
-            <ListView
-                observable={L.view(L.view(board, "items"), Object.values)}
-                renderObservable={renderItem}
-                getKey={(i) => i.id}
-            />
-            <div className="viewarea" style={viewAreaStyle} />
+            <div className="content">
+                <ListView
+                    observable={L.view(L.view(board, "items"), Object.values)}
+                    renderObservable={renderItem}
+                    getKey={(i) => i.id}
+                />
+                <div className="viewarea" style={viewAreaStyle} />
+            </div>
         </div>
     )
 

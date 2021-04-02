@@ -689,18 +689,23 @@ a {
             border: 0.3em solid #eeeeee88;
             box-sizing: content-box;
             pointer-events: none;
-            .viewarea {
-                display: inline-block;
-                position: absolute;
-                border: 1px solid $black;
-            }
-            .item {
-                display: inline-block;
-                position: absolute;
-                background: $link-color;
-                border: 2px solid $link-color;
-                &.container {
-                    opacity: 0.5;
+            padding-bottom: 3rem;
+            min-width: 6rem;
+            .content {
+                position: relative;
+                .viewarea {
+                    display: inline-block;
+                    position: absolute;
+                    border: 1px solid $black;
+                }
+                .item {
+                    display: inline-block;
+                    position: absolute;
+                    background: $link-color;
+                    border: 2px solid $link-color;
+                    &.container {
+                        opacity: 0.5;
+                    }
                 }
             }
         }
