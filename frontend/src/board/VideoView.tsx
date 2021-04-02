@@ -10,6 +10,7 @@ import { itemSelectionHandler } from "./item-selection"
 import { Dispatch } from "../store/server-connection"
 import { Tool, ToolController } from "./tool-selection"
 import { DragBorder } from "./DragBorder"
+import { itemZIndex } from "./zIndices"
 
 export const VideoView = ({
     id,
@@ -56,7 +57,7 @@ export const VideoView = ({
                         transform: `translate(${p.x}em, ${p.y}em)`,
                         height: p.height + "em",
                         width: p.width + "em",
-                        zIndex: p.z,
+                        zIndex: itemZIndex(p),
                         position: "absolute",
                     } as any),
             )}

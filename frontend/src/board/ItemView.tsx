@@ -21,6 +21,7 @@ import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
 import { SelectionBorder } from "./SelectionBorder"
 import { ToolController } from "./tool-selection"
+import { itemZIndex } from "./zIndices"
 
 export const ItemView = ({
     board,
@@ -96,7 +97,7 @@ export const ItemView = ({
                         height: p.height + "em",
                         width: p.width + "em",
                         transform: `translate(${p.x}em, ${p.y}em)`,
-                        zIndex: p.z,
+                        zIndex: itemZIndex(p),
                         background,
                         position: "absolute",
                     }

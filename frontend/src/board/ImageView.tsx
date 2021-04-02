@@ -9,6 +9,7 @@ import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
 import { Dispatch } from "../store/server-connection"
 import { Tool, ToolController } from "./tool-selection"
+import { itemZIndex } from "./zIndices"
 
 export const ImageView = ({
     id,
@@ -55,7 +56,7 @@ export const ImageView = ({
                         transform: `translate(${p.x}em, ${p.y}em)`,
                         height: p.height + "em",
                         width: p.width + "em",
-                        zIndex: p.z,
+                        zIndex: itemZIndex(p),
                         position: "absolute",
                     } as any),
             )}
