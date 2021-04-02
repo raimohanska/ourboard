@@ -58,11 +58,12 @@ export function findNearestAttachmentLocationForConnectionNode(i: Point | Item, 
     function p(x: number, y: number) {
         return { x, y }
     }
+    const margin = 0.1
     const options = [
-        { side: "top" as const, point: p(i.x + i.width / 2, i.y) },
-        { side: "left" as const, point: p(i.x, i.y + i.height / 2) },
-        { side: "right" as const, point: p(i.x + i.width, i.y + i.height / 2) },
-        { side: "bottom" as const, point: p(i.x + i.width / 2, i.y + i.height) },
+        { side: "top" as const, point: p(i.x + i.width / 2, i.y - margin) },
+        { side: "left" as const, point: p(i.x - margin, i.y + i.height / 2) },
+        { side: "right" as const, point: p(i.x + i.width + margin, i.y + i.height / 2) },
+        { side: "bottom" as const, point: p(i.x + i.width / 2, i.y + i.height + margin) },
     ]
     return _.minBy(options, (p) => distance(p.point, reference))!
 }

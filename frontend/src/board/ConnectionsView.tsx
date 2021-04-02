@@ -8,6 +8,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
 import * as G from "./geometry"
 import { existingConnectionHandler } from "./item-connect"
+import { Z_CONNECTIONS } from "./zIndices"
 
 export const ConnectionsView = ({
     board,
@@ -71,6 +72,7 @@ export const ConnectionsView = ({
         top: 0,
         left: 0,
         pointerEvents: "none",
+        zIndex: Z_CONNECTIONS,
     })
 
     return (
@@ -148,6 +150,7 @@ export const ConnectionsView = ({
         const wrapperStyle = L.view(cNode, (cn) => ({
             top: coordinateHelper.emToPx(cn.node.point.y),
             left: coordinateHelper.emToPx(cn.node.point.x),
+            zIndex: Z_CONNECTIONS + 1,
         }))
 
         const nodeStyle = L.view(angle, (ang) => ({
