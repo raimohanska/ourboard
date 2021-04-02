@@ -942,8 +942,8 @@ svg.connections {
     align-items: center;
     justify-content: center;
     background: transparent;
-    width: min(4em, 4rem);
-    height: min(4em, 4rem);
+    width: min(4em, 2rem);
+    height: min(4em, 2rem);
     border-radius: 50%;
     cursor: pointer;
     .board:not(.connect) & {
