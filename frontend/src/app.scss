@@ -872,6 +872,7 @@ svg.connections {
     width: max(0.4em, 6px);
     height: max(0.4em, 6px);
     cursor: pointer;
+    position: absolute;
 
     &.from-node {
         background: white;
