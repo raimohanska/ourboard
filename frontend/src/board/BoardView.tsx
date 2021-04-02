@@ -340,12 +340,18 @@ export const BoardView = ({
             if (!dragStartedAt) return
             const endPos = coordinateHelper.currentPageCoordinates.get()
             const diff = G.subtract(endPos, dragStartedAt!)
+            const minY = 70 // TODO: nasty constants
+            const minX = 16
             const newPos = {
-                x: Math.max(startPos!.x + diff.x, 16),
-                y: Math.max(startPos!.y + diff.y, 70), // TODO: nasty constants
+                x: Math.max(startPos!.x + diff.x, minX),
+                y: Math.max(startPos!.y + diff.y, minY),
             }
-            console.log(newPos)
-            toolbarPosition.set({ ...newPos, orientation: newPos.x < 100 ? "vertical" : "horizontal" })
+            if (newPos.y === minY) {
+                // If on top, fix to center default location
+                toolbarPosition.set({ orientation: "horizontal" })
+            } else {
+                toolbarPosition.set({ ...newPos, orientation: newPos.x < 100 ? "vertical" : "horizontal" })
+            }
             dragStartedAt = null
         }
         const toolbarStyle = L.view(toolbarPosition, (p) => ({
