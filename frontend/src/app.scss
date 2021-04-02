@@ -671,19 +671,20 @@ a {
         }
 
         .zoom-toolbar {
-            @extend .toolbar;
             position: absolute;
-            font-size: 1.2em;
-            right: 1em;
-            bottom: 1em;
+            font-size: 1.5em;
+            right: 1rem;
+            bottom: 1rem;
+            padding: 0.5em;
         }
 
         .minimap {
+            @extend .toolbar;
             font-size: 1vw;
             display: inline-block;
             position: absolute;
             bottom: 1rem;
-            right: 8rem;
+            right: 1rem;
             background: white;
             border: 0.3em solid #eeeeee88;
             box-sizing: content-box;

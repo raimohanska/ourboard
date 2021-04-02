@@ -6,7 +6,7 @@ import { Rect } from "./geometry"
 
 export const MiniMapView = ({ viewRect, board }: { viewRect: L.Property<Rect>; board: L.Property<Board> }) => {
     const minimapDimensions = L.view(viewRect, (rect) => {
-        const minimapWidthEm = 10
+        const minimapWidthEm = 15
         return { width: minimapWidthEm, height: (minimapWidthEm / rect.width) * rect.height }
     })
     const minimapAspectRatio = L.view(minimapDimensions, board, (mm, b) => mm.width / b.width)
