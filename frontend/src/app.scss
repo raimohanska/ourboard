@@ -684,20 +684,23 @@ a {
             position: absolute;
             bottom: 1rem;
             right: 8rem;
-            background: #eeeeee88;
+            background: white;
             border: 0.3em solid #eeeeee88;
             box-sizing: content-box;
             pointer-events: none;
             .viewarea {
                 display: inline-block;
                 position: absolute;
-                background: #ffffff;
+                border: 1px solid $black;
             }
             .item {
                 display: inline-block;
                 position: absolute;
-                background: #d8d8d8;
-                border: 2px solid #d8d8d8;
+                background: $link-color;
+                border: 2px solid $link-color;
+                &.container {
+                    opacity: 0.5;
+                }
             }
         }
 

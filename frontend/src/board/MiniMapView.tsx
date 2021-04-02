@@ -21,12 +21,12 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Property<Rect>; b
     })
     return (
         <div className="minimap" style={minimapStyle}>
-            <div className="viewarea" style={viewAreaStyle} />
             <ListView
                 observable={L.view(L.view(board, "items"), Object.values)}
                 renderObservable={renderItem}
                 getKey={(i) => i.id}
             />
+            <div className="viewarea" style={viewAreaStyle} />
         </div>
     )
 
@@ -37,6 +37,7 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Property<Rect>; b
             width: item.width * ratio + "em",
             height: item.height * ratio + "em",
         }))
-        return <span className="item" style={style} />
+        const type = item.get().type
+        return <span className={"item " + type} style={style} />
     }
 }
