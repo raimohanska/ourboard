@@ -321,11 +321,11 @@ export const BoardView = ({
                 <div className="navigation-toolbar">
                     <BackToAllBoardsLink {...{ navigateToBoard }} />
                 </div>
-                <div className="main-toolbar">
+                <div className="main-toolbar board-tool">
                     <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
                     <ToolSelector {...{ toolController }} />
                 </div>
-                <div className="undo-redo-toolbar">
+                <div className="undo-redo-toolbar board-tool">
                     <UndoRedo {...{ dispatch }} />
                 </div>
                 {L.view(
@@ -335,7 +335,7 @@ export const BoardView = ({
                         <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />
                     ),
                 )}
-                <div className="zoom-toolbar">
+                <div className="zoom-toolbar board-tool">
                     <ZoomControls {...{ zoom }} />
                 </div>
                 <HistoryView {...{ board, history, focus, dispatch }} />
