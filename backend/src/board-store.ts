@@ -10,7 +10,7 @@ export type BoardAndAccessTokens = {
     accessTokens: string[]
 }
 
-export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
+export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
     return await inTransaction(async (client) => {
         const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id])
         if (result.rows.length == 0) {
@@ -20,7 +20,7 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens> {
                 await createBoard(board)
                 return { board, accessTokens: [] }
             } else {
-                throw Error(`Board ${id} not found`)
+                return null
             }
         } else {
             const snapshot = result.rows[0].content as Board

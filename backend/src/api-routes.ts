@@ -22,7 +22,7 @@ import { RED, YELLOW } from "../../common/src/colors"
 import { applyMiddleware, router } from "typera-express"
 import { wrapNative } from "typera-express/middleware"
 import { body, headers } from "typera-express/parser"
-import { badRequest, internalServerError, ok } from "typera-common/response"
+import { badRequest, internalServerError, notFound, ok } from "typera-common/response"
 import * as t from "io-ts"
 import { NonEmptyString } from "io-ts-types"
 import { withDBClient } from "./db"
@@ -243,6 +243,7 @@ async function checkBoardAPIAccess<T>(
     const apiToken = request.headers.API_TOKEN
     try {
         const board = await getBoard(boardId)
+        if (!board) return notFound()
         if (board.board.accessPolicy || board.accessTokens.length) {
             if (!apiToken) {
                 return badRequest("API_TOKEN header is missing")

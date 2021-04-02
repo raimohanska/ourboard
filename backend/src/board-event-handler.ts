@@ -15,9 +15,13 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
     appEvent: AppEvent,
 ): Promise<MessageHandlerResult> => {
     if (await handleCommonEvent(socket, appEvent)) return true
+    // TODO: accept other events only after successful join! Will probably simplify things here
     if (isBoardItemEvent(appEvent)) {
         const boardId = appEvent.boardId
         const state = await getBoard(boardId)
+        if (!state) {
+            return true // Just ignoring for now, see above todo
+        }
         const gotLock = obtainLock(state.locks, appEvent, socket)
         if (gotLock) {
             if (isPersistableBoardItemEvent(appEvent)) {
@@ -56,11 +60,19 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
                     return true
                 }
                 const board = await getBoard(appEvent.boardId)
+                const session = getSession(socket)
+                if (!session) {
+                    return true
+                }
+                if (!board) {
+                    session.sendEvent({
+                        action: "board.join.denied",
+                        boardId: appEvent.boardId,
+                        reason: "not found",
+                    })
+                    return true
+                }
                 if (!IGNORE_ACCESS_POLICY && board.board.accessPolicy) {
-                    const session = getSession(socket)
-                    if (!session) {
-                        return true
-                    }
                     if (session.userInfo.userType != "authenticated") {
                         console.warn("Access denied to board by anonymous user")
                         session.sendEvent({

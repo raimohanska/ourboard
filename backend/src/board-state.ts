@@ -22,17 +22,19 @@ export type ServerSideBoardStateInternal =
     | ServerSideBoardState
     | {
           ready: false
-          fetch: Promise<ServerSideBoardState>
+          fetch: Promise<ServerSideBoardState | null>
       }
 
 let boards: Map<Id, ServerSideBoardStateInternal> = new Map()
 
-export async function getBoard(id: Id): Promise<ServerSideBoardState> {
+export async function getBoard(id: Id): Promise<ServerSideBoardState | null> {
     let state = boards.get(id)
     if (!state) {
         console.log(`Loading board ${id} into memory`)
         const fetchState = async () => {
-            const { board, accessTokens } = await fetchBoard(id)
+            const boardData = await fetchBoard(id)
+            if (!boardData) return null
+            const { board, accessTokens } = boardData
             return {
                 ready: true,
                 board,
@@ -52,8 +54,13 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState> {
         boards.set(id, temporaryState)
         try {
             const finalState = await fetch
-            boards.set(id, finalState)
-            return finalState
+            if (!finalState) {
+                boards.delete(id)
+                return null
+            } else {
+                boards.set(id, finalState)
+                return finalState
+            }
         } catch (e) {
             boards.delete(id)
             console.error(`Board load failed for board ${id}. Running compact/fix.`)

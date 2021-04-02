@@ -13,6 +13,15 @@ export const BoardViewMessage = ({
 }) => {
     // TODO: login may be disabled due to Incognito mode or other reasons
     return L.view(boardAccessStatus, (s) => {
+        if (s === "not-found") {
+            return (
+                <div className="board-status-message">
+                    <div>
+                        <p>Board not found. A typo, maybe?</p>
+                    </div>
+                </div>
+            )
+        }
         if (s === "denied-permanently") {
             return (
                 <div className="board-status-message">

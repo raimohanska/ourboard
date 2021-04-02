@@ -44,6 +44,11 @@ describe("Initial screen", () => {
         cy.url().should("contain", "http://localhost:1337/b/")
         cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
     })
+
+    it("Navigating to a nonexisting board", () => {
+        cy.visit("http://localhost:1337/b/bogus")
+        cy.get(".board-status-message").contains("not found").should("be.visible")
+    })
 })
 
 describe("Example board", () => {

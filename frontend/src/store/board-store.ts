@@ -36,6 +36,7 @@ export type BoardAccessStatus =
     | "denied-temporarily"
     | "denied-permanently"
     | "login-required"
+    | "not-found"
 export type BoardState = {
     status: BoardAccessStatus
     board: Board | undefined
@@ -111,6 +112,9 @@ export function BoardStore(
             if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
                 console.log(`Access denied to board: login in progress`)
                 return { ...state, status: "denied-temporarily" }
+            } else if (event.reason === "not found") {
+                console.log(`Access denied to board: ${event.reason}`)
+                return { ...state, status: "not-found" }
             } else if (loginStatus === "anonymous" || loginStatus === "logged-out" || loginStatus === "login-failed") {
                 console.log(`Access denied to board: login required`)
                 return { ...state, status: "login-required" }
@@ -118,7 +122,7 @@ export function BoardStore(
                 console.warn(`Got "unauthorized" while logged in, likely login in progress...`)
                 return state
             } else if (event.reason === "forbidden") {
-                console.log(`Access denied to board: no privileges`)
+                console.log(`Access denied to board: ${event.reason}`)
                 return { ...state, status: "denied-permanently" }
             } else {
                 console.error(`Unexpected board access denial: ${state.status}/${loginStatus}/${event.reason}`)
