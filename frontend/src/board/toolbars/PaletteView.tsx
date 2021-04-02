@@ -1,4 +1,4 @@
-import { h, HarmajaChild } from "harmaja"
+import { h, Fragment, HarmajaChild } from "harmaja"
 import * as L from "lonna"
 import { Item, newContainer, newSimilarNote, newText, Note } from "../../../../common/src/domain"
 import { BoardFocus } from "../board-focus"
@@ -13,11 +13,11 @@ export const PaletteView = ({
     focus: L.Atom<BoardFocus>
 }) => {
     return (
-        <span className="palette">
+        <>
             <NewNote {...{ addItem, latestNote, focus }} />
             <NewContainer {...{ addItem, focus }} />
             <NewText {...{ addItem, focus }} />
-        </span>
+        </>
     )
 }
 

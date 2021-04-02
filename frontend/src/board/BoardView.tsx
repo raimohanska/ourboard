@@ -1,7 +1,18 @@
 import * as H from "harmaja"
 import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
-import { Board, findItem, Id, Image, Item, newNote, Note, UserCursorPosition, Video } from "../../../common/src/domain"
+import {
+    Board,
+    findItem,
+    Id,
+    Image,
+    Item,
+    newNote,
+    Note,
+    Point,
+    UserCursorPosition,
+    Video,
+} from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { onClickOutside } from "../components/onClickOutside"
 import { isEmbedded } from "../embedding"
@@ -30,7 +41,6 @@ import { itemSelectAllHandler } from "./item-select-all"
 import { withCurrentContainer } from "./item-setcontainer"
 import { itemUndoHandler } from "./item-undo-redo"
 import { ItemView } from "./ItemView"
-import { localStorageAtom } from "./local-storage-atom"
 import { MiniMapView } from "./MiniMapView"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
@@ -43,6 +53,7 @@ import { ZoomControls } from "./toolbars/ZoomControls"
 import { BackToAllBoardsLink } from "./toolbars/BackToAllBoardsLink"
 import { ToolController } from "./tool-selection"
 import { reduce } from "lodash"
+import { localStorageAtom } from "./local-storage-atom"
 
 const emptyNote = newNote("")
 
@@ -315,6 +326,30 @@ export const BoardView = ({
     }
 
     function BoardToolLayer() {
+        type ToolbarPosition = { x?: number; y?: number; orientation: "vertical" | "horizontal" }
+        const toolbarPosition = localStorageAtom<ToolbarPosition>("toolbarPosition", { orientation: "horizontal" })
+        const toolbarEl = L.atom<HTMLElement | null>(null)
+        let startPos: Point | null = null
+        let dragStartedAt: Point | null = null
+        const onDragStart = (e: JSX.DragEvent) => {
+            dragStartedAt = coordinateHelper.currentPageCoordinates.get()
+            startPos = toolbarEl.get()!.getBoundingClientRect()
+        }
+        const onDragEnd = (e: JSX.DragEvent) => {
+            const endPos = coordinateHelper.currentPageCoordinates.get()
+            const diff = G.subtract(endPos, dragStartedAt!)
+            const newPos = {
+                x: Math.max(startPos!.x + diff.x, 16),
+                y: Math.max(startPos!.y + diff.y, 70), // TODO: nasty constants
+            }
+            console.log(newPos)
+            toolbarPosition.set({ ...newPos, orientation: newPos.x < 100 ? "vertical" : "horizontal" })
+        }
+        const toolbarStyle = L.view(toolbarPosition, (p) => ({
+            top: p.y || undefined,
+            left: p.x || undefined,
+            transform: p.x !== undefined ? "none" : undefined,
+        }))
         return (
             <div className="tool-layer">
                 <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
@@ -322,7 +357,14 @@ export const BoardView = ({
                 <div className="navigation-toolbar">
                     <BackToAllBoardsLink {...{ navigateToBoard }} />
                 </div>
-                <div className="main-toolbar board-tool">
+                <div
+                    className={L.view(toolbarPosition, (o) => `main-toolbar board-tool ${o.orientation}`)}
+                    style={toolbarStyle}
+                    ref={toolbarEl.set}
+                    draggable="true"
+                    onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
+                >
                     <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
                     <ToolSelector {...{ toolController }} />
                 </div>
