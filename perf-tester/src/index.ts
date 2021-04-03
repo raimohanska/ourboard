@@ -1,5 +1,5 @@
 import { sleep } from "../../common/src/sleep"
-import { Point } from "../../common/src/domain"
+import { newNote, Point } from "../../common/src/domain"
 import MessageQueue from "../../frontend/src/store/message-queue"
 import WebSocket from "ws"
 
@@ -28,8 +28,7 @@ function createTester(nickname: string, boardId: string) {
     }
     function initSocket() {
         let ws: WebSocket
-        const protocol = process.env.DOMAIN ? "wss" : "ws"
-        ws = new WebSocket(`${protocol}://${process.env.DOMAIN ?? "localhost:1337"}/socket/board/${boardId}`)
+        ws = new WebSocket(WS_ADDRESS)
 
         ws.addEventListener("error", (e) => {
             console.error("Web socket error")
@@ -54,10 +53,13 @@ function createTester(nickname: string, boardId: string) {
                             y: radius * Math.cos(counter / 100),
                         })
                         messageQueue.enqueue({ action: "cursor.move", position, boardId })
-                        //if (Math.random() < 0.01) store.dispatch({ action: "item.add", boardId, items: [
-                        //newNote("NOTE " + counter, "black", position.x, position.y)
-                        //] })
-                    }, 1000 / fps)
+                        if (Math.random() < notesPerInterval)
+                            messageQueue.enqueue({
+                                action: "item.add",
+                                boardId,
+                                items: [newNote("NOTE " + counter, "black", position.x, position.y)],
+                            })
+                    }, interval)
                 }
                 if (event.action === "board.join.ack") {
                     messageQueue.enqueue({ action: "nickname.set", nickname })
@@ -102,10 +104,23 @@ for (let i = 0; i < kwargs.length - 1; i += 2) {
     }
 }
 
-const userCount = parsedKwargs.userCount ?? 100
-const boardId = parsedKwargs.boardId ?? "default"
+// Environment variables.
+const USER_COUNT = parseInt(process.env.USER_COUNT ?? "10")
+const BOARD_ID = process.env.BOARD_ID ?? "10"
+const DOMAIN = process.env.DOMAIN
+const WS_ADDRESS = `${DOMAIN ? "wss" : "ws"}://${DOMAIN ?? "localhost:1337"}/socket/board/${BOARD_ID}`
+const NOTES_PER_SEC = parseFloat(process.env.NOTES_PER_SEC ?? "0.1")
+const CURSOR_MOVES_PER_SEC = parseFloat(process.env.CURSOR_MOVES_PER_SEC ?? "10")
 
-const fps = 10
-for (let i = 0; i < userCount; i++) {
-    createTester("perf-tester-" + (i + 1), boardId)
+// Calculated vars
+const interval = 1000 / CURSOR_MOVES_PER_SEC
+const notesPerInterval = (NOTES_PER_SEC / 1000) * interval
+console.log(
+    `Starting ${USER_COUNT} testers, moving cursors ${CURSOR_MOVES_PER_SEC}/sec, creating notes ${NOTES_PER_SEC}`,
+)
+console.log(`Total cursor events ${CURSOR_MOVES_PER_SEC * USER_COUNT}/s`)
+console.log(`Total creation events ${NOTES_PER_SEC * USER_COUNT}/s`)
+
+for (let i = 0; i < USER_COUNT; i++) {
+    createTester("perf-tester-" + (i + 1), BOARD_ID)
 }

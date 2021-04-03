@@ -27,12 +27,12 @@ import { getBoardHistory, verifyContinuity } from "./board-store"
 import { randomProfession } from "./professions"
 import { sleep } from "../../common/src/sleep"
 import { getUserIdForEmail } from "./user-store"
-import { WsWrapper } from "./ws-wrapper"
+import { StringifyCache, WsWrapper } from "./ws-wrapper"
 type UserSession = {
     readonly sessionId: Id
     readonly boards: UserSessionBoardEntry[]
     userInfo: EventUserInfo
-    sendEvent: (event: EventFromServer) => void
+    sendEvent: (event: EventFromServer, cache?: StringifyCache) => void
     isOnBoard(boardId: Id): boolean
     close(): void
 }
@@ -53,6 +53,10 @@ export type SocketId = string
 const sessions: Record<SocketId, UserSession> = {}
 const isOnBoard = (boardId: Id) => (s: UserSession) => s.boards.some((b) => boardId === b.boardId)
 const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter(isOnBoard(boardId))
+const sendTo = (recipients: UserSession[], message: EventFromServer) => {
+    const cache = StringifyCache()
+    recipients.forEach((c) => c.sendEvent(message, cache))
+}
 const everyoneElseOnTheSameBoard = (boardId: Id, session?: UserSession) =>
     Object.values(sessions).filter((s) => s.sessionId !== session?.sessionId && isOnBoard(boardId)(s))
 
@@ -63,7 +67,7 @@ export function startSession(socket: WsWrapper) {
 function userSession(socket: WsWrapper) {
     const boards: UserSessionBoardEntry[] = []
     const sessionId = socket.id
-    function sendEvent(event: EventFromServer) {
+    function sendEvent(event: EventFromServer, cache?: StringifyCache) {
         if (isBoardHistoryEntry(event)) {
             const entry = boards.find((b) => b.boardId === event.boardId)
             if (!entry) throw Error("Board " + event.boardId + " not found for session " + sessionId)
@@ -72,7 +76,7 @@ function userSession(socket: WsWrapper) {
                 return
             }
         }
-        socket.send(event)
+        socket.send(event, cache)
     }
     const session = {
         sessionId,
@@ -180,6 +184,8 @@ export async function addSessionToBoard(
         sessionId: session.sessionId,
         nickname: session.userInfo.nickname,
     } as AckJoinBoard)
+
+    // Notify new user of existing users
     everyoneOnTheBoard(boardState.board.id).forEach((s) => {
         session.sendEvent({
             action: "board.joined",
@@ -188,6 +194,8 @@ export async function addSessionToBoard(
             ...s.userInfo,
         } as JoinedBoard)
     })
+
+    // Notify existing users of new user
     broadcastJoinEvent(boardState.board.id, session)
 }
 
@@ -205,7 +213,7 @@ export function setNicknameForSession(event: SetNickname, origin: WsWrapper) {
                 ...session.userInfo,
             }
             for (const boardId of session.boards.map((b) => b.boardId)) {
-                everyoneElseOnTheSameBoard(boardId, session).forEach((s) => s.sendEvent(updateInfo))
+                sendTo(everyoneElseOnTheSameBoard(boardId, session), updateInfo)
             }
         })
 }
@@ -218,7 +226,7 @@ export async function setVerifiedUserForSession(
     session.userInfo = { userType: "authenticated", nickname: event.name, name: event.name, email: event.email, userId }
     for (const boardId of session.boards.map((b) => b.boardId)) {
         // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
-        everyoneElseOnTheSameBoard(boardId, session).forEach((s) => s.sendEvent({ ...event, token: "********" }))
+        sendTo(everyoneElseOnTheSameBoard(boardId, session), { ...event, token: "********" })
     }
     return session.userInfo
 }
@@ -234,27 +242,20 @@ export function logoutUser(event: AuthLogout, origin: WsWrapper) {
 
 export function broadcastBoardEvent(event: BoardHistoryEntry, origin?: UserSession) {
     //console.log("Broadcast", appEvent)
-    everyoneElseOnTheSameBoard(event.boardId, origin).forEach((s) => {
-        //console.log("   Sending to", s.socket.id)
-        s.sendEvent(event)
-    })
+    sendTo(everyoneElseOnTheSameBoard(event.boardId, origin), event)
 }
 
 export function broadcastJoinEvent(boardId: Id, session: UserSession) {
-    everyoneElseOnTheSameBoard(boardId, session).forEach((s) => {
-        s.sendEvent({
-            action: "board.joined",
-            boardId,
-            sessionId: session.sessionId,
-            ...session.userInfo,
-        } as JoinedBoard)
-    })
+    sendTo(everyoneElseOnTheSameBoard(boardId, session), {
+        action: "board.joined",
+        boardId,
+        sessionId: session.sessionId,
+        ...session.userInfo,
+    } as JoinedBoard)
 }
 
 export function broadcastCursorPositions(boardId: Id, positions: Record<Id, UserCursorPosition>) {
-    everyoneOnTheBoard(boardId).forEach((s) => {
-        s.sendEvent({ action: CURSOR_POSITIONS_ACTION_TYPE, p: positions })
-    })
+    sendTo(everyoneOnTheBoard(boardId), { action: CURSOR_POSITIONS_ACTION_TYPE, p: positions })
 }
 
 const BROADCAST_DEBOUNCE_MS = 20
@@ -269,9 +270,7 @@ export const broadcastItemLocks = (() => {
             return
         }
         timeouts[boardId] = setTimeout(() => {
-            everyoneOnTheBoard(boardId).forEach((s) => {
-                s.sendEvent({ action: "board.locks", boardId, locks })
-            })
+            sendTo(everyoneOnTheBoard(boardId), { action: "board.locks", boardId, locks })
             timeouts[boardId] = undefined
         }, BROADCAST_DEBOUNCE_MS)
     }
