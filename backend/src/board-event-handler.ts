@@ -65,6 +65,7 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
                     return true
                 }
                 if (!board) {
+                    console.warn(`Trying to join unknown board ${appEvent.boardId}`)
                     session.sendEvent({
                         action: "board.join.denied",
                         boardId: appEvent.boardId,
