@@ -91,7 +91,7 @@ function userSession(socket: WsWrapper): UserSession {
         boardSession: null,
         sendEvent,
         isOnBoard: (boardId: Id) => session.boardSession != null && session.boardSession.boardId === boardId,
-        close: () => socket.ws.close(),
+        close: () => socket.close(),
     }
     sessions[socket.id] = session
     return session

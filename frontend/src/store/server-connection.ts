@@ -54,6 +54,7 @@ export function serverConnection(currentBoardId: Id | undefined) {
         const protocol = location.protocol === "http:" ? "ws:" : "wss:"
         const root = `${protocol}//${location.host}`
         //const root = "wss://www.ourboard.io"
+        //const root = "ws://localhost:1339"
         const ws = new WebSocket(`${root}/socket/${boardId ? "board/" + boardId : "lobby"}`)
 
         ws.addEventListener("error", (e) => {

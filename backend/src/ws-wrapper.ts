@@ -3,6 +3,17 @@ import * as uuid from "uuid"
 import { EventFromServer } from "../../common/src/domain"
 
 export const WsWrapper = (ws: WebSocket) => {
+    const onError = (f: () => void) => {
+        ws.addEventListener("error", f)
+    }
+    const onMessage = (f: (msg: object) => void) => {
+        ws.addEventListener("message", (str: any) => {
+            f(JSON.parse(str))
+        })
+    }
+    const onClose = (f: () => void) => {
+        ws.addEventListener("close", f)
+    }
     return {
         send: (msg: EventFromServer, cache?: StringifyCache) => {
             try {
@@ -11,8 +22,11 @@ export const WsWrapper = (ws: WebSocket) => {
                 ws.close()
             }
         },
-        ws,
+        onError,
+        onMessage,
+        onClose,
         id: uuid.v4(),
+        close: () => ws.close(),
     }
 }
 export type WsWrapper = ReturnType<typeof WsWrapper>

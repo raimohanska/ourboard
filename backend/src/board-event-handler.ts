@@ -10,7 +10,7 @@ import { WsWrapper } from "./ws-wrapper"
 
 const IGNORE_ACCESS_POLICY = process.env.IGNORE_ACCESS_POLICY === "true"
 
-export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: string) => string) => async (
+export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (key: string) => string) => async (
     socket: WsWrapper,
     appEvent: AppEvent,
 ): Promise<MessageHandlerResult> => {
@@ -55,7 +55,7 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
         switch (appEvent.action) {
             case "board.join":
                 //await sleep(3000) // simulate latency
-                if (appEvent.boardId !== allowedBoardId) {
+                if (allowedBoardId && appEvent.boardId !== allowedBoardId) {
                     console.warn(`Trying to join board ${appEvent.boardId} on socket for board ${allowedBoardId}`)
                     return true
                 }

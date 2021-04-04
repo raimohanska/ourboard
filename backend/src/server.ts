@@ -19,6 +19,7 @@ import { WsWrapper } from "./ws-wrapper"
 import { handleCommonEvent } from "./common-event-handler"
 import { handleBoardEvent } from "./board-event-handler"
 import openapiDoc from "./openapi"
+import { startUWebSocketsServer } from "./uwebsockets-server"
 
 const configureServer = () => {
     const config = getConfig()
@@ -97,6 +98,11 @@ const configureServer = () => {
         const boardId = req.params.boardId
         connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, createGetSignedPutUrl(config.storageBackend)))
     })
+
+    const UWEBSOCKETS_PORT = process.env.UWEBSOCKETS_PORT
+    if (UWEBSOCKETS_PORT) {
+        startUWebSocketsServer(parseInt(UWEBSOCKETS_PORT))
+    }
 
     return http
 }

@@ -10,13 +10,11 @@ export type ConnectionHandlerParams = Readonly<{
 
 export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandler) => {
     startSession(socket)
-    socket.ws.addEventListener("error", () => {
-        //console.error("Web socket error", e);
-        socket.ws.close()
+    socket.onError(() => {
+        socket.close()
     })
-    socket.ws.addEventListener("message", async (str: any) => {
+    socket.onMessage(async (event: object) => {
         try {
-            const event = JSON.parse(str.data)
             let serialsToAck: Record<Id, Serial> = {}
             for (const e of event as AppEvent[]) {
                 const serialAck = await handleMessage(socket, e)
@@ -33,11 +31,11 @@ export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandl
             })
         } catch (e) {
             console.error("Error while handling event from client. Closing connection.", e)
-            socket.ws.close()
+            socket.close()
         }
     })
 
-    socket.ws.addEventListener("close", () => {
+    socket.onClose(() => {
         endSession(socket)
         getActiveBoards().forEach((state) => {
             delete state.cursorPositions[socket.id]
