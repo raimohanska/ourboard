@@ -21,8 +21,8 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
                 const userInfo = await setVerifiedUserForSession(appEvent, session)
                 console.log(`${appEvent.name} logged in`)
                 session.sendEvent({ action: "auth.login.response", success, userId })
-                for (let board of session.boards) {
-                    await associateUserWithBoard(userId, board.boardId)
+                if (session.boardSession) {
+                    await associateUserWithBoard(userId, session.boardSession.boardId)
                 }
                 session.sendEvent({
                     action: "user.boards",

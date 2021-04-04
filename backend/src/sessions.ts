@@ -22,22 +22,23 @@ import {
     EventUserInfoAuthenticated,
     getBoardAttributes,
 } from "../../common/src/domain"
-import { ServerSideBoardState } from "./board-state"
+import { getBoard, maybeGetBoard, ServerSideBoardState } from "./board-state"
 import { getBoardHistory, verifyContinuity } from "./board-store"
 import { randomProfession } from "./professions"
 import { sleep } from "../../common/src/sleep"
 import { getUserIdForEmail } from "./user-store"
 import { StringifyCache, WsWrapper } from "./ws-wrapper"
-type UserSession = {
+
+export type UserSession = {
     readonly sessionId: Id
-    readonly boards: UserSessionBoardEntry[]
+    boardSession: UserSessionBoardEntry | null
     userInfo: EventUserInfo
     sendEvent: (event: EventFromServer, cache?: StringifyCache) => void
-    isOnBoard(boardId: Id): boolean
+    isOnBoard: (boardId: Id) => boolean
     close(): void
 }
 
-type UserSessionBoardEntry = {
+export type UserSessionBoardEntry = {
     boardId: Id
     status: "ready" | "buffering"
     bufferedEvents: BoardHistoryEntry[]
@@ -51,25 +52,31 @@ socket: WsWrapper
 export type SocketId = string
 
 const sessions: Record<SocketId, UserSession> = {}
-const isOnBoard = (boardId: Id) => (s: UserSession) => s.boards.some((b) => boardId === b.boardId)
-const everyoneOnTheBoard = (boardId: string) => Object.values(sessions).filter(isOnBoard(boardId))
+
+const everyoneOnTheBoard = (boardId: string) => {
+    const boardState = maybeGetBoard(boardId)
+    if (!boardState) {
+        console.warn(`Trying to send to a board not in memory: ${boardId}`)
+        return []
+    }
+    return boardState.sessions
+}
 const sendTo = (recipients: UserSession[], message: EventFromServer) => {
     const cache = StringifyCache()
     recipients.forEach((c) => c.sendEvent(message, cache))
 }
 const everyoneElseOnTheSameBoard = (boardId: Id, session?: UserSession) =>
-    Object.values(sessions).filter((s) => s.sessionId !== session?.sessionId && isOnBoard(boardId)(s))
+    everyoneOnTheBoard(boardId).filter((s) => s !== session)
 
 export function startSession(socket: WsWrapper) {
     sessions[socket.id] = userSession(socket)
 }
 
-function userSession(socket: WsWrapper) {
-    const boards: UserSessionBoardEntry[] = []
+function userSession(socket: WsWrapper): UserSession {
     const sessionId = socket.id
     function sendEvent(event: EventFromServer, cache?: StringifyCache) {
         if (isBoardHistoryEntry(event)) {
-            const entry = boards.find((b) => b.boardId === event.boardId)
+            const entry = session.boardSession
             if (!entry) throw Error("Board " + event.boardId + " not found for session " + sessionId)
             if (entry.status === "buffering") {
                 entry.bufferedEvents.push(event)
@@ -78,12 +85,12 @@ function userSession(socket: WsWrapper) {
         }
         socket.send(event, cache)
     }
-    const session = {
+    const session: UserSession = {
         sessionId,
         userInfo: anonymousUser("Anonymous " + randomProfession()),
-        boards,
+        boardSession: null,
         sendEvent,
-        isOnBoard: (boardId: Id) => boards.some((b) => b.boardId === boardId),
+        isOnBoard: (boardId: Id) => session.boardSession != null && session.boardSession.boardId === boardId,
         close: () => socket.ws.close(),
     }
     sessions[socket.id] = session
@@ -95,7 +102,20 @@ function anonymousUser(nickname: string): EventUserInfo {
 }
 
 export function endSession(socket: WsWrapper) {
-    const boards = sessions[socket.id].boards
+    const sessionId = socket.id
+    const session = sessions[sessionId]
+    if (!session) {
+        console.warn(`Ending non-existing session ${sessionId}`)
+        return
+    }
+    if (session.boardSession) {
+        const boardState = maybeGetBoard(session.boardSession.boardId)
+        if (boardState) {
+            boardState.sessions = boardState.sessions.filter((s) => s.sessionId !== sessionId)
+        } else {
+            console.warn(`Board state not found when ending session: ${session.boardSession.boardId}`)
+        }
+    }
     delete sessions[socket.id]
 }
 export function getBoardSessionCount(id: Id) {
@@ -122,10 +142,11 @@ export async function addSessionToBoard(
     const session = sessions[origin.id]
     if (!session) throw new Error("No session found for socket " + origin.id)
     const boardId = boardState.board.id
+    boardState.sessions = [...boardState.sessions, session]
     if (initAtSerial) {
         const entry = { boardId, status: "buffering", bufferedEvents: [] } as UserSessionBoardEntry
         // 1. Add session to the board with "buffering" status, to collect all events that were meant to be sent during this async initialization
-        session.boards.push(entry)
+        session.boardSession = entry
         try {
             const boardAttributes = getBoardAttributes(boardState.board)
 
@@ -168,7 +189,7 @@ export async function addSessionToBoard(
             })
         }
     } else {
-        session.boards.push({ boardId, status: "ready", bufferedEvents: [] })
+        session.boardSession = { boardId, status: "ready", bufferedEvents: [] }
         session.sendEvent({
             action: "board.init",
             board: boardState.board,
@@ -212,8 +233,8 @@ export function setNicknameForSession(event: SetNickname, origin: WsWrapper) {
                 sessionId: session.sessionId,
                 ...session.userInfo,
             }
-            for (const boardId of session.boards.map((b) => b.boardId)) {
-                sendTo(everyoneElseOnTheSameBoard(boardId, session), updateInfo)
+            if (session.boardSession) {
+                sendTo(everyoneElseOnTheSameBoard(session.boardSession.boardId, session), updateInfo)
             }
         })
 }
@@ -224,9 +245,9 @@ export async function setVerifiedUserForSession(
 ): Promise<EventUserInfoAuthenticated> {
     const userId = await getUserIdForEmail(event.email)
     session.userInfo = { userType: "authenticated", nickname: event.name, name: event.name, email: event.email, userId }
-    for (const boardId of session.boards.map((b) => b.boardId)) {
+    if (session.boardSession) {
         // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
-        sendTo(everyoneElseOnTheSameBoard(boardId, session), { ...event, token: "********" })
+        sendTo(everyoneElseOnTheSameBoard(session.boardSession.boardId, session), { ...event, token: "********" })
     }
     return session.userInfo
 }

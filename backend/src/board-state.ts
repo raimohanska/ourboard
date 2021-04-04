@@ -5,7 +5,7 @@ import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./
 import { broadcastItemLocks, getBoardSessionCount } from "./sessions"
 import { compactBoardHistory } from "./compact-history"
 import { sleep } from "../../common/src/sleep"
-
+import { UserSession } from "./sessions"
 // A mutable state object for server side state
 export type ServerSideBoardState = {
     ready: true
@@ -16,6 +16,7 @@ export type ServerSideBoardState = {
     cursorsMoved: boolean
     cursorPositions: BoardCursorPositions
     accessTokens: string[]
+    sessions: UserSession[]
 }
 
 export type ServerSideBoardStateInternal =
@@ -44,6 +45,7 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState | null> {
                 locks: Locks((changedLocks) => broadcastItemLocks(id, changedLocks)),
                 cursorsMoved: false,
                 cursorPositions: {},
+                sessions: [],
             } as ServerSideBoardState
         }
         const fetch = fetchState()
@@ -106,6 +108,7 @@ export async function addBoard(board: Board, createToken?: boolean): Promise<Ser
         cursorsMoved: false,
         cursorPositions: {},
         accessTokens,
+        sessions: [],
     }
     boards.set(board.id, boardState)
     return boardState
