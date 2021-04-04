@@ -8,6 +8,7 @@
     "@types/email-validator": "^1.0.6",
     "@types/lodash": "^4.14.161",
     "@types/md5": "^2.2.1",
+    "@types/node-fetch": "^2.5.9",
     "@types/pretty-ms": "^5.0.1",
     "cookie": "^0.4.1",
     "email-validator": "^2.0.4",
@@ -17,6 +18,7 @@
     "lonna": "^0.8.4",
     "material-design-icons-iconfont": "^6.1.0",
     "md5": "^2.3.0",
+    "node-fetch": "^2.6.1",
     "pretty-ms": "^7.0.1",
     "uuid": "^8.3.0",
     "ws": "^7.4.4"
@@ -25,6 +27,7 @@
     "watch": "tsc --watch --noEmit",
     "build": "tsc",
     "start": "node .",
+    "create-boards": "ts-node src/create-boards.ts",
     "start:dev": "tsc-watch --onSuccess \"node .\" --preserveWatchOutput"
   },
   "devDependencies": {
