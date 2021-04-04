@@ -52,7 +52,9 @@ export function serverConnection(currentBoardId: Id | undefined) {
     function initSocket(boardId: Id | undefined) {
         connectionStatus.set("connecting")
         const protocol = location.protocol === "http:" ? "ws:" : "wss:"
-        const ws = new WebSocket(`${protocol}//${location.host}/socket/${boardId ? "board/" + boardId : "lobby"}`)
+        const root = `${protocol}//${location.host}`
+        //const root = "wss://www.ourboard.io"
+        const ws = new WebSocket(`${root}/socket/${boardId ? "board/" + boardId : "lobby"}`)
 
         ws.addEventListener("error", (e) => {
             if (ws === socket) {
