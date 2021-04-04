@@ -1,111 +1,11 @@
 import dotenv from "dotenv"
-dotenv.config()
-import express from "express"
-import expressWs from "express-ws"
 import * as Http from "http"
-import * as Https from "https"
-import * as path from "path"
-import { connectionHandler } from "./connection-handler"
-import { initDB } from "./db"
-import fs from "fs"
-import * as swaggerUi from "swagger-ui-express"
-import { getConfig } from "./config"
 import { awaitSavingChanges as waitUntilChangesSaved } from "./board-state"
-import { createGetSignedPutUrl } from "./storage"
+import { initDB } from "./db"
+import { startExpressServer } from "./express-server"
 import { terminateSessions } from "./sessions"
-import _ from "lodash"
-import apiRoutes from "./api-routes"
-import { WsWrapper } from "./ws-wrapper"
-import { handleCommonEvent } from "./common-event-handler"
-import { handleBoardEvent } from "./board-event-handler"
-import openapiDoc from "./openapi"
 import { startUWebSocketsServer } from "./uwebsockets-server"
-
-const configureServer = () => {
-    const config = getConfig()
-
-    const app = express()
-
-    let http = new Http.Server(app)
-    const ws = expressWs(app, http)
-
-    const redirectURL = process.env.REDIRECT_URL
-    if (redirectURL) {
-        app.get("*", function (req, res, next) {
-            if (req.headers["x-forwarded-proto"] !== "https") {
-                res.redirect(redirectURL)
-            } else {
-                next()
-            }
-        })
-    }
-
-    app.use("/", express.static("../frontend/dist"))
-    app.use("/", express.static("../frontend/public"))
-
-    if (config.storageBackend.type === "LOCAL") {
-        const localDirectory = config.storageBackend.directory
-        app.put("/assets/:id", (req, res) => {
-            if (!req.params.id) {
-                return res.sendStatus(400)
-            }
-
-            const w = fs.createWriteStream(localDirectory + "/" + req.params.id)
-
-            req.pipe(w)
-
-            req.on("end", () => {
-                !res.headersSent && res.sendStatus(200)
-            })
-
-            w.on("error", () => {
-                res.sendStatus(500)
-            })
-        })
-        app.use("/assets", express.static(localDirectory))
-    }
-
-    app.get("/assets/external", (req, res) => {
-        const src = req.query.src
-        if (typeof src !== "string" || ["http://", "https://"].every((prefix) => !src.startsWith(prefix)))
-            return res.send(400)
-        const protocol = src.startsWith("https://") ? Https : Http
-
-        protocol
-            .request(src, (upstreamResponse) => {
-                res.writeHead(upstreamResponse.statusCode!, upstreamResponse.headers)
-                upstreamResponse
-                    .pipe(res, {
-                        end: true,
-                    })
-                    .on("error", (err) => res.status(500).send(err.message))
-            })
-            .end()
-    })
-
-    app.get("/b/:boardId", async (req, res) => {
-        res.sendFile(path.resolve("../frontend/dist/index.html"))
-    })
-
-    app.use(apiRoutes.handler())
-
-    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiDoc))
-
-    ws.app.ws("/socket/lobby", (socket, req) => {
-        connectionHandler(WsWrapper(socket), handleCommonEvent)
-    })
-    ws.app.ws("/socket/board/:boardId", (socket, req) => {
-        const boardId = req.params.boardId
-        connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, createGetSignedPutUrl(config.storageBackend)))
-    })
-
-    const UWEBSOCKETS_PORT = process.env.UWEBSOCKETS_PORT
-    if (UWEBSOCKETS_PORT) {
-        startUWebSocketsServer(parseInt(UWEBSOCKETS_PORT))
-    }
-
-    return http
-}
+dotenv.config()
 
 let http: Http.Server | null = null
 
@@ -124,14 +24,26 @@ process.on("SIGTERM", () => {
     shutdown()
 })
 
-const port = process.env.PORT || 1337
+const PORT = parseInt(process.env.PORT || "1337")
+const BIND_UWEBSOCKETS_TO_PORT = process.env.BIND_UWEBSOCKETS_TO_PORT === "true"
+if (BIND_UWEBSOCKETS_TO_PORT && process.env.UWEBSOCKETS_PORT) {
+    throw Error("Cannot have both UWEBSOCKETS_PORT and BIND_UWEBSOCKETS_TO_PORT envs")
+}
+const EXPRESS_PORT = BIND_UWEBSOCKETS_TO_PORT ? null : PORT
+const UWEBSOCKETS_PORT = BIND_UWEBSOCKETS_TO_PORT
+    ? PORT
+    : process.env.UWEBSOCKETS_PORT
+    ? parseInt(process.env.UWEBSOCKETS_PORT)
+    : null
 
 initDB()
     .then(() => {
-        http = configureServer()
-        http.listen(port, () => {
-            console.log("Listening on port " + port)
-        })
+        if (EXPRESS_PORT) {
+            http = startExpressServer(EXPRESS_PORT)
+        }
+        if (UWEBSOCKETS_PORT) {
+            startUWebSocketsServer(UWEBSOCKETS_PORT)
+        }
     })
     .catch((e) => {
         console.error(e)
