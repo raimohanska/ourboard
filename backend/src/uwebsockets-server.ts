@@ -57,6 +57,8 @@ export function startUWebSocketsServer(port: number) {
     // Currently unable to figure out the board id from path, that's the null below. That's not likely an issue as long as the clients use correct paths for sockets.
     mountWs("/socket/board/:boardId", handleBoardEvent(null, createGetSignedPutUrl(config.storageBackend)))
 
+    app.get("/", (res) => res.writeStatus("200 OK").end("Sorry, we only serve websocket clients here."))
+
     function mountWs(path: string, handler: MessageHandler) {
         app.ws(path, {
             open: (ws) => {
