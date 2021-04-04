@@ -7,8 +7,8 @@ export const WsWrapper = (ws: WebSocket) => {
         ws.addEventListener("error", f)
     }
     const onMessage = (f: (msg: object) => void) => {
-        ws.addEventListener("message", (str: any) => {
-            f(JSON.parse(str))
+        ws.addEventListener("message", (msg: any) => {
+            f(JSON.parse(msg.data))
         })
     }
     const onClose = (f: () => void) => {
