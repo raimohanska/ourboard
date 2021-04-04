@@ -8,7 +8,12 @@ export const WsWrapper = (ws: WebSocket) => {
     }
     const onMessage = (f: (msg: object) => void) => {
         ws.addEventListener("message", (msg: any) => {
-            f(JSON.parse(msg.data))
+            try {
+                f(JSON.parse(msg.data))
+            } catch (e) {
+                console.error("Error in WsWrapper/onMessage. Closing connection.", e)
+                ws.close()
+            }
         })
     }
     const onClose = (f: () => void) => {
