@@ -221,22 +221,24 @@ export async function addSessionToBoard(
 }
 
 export function setNicknameForSession(event: SetNickname, origin: WsWrapper) {
-    Object.values(sessions)
-        .filter((s) => s.sessionId === origin.id)
-        .forEach((session) => {
-            session.userInfo =
-                session.userInfo.userType === "unidentified"
-                    ? anonymousUser(event.nickname)
-                    : { ...session.userInfo, nickname: event.nickname }
-            const updateInfo: UserInfoUpdate = {
-                action: "userinfo.set",
-                sessionId: session.sessionId,
-                ...session.userInfo,
-            }
-            if (session.boardSession) {
-                sendTo(everyoneElseOnTheSameBoard(session.boardSession.boardId, session), updateInfo)
-            }
-        })
+    const session = getSession(origin)
+    if (!session) {
+        console.warn(`Session not found: ${origin.id}`)
+        return
+    }
+
+    session.userInfo =
+        session.userInfo.userType === "unidentified"
+            ? anonymousUser(event.nickname)
+            : { ...session.userInfo, nickname: event.nickname }
+    const updateInfo: UserInfoUpdate = {
+        action: "userinfo.set",
+        sessionId: session.sessionId,
+        ...session.userInfo,
+    }
+    if (session.boardSession) {
+        sendTo(everyoneElseOnTheSameBoard(session.boardSession.boardId, session), updateInfo)
+    }
 }
 
 export async function setVerifiedUserForSession(
@@ -253,7 +255,7 @@ export async function setVerifiedUserForSession(
 }
 
 export function logoutUser(event: AuthLogout, origin: WsWrapper) {
-    const session = Object.values(sessions).find((s) => s.sessionId === origin.id)
+    const session = getSession(origin)
     if (!session) {
         console.warn("Session not found for socket " + origin.id)
     } else {
