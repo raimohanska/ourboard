@@ -18,7 +18,16 @@ export type BoardInfo = {
 
 export async function getBoardInfo(id: Id): Promise<BoardInfo | null> {
     const result = await withDBClient((client) => client.query("SELECT id, name, ws_host FROM board WHERE id=$1", [id]))
-    return result.rows.length === 1 ? (result.rows[0] as BoardInfo) : null
+    if (result.rows.length === 1) {
+        return result.rows[0] as BoardInfo
+    }
+    return id === "default"
+        ? {
+              id,
+              name: "Test Board",
+              ws_host: null,
+          }
+        : null
 }
 
 export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
