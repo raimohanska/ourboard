@@ -15,7 +15,69 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
     appEvent: AppEvent,
 ): Promise<MessageHandlerResult> => {
     if (await handleCommonEvent(socket, appEvent)) return true
-    // TODO: accept other events only after successful join! Will probably simplify things here
+    const session = getSession(socket)
+    if (!session) {
+        console.error("Session missing for socket " + socket.id)
+        return true
+    }
+    if (appEvent.action === "board.join") {
+        //await sleep(3000) // simulate latency
+        if (appEvent.boardId !== allowedBoardId) {
+            console.warn(`Trying to join board ${appEvent.boardId} on socket for board ${allowedBoardId}`)
+            return true
+        }
+        const board = await getBoard(appEvent.boardId)
+        if (!session) {
+            return true
+        }
+        if (!board) {
+            console.warn(`Trying to join unknown board ${appEvent.boardId}`)
+            session.sendEvent({
+                action: "board.join.denied",
+                boardId: appEvent.boardId,
+                reason: "not found",
+            })
+            return true
+        }
+        if (!IGNORE_ACCESS_POLICY && board.board.accessPolicy) {
+            if (session.userInfo.userType != "authenticated") {
+                console.warn("Access denied to board by anonymous user")
+                session.sendEvent({
+                    action: "board.join.denied",
+                    boardId: appEvent.boardId,
+                    reason: "unauthorized",
+                })
+                return true
+            }
+            const email = session.userInfo.email
+            if (
+                !board.board.accessPolicy.allowList.some((entry) => {
+                    if ("email" in entry) {
+                        return entry.email === email
+                    } else {
+                        return email.endsWith(entry.domain)
+                    }
+                })
+            ) {
+                console.warn("Access denied to board by user not on allowList")
+                session.sendEvent({
+                    action: "board.join.denied",
+                    boardId: appEvent.boardId,
+                    reason: "forbidden",
+                })
+                return true
+            }
+            await associateUserWithBoard(session.userInfo.userId, appEvent.boardId)
+        }
+        await addSessionToBoard(board, socket, appEvent.initAtSerial)
+        return true
+    }
+
+    if (!session.boardSession) {
+        console.warn("Trying to send event to board without session")
+        return true
+    }
+
     if (isBoardItemEvent(appEvent)) {
         const boardId = appEvent.boardId
         const state = await getBoard(boardId)
@@ -25,9 +87,8 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
         const gotLock = obtainLock(state.locks, appEvent, socket)
         if (gotLock) {
             if (isPersistableBoardItemEvent(appEvent)) {
-                const session = getSession(socket)
-                if (!session || !session.isOnBoard(appEvent.boardId)) {
-                    console.warn("Trying to send event to board without session")
+                if (!session.isOnBoard(appEvent.boardId)) {
+                    console.warn("Trying to send event to board without valid session")
                 } else {
                     let historyEntry: BoardHistoryEntry = {
                         ...appEvent,
@@ -53,59 +114,6 @@ export const handleBoardEvent = (allowedBoardId: Id, getSignedPutUrl: (key: stri
         }
     } else {
         switch (appEvent.action) {
-            case "board.join":
-                //await sleep(3000) // simulate latency
-                if (appEvent.boardId !== allowedBoardId) {
-                    console.warn(`Trying to join board ${appEvent.boardId} on socket for board ${allowedBoardId}`)
-                    return true
-                }
-                const board = await getBoard(appEvent.boardId)
-                const session = getSession(socket)
-                if (!session) {
-                    return true
-                }
-                if (!board) {
-                    console.warn(`Trying to join unknown board ${appEvent.boardId}`)
-                    session.sendEvent({
-                        action: "board.join.denied",
-                        boardId: appEvent.boardId,
-                        reason: "not found",
-                    })
-                    return true
-                }
-                if (!IGNORE_ACCESS_POLICY && board.board.accessPolicy) {
-                    if (session.userInfo.userType != "authenticated") {
-                        console.warn("Access denied to board by anonymous user")
-                        session.sendEvent({
-                            action: "board.join.denied",
-                            boardId: appEvent.boardId,
-                            reason: "unauthorized",
-                        })
-                        return true
-                    }
-                    const email = session.userInfo.email
-                    if (
-                        !board.board.accessPolicy.allowList.some((entry) => {
-                            if ("email" in entry) {
-                                return entry.email === email
-                            } else {
-                                return email.endsWith(entry.domain)
-                            }
-                        })
-                    ) {
-                        console.warn("Access denied to board by user not on allowList")
-                        session.sendEvent({
-                            action: "board.join.denied",
-                            boardId: appEvent.boardId,
-                            reason: "forbidden",
-                        })
-                        return true
-                    }
-                    await associateUserWithBoard(session.userInfo.userId, appEvent.boardId)
-                }
-                await addSessionToBoard(board, socket, appEvent.initAtSerial)
-                return true
-
             case "cursor.move": {
                 const { boardId, position } = appEvent
                 const { x, y } = position
