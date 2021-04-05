@@ -21,6 +21,10 @@ export default function (socket: Sender, boardId: Id | undefined) {
         sent: [],
     })
 
+    function setSocket(newSocket: Sender) {
+        socket = newSocket
+    }
+
     function sendIfPossible() {
         if (!connected || !canFlush) return
         state.modify((s) => {
@@ -68,5 +72,6 @@ export default function (socket: Sender, boardId: Id | undefined) {
         onConnect,
         queueSize: queueSize,
         ack,
+        setSocket,
     }
 }

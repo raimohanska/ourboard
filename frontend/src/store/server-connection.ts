@@ -27,7 +27,14 @@ export function serverConnection(currentBoardId: Id | undefined) {
     )
 
     const connectionStatus = L.atom<ConnectionStatus>("connecting")
-    let [socket, messageQueue] = initSocket(currentBoardId)
+
+    const protocol = location.protocol === "http:" ? "ws:" : "wss:"
+    const root = `${protocol}//${location.host}`
+    //const root = "wss://www.ourboard.io"
+    //const root = "ws://localhost:1339"
+    let currentSocketAddress = `${root}/socket/lobby`
+    let socket = initSocket()
+    let messageQueue = MessageQueue(socket, currentBoardId)
 
     setInterval(() => {
         if (documentHidden.get() && connectionStatus.get() === "connected") {
@@ -49,14 +56,10 @@ export function serverConnection(currentBoardId: Id | undefined) {
         }
     })
 
-    function initSocket(boardId: Id | undefined) {
+    function initSocket() {
         connectionStatus.set("connecting")
-        const protocol = location.protocol === "http:" ? "ws:" : "wss:"
-        const root = `${protocol}//${location.host}`
-        //const root = "wss://www.ourboard.io"
-        //const root = "ws://localhost:1339"
-        const ws = new WebSocket(`${root}/socket/${boardId ? "board/" + boardId : "lobby"}`)
-
+        console.log("Connecting to " + currentSocketAddress)
+        const ws = new WebSocket(currentSocketAddress)
         ws.addEventListener("error", (e) => {
             if (ws === socket) {
                 console.error("Web socket error")
@@ -69,9 +72,12 @@ export function serverConnection(currentBoardId: Id | undefined) {
             connectionStatus.set("connected")
         })
         ws.addEventListener("message", (str) => {
-            const event = JSON.parse(str.data)
+            const event = JSON.parse(str.data) as EventFromServer
             if (event.action === "ack") {
                 messageQueue.ack()
+            } else if (event.action === "board.join.denied" && event.reason === "redirect") {
+                currentSocketAddress = event.wsAddress
+                newSocket()
             } else {
                 serverEvents.push(event)
             }
@@ -84,7 +90,7 @@ export function serverConnection(currentBoardId: Id | undefined) {
             }
         })
 
-        return [ws, MessageQueue(ws, boardId)] as const
+        return ws
 
         async function reconnect() {
             if (documentHidden.get()) {
@@ -102,13 +108,14 @@ export function serverConnection(currentBoardId: Id | undefined) {
 
     function newSocket() {
         socket.close()
-        ;[socket, messageQueue] = initSocket(currentBoardId)
+        socket = initSocket()
+        messageQueue.setSocket(socket)
     }
 
     function setBoardId(boardId: Id | undefined) {
         if (boardId != currentBoardId) {
+            messageQueue = MessageQueue(socket, currentBoardId)
             currentBoardId = boardId
-            newSocket()
         }
     }
     uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach((e) => messageQueue.enqueue(e))

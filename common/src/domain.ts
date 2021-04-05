@@ -213,11 +213,18 @@ export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Seri
 export type AssociateBoard = { action: "board.associate"; boardId: Id; lastOpened: ISOTimeStamp }
 export type DissociateBoard = { action: "board.dissociate"; boardId: Id }
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
-export type DeniedJoinBoard = {
-    action: "board.join.denied"
-    boardId: Id
-    reason: "unauthorized" | "forbidden" | "not found"
-}
+export type DeniedJoinBoard =
+    | {
+          action: "board.join.denied"
+          boardId: Id
+          reason: "unauthorized" | "forbidden" | "not found"
+      }
+    | {
+          action: "board.join.denied"
+          boardId: Id
+          reason: "redirect"
+          wsAddress: string
+      }
 export type RecentBoardsFromServer = { action: "user.boards"; email: string; boards: RecentBoard[] }
 export type Ack = { action: "ack" }
 export type BoardSerialAck = { action: "board.serial.ack"; boardId: Id; serial: Serial }

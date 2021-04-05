@@ -6,9 +6,14 @@ import { handleCommonEvent } from "./common-event-handler"
 import { obtainLock } from "./locker"
 import { addSessionToBoard, broadcastBoardEvent, getSession } from "./sessions"
 import { associateUserWithBoard } from "./user-store"
+import { getBoardInfo } from "./board-store"
 import { WsWrapper } from "./ws-wrapper"
+import { sleep } from "../../common/src/sleep"
 
 const IGNORE_ACCESS_POLICY = process.env.IGNORE_ACCESS_POLICY === "true"
+const WS_PROTOCOL = process.env.WS_PROTOCOL ?? "ws"
+const WS_HOST_LOCAL = (process.env.WS_HOST_LOCAL ?? "localhost:1337").split(",")
+const WS_HOST_DEFAULT = process.env.WS_HOST_DEFAULT ?? "localhost:1337"
 
 export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (key: string) => string) => async (
     socket: WsWrapper,
@@ -22,15 +27,9 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
     }
     if (appEvent.action === "board.join") {
         //await sleep(3000) // simulate latency
-        if (!allowedBoardId || appEvent.boardId !== allowedBoardId) {
-            console.warn(`Trying to join board ${appEvent.boardId} on socket for board ${allowedBoardId}`)
-            return true
-        }
-        const board = await getBoard(appEvent.boardId)
-        if (!session) {
-            return true
-        }
-        if (!board) {
+
+        const boardInfo = await getBoardInfo(appEvent.boardId)
+        if (!boardInfo) {
             console.warn(`Trying to join unknown board ${appEvent.boardId}`)
             session.sendEvent({
                 action: "board.join.denied",
@@ -39,6 +38,29 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
             })
             return true
         }
+        const wsHost = boardInfo.ws_host ?? WS_HOST_DEFAULT
+
+        if (!allowedBoardId || appEvent.boardId !== allowedBoardId || !WS_HOST_LOCAL.includes(wsHost)) {
+            // Path - board id mismatch -> always redirect
+
+            const wsAddress = `${WS_PROTOCOL}://${wsHost}/socket/board/${appEvent.boardId}`
+            console.info(
+                `Trying to join board ${appEvent.boardId} on socket for board ${allowedBoardId}, board host ${wsHost} local hostnames ${WS_HOST_LOCAL}`,
+            )
+            session.sendEvent({
+                action: "board.join.denied",
+                boardId: appEvent.boardId,
+                reason: "redirect",
+                wsAddress,
+            })
+            return true
+        }
+
+        const board = (await getBoard(appEvent.boardId))!
+        if (!session) {
+            return true
+        }
+
         if (!IGNORE_ACCESS_POLICY && board.board.accessPolicy) {
             if (session.userInfo.userType != "authenticated") {
                 console.warn("Access denied to board by anonymous user")

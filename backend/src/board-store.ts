@@ -10,6 +10,17 @@ export type BoardAndAccessTokens = {
     accessTokens: string[]
 }
 
+export type BoardInfo = {
+    id: Id
+    name: string
+    ws_host: string | null
+}
+
+export async function getBoardInfo(id: Id): Promise<BoardInfo | null> {
+    const result = await withDBClient((client) => client.query("SELECT id, name, ws_host FROM board WHERE id=$1", [id]))
+    return result.rows.length === 1 ? (result.rows[0] as BoardInfo) : null
+}
+
 export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
     return await inTransaction(async (client) => {
         const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id])

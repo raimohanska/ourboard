@@ -1,11 +1,12 @@
 import dotenv from "dotenv"
+dotenv.config()
+
 import * as Http from "http"
 import { awaitSavingChanges as waitUntilChangesSaved } from "./board-state"
 import { initDB } from "./db"
 import { startExpressServer } from "./express-server"
 import { terminateSessions } from "./sessions"
 import { startUWebSocketsServer } from "./uwebsockets-server"
-dotenv.config()
 
 let http: Http.Server | null = null
 
