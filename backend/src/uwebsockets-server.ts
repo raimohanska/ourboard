@@ -46,6 +46,10 @@ export const WsWrapper = (ws: uws.WebSocket) => {
 }
 type WsWrapper = ReturnType<typeof WsWrapper>
 
+type WsUserData = {
+    handler: MessageHandler
+}
+
 export function startUWebSocketsServer(port: number) {
     const config = getConfig()
     const app = uws.App()
@@ -53,16 +57,28 @@ export function startUWebSocketsServer(port: number) {
     const sockets = new Map<uws.WebSocket, WsWrapper>()
     const textDecoder = new TextDecoder()
 
-    mountWs("/socket/lobby", handleCommonEvent)
-    // Currently unable to figure out the board id from path, that's the null below. That's not likely an issue as long as the clients use correct paths for sockets.
-    mountWs("/socket/board/:boardId", handleBoardEvent(null, createGetSignedPutUrl(config.storageBackend)))
+    mountWs("/socket/lobby", () => handleCommonEvent)
+    mountWs("/socket/board/:boardId", req => handleBoardEvent(req.getParameter(0), createGetSignedPutUrl(config.storageBackend)))
 
     app.get("/", (res) => res.writeStatus("200 OK").end("Sorry, we only serve websocket clients here."))
 
-    function mountWs(path: string, handler: MessageHandler) {
+    function mountWs(path: string, f: (req: uws.HttpRequest) => MessageHandler) {
         app.ws(path, {
+            upgrade: (res, req, context) => {
+                res.upgrade(
+                    {
+                        handler: f(req)
+                    } as WsUserData,
+                    req.getHeader('sec-websocket-key'),
+                    req.getHeader('sec-websocket-protocol'),
+                    req.getHeader('sec-websocket-extensions'), 
+                    // 3 headers are used to setup websocket
+                    context
+                )
+            },
             open: (ws) => {
                 const wrapper = WsWrapper(ws)
+                const handler = (ws as WsUserData & uws.WebSocket).handler
                 sockets.set(ws, wrapper)
                 connectionHandler(wrapper, handler)
             },
