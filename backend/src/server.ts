@@ -2,7 +2,9 @@ import dotenv from "dotenv"
 dotenv.config()
 
 import * as Http from "http"
-import { awaitSavingChanges as waitUntilChangesSaved } from "./board-state"
+import { exampleBoard } from "../../common/src/domain"
+import { addBoard, awaitSavingChanges as waitUntilChangesSaved } from "./board-state"
+import { createBoard, fetchBoard } from "./board-store"
 import { initDB } from "./db"
 import { startExpressServer } from "./express-server"
 import { terminateSessions } from "./sessions"
@@ -38,6 +40,11 @@ const UWEBSOCKETS_PORT = BIND_UWEBSOCKETS_TO_PORT
     : null
 
 initDB()
+    .then(async () => {
+        if (!(await fetchBoard("default"))) {
+            await createBoard(exampleBoard)
+        }
+    })
     .then(() => {
         if (EXPRESS_PORT) {
             http = startExpressServer(EXPRESS_PORT)

@@ -18,30 +18,14 @@ export type BoardInfo = {
 
 export async function getBoardInfo(id: Id): Promise<BoardInfo | null> {
     const result = await withDBClient((client) => client.query("SELECT id, name, ws_host FROM board WHERE id=$1", [id]))
-    if (result.rows.length === 1) {
-        return result.rows[0] as BoardInfo
-    }
-    return id === "default"
-        ? {
-              id,
-              name: "Test Board",
-              ws_host: null,
-          }
-        : null
+    return result.rows.length === 1 ? (result.rows[0] as BoardInfo) : null
 }
 
 export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
     return await inTransaction(async (client) => {
         const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id])
         if (result.rows.length == 0) {
-            if (id === exampleBoard.id) {
-                // Example board is a special case: it is automatically created if not in DB yet.
-                const board = { ...exampleBoard, serial: 0 }
-                await createBoard(board)
-                return { board, accessTokens: [] }
-            } else {
-                return null
-            }
+            return null
         } else {
             const snapshot = result.rows[0].content as Board
             const legacyHistory = result.rows[0].history.history || []
