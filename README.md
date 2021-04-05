@@ -145,9 +145,10 @@ Google authentication is supported. To enable this feature, you'll need to suppl
 
 -   Typescript
 -   [Harmaja](https://github.com/raimohanska/harmaja) frontend library
--   Socket.IO realtime sync
+-   WebSockets (express-ws / uWebSockets.js both!)
 -   Express server
--   Runs on Heroku
+-   Typera for HTTP API
+-   Heroku
 
 ## Dev
 
