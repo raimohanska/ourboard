@@ -163,6 +163,10 @@ Run end-to end Cypress tests against the server you just started:
 -   `yarn test-e2e:dev` to run once
 -   `yarn cypress` to open the Cypress UI for repeated test runs
 
+Connect to the local PostgreSQL database
+
+    psql postgres://r-board:secret@localhost:13338/r-board
+
 ## Developing with production data
 
 Do not run your local server against the production database, or you'll corrupt production. The server's in memory state will be out of sync with DB and bad things will happen.
