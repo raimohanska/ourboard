@@ -57,8 +57,9 @@ export function startUWebSocketsServer(port: number) {
     const sockets = new Map<uws.WebSocket, WsWrapper>()
     const textDecoder = new TextDecoder()
 
-    mountWs("/socket/lobby", () => handleCommonEvent)
-    mountWs("/socket/board/:boardId", req => handleBoardEvent(req.getParameter(0), createGetSignedPutUrl(config.storageBackend)))
+    const signedPutUrl = createGetSignedPutUrl(config.storageBackend)
+    mountWs("/socket/lobby", () => handleBoardEvent(null, signedPutUrl))
+    mountWs("/socket/board/:boardId", (req) => handleBoardEvent(req.getParameter(0), signedPutUrl))
 
     app.get("/", (res) => res.writeStatus("200 OK").end("Sorry, we only serve websocket clients here."))
 
@@ -67,13 +68,13 @@ export function startUWebSocketsServer(port: number) {
             upgrade: (res, req, context) => {
                 res.upgrade(
                     {
-                        handler: f(req)
+                        handler: f(req),
                     } as WsUserData,
-                    req.getHeader('sec-websocket-key'),
-                    req.getHeader('sec-websocket-protocol'),
-                    req.getHeader('sec-websocket-extensions'), 
+                    req.getHeader("sec-websocket-key"),
+                    req.getHeader("sec-websocket-protocol"),
+                    req.getHeader("sec-websocket-extensions"),
                     // 3 headers are used to setup websocket
-                    context
+                    context,
                 )
             },
             open: (ws) => {

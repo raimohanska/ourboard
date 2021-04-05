@@ -86,12 +86,13 @@ export const startExpressServer = (port: number) => {
 
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiDoc))
 
+    const signedPutUrl = createGetSignedPutUrl(config.storageBackend)
     ws.app.ws("/socket/lobby", (socket, req) => {
-        connectionHandler(WsWrapper(socket), handleCommonEvent)
+        connectionHandler(WsWrapper(socket), handleBoardEvent(null, signedPutUrl))
     })
     ws.app.ws("/socket/board/:boardId", (socket, req) => {
         const boardId = req.params.boardId
-        connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, createGetSignedPutUrl(config.storageBackend)))
+        connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, signedPutUrl))
     })
 
     http.listen(port, () => {
