@@ -16,6 +16,11 @@ Adding items
 -   Double click to add a new note
 -   Use keyboard shortcuts below
 
+Adding links
+
+- Paste a link to text, it'll automatically converted to a hyperlink
+- Select text and paste a link to convert the text to a link
+
 Adding images
 
 -   Add by dragging a file from your computer or from a browser window
