@@ -450,6 +450,7 @@ a {
             position: absolute;
             border: 1px solid $link-color;
             background: #35b2dc33;
+            z-index: $z-index-cursors;
         }
     }
 
