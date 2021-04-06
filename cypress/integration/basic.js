@@ -43,6 +43,12 @@ describe("Initial screen", () => {
 
         cy.url().should("contain", "http://localhost:1337/b/")
         cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
+
+        // Go back and repeat (regression test for a bug)
+        cy.get(".navigation-toolbar a").click()
+        cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
+        cy.get('[data-test="create-board-submit"]').click()
+        cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
     })
 
     it("Navigating to a nonexisting board", () => {
