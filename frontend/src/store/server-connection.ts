@@ -114,8 +114,8 @@ export function serverConnection(currentBoardId: Id | undefined) {
 
     function setBoardId(boardId: Id | undefined) {
         if (boardId != currentBoardId) {
-            messageQueue = MessageQueue(socket, currentBoardId)
             currentBoardId = boardId
+            messageQueue = MessageQueue(socket, currentBoardId)
         }
     }
     uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach((e) => messageQueue.enqueue(e))

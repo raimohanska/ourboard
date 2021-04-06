@@ -12,8 +12,8 @@ type Sender = {
     send: (...args: any[]) => any
 }
 
-export default function (socket: Sender, boardId: Id | undefined) {
-    let connected = false
+export default function (socket: WebSocket, boardId: Id | undefined) {
+    let connected = socket.readyState === socket.OPEN
     let canFlush = boardId ? false : true
     const localStorageKey = `queue_${boardId}`
     const state = localStorageAtom<QueueState>(localStorageKey, {
@@ -21,7 +21,7 @@ export default function (socket: Sender, boardId: Id | undefined) {
         sent: [],
     })
 
-    function setSocket(newSocket: Sender) {
+    function setSocket(newSocket: WebSocket) {
         socket = newSocket
     }
 
