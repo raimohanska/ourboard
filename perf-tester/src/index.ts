@@ -73,7 +73,7 @@ function createTester(nickname: string, boardId: string) {
             console.log("Socket disconnected")
             reconnect(ws)
         })
-        return [ws, MessageQueue(ws, undefined)] as const
+        return [ws, MessageQueue(ws as any, undefined)] as const
     }
 }
 
