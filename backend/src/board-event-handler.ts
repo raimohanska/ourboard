@@ -132,6 +132,8 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
                         return true
                     }
                 }
+            } else if (appEvent.action === "item.unlock") {
+                return true
             }
         }
     } else {
