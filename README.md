@@ -18,8 +18,8 @@ Adding items
 
 Adding links
 
-- Paste a link to text, it'll automatically converted to a hyperlink
-- Select text and paste a link to convert the text to a link
+-   Paste a link to text, it'll automatically converted to a hyperlink
+-   Select text and paste a link to convert the text to a link
 
 Adding images
 
