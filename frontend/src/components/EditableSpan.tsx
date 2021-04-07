@@ -31,7 +31,6 @@ export const EditableSpan = (props: EditableSpanProps) => {
         if (editing) {
             setTimeout(() => {
                 nameElement.get()!.focus()
-                document.execCommand("selectAll", false)
             }, 1)
         } else {
             clearSelection()

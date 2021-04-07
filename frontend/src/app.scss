@@ -182,6 +182,18 @@ a {
         background: #fffffff8;
         color: $black;
 
+        span[contenteditable] {
+            border: 2px solid transparent;
+            padding: 0.3rem 0.6rem;
+            &[contenteditable="false"]:hover,
+            &:focus {
+                border: 2px solid #2f80edd9;
+            }
+            &:focus {
+                outline: none;
+            }
+        }
+
         > * {
             width: 33.3%;
         }
