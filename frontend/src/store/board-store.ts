@@ -57,8 +57,6 @@ export function BoardStore(
         | LocalUIEvent
         | ClientToServerRequest
         | LoginResponse
-    let undoStack: PersistableBoardItemEvent[] = []
-    let redoStack: PersistableBoardItemEvent[] = []
 
     function tagWithUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
         const user: EventUserInfo = sessionState2UserInfo(sessionInfo.get())
@@ -69,27 +67,39 @@ export function BoardStore(
         }
     }
 
+    interface CommandStack {
+        add(event: PersistableBoardItemEvent): void
+    }
+    function CommandStack() {
+        let stack: PersistableBoardItemEvent[] = []
+        return {
+            add(event: PersistableBoardItemEvent) {
+                stack = addToStack(event, stack)
+            },
+            pop(state: BoardState, otherStack: CommandStack): BoardState {
+                if (!stack.length) return state
+                const undoOperation = stack.pop()!
+                connection.enqueue(undoOperation)
+                const [{ board, history }, reverse] = boardHistoryReducer(
+                    { board: state.board!, history: state.history },
+                    tagWithUserFromState(undoOperation),
+                )
+                if (reverse) otherStack.add(reverse)
+                return { ...state, board, history }
+            },
+            clear() {
+                stack = []
+            },
+        }
+    }
+    let undoStack = CommandStack()
+    let redoStack = CommandStack()
+
     const eventsReducer = (state: BoardState, event: BoardStoreEvent): BoardState => {
         if (event.action === "ui.undo") {
-            if (!undoStack.length) return state
-            const undoOperation = undoStack.pop()!
-            connection.enqueue(undoOperation)
-            const [{ board, history }, reverse] = boardHistoryReducer(
-                { board: state.board!, history: state.history },
-                tagWithUserFromState(undoOperation),
-            )
-            if (reverse) redoStack = addToStack(reverse, redoStack)
-            return { ...state, board, history }
+            return undoStack.pop(state, redoStack)
         } else if (event.action === "ui.redo") {
-            if (!redoStack.length) return state
-            const redoOperation = redoStack.pop()!
-            connection.enqueue(redoOperation)
-            const [{ board, history }, reverse] = boardHistoryReducer(
-                { board: state.board!, history: state.history },
-                tagWithUserFromState(redoOperation),
-            )
-            if (reverse) undoStack = addToStack(reverse, undoStack)
-            return { ...state, board, history }
+            return redoStack.pop(state, undoStack)
         } else if (isPersistableBoardItemEvent(event)) {
             const [{ board, history }, reverse] = boardHistoryReducer(
                 { board: state.board!, history: state.history },
@@ -100,8 +110,8 @@ export function BoardStore(
             }
             if (reverse && event.serial == undefined) {
                 // No serial == is local event. TODO: maybe a nicer way to recognize this?
-                redoStack = []
-                undoStack = addToStack(reverse, undoStack)
+                redoStack.clear()
+                undoStack.add(reverse)
             }
             return { ...state, board, history }
         } else if (event.action === "board.join.denied") {
