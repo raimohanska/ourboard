@@ -44,7 +44,7 @@ const App = () => {
                             boardId,
                             cursors: L.view(boardStore.state, "cursors"),
                             assets,
-                            boardState: boardStore.state,
+                            boardStore,
                             sessionState: sessionStore.sessionState,
                             dispatch: connection.dispatch,
                             navigateToBoard,

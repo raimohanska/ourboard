@@ -17,7 +17,7 @@ import { isFirefox } from "../components/browser"
 import { onClickOutside } from "../components/onClickOutside"
 import { isEmbedded } from "../embedding"
 import { AssetStore } from "../store/asset-store"
-import { BoardState } from "../store/board-store"
+import { BoardState, BoardStore } from "../store/board-store"
 import { Dispatch } from "../store/server-connection"
 import { UserSessionState } from "../store/user-session-store"
 import { boardCoordinateHelper } from "./board-coordinates"
@@ -60,7 +60,7 @@ const emptyNote = newNote("")
 export const BoardView = ({
     boardId,
     cursors,
-    boardState,
+    boardStore,
     sessionState,
     assets,
     dispatch,
@@ -68,12 +68,13 @@ export const BoardView = ({
 }: {
     boardId: string
     cursors: L.Property<UserCursorPosition[]>
-    boardState: L.Property<BoardState>
+    boardStore: BoardStore
     sessionState: L.Property<UserSessionState>
     assets: AssetStore
     dispatch: Dispatch
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
+    const boardState = boardStore.state
     const board = boardState.pipe(
         L.map((s: BoardState) => s.board!),
         L.filter((b: Board) => !!b, componentScope()),
@@ -378,7 +379,7 @@ export const BoardView = ({
                     <ToolSelector {...{ toolController }} />
                 </div>
                 <div className="undo-redo-toolbar board-tool">
-                    <UndoRedo {...{ dispatch }} />
+                    <UndoRedo {...{ dispatch, boardStore }} />
                 </div>
                 {L.view(
                     viewRect,

@@ -2,7 +2,8 @@ import { h, Fragment, HarmajaChild } from "harmaja"
 import * as L from "lonna"
 import { Color } from "../../../../common/src/domain"
 import { Tool, ToolController } from "../tool-selection"
-const selectedColor = "#2F80ED"
+import { black, selectedColor } from "../../components/UIColors"
+
 export const ToolSelector = ({ toolController }: { toolController: ToolController }) => {
     const tool = toolController.tool
     return (
@@ -72,7 +73,7 @@ const ToolIcon = ({
             title={tooltip}
             onClick={() => currentTool.set(name)}
         >
-            {L.view(currentTool, (s) => svg(s === name ? selectedColor : "black"))}
+            {L.view(currentTool, (s) => svg(s === name ? selectedColor : black))}
         </span>
     )
 }

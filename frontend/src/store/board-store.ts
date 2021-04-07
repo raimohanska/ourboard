@@ -27,7 +27,7 @@ import { mkBootStrapEvent } from "../../../common/src/migration"
 import { clearBoardState, getInitialBoardState, storeBoardState, storedBoardsLoaded } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
-
+import _ from "lodash"
 export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardAccessStatus =
     | "none"
@@ -71,14 +71,16 @@ export function BoardStore(
         add(event: PersistableBoardItemEvent): void
     }
     function CommandStack() {
-        let stack: PersistableBoardItemEvent[] = []
+        let stack = L.atom<PersistableBoardItemEvent[]>([])
+        let canPop = L.view(stack, (s) => s.length > 0)
         return {
             add(event: PersistableBoardItemEvent) {
-                stack = addToStack(event, stack)
+                stack.modify((s) => addToStack(event, s))
             },
             pop(state: BoardState, otherStack: CommandStack): BoardState {
-                if (!stack.length) return state
-                const undoOperation = stack.pop()!
+                const undoOperation = _.last(stack.get())
+                if (!undoOperation) return state
+                stack.modify((s) => s.slice(0, s.length - 1))
                 connection.enqueue(undoOperation)
                 const [{ board, history }, reverse] = boardHistoryReducer(
                     { board: state.board!, history: state.history },
@@ -88,8 +90,25 @@ export function BoardStore(
                 return { ...state, board, history }
             },
             clear() {
-                stack = []
+                stack.set([])
             },
+            canPop,
+        }
+
+        function addToStack(
+            event: PersistableBoardItemEvent,
+            b: PersistableBoardItemEvent[],
+        ): PersistableBoardItemEvent[] {
+            const latest = b[b.length - 1]
+            if (latest) {
+                const folded = foldActions(event, latest, { foldAddUpdate: false }) // The order is like this, because when applied the new event would be applied before the one in the stack
+                if (folded) {
+                    // Replace top of stack with folded
+                    return [...b.slice(0, b.length - 1), folded] as any // TODO: can we get better types?
+                }
+            }
+
+            return b.concat(event)
         }
     }
     let undoStack = CommandStack()
@@ -295,20 +314,9 @@ export function BoardStore(
 
     return {
         state,
+        canUndo: undoStack.canPop,
+        canRedo: redoStack.canPop,
     }
-}
-
-function addToStack(event: PersistableBoardItemEvent, b: PersistableBoardItemEvent[]): PersistableBoardItemEvent[] {
-    const latest = b[b.length - 1]
-    if (latest) {
-        const folded = foldActions(event, latest, { foldAddUpdate: false }) // The order is like this, because when applied the new event would be applied before the one in the stack
-        if (folded) {
-            // Replace top of stack with folded
-            return [...b.slice(0, b.length - 1), folded] as any // TODO: can we get better types?
-        }
-    }
-
-    return b.concat(event)
 }
 
 function sessionState2UserInfo(state: UserSessionState): EventUserInfo {
