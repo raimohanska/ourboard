@@ -96,7 +96,7 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
     }
 
     if (!session.boardSession) {
-        console.warn("Trying to send event to board without session")
+        console.warn("Trying to send event to board without session", appEvent)
         return true
     }
 
