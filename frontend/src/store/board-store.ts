@@ -24,7 +24,7 @@ import {
     UserSessionInfo,
 } from "../../../common/src/domain"
 import { mkBootStrapEvent } from "../../../common/src/migration"
-import { clearBoardState, getInitialBoardState, storeBoardState, storedBoardsLoaded } from "./board-local-store"
+import { clearBoardState, getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
 import _ from "lodash"
@@ -161,13 +161,18 @@ export function BoardStore(
             if ("initAtSerial" in event) {
                 const boardId = event.boardAttributes.id
                 try {
-                    const localState = getInitialBoardState(boardId)
-                    if (!localState) throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
-                    const localSerial = localState.boardWithHistory.board.serial
+                    if (!storedInitialState)
+                        throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
+                    if (storedInitialState.boardWithHistory.board.id !== event.boardAttributes.id)
+                        throw Error(`Trying to init board with nonmatching id`)
+                    const localSerial = storedInitialState.boardWithHistory.board.serial
                     if (localSerial != event.initAtSerial)
                         throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
 
-                    const initialBoard = { ...localState.boardWithHistory.board, ...event.boardAttributes } as Board
+                    const initialBoard = {
+                        ...storedInitialState.boardWithHistory.board,
+                        ...event.boardAttributes,
+                    } as Board
                     if (event.recentEvents.length > 0) {
                         console.log(
                             `Init at ${event.initAtSerial} with ${
@@ -186,14 +191,16 @@ export function BoardStore(
                         ...state,
                         status: "ready",
                         board,
-                        history: localState.boardWithHistory.history.concat(event.recentEvents),
+                        history: storedInitialState.boardWithHistory.history.concat(event.recentEvents),
                     }
                 } catch (e) {
                     console.error("Error initializing board. Fetching as new board...", e)
-                    connection.sendImmediately({
-                        action: "board.join",
-                        boardId,
-                    })
+                    clearBoardState(boardId).then(() =>
+                        connection.sendImmediately({
+                            action: "board.join",
+                            boardId,
+                        }),
+                    )
                     return state
                 }
             } else {
@@ -302,13 +309,14 @@ export function BoardStore(
         }
     }
 
-    function doJoin(boardId: Id) {
-        storedBoardsLoaded.finally(() => {
-            connection.sendImmediately({
-                action: "board.join",
-                boardId: boardId,
-                initAtSerial: getInitialBoardState(boardId)?.boardWithHistory.board.serial,
-            })
+    let storedInitialState: LocalStorageBoard | undefined = undefined
+
+    async function doJoin(boardId: Id) {
+        storedInitialState = await getInitialBoardState(boardId)
+        connection.sendImmediately({
+            action: "board.join",
+            boardId: boardId,
+            initAtSerial: storedInitialState?.boardWithHistory.board.serial,
         })
     }
 

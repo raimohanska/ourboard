@@ -8,48 +8,29 @@ export type LocalStorageBoard = {
 
 const BOARD_STORAGE_KEY_PREFIX = "board_"
 
-const storedBoardStates: Record<string, LocalStorageBoard> = {}
-
-// TODO: rather not load everything into memory and have to keep that up to date as well (and the memory)
-
-export const storedBoardsLoaded = localForage
-    .keys()
-    .then((keys) =>
-        Promise.all(
-            keys.map(async (k) => {
-                if (!k.startsWith(BOARD_STORAGE_KEY_PREFIX)) return
-                try {
-                    const stringState = await localForage.getItem<string>(k)
-                    storedBoardStates[k] = JSON.parse(stringState!) as LocalStorageBoard
-                } catch (e) {
-                    console.error(`Getting key ${k} from IndexedDB failed`, e)
-                }
-            }),
-        ),
-    )
-    .catch((err) => {
-        console.error("Loading boards from IndexedDB failed", err)
-    })
-
 let activeBoardState: LocalStorageBoard | undefined = undefined
 
-export function getInitialBoardState(boardId: Id) {
+export async function getInitialBoardState(boardId: Id) {
     if (!activeBoardState || activeBoardState.boardWithHistory.board.id != boardId) {
         const localStorageKey = getStorageKey(boardId)
-        activeBoardState = storedBoardStates[localStorageKey]
-        if (activeBoardState && !activeBoardState.boardWithHistory.board.serial) {
-            activeBoardState = undefined // Discard earlier stored versions where serial was not part of Board
+        try {
+            const stringState = await localForage.getItem<string>(localStorageKey)
+            activeBoardState = JSON.parse(stringState!) as LocalStorageBoard
+            if (activeBoardState && activeBoardState.boardWithHistory) {
+                activeBoardState = {
+                    ...activeBoardState,
+                    boardWithHistory: {
+                        ...activeBoardState.boardWithHistory,
+                        board: migrateBoard(activeBoardState.boardWithHistory.board),
+                    },
+                }
+            }
+        } catch (e) {
+            console.error(`Fetching local state for board ${boardId} from IndexedDB failed`, e)
+            await clearBoardState(boardId)
         }
     }
-    return activeBoardState && activeBoardState.boardWithHistory
-        ? {
-              ...activeBoardState,
-              boardWithHistory: {
-                  ...activeBoardState.boardWithHistory,
-                  board: migrateBoard(activeBoardState.boardWithHistory.board),
-              },
-          }
-        : activeBoardState
+    return activeBoardState
 }
 
 function getStorageKey(boardId: string) {
@@ -64,18 +45,22 @@ export async function storeBoardState(newState: LocalStorageBoard) {
     const recentHistory = history.slice(history.length - maxLocalStoredHistory, history.length)
     activeBoardState = { ...newState, boardWithHistory: { ...newState.boardWithHistory, history: recentHistory } }
     //console.log(`Storing ${JSON.stringify(state).length} characters`)
-    await localForage
-        .setItem(getStorageKey(activeBoardState.boardWithHistory.board.id), JSON.stringify(activeBoardState))
-        .catch((err) => {
-            console.error(`Saving board state for ${newState.boardWithHistory.board.id} failed`, err)
-        })
+    try {
+        await localForage.setItem(
+            getStorageKey(activeBoardState.boardWithHistory.board.id),
+            JSON.stringify(activeBoardState),
+        )
+    } catch (err) {
+        console.error(`Saving board state for ${newState.boardWithHistory.board.id} failed`, err)
+    }
 }
 
 export async function clearBoardState(boardId: Id) {
     activeBoardState = undefined
     const localStorageKey = getStorageKey(boardId)
-    delete storedBoardStates[localStorageKey]
-    await localForage.removeItem(localStorageKey).catch((err) => {
+    try {
+        await localForage.removeItem(localStorageKey)
+    } catch (err) {
         console.error(`Clearing board state for ${boardId} failed`, err)
-    })
+    }
 }
