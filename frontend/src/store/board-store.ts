@@ -217,8 +217,8 @@ export function BoardStore(
         } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
             // TODO when switching board, the cursor is not removed from previous board.
             const otherCursors = { ...event.p }
-            const session = sessionInfo.get().sessionId // TODO: this should be done by the server indeed
-            session && delete otherCursors[session]
+            const session = sessionInfo.get().sessionId
+            session && delete otherCursors[session] // Remove my own cursor. Server includes all because it's cheaper that way.
             const cursors = Object.values(otherCursors)
             return { ...state, cursors }
         } else if (event.action === "board.joined") {
