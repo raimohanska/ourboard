@@ -10,6 +10,8 @@ const BOARD_STORAGE_KEY_PREFIX = "board_"
 
 const storedBoardStates: Record<string, LocalStorageBoard> = {}
 
+// TODO: rather not load everything into memory and have to keep that up to date as well (and the memory)
+
 export const storedBoardsLoaded = localForage
     .keys()
     .then((keys) =>
@@ -71,7 +73,9 @@ export async function storeBoardState(newState: LocalStorageBoard) {
 
 export async function clearBoardState(boardId: Id) {
     activeBoardState = undefined
-    await localForage.removeItem(getStorageKey(boardId)).catch((err) => {
+    const localStorageKey = getStorageKey(boardId)
+    delete storedBoardStates[localStorageKey]
+    await localForage.removeItem(localStorageKey).catch((err) => {
         console.error(`Clearing board state for ${boardId} failed`, err)
     })
 }
