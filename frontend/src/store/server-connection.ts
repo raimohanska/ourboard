@@ -86,6 +86,9 @@ export function serverConnection(currentBoardId: Id | undefined) {
         ws.addEventListener("close", () => {
             if (ws === socket) {
                 console.log("Socket disconnected")
+                if (currentBoardId) {
+                    messageQueue.setFlushing(false)
+                }
                 reconnect()
             }
         })
@@ -135,6 +138,6 @@ export function serverConnection(currentBoardId: Id | undefined) {
         events,
         queueSize: messageQueue.queueSize,
         setBoardId,
-        startFlushing: () => messageQueue.startFlushing(),
+        startFlushing: () => messageQueue.setFlushing(true),
     }
 }

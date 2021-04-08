@@ -38,8 +38,8 @@ export default function (socket: WebSocket, boardId: Id | undefined) {
         })
     }
 
-    function startFlushing() {
-        canFlush = true
+    function setFlushing(flushing: boolean) {
+        canFlush = flushing
     }
 
     function ack() {
@@ -67,7 +67,7 @@ export default function (socket: WebSocket, boardId: Id | undefined) {
     const queueSize = L.view(state, (s) => s.queue.length + s.sent.length)
 
     return {
-        startFlushing,
+        setFlushing,
         enqueue,
         sendImmediately,
         onConnect,
