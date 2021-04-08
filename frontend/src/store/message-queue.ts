@@ -31,6 +31,7 @@ export default function (socket: WebSocket, boardId: Id | undefined) {
         state.modify((s) => {
             if (s.sent.length > 0 || s.queue.length === 0) return s
             socket.send(JSON.stringify(s.queue))
+            //s.queue.filter(e => e.action !== "cursor.move").forEach(e => console.log("send", e))
             return {
                 queue: [],
                 sent: s.queue,

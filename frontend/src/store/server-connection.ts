@@ -87,6 +87,7 @@ export function serverConnection(currentBoardId: Id | undefined) {
             if (ws === socket) {
                 console.log("Socket disconnected")
                 if (currentBoardId) {
+                    // TODO: this setup is quite a mess, needs a redesign
                     messageQueue.setFlushing(false)
                 }
                 reconnect()
