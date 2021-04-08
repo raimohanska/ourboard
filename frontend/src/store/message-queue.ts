@@ -20,6 +20,7 @@ export default function (socket: WebSocket, boardId: Id | undefined) {
         queue: [],
         sent: [],
     })
+    state.modify((s) => ({ ...s, sent: [] })) // stop waiting for acks if they were persisted
 
     function setSocket(newSocket: WebSocket) {
         socket = newSocket
