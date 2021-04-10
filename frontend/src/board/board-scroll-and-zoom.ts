@@ -76,7 +76,7 @@ export function boardScrollAndZoomHandler(
                 height: coordinateHelper.pxToEm(viewRect.height),
             }
         }),
-        L.cached<G.Rect | null>(componentScope()),
+        L.cached(componentScope()),
     )
 
     function wheelZoomHandler(event: WheelEvent) {

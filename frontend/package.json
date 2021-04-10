@@ -21,7 +21,7 @@
     "jsonwebtoken": "^8.5.1",
     "localforage": "^1.9.0",
     "lodash": "^4.17.20",
-    "lonna": "^0.10",
+    "lonna": "^0.12",
     "md5": "^2.3.0",
     "pretty-ms": "^7.0.1",
     "rimraf": "^3.0.2",
