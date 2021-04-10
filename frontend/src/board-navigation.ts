@@ -1,11 +1,21 @@
+import { componentScope } from "harmaja"
 import * as L from "lonna"
-import { globalScope } from "lonna"
 import { Id } from "../../common/src/domain"
 import "./app.scss"
-import { BoardStore } from "./store/board-store"
-import { ServerConnection } from "./store/server-connection"
+import { ReactiveRouter } from "./components/harmaja-router"
 
-export function BoardNavigation(connection: ServerConnection) {
+export function BoardNavigation() {
+    const BOARD_PATH = "/b/:boardId"
+    const ROOT_PATH = "/"
+    const router = ReactiveRouter(
+        {
+            [ROOT_PATH]: () => ({ page: "Dashboard" as const }),
+            [BOARD_PATH]: ({ boardId }) => ({ page: "Board" as const, boardId }),
+            "": () => ({ page: "NotFound" as const }),
+        },
+        L.globalScope,
+    )
+
     const nicknameFromURL = new URLSearchParams(location.search).get("nickname")
     if (nicknameFromURL) {
         localStorage.nickname = nicknameFromURL
@@ -14,37 +24,19 @@ export function BoardNavigation(connection: ServerConnection) {
         document.location.search = search.toString()
     }
 
-    const initialBoardId = boardIdFromPath()
-    const boardIdNavigationRequests = L.bus<Id | undefined>()
-    const boardIdFromPopState = L.fromEvent(window, "popstate").pipe(L.map(() => boardIdFromPath()))
-    const boardIdChanges = L.merge(boardIdFromPopState, boardIdNavigationRequests)
-    const boardId = boardIdChanges.pipe(L.scan(initialBoardId, (prev, next) => next, globalScope))
+    const boardId = L.view(router.result, (r) => (r.page === "Board" ? r.boardId : undefined))
 
-    boardIdChanges.forEach((id) => {
-        // Switch socket per board. This terminates the unnecessary board session on server.
-        // Also, is preparation for load balancing solution.
-        adjustURL(id)
-    })
-
-    function adjustURL(bid: Id | undefined) {
-        if (boardIdFromPath() === bid) return
-        if (bid) {
-            history.pushState({}, "", "/b/" + bid)
-        } else {
-            history.pushState({}, "", "/")
-        }
-    }
     const navigateToBoard = (id: Id | undefined) => {
-        boardIdNavigationRequests.push(id)
+        if (id) {
+            router.navigateByParams(BOARD_PATH, { boardId: id })
+        } else {
+            router.navigateByParams(ROOT_PATH)
+        }
     }
 
     return {
         boardId,
         navigateToBoard,
+        page: router.result,
     }
-}
-
-export function boardIdFromPath() {
-    const match = document.location.pathname.match(/b\/(.*)/)
-    return (match && match[1]) || undefined
 }

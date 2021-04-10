@@ -11,13 +11,13 @@ import { RecentBoards } from "./store/recent-boards"
 import { serverConnection } from "./store/server-connection"
 import { BoardState, BoardStore } from "./store/board-store"
 import _ from "lodash"
-import { boardIdFromPath, BoardNavigation } from "./board-navigation"
+import { BoardNavigation } from "./board-navigation"
 import { RecentBoardAttributes } from "../../common/src/domain"
 
 const App = () => {
-    const connection = serverConnection(boardIdFromPath())
+    const { boardId, page, navigateToBoard } = BoardNavigation()
+    const connection = serverConnection(boardId.get())
     const sessionStore = UserSessionStore(connection, localStorage)
-    const { boardId, navigateToBoard } = BoardNavigation(connection)
     const boardStore = BoardStore(boardId, connection, sessionStore.sessionState)
     const recentBoards = RecentBoards(connection, sessionStore)
     const assets = assetStore(connection, L.view(boardStore.state, "board"), connection.events)
@@ -33,35 +33,41 @@ const App = () => {
         )
         .forEach(recentBoards.storeRecentBoard)
 
-    return L.view(
-        boardId,
-        L.view(boardStore.state, (s) => s.board !== undefined),
-        (boardId, hasBoard) =>
-            boardId ? (
-                hasBoard ? (
-                    <BoardView
+    return L.view(page, (page) => {
+        switch (page.page) {
+            case "Board":
+                return L.view(
+                    boardStore.state,
+                    (s) => s.board !== undefined,
+                    (hasBoard) =>
+                        hasBoard ? (
+                            <BoardView
+                                {...{
+                                    boardId: page.boardId,
+                                    cursors: L.view(boardStore.state, "cursors"),
+                                    assets,
+                                    boardStore,
+                                    sessionState: sessionStore.sessionState,
+                                    dispatch: connection.dispatch,
+                                    navigateToBoard,
+                                }}
+                            />
+                        ) : null,
+                )
+            case "NotFound":
+            case "Dashboard":
+                return (
+                    <DashboardView
                         {...{
-                            boardId,
-                            cursors: L.view(boardStore.state, "cursors"),
-                            assets,
-                            boardStore,
-                            sessionState: sessionStore.sessionState,
                             dispatch: connection.dispatch,
+                            sessionState: sessionStore.sessionState,
+                            recentBoards,
                             navigateToBoard,
                         }}
                     />
-                ) : null
-            ) : (
-                <DashboardView
-                    {...{
-                        dispatch: connection.dispatch,
-                        sessionState: sessionStore.sessionState,
-                        recentBoards,
-                        navigateToBoard,
-                    }}
-                />
-            ),
-    )
+                )
+        }
+    })
 }
 
 H.mount(<App />, document.getElementById("root")!)

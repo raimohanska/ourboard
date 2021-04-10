@@ -8,6 +8,7 @@
     "@types/email-validator": "^1.0.6",
     "@types/lodash": "^4.14.161",
     "@types/md5": "^2.2.1",
+    "@types/path-to-regexp": "^1.7.0",
     "@types/pretty-ms": "^5.0.1",
     "@types/sanitize-html": "^1.27.1",
     "bezier-js": "^4.0.3",
@@ -23,6 +24,7 @@
     "lodash": "^4.17.20",
     "lonna": "^0.12.1",
     "md5": "^2.3.0",
+    "path-to-regexp": "^6.2.0",
     "pretty-ms": "^7.0.1",
     "rimraf": "^3.0.2",
     "sanitize-html": "^2.3.2",
@@ -31,7 +33,8 @@
   },
   "scripts": {
     "build": "node esbuild.js build",
-    "watch": "node esbuild.js watch"
+    "watch": "node esbuild.js watch",
+    "tsc:watch": "tsc --watch --noEmit"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.0",
