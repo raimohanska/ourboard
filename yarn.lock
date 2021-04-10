@@ -4690,10 +4690,10 @@ log-update@^4.0.0:
     slice-ansi "^4.0.0"
     wrap-ansi "^6.2.0"
 
-lonna@^0.12:
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.12.0.tgz#fd618f41025adb08318ed16416cdb7fc2bbe0eba"
-  integrity sha512-NVXwt68fpm1D1tyE1aCGL1P6nOOELXJ+YUGhioQXW1K3wZzsAF4Y3VDKWLblcZ/FWVXJGqV/hl0H66+l2lcWWg==
+lonna@^0.12.1:
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.12.1.tgz#1e91753df227bf342ccb87ac64f92803affe1770"
+  integrity sha512-BS0pHNKGS2xOx4tEx8gWMRamwFZLstXMi+LT5nv/+HNSkGl8gEBWVgvrfO9biMlUBY7p4wbsFgm/zM14fa33Zg==
   dependencies:
     optics-ts "^1.2.0"
 
