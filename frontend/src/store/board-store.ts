@@ -273,11 +273,9 @@ export function BoardStore(
 
     const localBoardToSave = state.pipe(
         L.changes,
-        L.filter(
-            state => state.board !== undefined && state.board.serial > 0 && state.status === "ready",
-        ),
+        L.filter((state) => state.board !== undefined && state.board.serial > 0 && state.status === "ready"),
         L.debounce(1000),
-        L.map(state => {
+        L.map((state) => {
             return {
                 boardWithHistory: {
                     board: state.board!,

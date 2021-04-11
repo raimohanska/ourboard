@@ -34,7 +34,7 @@ export const TextArea = (props: { value: L.Atom<string> } & any) => {
 export const Checkbox = (props: { checked: L.Atom<boolean> }) => {
     return (
         <a
-            className={props.checked.pipe(L.map(c => (c ? "checkbox checked" : "checkbox")))}
+            className={props.checked.pipe(L.map((c) => (c ? "checkbox checked" : "checkbox")))}
             onClick={(e) => {
                 props.checked.modify((c: boolean) => !c)
                 e.stopPropagation()

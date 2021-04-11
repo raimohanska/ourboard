@@ -8,7 +8,7 @@ import { Board } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { ToolController } from "./tool-selection"
 
-function nonNull<A>(x: A | null | undefined): x is A {
+function nonNull<A>(x: A | null | undefined): x is A {
     return !!x
 }
 
@@ -24,7 +24,7 @@ export function boardScrollAndZoomHandler(
         L.changes,
         L.filter(nonNull),
         L.flatMapLatest(
-            el => L.fromEvent(el, "scroll").pipe(L.map(() => ({ x: el.scrollLeft, y: el.scrollTop }))),
+            (el) => L.fromEvent(el, "scroll").pipe(L.map(() => ({ x: el.scrollLeft, y: el.scrollTop }))),
             componentScope(),
         ),
         L.toProperty(G.origin as { x: number; y: number }, componentScope()),
