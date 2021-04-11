@@ -119,7 +119,6 @@ export function boardDragHandler({
         selectionRect: L.pipe(
             L.combine(rect, dragAction, (rect: Rect | null, dragAction: DragAction) => {
                 if (!rect || dragAction.action !== "select") return null
-
                 return rect
             }),
             L.skipDuplicates<Rect | null>(_.isEqual, componentScope()),

@@ -19,7 +19,7 @@ export const SaveAsTemplate = ({ board }: { board: L.Property<Board | undefined>
     const changed = L.combineTemplate({
         curr: currSavedBoard,
         next: board,
-    }).pipe(L.map((c: { curr: Board | null; next: Board | undefined }) => c.curr !== c.next))
+    }).pipe(L.map(c => c.curr !== c.next))
     return (
         <li
             className={L.view(changed, (c) => (c ? "" : "disabled"))}
