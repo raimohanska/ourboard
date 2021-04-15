@@ -46,7 +46,7 @@ const App = () => {
                             <BoardView
                                 {...{
                                     boardId: page.boardId,
-                                    cursors: cursorsStore.cursors,
+                                    cursors: cursorsStore,
                                     assets,
                                     boardStore,
                                     sessionState: sessionStore.sessionState,

@@ -54,6 +54,7 @@ import { BackToAllBoardsLink } from "./toolbars/BackToAllBoardsLink"
 import { ToolController } from "./tool-selection"
 import { reduce } from "lodash"
 import { localStorageAtom } from "./local-storage-atom"
+import { CursorsStore } from "../store/cursors-store"
 
 const emptyNote = newNote("")
 
@@ -67,7 +68,7 @@ export const BoardView = ({
     navigateToBoard,
 }: {
     boardId: string
-    cursors: L.Property<UserCursorPosition[]>
+    cursors: CursorsStore
     boardStore: BoardStore
     sessionState: L.Property<UserSessionState>
     assets: AssetStore

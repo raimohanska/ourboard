@@ -4,8 +4,7 @@ import * as L from "lonna"
 import { globalScope } from "lonna";
 import { UserSessionStore } from "./user-session-store";
 
-export function CursorsStore(connection: ServerConnection, sessionStore: UserSessionStore) {
-    const initialState = [] as UserCursorPosition[]
+export function CursorsStore(connection: ServerConnection, sessionStore: UserSessionStore) {    
     const cursors = connection.bufferedServerEvents.pipe(
         L.filter(isCursors), 
         L.map(event => {
@@ -19,8 +18,16 @@ export function CursorsStore(connection: ServerConnection, sessionStore: UserSes
         L.toProperty([]),
         L.applyScope(globalScope)
     )
+    let cursorsReceivedLast = 0
+    const cursorDelay = cursors.pipe(L.map(() => {
+        const now = new Date().getTime()
+        const delay = cursorsReceivedLast ? now - cursorsReceivedLast : 0
+        cursorsReceivedLast = now
+        return delay
+    }))    
     return {
-        cursors
+        cursors,
+        cursorDelay
     }
 }
 export type CursorsStore = ReturnType<typeof CursorsStore>
