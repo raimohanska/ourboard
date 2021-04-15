@@ -13,12 +13,14 @@ import { BoardState, BoardStore } from "./store/board-store"
 import _ from "lodash"
 import { BoardNavigation } from "./board-navigation"
 import { RecentBoardAttributes } from "../../common/src/domain"
+import { CursorsStore } from "./store/cursors-store"
 
 const App = () => {
     const { boardId, page, navigateToBoard } = BoardNavigation()
     const connection = serverConnection(boardId.get())
     const sessionStore = UserSessionStore(connection, localStorage)
     const boardStore = BoardStore(boardId, connection, sessionStore.sessionState)
+    const cursorsStore = CursorsStore(connection, sessionStore)
     const recentBoards = RecentBoards(connection, sessionStore)
     const assets = assetStore(connection, L.view(boardStore.state, "board"), connection.events)
     const title = L.view(boardStore.state, (s) => (s.board && s.board.name ? `${s.board.name} - OurBoard` : "OurBoard"))
@@ -44,7 +46,7 @@ const App = () => {
                             <BoardView
                                 {...{
                                     boardId: page.boardId,
-                                    cursors: L.view(boardStore.state, "cursors"),
+                                    cursors: cursorsStore.cursors,
                                     assets,
                                     boardStore,
                                     sessionState: sessionStore.sessionState,

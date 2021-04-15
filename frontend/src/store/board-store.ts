@@ -41,7 +41,6 @@ export type BoardState = {
     status: BoardAccessStatus
     board: Board | undefined
     history: BoardHistoryEntry[]
-    cursors: UserCursorPosition[]
     locks: ItemLocks
     users: UserSessionInfo[]
 }
@@ -221,13 +220,6 @@ export function BoardStore(
             return { ...state, board: state.board ? { ...state.board, serial: event.serial } : state.board }
         } else if (event.action === "board.locks") {
             return { ...state, locks: event.locks }
-        } else if (event.action === CURSOR_POSITIONS_ACTION_TYPE) {
-            // TODO when switching board, the cursor is not removed from previous board.
-            const otherCursors = { ...event.p }
-            const session = sessionInfo.get().sessionId
-            session && delete otherCursors[session] // Remove my own cursor. Server includes all because it's cheaper that way.
-            const cursors = Object.values(otherCursors)
-            return { ...state, cursors }
         } else if (event.action === "board.joined") {
             return { ...state, users: state.users.concat(event) }
         } else if (event.action === "userinfo.set") {
@@ -259,7 +251,6 @@ export function BoardStore(
         status: "none" as const,
         board: undefined,
         history: [],
-        cursors: [],
         locks: {},
         users: [],
     }
