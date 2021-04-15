@@ -11,9 +11,9 @@ export const CursorsView = ({
     sessions: L.Property<UserSessionInfo[]>
 }) => {
     const transition = cursors.cursorDelay.pipe(
-        L.throttle(2000), 
+        L.throttle(2000),
         L.applyScope(componentScope()),
-        L.map(d => `all ${(d/1000).toFixed(1)}s`)
+        L.map((d) => `all ${(d / 1000).toFixed(1)}s`),
     )
     return (
         <ListView<UserCursorPosition, string>
