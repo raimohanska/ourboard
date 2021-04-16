@@ -504,22 +504,17 @@ a {
             .icon-group {
                 display: inline-block;
                 &:not(:last-child) {
-                    margin-right: 2em;
+                    margin-right: 0.5em;
                 }
                 .icon {
                     &:not(:last-child) {
-                        margin-right: 1em;
+                        margin-right: 0.5em;
                     }
                 }
-            }
-            .colors {
                 .color {
                     height: 1em;
                     width: 1em;
                     display: inline-block;
-                    &:not(:last-child) {
-                        margin-right: 0.5em;
-                    }
                     &.white {
                         border: 1px solid #eeeeee;
                     }

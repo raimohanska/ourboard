@@ -195,6 +195,35 @@ If you need the local state for a given board in localStorage, you can
 
 Copy the result string, navigate to your localhost site and paste the same value to the same localStorage key. Refresh and enjoy.
 
+## Hosting
+
+You should be able to host your own OurBoard instance pretty easily. Some environment variables to set:
+
+```
+DATABASE_URL:          [Postgres database URL]
+DOMAIN:                [your domain name]
+REDIRECT_URL:          https://www.ourboard.io/
+WS_HOST_DEFAULT:       [your domain name]
+WS_HOST_LOCAL:         [your domain name]
+WS_PROTOCOL:           [wss for secure, ws for non-secure]
+```
+
+AWS environment variables, needed for hosting board assets on AWS S3, otherwise hosted in file system.
+
+```
+AWS_ACCESS_KEY_ID
+AWS_ASSETS_BUCKET_URL
+AWS_SECRET_ACCESS_KEY
+```
+
+Google Authentication environment variables, needed if you want to enable Google auth.
+
+```
+GOOGLE_API_KEY
+GOOGLE_CLIENT_ID
+```
+
+
 ## Contribution
 
 See Issues!
