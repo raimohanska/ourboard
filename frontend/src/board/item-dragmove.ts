@@ -48,7 +48,7 @@ export function itemDragToMove(
                             Math.max(dragStartPosition.y + yDiff, margin),
                             b.height - current.height - margin,
                         )
-                        const container = maybeChangeContainer(current, b)
+                        const container = maybeChangeContainer(current, b.items)
                         return { id: current.id, x, y, containerId: container ? container.id : undefined }
                     })
 

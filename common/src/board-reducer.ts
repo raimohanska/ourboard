@@ -1,4 +1,4 @@
-import { Rect } from "../../frontend/src/board/geometry"
+import { Rect, equalRect } from "../../frontend/src/board/geometry"
 import {
     AppEvent,
     Board,
@@ -16,9 +16,11 @@ import {
     MoveItem,
     ConnectionEndPoint,
     Point,
+    isContainer,
 } from "./domain"
 import _ from "lodash"
 import { arrayToObject } from "./migration"
+import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
 
 export function boardReducer(
     board: Board,
@@ -134,14 +136,10 @@ export function boardReducer(
                 },
             ]
         case "item.update": {
-            const updated = arrayToObject("id", event.items)
             return [
                 {
                     ...board,
-                    items: {
-                        ...board.items,
-                        ...updated,
-                    },
+                    items: updateItems(board.items, event.items),
                 },
                 {
                     action: "item.update",
@@ -267,6 +265,31 @@ function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[
         ...items,
         ...updated,
     }
+}
+
+function updateItems(current: Record<Id, Item>, updateList: Item[]): Record<Id, Item> {
+    const updated = arrayToObject("id", updateList)
+    const result = { ...current, ...updated }
+    updateList.filter(isContainer).forEach((container) => {
+        const previous = current[container.id]
+        if (previous && !equalRect(previous, container)) {
+            // Container shape changed -> check items
+            Object.values(current)
+                .filter(
+                    (i) =>
+                        i.containerId === container.id || // Check all previously contained items
+                        containedBy(i, container), // Check all items inside the new bounds
+                )
+                .forEach((item) => {
+                    const newContainer = maybeChangeContainer(item, result)
+                    if (newContainer?.id !== item.containerId) {
+                        console.log("Update!")
+                        result[item.id] = { ...item, containerId: newContainer ? newContainer.id : undefined }
+                    }
+                })
+        }
+    })
+    return result
 }
 
 type Move = { xDiff: number; yDiff: number; containerChanged: boolean; containerId: Id | undefined }

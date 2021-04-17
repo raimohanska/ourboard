@@ -29,6 +29,10 @@ export function overlaps(a: Rect, b: Rect) {
     return true
 }
 
+export function equalRect(a: Rect, b: Rect) {
+    return a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height
+}
+
 export function distance(a: Coordinates, b: Coordinates) {
     return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2))
 }

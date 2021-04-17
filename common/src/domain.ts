@@ -362,6 +362,10 @@ export function isNote(i: Item): i is Note {
     return i.type === "note"
 }
 
+export function isContainer(i: Item): i is Container {
+    return i.type === "container"
+}
+
 export function isItem(i: Point): i is Item {
     return "type" in i
 }
