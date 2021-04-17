@@ -98,18 +98,19 @@ export function assetStore(
     }
 }
 
+function isAssetPut(e: AppEvent): e is AssetPutUrlResponse {
+    return e.action === "asset.put.response"
+}
+
 function getAssetPutResponse(assetId: string, events: L.EventStream<AppEvent>): Promise<AssetURL> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         events
             .pipe(
-                L.filter((e: AppEvent) => e.action == "asset.put.response"),
+                L.filter(isAssetPut),
+                L.map((e) => e.signedUrl),
                 L.take(1),
             )
-            .forEach(async (e) => {
-                // TODO: filter with type narrowing in Lonna would be super nice
-                const signedUrl = (e as AssetPutUrlResponse).signedUrl
-                resolve(signedUrl)
-            })
+            .forEach(resolve)
     })
 }
 
