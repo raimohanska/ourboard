@@ -8,6 +8,7 @@ import { Dispatch } from "../store/server-connection"
 
 type Horizontal = "left" | "right"
 type Vertical = "top" | "bottom"
+const borderOffset = 0.25
 
 export const SelectionBorder = ({
     id,
@@ -22,8 +23,19 @@ export const SelectionBorder = ({
     board: L.Property<Board>
     dispatch: Dispatch
 }) => {
+    const item = L.view(board, (b) => b.items[id])
+    const style = L.view(item, (i) => {
+        return {
+            top: -borderOffset + "rem",
+            left: -borderOffset + "rem",
+            height: `calc(${i.height}em + 2 * ${borderOffset}rem)`,
+            width: `calc(${i.width}em + 2 * ${borderOffset}rem)`,
+            transform: `translate(${i.x}em, ${i.y}em)`,
+        }
+    })
+
     return (
-        <span className="selection-control">
+        <span className="selection-control" style={style}>
             <span className="corner-resize-drag top left"></span>
             <DragCorner {...{ horizontal: "left", vertical: "top" }} />
             <DragCorner {...{ horizontal: "left", vertical: "bottom" }} />

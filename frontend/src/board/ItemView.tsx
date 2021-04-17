@@ -1,25 +1,24 @@
-import { componentScope, h, HarmajaOutput } from "harmaja"
+import { h } from "harmaja"
 import * as L from "lonna"
 import {
     Board,
     BoardHistoryEntry,
+    getItemBackground,
     getItemIds,
     Id,
     Item,
     ItemType,
     TextItem,
-    getItemBackground,
 } from "../../../common/src/domain"
 import { HTMLEditableSpan } from "../components/HTMLEditableSpan"
+import { Dispatch } from "../store/server-connection"
 import { autoFontSize } from "./autoFontSize"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedIds } from "./board-focus"
-import { Dispatch } from "../store/server-connection"
 import { contrastingColor } from "./contrasting-color"
 import { DragBorder } from "./DragBorder"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
-import { SelectionBorder } from "./SelectionBorder"
 import { ToolController } from "./tool-selection"
 import { itemZIndex } from "./zIndices"
 
@@ -46,7 +45,6 @@ export const ItemView = ({
     dispatch: Dispatch
     toolController: ToolController
 }) => {
-    const tool = toolController.tool
     const itemHistory = findItemHistory(history.get(), id) // Purposefully fixing to the first snapshot of history instead of reacting to changes. Would be a performance disaster most likely.
     const element = L.atom<HTMLElement | null>(null)
 
@@ -88,44 +86,34 @@ export const ItemView = ({
                 L.view(item, getItemBackground),
                 (s, b) => `${type} ${"color-" + b.replace("#", "").toLowerCase()} ${s ? "selected" : ""}`,
             )}
-            style={item.pipe(
-                L.map((p: Item) => {
-                    const background = getItemBackground(p)
-                    const common = {
-                        top: 0,
-                        left: 0,
-                        height: p.height + "em",
-                        width: p.width + "em",
-                        transform: `translate(${p.x}em, ${p.y}em)`,
-                        zIndex: itemZIndex(p),
-                        background,
-                        position: "absolute",
-                    }
-                    const shape =
-                        p.type === "note" && p.shape === "round"
-                            ? {
-                                  borderRadius: "50%",
-                                  border: `${p.height / 10}em solid ${background}`,
-                                  boxSizing: "border-box",
-                              }
-                            : {}
-                    return { ...common, ...shape }
-                }),
-            )}
+            style={L.view(item, selected, (i) => {
+                const background = getItemBackground(i)
+                const common = {
+                    top: 0,
+                    left: 0,
+                    height: i.height + "em",
+                    width: i.width + "em",
+                    transform: `translate(${i.x}em, ${i.y}em)`,
+                    zIndex: itemZIndex(i),
+                    background,
+                    position: "absolute",
+                }
+                const shape =
+                    i.type === "note" && i.shape === "round"
+                        ? {
+                              borderRadius: "50%",
+                              border: `${i.height / 10}em solid ${background}`,
+                              boxSizing: "border-box",
+                          }
+                        : {}
+                return { ...common, ...shape }
+            })}
         >
             {(type === "note" || type === "text" || type === "container") && (
                 <TextView item={item as L.Property<TextItem>} />
             )}
             {L.view(isLocked, (l) => l && <span className="lock">🔒</span>)}
-            {L.view(
-                selected,
-                tool,
-                (s, t) =>
-                    s &&
-                    t !== "connect" && (
-                        <SelectionBorder {...{ id, tool, item: item, coordinateHelper, board, focus, dispatch }} />
-                    ),
-            )}
+
             {type === "container" && (
                 <DragBorder {...{ id, board, toolController, coordinateHelper, focus, dispatch }} />
             )}

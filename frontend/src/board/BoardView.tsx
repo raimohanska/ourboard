@@ -22,7 +22,7 @@ import { Dispatch } from "../store/server-connection"
 import { UserSessionState } from "../store/user-session-store"
 import { boardCoordinateHelper } from "./board-coordinates"
 import { boardDragHandler } from "./board-drag"
-import { BoardFocus, getSelectedIds, getSelectedItem } from "./board-focus"
+import { BoardFocus, getSelectedIds, getSelectedItem, getSelectedItems } from "./board-focus"
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { BoardViewHeader } from "./toolbars/BoardViewHeader"
 import { BoardViewMessage } from "./BoardViewMessage"
@@ -55,6 +55,7 @@ import { ToolController } from "./tool-selection"
 import { reduce } from "lodash"
 import { localStorageAtom } from "./local-storage-atom"
 import { CursorsStore } from "../store/cursors-store"
+import { SelectionBorder } from "./SelectionBorder"
 
 const emptyNote = newNote("")
 
@@ -234,6 +235,9 @@ export const BoardView = ({
         (status) => `board-container ${isEmbedded() ? "embedded" : ""} ${status}`,
     )
 
+    const items = L.view(L.view(board, "items"), Object.values)
+    const selectedItems = L.view(board, focus, (b, f) => getSelectedItems(b)(f))
+
     return (
         <div id="root" className={className}>
             <BoardViewHeader {...{ board, sessionState, dispatch }} />
@@ -246,11 +250,16 @@ export const BoardView = ({
                             ref={boardRef}
                             onClick={onClick}
                         >
-                            <ListView
-                                observable={L.view(L.view(board, "items"), Object.values)}
-                                renderObservable={renderItem}
-                                getKey={(i) => i.id}
-                            />
+                            <ListView observable={items} renderObservable={renderItem} getKey={(i) => i.id} />
+                            {L.view(tool, (t) =>
+                                t === "connect" ? null : (
+                                    <ListView
+                                        observable={selectedItems}
+                                        renderObservable={renderSelectionBorder}
+                                        getKey={(i) => i.id}
+                                    />
+                                ),
+                            )}
                             <RectangularDragSelection {...{ rect: selectionRect }} />
                             <CursorsView {...{ cursors, sessions }} />
                             <ContextMenuView {...{ latestNote, dispatch, board, focus }} />
@@ -262,6 +271,10 @@ export const BoardView = ({
             </div>
         </div>
     )
+
+    function renderSelectionBorder(id: string, item: L.Property<Item>) {
+        return <SelectionBorder {...{ id, tool, item: item, coordinateHelper, board, focus, dispatch }} />
+    }
 
     function renderItem(id: string, item: L.Property<Item>) {
         const isLocked = L.combineTemplate({ locks, sessionId }).pipe(
