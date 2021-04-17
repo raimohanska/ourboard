@@ -1,6 +1,6 @@
 import { Fragment, h } from "harmaja"
 import { BoardStore } from "../../store/board-store"
-import { Dispatch } from "../../store/server-connection"
+import { Dispatch } from "../../store/board-store"
 import * as L from "lonna"
 import { black, disabledColor } from "../../components/UIColors"
 

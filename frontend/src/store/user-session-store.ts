@@ -59,8 +59,6 @@ export type LoggedIn = BaseSessionState &
 export type UserSessionStore = ReturnType<typeof UserSessionStore>
 
 export function UserSessionStore(connection: ServerConnection, localStorage: Storage) {
-    const { events } = connection
-
     const eventsReducer = (
         state: UserSessionState,
         event: AppEvent | GoogleAuthUserInfo | boolean,
@@ -113,7 +111,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
             } else if (event.status === "signed-out") {
                 if (state.status === "logging-in-server" || state.status == "logged-in") {
                     console.log("Send logout")
-                    connection.sendImmediately({ action: "auth.logout" })
+                    connection.send({ action: "auth.logout" })
                 }
 
                 return {
@@ -154,8 +152,8 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
     function sendLoginAndNickname(state: UserSessionState) {
         if (state.status === "logging-in-server" || state.status === "logged-in") {
             console.log("Send nick & login")
-            connection.sendImmediately({ action: "nickname.set", nickname: state.name })
-            connection.sendImmediately({
+            connection.send({ action: "nickname.set", nickname: state.name })
+            connection.send({
                 action: "auth.login",
                 name: state.name,
                 email: state.email,
@@ -163,7 +161,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
             })
         } else if (state.nickname) {
             console.log("Send nick")
-            connection.sendImmediately({ action: "nickname.set", nickname: state.nickname })
+            connection.send({ action: "nickname.set", nickname: state.nickname })
         }
         return state
     }
@@ -182,9 +180,12 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                   nickname: localStorage.nickname || undefined,
               }
 
-    const sessionState = L.merge(events, connection.connected.pipe(L.changes), googleUser.pipe(L.changes)).pipe(
-        L.scan(initialState, eventsReducer, globalScope),
-    )
+    const sessionState = L.merge(
+        connection.bufferedServerEvents,
+        connection.sentUIEvents,
+        connection.connected.pipe(L.changes),
+        googleUser.pipe(L.changes),
+    ).pipe(L.scan(initialState, eventsReducer, globalScope))
 
     L.view(sessionState, "status").log("Session status")
 

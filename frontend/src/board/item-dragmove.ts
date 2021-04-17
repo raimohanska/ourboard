@@ -4,7 +4,7 @@ import { Board, BOARD_ITEM_BORDER_MARGIN, Connection, Item, Point } from "../../
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainer } from "./item-setcontainer"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import { drawConnectionHandler } from "./item-connect"
 import { Tool, ToolController } from "./tool-selection"
 

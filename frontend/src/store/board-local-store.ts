@@ -1,9 +1,10 @@
-import { BoardWithHistory, Id } from "../../../common/src/domain"
+import { UIEvent, BoardWithHistory, Id } from "../../../common/src/domain"
 import { migrateBoard } from "../../../common/src/migration"
 import * as localForage from "localforage"
 
 export type LocalStorageBoard = {
     boardWithHistory: BoardWithHistory
+    queue: UIEvent[]
 }
 
 const BOARD_STORAGE_KEY_PREFIX = "board_"
@@ -23,6 +24,7 @@ export async function getInitialBoardState(boardId: Id) {
                         ...activeBoardState.boardWithHistory,
                         board: migrateBoard(activeBoardState.boardWithHistory.board),
                     },
+                    queue: activeBoardState.queue ?? [],
                 }
             }
         } catch (e) {

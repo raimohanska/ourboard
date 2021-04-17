@@ -2,7 +2,7 @@ import { componentScope } from "harmaja"
 import * as L from "lonna"
 import { Board } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import { findSelectedItems, makeCopies } from "./item-cut-copy-paste"
 
 export function itemDuplicateHandler(board: L.Property<Board>, dispatch: Dispatch, focus: L.Atom<BoardFocus>) {

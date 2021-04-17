@@ -1,7 +1,7 @@
 import * as L from "lonna"
 import { Board, Connection, Item, Point, isContainedBy, Id, isItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import * as uuid from "uuid"
 import { containedBy, findNearestAttachmentLocationForConnectionNode } from "./geometry"
 import _ from "lodash"

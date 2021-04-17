@@ -19,7 +19,7 @@ import { boardReducer } from "../../../common/src/board-reducer"
 import { getItem } from "../../../common/src/domain"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 import { Checkbox } from "../components/components"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 
 type ParsedHistoryEntry = {
     timestamp: ISOTimeStamp

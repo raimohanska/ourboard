@@ -11,7 +11,7 @@ import {
     TextItem,
 } from "../../../common/src/domain"
 import { HTMLEditableSpan } from "../components/HTMLEditableSpan"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import { autoFontSize } from "./autoFontSize"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedIds } from "./board-focus"

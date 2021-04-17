@@ -1,9 +1,10 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
-import { foldActions } from "../../../common/src/action-folding"
+import { addOrReplaceEvent, foldActions } from "../../../common/src/action-folding"
 import { boardHistoryReducer } from "../../../common/src/board-history-reducer"
 import { boardReducer } from "../../../common/src/board-reducer"
 import {
+    AppEvent,
     Board,
     BoardHistoryEntry,
     BoardStateSyncEvent,
@@ -13,6 +14,7 @@ import {
     EventFromServer,
     EventUserInfo,
     Id,
+    isLocalUIEvent,
     isPersistableBoardItemEvent,
     ItemLocks,
     LocalUIEvent,
@@ -20,7 +22,6 @@ import {
     PersistableBoardItemEvent,
     TransientBoardItemEvent,
     UIEvent,
-    UserCursorPosition,
     UserSessionInfo,
 } from "../../../common/src/domain"
 import { mkBootStrapEvent } from "../../../common/src/migration"
@@ -28,6 +29,7 @@ import { clearBoardState, getInitialBoardState, LocalStorageBoard, storeBoardSta
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
 import _ from "lodash"
+export type Dispatch = (e: UIEvent) => void
 export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardAccessStatus =
     | "none"
@@ -40,6 +42,8 @@ export type BoardAccessStatus =
 export type BoardState = {
     status: BoardAccessStatus
     board: Board | undefined
+    queue: UIEvent[]
+    sent: UIEvent[]
     history: BoardHistoryEntry[]
     locks: ItemLocks
     users: UserSessionInfo[]
@@ -69,6 +73,16 @@ export function BoardStore(
     interface CommandStack {
         add(event: PersistableBoardItemEvent): void
     }
+
+    function flushIfPossible(state: BoardState): BoardState {
+        // Only flush when board is ready and we are not waiting for ack.
+        if (state.status === "ready" && state.sent.length === 0 && state.queue.length > 0) {
+            connection.send(state.queue)
+            return { ...state, queue: [], sent: state.queue }
+        }
+        return state
+    }
+
     function CommandStack() {
         let stack = L.atom<PersistableBoardItemEvent[]>([])
         let canPop = L.view(stack, (s) => s.length > 0)
@@ -80,13 +94,17 @@ export function BoardStore(
                 const undoOperation = _.last(stack.get())
                 if (!undoOperation) return state
                 stack.modify((s) => s.slice(0, s.length - 1))
-                connection.enqueue(undoOperation)
                 const [{ board, history }, reverse] = boardHistoryReducer(
                     { board: state.board!, history: state.history },
                     tagWithUserFromState(undoOperation),
                 )
                 if (reverse) otherStack.add(reverse)
-                return { ...state, board, history }
+                return flushIfPossible({
+                    ...state,
+                    board,
+                    history,
+                    queue: addOrReplaceEvent(undoOperation, state.queue),
+                })
             },
             clear() {
                 stack.set([])
@@ -114,48 +132,91 @@ export function BoardStore(
     let redoStack = CommandStack()
 
     const eventsReducer = (state: BoardState, event: BoardStoreEvent): BoardState => {
-        if (event.action === "ui.undo") {
-            return undoStack.pop(state, redoStack)
-        } else if (event.action === "ui.redo") {
-            return redoStack.pop(state, undoStack)
-        } else if (isPersistableBoardItemEvent(event)) {
-            const [{ board, history }, reverse] = boardHistoryReducer(
-                { board: state.board!, history: state.history },
-                event,
-            )
-            if (state.status !== "ready") {
-                console.warn(`Received board update ${event.serial} while in status ${state.status}`)
+        if (state.status === "ready") {
+            // Process these events only when "ready"
+            if (event.action === "cursor.move") {
+                return flushIfPossible({ ...state, queue: addOrReplaceEvent(event, state.queue) })
+            } else if (event.action === "ui.undo") {
+                return undoStack.pop(state, redoStack)
+            } else if (event.action === "ui.redo") {
+                return redoStack.pop(state, undoStack)
+            } else if (isPersistableBoardItemEvent(event)) {
+                const [{ board, history }, reverse] = boardHistoryReducer(
+                    { board: state.board!, history: state.history },
+                    event,
+                )
+                if (reverse && event.serial == undefined) {
+                    // No serial == is local event. TODO: maybe a nicer way to recognize this?
+                    redoStack.clear()
+                    undoStack.add(reverse)
+                }
+                return flushIfPossible({ ...state, board, history, queue: addOrReplaceEvent(event, state.queue) })
+            } else if (event.action === "board.joined") {
+                return { ...state, users: state.users.concat(event) }
+            } else if (event.action === "board.locks") {
+                return { ...state, locks: event.locks }
+            } else if (event.action === "ack") {
+                return flushIfPossible({ ...state, sent: [] })
+            } else if (event.action === "board.serial.ack") {
+                //console.log(`Update to ${event.serial} with ack`)
+                return { ...state, board: state.board ? { ...state.board, serial: event.serial } : state.board }
+            } else if (event.action === "board.action.apply.failed") {
+                console.error("Failed to apply previous action. Resetting to server-side state...")
+                if (state.board) {
+                    clearBoardState(state.board.id)
+                    doJoin(state.board.id)
+                }
+                return state
             }
-            if (reverse && event.serial == undefined) {
-                // No serial == is local event. TODO: maybe a nicer way to recognize this?
+        } else {
+            // Process these events only when not "ready"
+            if (event.action === "ui.board.join.request") {
+                undoStack.clear()
                 redoStack.clear()
-                undoStack.add(reverse)
+                if (!event.boardId) {
+                    return initialState
+                }
+                return {
+                    ...initialState,
+                    status: "loading",
+                    queue: [],
+                    sent: [],
+                    board: { id: event.boardId, name: "", ...defaultBoardSize, items: {}, connections: [], serial: 0 },
+                }
+            } else if (event.action === "board.join.denied") {
+                const loginStatus = sessionInfo.get().status
+                if (state.status !== "loading") {
+                    console.error(`Got board.join.denied while in status ${state.status}`)
+                }
+                if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
+                    console.log(`Access denied to board: login in progress`)
+                    return { ...state, status: "denied-temporarily" }
+                } else if (event.reason === "not found") {
+                    console.log(`Access denied to board: ${event.reason}`)
+                    return { ...state, status: "not-found" }
+                } else if (
+                    loginStatus === "anonymous" ||
+                    loginStatus === "logged-out" ||
+                    loginStatus === "login-failed"
+                ) {
+                    console.log(`Access denied to board: login required`)
+                    return { ...state, status: "login-required" }
+                } else if (event.reason === "unauthorized") {
+                    console.warn(`Got "unauthorized" while logged in, likely login in progress...`)
+                    return state
+                } else if (event.reason === "forbidden") {
+                    console.log(`Access denied to board: ${event.reason}`)
+                    return { ...state, status: "denied-permanently" }
+                } else {
+                    console.error(`Unexpected board access denial: ${state.status}/${loginStatus}/${event.reason}`)
+                    return state
+                }
             }
-            return { ...state, board, history }
-        } else if (event.action === "board.join.denied") {
-            const loginStatus = sessionInfo.get().status
-            if (state.status !== "loading") {
-                console.error(`Got board.join.denied while in status ${state.status}`)
-            }
-            if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
-                console.log(`Access denied to board: login in progress`)
-                return { ...state, status: "denied-temporarily" }
-            } else if (event.reason === "not found") {
-                console.log(`Access denied to board: ${event.reason}`)
-                return { ...state, status: "not-found" }
-            } else if (loginStatus === "anonymous" || loginStatus === "logged-out" || loginStatus === "login-failed") {
-                console.log(`Access denied to board: login required`)
-                return { ...state, status: "login-required" }
-            } else if (event.reason === "unauthorized") {
-                console.warn(`Got "unauthorized" while logged in, likely login in progress...`)
-                return state
-            } else if (event.reason === "forbidden") {
-                console.log(`Access denied to board: ${event.reason}`)
-                return { ...state, status: "denied-permanently" }
-            } else {
-                console.error(`Unexpected board access denial: ${state.status}/${loginStatus}/${event.reason}`)
-                return state
-            }
+        }
+        // Process these events in both ready and not-ready states
+        if (event.action === "userinfo.set") {
+            const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
+            return { ...state, users }
         } else if (event.action === "board.init") {
             if ("initAtSerial" in event) {
                 const boardId = event.boardAttributes.id
@@ -185,17 +246,17 @@ export function BoardStore(
                     }
                     const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
                     //console.log(`Init done and board at ${board.serial}`)
-                    connection.startFlushing()
-                    return {
+                    return flushIfPossible({
                         ...state,
                         status: "ready",
                         board,
+                        queue: storedInitialState.queue,
                         history: storedInitialState.boardWithHistory.history.concat(event.recentEvents),
-                    }
+                    })
                 } catch (e) {
                     console.error("Error initializing board. Fetching as new board...", e)
                     clearBoardState(boardId).then(() =>
-                        connection.sendImmediately({
+                        connection.send({
                             action: "board.join",
                             boardId,
                         }),
@@ -204,7 +265,6 @@ export function BoardStore(
                 }
             } else {
                 console.log("Init as new board")
-                connection.startFlushing()
                 return {
                     ...state,
                     status: "ready",
@@ -215,38 +275,9 @@ export function BoardStore(
                     ],
                 }
             }
-        } else if (event.action === "board.serial.ack") {
-            //console.log(`Update to ${event.serial} with ack`)
-            return { ...state, board: state.board ? { ...state.board, serial: event.serial } : state.board }
-        } else if (event.action === "board.locks") {
-            return { ...state, locks: event.locks }
-        } else if (event.action === "board.joined") {
-            return { ...state, users: state.users.concat(event) }
-        } else if (event.action === "userinfo.set") {
-            const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
-            return { ...state, users }
-        } else if (event.action === "ui.board.join.request") {
-            undoStack.clear()
-            redoStack.clear()
-            if (!event.boardId) {
-                return initialState
-            }
-            return {
-                ...initialState,
-                status: "loading",
-                board: { id: event.boardId, name: "", ...defaultBoardSize, items: {}, connections: [], serial: 0 },
-            }
-        } else if (event.action === "board.action.apply.failed") {
-            console.error("Failed to apply previous action. Resetting to server-side state...")
-            if (state.board) {
-                clearBoardState(state.board.id)
-                doJoin(state.board.id)
-            }
-            return state
-        } else {
-            // Ignore other events
-            return state
         }
+        //console.warn("Unhandled event", event.action);
+        return state
     }
 
     const initialState = {
@@ -255,14 +286,23 @@ export function BoardStore(
         history: [],
         locks: {},
         users: [],
+        queue: [],
+        sent: [],
     }
 
     function tagWithUser(e: UIEvent): BoardHistoryEntry | ClientToServerRequest | LocalUIEvent {
         return isPersistableBoardItemEvent(e) ? tagWithUserFromState(e) : e
     }
-    const userTaggedLocalEvents = L.view(connection.uiEvents, tagWithUser)
+    const uiEvents = L.bus<UIEvent>()
+    const dispatch: Dispatch = uiEvents.push
+    const userTaggedLocalEvents = L.view(uiEvents, tagWithUser)
     const events = L.merge(userTaggedLocalEvents, connection.bufferedServerEvents)
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
+
+    // persistable events and undo/redo are put to the state queue above, others are sent here immediately
+    uiEvents
+        .pipe(L.filter((e) => !isLocalUIEvent(e) && !isPersistableBoardItemEvent(e) && e.action !== "cursor.move"))
+        .forEach(connection.send)
 
     const localBoardToSave = state.pipe(
         L.changes,
@@ -274,6 +314,7 @@ export function BoardStore(
                     board: state.board!,
                     history: state.history,
                 },
+                queue: state.queue,
             }
         }),
     )
@@ -282,10 +323,7 @@ export function BoardStore(
     })
 
     boardId.forEach((boardId) => {
-        // Switch socket per board. This terminates the unnecessary board session on server.
-        // Also, is preparation for load balancing solution.
-        connection.setBoardId(boardId)
-        connection.dispatch({ action: "ui.board.join.request", boardId })
+        dispatch({ action: "ui.board.join.request", boardId })
         checkReadyToJoin()
     })
 
@@ -296,6 +334,7 @@ export function BoardStore(
     function checkReadyToJoin() {
         const bid = boardId.get()
         if (bid && connection.connected.get() && !isLoginInProgress(sessionStatus.get())) {
+            console.log("Go!")
             doJoin(bid)
         }
     }
@@ -304,7 +343,7 @@ export function BoardStore(
 
     async function doJoin(boardId: Id) {
         storedInitialState = await getInitialBoardState(boardId)
-        connection.sendImmediately({
+        connection.send({
             action: "board.join",
             boardId: boardId,
             initAtSerial: storedInitialState?.boardWithHistory.board.serial,
@@ -313,6 +352,8 @@ export function BoardStore(
 
     return {
         state,
+        events,
+        dispatch,
         canUndo: undoStack.canPop,
         canRedo: redoStack.canPop,
     }

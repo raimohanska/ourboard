@@ -52,7 +52,7 @@ export function assetStore(
 
                         console.log("PUT REQ")
 
-                        connection.enqueue({ action: "asset.put.request", assetId })
+                        connection.send({ action: "asset.put.request", assetId })
                         const signedUrl = await getAssetPutResponse(assetId, events)
 
                         const response = await fetch(signedUrl, {

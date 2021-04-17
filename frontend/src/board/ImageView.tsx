@@ -7,7 +7,7 @@ import { SelectionBorder } from "./SelectionBorder"
 import { AssetStore } from "../store/asset-store"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import { Tool, ToolController } from "./tool-selection"
 import { itemZIndex } from "./zIndices"
 

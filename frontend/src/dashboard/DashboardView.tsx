@@ -6,7 +6,7 @@ import { canLogin, UserSessionState } from "../store/user-session-store"
 import _ from "lodash"
 import { signIn, signOut } from "../google-auth"
 import { RecentBoards } from "../store/recent-boards"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import * as uuid from "uuid"
 
 export const DashboardView = ({

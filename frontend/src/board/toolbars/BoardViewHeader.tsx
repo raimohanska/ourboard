@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { Board } from "../../../../common/src/domain"
 import { EditableSpan } from "../../components/EditableSpan"
 import { UserInfoView } from "../../components/UserInfoView"
-import { Dispatch } from "../../store/server-connection"
+import { Dispatch } from "../../store/board-store"
 import { UserSessionState } from "../../store/user-session-store"
 
 export function BoardViewHeader({

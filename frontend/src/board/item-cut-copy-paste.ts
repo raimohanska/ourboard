@@ -15,7 +15,7 @@ import {
 } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedIds } from "./board-focus"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import { YELLOW } from "../../../common/src/colors"
 import { sanitizeHTML } from "../components/sanitizeHTML"
 import * as G from "./geometry"

@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { canLogin, UserSessionState, LoggingInServer } from "../store/user-session-store"
 import { EditableSpan } from "./EditableSpan"
 import { signIn, signOut } from "../google-auth"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 
 export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessionState>; dispatch: Dispatch }) => {
     return (

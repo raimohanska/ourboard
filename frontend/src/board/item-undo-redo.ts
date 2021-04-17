@@ -1,6 +1,6 @@
 import { componentScope } from "harmaja"
 import * as L from "lonna"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 
 export function itemUndoHandler(dispatch: Dispatch) {
     ;["keydown", "keyup", "keypress"].forEach((eventName) => {

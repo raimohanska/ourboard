@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { Board } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import { itemDragToMove } from "./item-dragmove"
 import { Tool, ToolController } from "./tool-selection"
 

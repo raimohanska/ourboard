@@ -1,21 +1,18 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
-import { AppEvent, EventFromServer, Id, isLocalUIEvent, UIEvent } from "../../../common/src/domain"
+import { AppEvent, EventFromServer, UIEvent } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
-import MessageQueue from "./message-queue"
 
 export type Dispatch = (e: UIEvent) => void
 
 const SERVER_EVENTS_BUFFERING_MILLIS = 20
 
-export type ServerConnection = ReturnType<typeof serverConnection>
+export type ServerConnection = ReturnType<typeof ServerConnection>
 
 export type ConnectionStatus = "connecting" | "connected" | "sleeping" | "reconnecting"
 
-export function serverConnection(currentBoardId: Id | undefined) {
-    const uiEvents = L.bus<UIEvent>()
-    const dispatch: Dispatch = uiEvents.push
+export function ServerConnection() {
     const serverEvents = L.bus<EventFromServer>()
     const bufferedServerEvents = serverEvents.pipe(
         L.bufferWithTime(SERVER_EVENTS_BUFFERING_MILLIS),
@@ -34,7 +31,6 @@ export function serverConnection(currentBoardId: Id | undefined) {
     //const root = "ws://localhost:1339"
     let currentSocketAddress = `${root}/socket/lobby`
     let socket = initSocket()
-    let messageQueue = MessageQueue(socket, currentBoardId)
 
     setInterval(() => {
         if (documentHidden.get() && connectionStatus.get() === "connected") {
@@ -42,7 +38,7 @@ export function serverConnection(currentBoardId: Id | undefined) {
             connectionStatus.set("sleeping")
             socket.close()
         } else {
-            messageQueue.enqueue({ action: "ping" })
+            send({ action: "ping" })
         }
     }, 30000)
 
@@ -68,14 +64,11 @@ export function serverConnection(currentBoardId: Id | undefined) {
         })
         ws.addEventListener("open", () => {
             console.log("Socket connected")
-            messageQueue.onConnect()
             connectionStatus.set("connected")
         })
         ws.addEventListener("message", (str) => {
             const event = JSON.parse(str.data) as EventFromServer
-            if (event.action === "ack") {
-                messageQueue.ack()
-            } else if (event.action === "board.join.denied" && event.reason === "redirect") {
+            if (event.action === "board.join.denied" && event.reason === "redirect") {
                 currentSocketAddress = event.wsAddress
                 newSocket()
             } else {
@@ -86,10 +79,6 @@ export function serverConnection(currentBoardId: Id | undefined) {
         ws.addEventListener("close", () => {
             if (ws === socket) {
                 console.log("Socket disconnected")
-                if (currentBoardId) {
-                    // TODO: this setup is quite a mess, needs a redesign
-                    messageQueue.setFlushing(false)
-                }
                 reconnect()
             }
         })
@@ -113,32 +102,23 @@ export function serverConnection(currentBoardId: Id | undefined) {
     function newSocket() {
         socket.close()
         socket = initSocket()
-        messageQueue.setSocket(socket)
     }
 
-    function setBoardId(boardId: Id | undefined) {
-        if (boardId != currentBoardId) {
-            currentBoardId = boardId
-            messageQueue = MessageQueue(socket, currentBoardId)
+    function send(e: UIEvent | UIEvent[]) {
+        //console.log("Sending", e)
+        if (!Array.isArray(e)) sentUIEvents.push(e)
+        try {
+            socket.send(JSON.stringify(Array.isArray(e) ? e : [e]))
+        } catch (e) {
+            console.error("Failed to send", e) // TODO
         }
     }
-    uiEvents.pipe(L.filter((e: UIEvent) => !isLocalUIEvent(e))).forEach((e) => messageQueue.enqueue(e))
-
-    // uiEvents.log("UI")
-    // serverEvents.log("Server")
-
-    const events = L.merge(uiEvents, bufferedServerEvents)
+    const sentUIEvents = L.bus<UIEvent>()
 
     return {
-        uiEvents,
-        enqueue: (e: AppEvent) => messageQueue.enqueue(e),
-        sendImmediately: (e: AppEvent) => messageQueue.sendImmediately(e),
+        send,
         bufferedServerEvents,
-        dispatch,
+        sentUIEvents: sentUIEvents as L.EventStream<UIEvent>,
         connected: L.view(connectionStatus, (s) => s === "connected"),
-        events,
-        queueSize: messageQueue.queueSize,
-        setBoardId,
-        startFlushing: () => messageQueue.setFlushing(true),
     }
 }

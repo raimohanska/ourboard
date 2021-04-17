@@ -14,7 +14,7 @@ import {
     Id,
     Container,
 } from "../../../common/src/domain"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import { NOTE_COLORS } from "../../../common/src/colors"
 import { BoardFocus } from "./board-focus"
 import { item } from "lonna"

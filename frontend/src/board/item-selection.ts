@@ -1,6 +1,6 @@
 import * as L from "lonna"
 import { Board, ItemType } from "../../../common/src/domain"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 import { startConnecting } from "./item-connect"

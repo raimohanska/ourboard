@@ -2,7 +2,7 @@ import { componentScope } from "harmaja"
 import * as L from "lonna"
 import { Board, BOARD_ITEM_BORDER_MARGIN, Item } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
-import { Dispatch } from "../store/server-connection"
+import { Dispatch } from "../store/board-store"
 import { findSelectedItems } from "./item-cut-copy-paste"
 
 function updatePosition(board: Board, item: Item, dx: number, dy: number): Item {

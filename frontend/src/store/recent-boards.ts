@@ -1,7 +1,7 @@
 import { Board, Id, RecentBoard, RecentBoardAttributes } from "../../../common/src/domain"
 import * as L from "lonna"
 import { ServerConnection } from "./server-connection"
-import { getAuthenticatedUser, UserSessionState, UserSessionStore } from "./user-session-store"
+import { getAuthenticatedUser, UserSessionStore } from "./user-session-store"
 
 export function RecentBoards(connection: ServerConnection, sessionStore: UserSessionStore) {
     let recentBoards = L.atom<RecentBoard[]>(localStorage.recentBoards ? JSON.parse(localStorage.recentBoards) : [])
@@ -18,7 +18,7 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
 
     function removeRecentBoard(board: RecentBoard) {
         storeRecentBoards((boards) => boards.filter((b) => b.id !== board.id))
-        connection.enqueue({ action: "board.dissociate", boardId: board.id })
+        connection.send({ action: "board.dissociate", boardId: board.id })
     }
 
     function storeRecentBoards(fn: (boards: RecentBoard[]) => RecentBoard[]) {
@@ -26,7 +26,7 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
         localStorage.recentBoards = JSON.stringify(recentBoards.get())
     }
 
-    connection.events.subscribe((e) => {
+    connection.bufferedServerEvents.subscribe((e) => {
         if (e.action === "user.boards") {
             // Board list from server, let's sync
             const boardsFromServer = e.boards
@@ -34,7 +34,7 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
             const boardsOnlyFoundLocally = localBoards.filter((b) => !boardsFromServer.some((bs) => bs.id === b.id))
             const boardsToSend = boardsOnlyFoundLocally.filter((b) => !b.userEmail || b.userEmail === e.email)
             boardsToSend.forEach((b) =>
-                connection.enqueue({ action: "board.associate", boardId: b.id, lastOpened: b.opened }),
+                connection.send({ action: "board.associate", boardId: b.id, lastOpened: b.opened }),
             )
             storeRecentBoards(() => [...boardsFromServer, ...boardsOnlyFoundLocally])
         }

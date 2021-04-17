@@ -8,7 +8,7 @@ import { BoardView } from "./board/BoardView"
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
 import { RecentBoards } from "./store/recent-boards"
-import { serverConnection } from "./store/server-connection"
+import { ServerConnection } from "./store/server-connection"
 import { BoardState, BoardStore } from "./store/board-store"
 import _ from "lodash"
 import { BoardNavigation } from "./board-navigation"
@@ -17,12 +17,12 @@ import { CursorsStore } from "./store/cursors-store"
 
 const App = () => {
     const { boardId, page, navigateToBoard } = BoardNavigation()
-    const connection = serverConnection(boardId.get())
+    const connection = ServerConnection()
     const sessionStore = UserSessionStore(connection, localStorage)
     const boardStore = BoardStore(boardId, connection, sessionStore.sessionState)
     const cursorsStore = CursorsStore(connection, sessionStore)
     const recentBoards = RecentBoards(connection, sessionStore)
-    const assets = assetStore(connection, L.view(boardStore.state, "board"), connection.events)
+    const assets = assetStore(connection, L.view(boardStore.state, "board"), boardStore.events)
     const title = L.view(boardStore.state, (s) => (s.board && s.board.name ? `${s.board.name} - OurBoard` : "OurBoard"))
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
 
@@ -50,7 +50,7 @@ const App = () => {
                                     assets,
                                     boardStore,
                                     sessionState: sessionStore.sessionState,
-                                    dispatch: connection.dispatch,
+                                    dispatch: boardStore.dispatch,
                                     navigateToBoard,
                                 }}
                             />
@@ -61,7 +61,7 @@ const App = () => {
                 return (
                     <DashboardView
                         {...{
-                            dispatch: connection.dispatch,
+                            dispatch: boardStore.dispatch,
                             sessionState: sessionStore.sessionState,
                             recentBoards,
                             navigateToBoard,
