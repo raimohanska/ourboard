@@ -226,6 +226,8 @@ export function BoardStore(
             const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
             return { ...state, users }
         } else if (event.action === "ui.board.join.request") {
+            undoStack.clear()
+            redoStack.clear()
             if (!event.boardId) {
                 return initialState
             }
