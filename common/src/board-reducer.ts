@@ -283,7 +283,6 @@ function updateItems(current: Record<Id, Item>, updateList: Item[]): Record<Id, 
                 .forEach((item) => {
                     const newContainer = maybeChangeContainer(item, result)
                     if (newContainer?.id !== item.containerId) {
-                        console.log("Update!")
                         result[item.id] = { ...item, containerId: newContainer ? newContainer.id : undefined }
                     }
                 })
