@@ -77,6 +77,7 @@ export function BoardStore(
     function flushIfPossible(state: BoardState): BoardState {
         // Only flush when board is ready and we are not waiting for ack.
         if (state.status === "ready" && state.sent.length === 0 && state.queue.length > 0) {
+            //console.log("Send", state.queue.map(i => i.action))
             connection.send(state.queue)
             return { ...state, queue: [], sent: state.queue }
         }
@@ -149,8 +150,11 @@ export function BoardStore(
                     // No serial == is local event. TODO: maybe a nicer way to recognize this?
                     redoStack.clear()
                     undoStack.add(reverse)
+                    return flushIfPossible({ ...state, board, history, queue: addOrReplaceEvent(event, state.queue) })
+                } else {
+                    // Remote event
+                    return { ...state, board, history }
                 }
-                return flushIfPossible({ ...state, board, history, queue: addOrReplaceEvent(event, state.queue) })
             } else if (event.action === "board.joined") {
                 return { ...state, users: state.users.concat(event) }
             } else if (event.action === "board.locks") {
