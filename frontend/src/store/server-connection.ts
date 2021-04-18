@@ -8,11 +8,27 @@ export type Dispatch = (e: UIEvent) => void
 
 const SERVER_EVENTS_BUFFERING_MILLIS = 20
 
-export type ServerConnection = ReturnType<typeof ServerConnection>
+export type ServerConnection = ReturnType<typeof GenericServerConnection>
 
 export type ConnectionStatus = "connecting" | "connected" | "sleeping" | "reconnecting"
 
-export function ServerConnection() {
+export function BrowserSideServerConnection() {
+    const documentHidden = L.fromEvent(document, "visibilitychange").pipe(
+        L.toStatelessProperty(() => document.hidden || false),
+    )
+
+    const protocol = location.protocol === "http:" ? "ws:" : "wss:"
+    const root = `${protocol}//${location.host}`
+    //const root = "wss://www.ourboard.io"
+    //const root = "ws://localhost:1339"
+    return GenericServerConnection(`${root}/socket/lobby`, documentHidden, (s) => new WebSocket(s))
+}
+
+export function GenericServerConnection(
+    initialSocketAddress: string,
+    documentHidden: L.Property<boolean>,
+    createSocket: (address: string) => WebSocket,
+) {
     const serverEvents = L.bus<EventFromServer>()
     const bufferedServerEvents = serverEvents.pipe(
         L.bufferWithTime(SERVER_EVENTS_BUFFERING_MILLIS),
@@ -24,12 +40,7 @@ export function ServerConnection() {
     )
 
     const connectionStatus = L.atom<ConnectionStatus>("connecting")
-
-    const protocol = location.protocol === "http:" ? "ws:" : "wss:"
-    const root = `${protocol}//${location.host}`
-    //const root = "wss://www.ourboard.io"
-    //const root = "ws://localhost:1339"
-    let currentSocketAddress = `${root}/socket/lobby`
+    let currentSocketAddress = initialSocketAddress
     let socket = initSocket()
 
     setInterval(() => {
@@ -42,9 +53,6 @@ export function ServerConnection() {
         }
     }, 30000)
 
-    const documentHidden = L.fromEvent(document, "visibilitychange").pipe(
-        L.toStatelessProperty(() => document.hidden || false),
-    )
     documentHidden.onChange((hidden) => {
         if (!hidden && connectionStatus.get() === "sleeping") {
             console.log("Document shown, reconnecting.")
@@ -55,7 +63,7 @@ export function ServerConnection() {
     function initSocket() {
         connectionStatus.set("connecting")
         console.log("Connecting to " + currentSocketAddress)
-        const ws = new WebSocket(currentSocketAddress)
+        const ws = createSocket(currentSocketAddress)
         ws.addEventListener("error", (e) => {
             if (ws === socket) {
                 console.error("Web socket error")

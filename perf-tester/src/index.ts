@@ -1,8 +1,9 @@
 import { sleep } from "../../common/src/sleep"
 import { newNote, Point } from "../../common/src/domain"
-import MessageQueue from "../../frontend/src/store/message-queue"
+import { GenericServerConnection } from "../../frontend/src/store/server-connection"
 import WebSocket from "ws"
 import _ from "lodash"
+import * as L from "lonna"
 
 // hack, sue me
 // @ts-ignore
@@ -17,64 +18,39 @@ function createTester(nickname: string, boardId: string) {
     const center = { x: 10 + Math.random() * 60, y: 10 + Math.random() * 40 }
     const radius = 10 + Math.random() * 10
     const increment = Math.random() * 4 - 2
+    const WS_ADDRESS = `${DOMAIN ? "wss" : "ws"}://${DOMAIN ?? "localhost:1337"}/socket/board/${boardId}`
 
-    let [socket, messageQueue] = initSocket()
+    let connection = GenericServerConnection(WS_ADDRESS, L.constant(false), (s) => new WebSocket(s) as any)
 
-    async function reconnect(reconnectSocket: WebSocket) {
-        await sleep(1000)
-        if (reconnectSocket === socket) {
-            console.log("reconnecting...")
-            ;[socket, messageQueue] = initSocket()
+    connection.connected
+        .pipe(
+            L.changes,
+            L.filter((c) => c),
+        )
+        .forEach(() => {
+            connection.send({ action: "board.join", boardId })
+        })
+    connection.bufferedServerEvents.forEach((event) => {
+        if (event.action === "board.init") {
+            setInterval(() => {
+                counter += increment
+                const position = add(center, {
+                    x: radius * Math.sin(counter / 100),
+                    y: radius * Math.cos(counter / 100),
+                })
+                connection.send({ action: "cursor.move", position, boardId })
+                if (Math.random() < notesPerInterval)
+                    connection.send({
+                        action: "item.add",
+                        boardId,
+                        items: [newNote("NOTE " + counter, "black", position.x, position.y)],
+                    })
+            }, interval)
         }
-    }
-    function initSocket() {
-        let ws: WebSocket
-        const WS_ADDRESS = `${DOMAIN ? "wss" : "ws"}://${DOMAIN ?? "localhost:1337"}/socket/board/${boardId}`
-        ws = new WebSocket(WS_ADDRESS)
-
-        ws.addEventListener("error", (e) => {
-            console.error("Web socket error")
-            reconnect(ws)
-        })
-        ws.addEventListener("open", () => {
-            console.log("Websocket connected")
-            messageQueue.onConnect()
-            console.log("Joining board " + boardId)
-            messageQueue.enqueue({ action: "board.join", boardId })
-        })
-        ws.addEventListener("message", (str) => {
-            const event = JSON.parse(str.data)
-            if (event.action === "ack") {
-                messageQueue.ack()
-            } else {
-                if (event.action === "board.init") {
-                    setInterval(() => {
-                        counter += increment
-                        const position = add(center, {
-                            x: radius * Math.sin(counter / 100),
-                            y: radius * Math.cos(counter / 100),
-                        })
-                        messageQueue.enqueue({ action: "cursor.move", position, boardId })
-                        if (Math.random() < notesPerInterval)
-                            messageQueue.enqueue({
-                                action: "item.add",
-                                boardId,
-                                items: [newNote("NOTE " + counter, "black", position.x, position.y)],
-                            })
-                    }, interval)
-                }
-                if (event.action === "board.join.ack") {
-                    messageQueue.enqueue({ action: "nickname.set", nickname })
-                }
-            }
-        })
-
-        ws.addEventListener("close", () => {
-            console.log("Socket disconnected")
-            reconnect(ws)
-        })
-        return [ws, MessageQueue(ws as any, undefined)] as const
-    }
+        if (event.action === "board.join.ack") {
+            connection.send({ action: "nickname.set", nickname })
+        }
+    })
 }
 
 const kwargs = process.argv.slice(2)

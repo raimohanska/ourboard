@@ -8,7 +8,7 @@ import { BoardView } from "./board/BoardView"
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
 import { RecentBoards } from "./store/recent-boards"
-import { ServerConnection } from "./store/server-connection"
+import { BrowserSideServerConnection } from "./store/server-connection"
 import { BoardState, BoardStore } from "./store/board-store"
 import _ from "lodash"
 import { BoardNavigation } from "./board-navigation"
@@ -17,7 +17,7 @@ import { CursorsStore } from "./store/cursors-store"
 
 const App = () => {
     const { boardId, page, navigateToBoard } = BoardNavigation()
-    const connection = ServerConnection()
+    const connection = BrowserSideServerConnection()
     const sessionStore = UserSessionStore(connection, localStorage)
     const boardStore = BoardStore(boardId, connection, sessionStore.sessionState)
     const cursorsStore = CursorsStore(connection, sessionStore)
