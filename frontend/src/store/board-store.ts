@@ -80,6 +80,7 @@ export function BoardStore(
     }
 
     const ACK_ID = "1"
+    let storedInitialState: LocalStorageBoard | undefined = undefined
 
     function flushIfPossible(state: BoardState): BoardState {
         // Only flush when board is ready and we are not waiting for ack.
@@ -205,21 +206,7 @@ export function BoardStore(
             }
         } else {
             // Process these events only when not "ready"
-            if (event.action === "ui.board.join.request") {
-                console.log("ui.board.join.request -> reset")
-                undoStack.clear()
-                redoStack.clear()
-                if (!event.boardId) {
-                    return initialState
-                }
-                return {
-                    ...initialState,
-                    status: "loading",
-                    queue: [],
-                    sent: [],
-                    board: { id: event.boardId, name: "", ...defaultBoardSize, items: {}, connections: [], serial: 0 },
-                }
-            } else if (event.action === "board.join.denied") {
+            if (event.action === "board.join.denied") {
                 const loginStatus = sessionInfo.get().status
                 if (state.status !== "loading") {
                     console.error(`Got board.join.denied while in status ${state.status}`)
@@ -250,7 +237,39 @@ export function BoardStore(
             }
         }
         // Process these events in both ready and not-ready states
-        if (event.action === "userinfo.set") {
+        if (event.action === "ui.board.join.request") {
+            console.log("ui.board.join.request -> reset")
+            undoStack.clear()
+            redoStack.clear()
+            if (!event.boardId) {
+                return initialState
+            }
+            if (storedInitialState && storedInitialState.serverShadow.id === event.boardId) {
+                console.log("Starting offline with local board state!")
+                const board = storedInitialState.queue.reduce(
+                    (b, e) => boardReducer(b, e)[0],
+                    storedInitialState.serverShadow,
+                )
+
+                return {
+                    ...initialState,
+                    status: "ready",
+                    offline: true,
+                    queue: storedInitialState.queue,
+                    sent: [],
+                    serverHistory: storedInitialState.serverHistory,
+                    serverShadow: storedInitialState.serverShadow,
+                    board,
+                }
+            }
+            return {
+                ...initialState,
+                status: "loading",
+                queue: [],
+                sent: [],
+                board: { id: event.boardId, name: "", ...defaultBoardSize, items: {}, connections: [], serial: 0 },
+            }
+        } else if (event.action === "userinfo.set") {
             const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
             return { ...state, users }
         } else if (event.action === "board.init") {
@@ -338,7 +357,9 @@ export function BoardStore(
                 }
             }
         } else if (event.action === "ui.offline") {
-            console.log(`Going to offline mode.`)
+            if (!state.offline) {
+                console.log(`Disconnected. Going to offline mode.`)
+            }
             if (state.sent.length > 0) {
                 console.log(`Discarding ${state.sent.length} sent events of which we don't have an ack yet`)
                 // TODO: should we rollback board too?
@@ -390,7 +411,10 @@ export function BoardStore(
         await storeBoardState(board)
     })
 
-    boardId.forEach((boardId) => {
+    boardId.forEach(async (boardId) => {
+        if (boardId) {
+            storedInitialState = await getInitialBoardState(boardId)
+        }
         dispatch({ action: "ui.board.join.request", boardId })
         checkReadyToJoin()
     })
@@ -411,8 +435,6 @@ export function BoardStore(
             doJoin(bid)
         }
     }
-
-    let storedInitialState: LocalStorageBoard | undefined = undefined
 
     async function doJoin(boardId: Id) {
         storedInitialState = await getInitialBoardState(boardId)
