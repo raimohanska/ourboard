@@ -151,7 +151,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
 
     function sendLoginAndNickname(state: UserSessionState) {
         if (state.status === "logging-in-server" || state.status === "logged-in") {
-            console.log("Send nick & login")
+            //console.log("Send nick & login")
             connection.send({ action: "nickname.set", nickname: state.name })
             connection.send({
                 action: "auth.login",
@@ -160,7 +160,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 token: state.token,
             })
         } else if (state.nickname) {
-            console.log("Send nick")
+            //console.log("Send nick")
             connection.send({ action: "nickname.set", nickname: state.nickname })
         }
         return state

@@ -9,12 +9,15 @@ import {
     BoardHistoryEntry,
     BoardStateSyncEvent,
     ClientToServerRequest,
+    CursorMove,
     CURSOR_POSITIONS_ACTION_TYPE,
     defaultBoardSize,
     EventFromServer,
     EventUserInfo,
     Id,
     isLocalUIEvent,
+    isCursorMove,
+    isBoardHistoryEntry,
     isPersistableBoardItemEvent,
     ItemLocks,
     LocalUIEvent,
@@ -42,9 +45,11 @@ export type BoardAccessStatus =
 export type BoardState = {
     status: BoardAccessStatus
     board: Board | undefined
-    queue: UIEvent[]
-    sent: UIEvent[]
-    history: BoardHistoryEntry[]
+    serverShadow: Board | undefined
+    queue: (BoardHistoryEntry | CursorMove)[] // serverShadow + queue = current board
+    serverHistory: BoardHistoryEntry[] // history until serverShadow (queued events not included)
+    sent: (BoardHistoryEntry | CursorMove)[]
+    offline: boolean
     locks: ItemLocks
     users: UserSessionInfo[]
 }
@@ -74,11 +79,13 @@ export function BoardStore(
         add(event: PersistableBoardItemEvent): void
     }
 
+    const ACK_ID = "1"
+
     function flushIfPossible(state: BoardState): BoardState {
         // Only flush when board is ready and we are not waiting for ack.
-        if (state.status === "ready" && state.sent.length === 0 && state.queue.length > 0) {
-            //console.log("Send", state.queue.map(i => i.action))
-            connection.send(state.queue)
+        if (!state.offline && state.status === "ready" && state.sent.length === 0 && state.queue.length > 0) {
+            //console.log(`Send ${state.queue.map(i => i.action)}, await ack for ${state.queue.length}`)
+            connection.send({ events: state.queue, ackId: ACK_ID })
             return { ...state, queue: [], sent: state.queue }
         }
         return state
@@ -95,16 +102,13 @@ export function BoardStore(
                 const undoOperation = _.last(stack.get())
                 if (!undoOperation) return state
                 stack.modify((s) => s.slice(0, s.length - 1))
-                const [{ board, history }, reverse] = boardHistoryReducer(
-                    { board: state.board!, history: state.history },
-                    tagWithUserFromState(undoOperation),
-                )
+                const operationAsHistoryEntry = tagWithUserFromState(undoOperation)
+                const [board, reverse] = boardReducer(state.board!, operationAsHistoryEntry)
                 if (reverse) otherStack.add(reverse)
                 return flushIfPossible({
                     ...state,
                     board,
-                    history,
-                    queue: addOrReplaceEvent(undoOperation, state.queue),
+                    queue: addOrReplaceEvent(operationAsHistoryEntry, state.queue),
                 })
             },
             clear() {
@@ -142,28 +146,55 @@ export function BoardStore(
             } else if (event.action === "ui.redo") {
                 return redoStack.pop(state, undoStack)
             } else if (isPersistableBoardItemEvent(event)) {
-                const [{ board, history }, reverse] = boardHistoryReducer(
-                    { board: state.board!, history: state.history },
-                    event,
-                )
-                if (reverse && event.serial == undefined) {
+                if (event.serial == undefined) {
                     // No serial == is local event. TODO: maybe a nicer way to recognize this?
                     redoStack.clear()
-                    undoStack.add(reverse)
-                    return flushIfPossible({ ...state, board, history, queue: addOrReplaceEvent(event, state.queue) })
+                    const [board, reverse] = boardReducer(state.board!, event)
+                    if (reverse) undoStack.add(reverse)
+                    return flushIfPossible({ ...state, board, queue: addOrReplaceEvent(event, state.queue) })
                 } else {
                     // Remote event
-                    return { ...state, board, history }
+                    const [{ board: newServerShadow, history: newServerHistory }] = boardHistoryReducer(
+                        { board: state.board!, history: state.serverHistory },
+                        event,
+                    )
+                    // Rebase local events on top of new server shadow
+                    // TODO: what if fails?
+                    const localEvents = [...state.queue, ...state.sent]
+                    const board = localEvents
+                        .filter(isBoardHistoryEntry)
+                        .reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
+                    //console.log(`Processed remote board event and laid ${localEvents.length} local events on top`, event)
+                    return { ...state, serverShadow: newServerShadow, board, serverHistory: newServerHistory }
                 }
             } else if (event.action === "board.joined") {
                 return { ...state, users: state.users.concat(event) }
             } else if (event.action === "board.locks") {
                 return { ...state, locks: event.locks }
             } else if (event.action === "ack") {
-                return flushIfPossible({ ...state, sent: [] })
-            } else if (event.action === "board.serial.ack") {
-                //console.log(`Update to ${event.serial} with ack`)
-                return { ...state, board: state.board ? { ...state.board, serial: event.serial } : state.board }
+                const newSerial = state.board ? event.serials[state.board.id] : undefined
+                if (!newSerial) {
+                    //console.log("Got ack")
+                    return flushIfPossible({ ...state, sent: [] })
+                } else {
+                    // Our sent events now acknowledged and will be incorporated into serverShadow and serverHistory
+                    const newServerEvents = state.sent.filter(isBoardHistoryEntry)
+                    const newServerHistory = [...state.serverHistory, ...newServerEvents]
+                    const newServerShadow =
+                        state.queue.length > 0
+                            ? newServerEvents.reduce((b, e) => boardReducer(b, e)[0], state.serverShadow!)
+                            : state.board! // No queued events -> no need to calculate
+
+                    //console.log(`Got ack. Joined ${state.sent.length} local events to server history and shadow (${state.serverShadow?.serial}->${newSerial}), shortcutted=${newServerShadow===state.board}`)
+
+                    return flushIfPossible({
+                        ...state,
+                        board: { ...state.board!, serial: newSerial },
+                        serverShadow: { ...newServerShadow, serial: newSerial },
+                        serverHistory: newServerHistory,
+                        sent: [],
+                    })
+                }
             } else if (event.action === "board.action.apply.failed") {
                 console.error("Failed to apply previous action. Resetting to server-side state...")
                 if (state.board) {
@@ -175,6 +206,7 @@ export function BoardStore(
         } else {
             // Process these events only when not "ready"
             if (event.action === "ui.board.join.request") {
+                console.log("ui.board.join.request -> reset")
                 undoStack.clear()
                 redoStack.clear()
                 if (!event.boardId) {
@@ -227,35 +259,58 @@ export function BoardStore(
                 try {
                     if (!storedInitialState)
                         throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
-                    if (storedInitialState.boardWithHistory.board.id !== event.boardAttributes.id)
+                    if (storedInitialState.serverShadow.id !== event.boardAttributes.id)
                         throw Error(`Trying to init board with nonmatching id`)
-                    const localSerial = storedInitialState.boardWithHistory.board.serial
+
+                    const usedLocalState =
+                        state.board && state.board.id === boardId && state.serverShadow
+                            ? { serverShadow: state.serverShadow, queue: state.queue.filter(isBoardHistoryEntry) }
+                            : storedInitialState
+
+                    if (usedLocalState !== storedInitialState)
+                        console.log(
+                            `Using local state instead of stored. Using ${usedLocalState.queue.length} local events (out of ${state.queue.length})`,
+                        )
+
+                    const localSerial = usedLocalState.serverShadow.serial
                     if (localSerial != event.initAtSerial)
                         throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
 
                     const initialBoard = {
-                        ...storedInitialState.boardWithHistory.board,
+                        ...usedLocalState.serverShadow,
                         ...event.boardAttributes,
                     } as Board
+
+                    const queue = usedLocalState.queue
                     if (event.recentEvents.length > 0) {
                         console.log(
-                            `Init at ${event.initAtSerial} with ${
+                            `Going to online mode. Init at ${event.initAtSerial} with ${
                                 event.recentEvents.length
                             } new events. Board starts at ${initialBoard.serial} and first event is ${
                                 event.recentEvents[0]?.serial
-                            } and last ${event.recentEvents[event.recentEvents.length - 1]?.serial}`,
+                            } and last ${event.recentEvents[event.recentEvents.length - 1]?.serial}. ${
+                                queue.length
+                            } local events queued, ${state.sent.length} awaiting ack.`,
                         )
                     } else {
-                        console.log(`Init at ${event.initAtSerial}, no new events`)
+                        console.log(
+                            `Init at ${event.initAtSerial}, no new events. ${queue.length} local events queued, ${state.sent.length} awaiting ack.`,
+                        )
                     }
-                    const board = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
+                    // New server shadow = old server shadow + recent events from server
+                    const newServerShadow = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
+                    // Local board = server shadow + local queue
+                    const board = queue.reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
+                    const newServerHistory = [...state.serverHistory, ...event.recentEvents]
                     //console.log(`Init done and board at ${board.serial}`)
                     return flushIfPossible({
                         ...state,
                         status: "ready",
                         board,
-                        queue: storedInitialState.queue,
-                        history: storedInitialState.boardWithHistory.history.concat(event.recentEvents),
+                        serverShadow: newServerShadow,
+                        queue,
+                        offline: false,
+                        serverHistory: newServerHistory,
                     })
                 } catch (e) {
                     console.error("Error initializing board. Fetching as new board...", e)
@@ -268,17 +323,27 @@ export function BoardStore(
                     return state
                 }
             } else {
-                console.log("Init as new board")
+                console.log("Going to online mode. Init as new board")
                 return {
                     ...state,
                     status: "ready",
                     board: event.board,
-                    history: [
+                    serverShadow: event.board,
+                    sent: [],
+                    offline: false,
+                    serverHistory: [
                         //  Create a bootstrap event to make the local history consistent even though we don't have the full history from server.
                         mkBootStrapEvent(event.board.id, event.board, event.board.serial),
                     ],
                 }
             }
+        } else if (event.action === "ui.offline") {
+            console.log(`Going to offline mode.`)
+            if (state.sent.length > 0) {
+                console.log(`Discarding ${state.sent.length} sent events of which we don't have an ack yet`)
+                // TODO: should we rollback board too?
+            }
+            return { ...state, sent: [], offline: true, users: [], locks: {} }
         }
         //console.warn("Unhandled event", event.action);
         return state
@@ -286,8 +351,10 @@ export function BoardStore(
 
     const initialState = {
         status: "none" as const,
+        offline: true,
+        serverShadow: undefined,
         board: undefined,
-        history: [],
+        serverHistory: [],
         locks: {},
         users: [],
         queue: [],
@@ -305,20 +372,17 @@ export function BoardStore(
 
     // persistable events and undo/redo are put to the state queue above, others are sent here immediately
     uiEvents
-        .pipe(L.filter((e) => !isLocalUIEvent(e) && !isPersistableBoardItemEvent(e) && e.action !== "cursor.move"))
+        .pipe(L.filter((e) => !isLocalUIEvent(e) && !isPersistableBoardItemEvent(e) && !isCursorMove(e)))
         .forEach(connection.send)
 
     const localBoardToSave = state.pipe(
         L.changes,
         L.filter((state) => state.board !== undefined && state.board.serial > 0 && state.status === "ready"),
-        L.debounce(1000),
         L.map((state) => {
             return {
-                boardWithHistory: {
-                    board: state.board!,
-                    history: state.history,
-                },
-                queue: state.queue,
+                serverShadow: state.serverShadow!,
+                serverHistory: state.serverHistory,
+                queue: state.queue.filter(isBoardHistoryEntry),
             }
         }),
     )
@@ -333,12 +397,17 @@ export function BoardStore(
 
     const sessionStatus = L.view(sessionInfo, (s) => s.status)
     sessionStatus.onChange(checkReadyToJoin)
-    connection.connected.onChange(checkReadyToJoin)
+    connection.connected.onChange((connected) => {
+        if (connected) {
+            checkReadyToJoin()
+        } else {
+            dispatch({ action: "ui.offline" })
+        }
+    })
 
     function checkReadyToJoin() {
         const bid = boardId.get()
         if (bid && connection.connected.get() && !isLoginInProgress(sessionStatus.get())) {
-            console.log("Go!")
             doJoin(bid)
         }
     }
@@ -350,7 +419,7 @@ export function BoardStore(
         connection.send({
             action: "board.join",
             boardId: boardId,
-            initAtSerial: storedInitialState?.boardWithHistory.board.serial,
+            initAtSerial: storedInitialState?.serverShadow?.serial,
         })
     }
 

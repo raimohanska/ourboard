@@ -264,7 +264,7 @@ export function logoutUser(event: AuthLogout, origin: WsWrapper) {
 }
 
 export function broadcastBoardEvent(event: BoardHistoryEntry, origin?: UserSession) {
-    //console.log("Broadcast", appEvent)
+    //console.log("Broadcast", event.action, "to", everyoneElseOnTheSameBoard(event.boardId, origin).length)
     sendTo(everyoneElseOnTheSameBoard(event.boardId, origin), event)
 }
 

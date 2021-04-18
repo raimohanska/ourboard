@@ -1,10 +1,12 @@
-import { UIEvent, BoardWithHistory, Id } from "../../../common/src/domain"
+import { UIEvent, BoardWithHistory, Id, Board, BoardHistoryEntry } from "../../../common/src/domain"
 import { migrateBoard } from "../../../common/src/migration"
 import * as localForage from "localforage"
+import _ from "lodash"
 
 export type LocalStorageBoard = {
-    boardWithHistory: BoardWithHistory
-    queue: UIEvent[]
+    serverShadow: Board
+    queue: BoardHistoryEntry[] // serverShadow + queue = current board
+    serverHistory: BoardHistoryEntry[] // history until serverShadow (queued events not included)
 }
 
 const BOARD_STORAGE_KEY_PREFIX = "board_"
@@ -12,19 +14,17 @@ const BOARD_STORAGE_KEY_PREFIX = "board_"
 let activeBoardState: LocalStorageBoard | undefined = undefined
 
 export async function getInitialBoardState(boardId: Id) {
-    if (!activeBoardState || activeBoardState.boardWithHistory.board.id != boardId) {
+    if (!activeBoardState || activeBoardState.serverShadow.id != boardId) {
         const localStorageKey = getStorageKey(boardId)
         try {
             const stringState = await localForage.getItem<string>(localStorageKey)
             activeBoardState = JSON.parse(stringState!) as LocalStorageBoard
-            if (activeBoardState && activeBoardState.boardWithHistory) {
+            if (!activeBoardState || !activeBoardState.serverShadow) {
+                activeBoardState = undefined
+            }
+            if (activeBoardState) {
                 activeBoardState = {
-                    ...activeBoardState,
-                    boardWithHistory: {
-                        ...activeBoardState.boardWithHistory,
-                        board: migrateBoard(activeBoardState.boardWithHistory.board),
-                    },
-                    queue: activeBoardState.queue ?? [],
+                    ...activeBoardState, // future migration code here
                 }
             }
         } catch (e) {
@@ -39,23 +39,24 @@ function getStorageKey(boardId: string) {
     return BOARD_STORAGE_KEY_PREFIX + boardId
 }
 
-const maxLocalStoredHistory = 1000
+const maxLocalStoredHistory = 1000 // TODO: limit history to this, using snapshotting
 
 export async function storeBoardState(newState: LocalStorageBoard) {
     activeBoardState = newState
-    const history = newState.boardWithHistory.history
-    const recentHistory = history.slice(history.length - maxLocalStoredHistory, history.length)
-    activeBoardState = { ...newState, boardWithHistory: { ...newState.boardWithHistory, history: recentHistory } }
-    //console.log(`Storing ${JSON.stringify(state).length} characters`)
-    try {
-        await localForage.setItem(
-            getStorageKey(activeBoardState.boardWithHistory.board.id),
-            JSON.stringify(activeBoardState),
-        )
-    } catch (err) {
-        console.error(`Saving board state for ${newState.boardWithHistory.board.id} failed`, err)
-    }
+    storeThrottled(activeBoardState)
 }
+
+const storeThrottled = _.throttle(
+    (newState: LocalStorageBoard) => {
+        try {
+            localForage.setItem(getStorageKey(newState.serverShadow.id), JSON.stringify(newState))
+        } catch (err) {
+            console.error(`Saving board state for ${newState.serverShadow.id} failed`, err)
+        }
+    },
+    1000,
+    { leading: true, trailing: true },
+)
 
 export async function clearBoardState(boardId: Id) {
     activeBoardState = undefined

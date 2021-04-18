@@ -1,7 +1,7 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { addOrReplaceEvent } from "../../../common/src/action-folding"
-import { AppEvent, EventFromServer, UIEvent } from "../../../common/src/domain"
+import { AppEvent, EventFromServer, EventWrapper, UIEvent } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
 
 export type Dispatch = (e: UIEvent) => void
@@ -112,11 +112,18 @@ export function GenericServerConnection(
         socket = initSocket()
     }
 
-    function send(e: UIEvent | UIEvent[]) {
+    function send(e: UIEvent | EventWrapper) {
         //console.log("Sending", e)
-        if (!Array.isArray(e)) sentUIEvents.push(e)
+        if ("action" in e) sentUIEvents.push(e)
+        let wrapper: EventWrapper
+        if ("action" in e) {
+            sentUIEvents.push(e)
+            wrapper = { events: [e] }
+        } else {
+            wrapper = e
+        }
         try {
-            socket.send(JSON.stringify(Array.isArray(e) ? e : [e]))
+            socket.send(JSON.stringify(wrapper))
         } catch (e) {
             console.error("Failed to send", e) // TODO
         }

@@ -135,10 +135,14 @@ export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEm
 
 export type BoardEvent = { boardId: Id }
 export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
-export type LocalUIEvent = Undo | Redo | BoardJoinRequest
+export type LocalUIEvent = Undo | Redo | BoardJoinRequest | GoOffline
 export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse
 export type Serial = number
 export type AppEvent = BoardItemEvent | BoardStateSyncEvent | LocalUIEvent | ClientToServerRequest | LoginResponse
+export type EventWrapper = {
+    events: AppEvent[]
+    ackId?: string
+}
 export type PersistableBoardItemEvent =
     | AddItem
     | UpdateItem
@@ -157,7 +161,6 @@ export type TransientBoardItemEvent = LockItem | UnlockItem
 export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
 export type BoardStateSyncEvent =
     | BoardInit
-    | BoardSerialAck
     | RecentBoardsFromServer
     | GotBoardLocks
     | CursorPositions
@@ -226,8 +229,7 @@ export type DeniedJoinBoard =
           wsAddress: string
       }
 export type RecentBoardsFromServer = { action: "user.boards"; email: string; boards: RecentBoard[] }
-export type Ack = { action: "ack" }
-export type BoardSerialAck = { action: "board.serial.ack"; boardId: Id; serial: Serial }
+export type Ack = { action: "ack"; ackId: string; serials: Record<Id, Serial> }
 export type ActionApplyFailed = { action: "board.action.apply.failed" }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
 export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo
@@ -246,6 +248,7 @@ export type AssetPutUrlResponse = { action: "asset.put.response"; assetId: strin
 export type Undo = { action: "ui.undo" }
 export type Redo = { action: "ui.redo" }
 export type BoardJoinRequest = { action: "ui.board.join.request"; boardId: Id | undefined }
+export type GoOffline = { action: "ui.offline" }
 
 export const CURSOR_POSITIONS_ACTION_TYPE = "c" as const
 export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE; p: Record<Id, UserCursorPosition> }
@@ -341,7 +344,7 @@ export const isPersistableBoardItemEvent = (e: any): e is PersistableBoardItemEv
 export const isBoardHistoryEntry = (e: AppEvent): e is BoardHistoryEntry =>
     isPersistableBoardItemEvent(e) && !!(e as BoardHistoryEntry).user && !!(e as BoardHistoryEntry).timestamp
 export const isLocalUIEvent = (e: AppEvent): e is LocalUIEvent => e.action.startsWith("ui.")
-
+export const isCursorMove = (e: AppEvent): e is CursorMove => e.action === "cursor.move"
 export function isSameUser(a: EventUserInfo, b: EventUserInfo) {
     return a.userType == b.userType && a.nickname == b.nickname
 }

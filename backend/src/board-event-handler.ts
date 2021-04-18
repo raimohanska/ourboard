@@ -106,35 +106,33 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
         if (!state) {
             return true // Just ignoring for now, see above todo
         }
-        const gotLock = obtainLock(state.locks, appEvent, socket)
-        if (gotLock) {
-            if (isPersistableBoardItemEvent(appEvent)) {
-                if (!session.isOnBoard(appEvent.boardId)) {
-                    console.warn("Trying to send event to board without valid session")
-                } else {
-                    let historyEntry: BoardHistoryEntry = {
-                        ...appEvent,
-                        user: session.userInfo,
-                        timestamp: new Date().toISOString(),
-                    }
-                    try {
-                        const serial = updateBoards(state, historyEntry)
-                        historyEntry = { ...historyEntry, serial }
-                        broadcastBoardEvent(historyEntry, session)
-                        if (appEvent.action === "board.rename") {
-                            // special case: keeping name up to date as it's in a separate column
-                            await updateBoard({ boardId: appEvent.boardId, name: appEvent.name })
-                        }
-                        return { boardId, serial }
-                    } catch (e) {
-                        console.warn(`Error applying event ${JSON.stringify(appEvent)}: ${e} -> forcing board refresh`)
-                        session.sendEvent({ action: "board.action.apply.failed" })
-                        return true
-                    }
+        obtainLock(state.locks, appEvent, socket) // Allow even if was locked (offline use)
+        if (isPersistableBoardItemEvent(appEvent)) {
+            if (!session.isOnBoard(appEvent.boardId)) {
+                console.warn("Trying to send event to board without valid session")
+            } else {
+                let historyEntry: BoardHistoryEntry = {
+                    ...appEvent,
+                    user: session.userInfo,
+                    timestamp: new Date().toISOString(),
                 }
-            } else if (appEvent.action === "item.unlock") {
-                return true
+                try {
+                    const serial = updateBoards(state, historyEntry)
+                    historyEntry = { ...historyEntry, serial }
+                    broadcastBoardEvent(historyEntry, session)
+                    if (appEvent.action === "board.rename") {
+                        // special case: keeping name up to date as it's in a separate column
+                        await updateBoard({ boardId: appEvent.boardId, name: appEvent.name })
+                    }
+                    return { boardId, serial }
+                } catch (e) {
+                    console.warn(`Error applying event ${JSON.stringify(appEvent)}: ${e} -> forcing board refresh`)
+                    session.sendEvent({ action: "board.action.apply.failed" })
+                    return true
+                }
             }
+        } else if (appEvent.action === "item.unlock") {
+            return true
         }
     } else {
         switch (appEvent.action) {

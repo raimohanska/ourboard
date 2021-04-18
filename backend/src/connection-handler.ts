@@ -1,4 +1,4 @@
-import { AppEvent, BoardSerialAck, Id, Serial } from "../../common/src/domain"
+import { AppEvent, Id, Serial, EventWrapper } from "../../common/src/domain"
 import { getActiveBoards } from "./board-state"
 import { releaseLocksFor } from "./locker"
 import { broadcastCursorPositions, endSession, startSession } from "./sessions"
@@ -13,10 +13,11 @@ export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandl
     socket.onError(() => {
         socket.close()
     })
-    socket.onMessage(async (event: object) => {
+    socket.onMessage(async (o: object) => {
         try {
+            let event = o as EventWrapper
             let serialsToAck: Record<Id, Serial> = {}
-            for (const e of event as AppEvent[]) {
+            for (const e of event.events) {
                 const serialAck = await handleMessage(socket, e)
                 if (serialAck === true) {
                 } else if (serialAck === false) {
@@ -25,10 +26,9 @@ export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandl
                     serialsToAck[serialAck.boardId] = serialAck.serial
                 }
             }
-            socket.send({ action: "ack" })
-            Object.entries(serialsToAck).forEach(([boardId, serial]) => {
-                socket.send({ action: "board.serial.ack", boardId, serial } as BoardSerialAck)
-            })
+            if (event.ackId) {
+                socket.send({ action: "ack", ackId: event.ackId, serials: serialsToAck })
+            }
         } catch (e) {
             console.error("Error while handling event from client. Closing connection.", e)
             socket.close()
