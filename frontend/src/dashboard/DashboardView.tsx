@@ -163,6 +163,7 @@ const CreateBoard = ({
 
         if (entry) {
             allowList.modify((w) => [entry, ...w])
+            currentInputText.set("")
         }
     }
 
