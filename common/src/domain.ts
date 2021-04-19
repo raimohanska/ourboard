@@ -42,7 +42,7 @@ export type AuthorizedParty = AuthorizedByEmailAddress | AuthorizedByDomain
 export type AuthorizedByEmailAddress = { email: string }
 export type AuthorizedByDomain = { domain: string }
 
-export type BoardStub = Pick<Board, "id" | "name">
+export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy">
 
 export type EventUserInfo =
     | { nickname: string; userType: "unidentified" }

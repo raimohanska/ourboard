@@ -757,8 +757,53 @@ a {
         }
     }
     .create-board {
-        button {
-            margin-left: 0.5em;
+        box-sizing: border-box;
+        max-width: min(100vw, 800px);
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+
+        [type="checkbox"] {
+            margin-left: 0;
+        }
+
+        .input-and-button {
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 0.3rem;
+            display: flex;
+            flex: 1;
+
+            button {
+                margin-left: 1rem;
+                flex: 1;
+                height: 2rem;
+            }
+            input,
+            .filled-entry {
+                flex: 4;
+                padding: 0.1rem;
+            }
+
+            input {
+                border: 1px solid lightgrey;
+            }
+
+            .filled-entry {
+                display: flex;
+                align-items: center;
+            }
+        }
+
+        #create-board-button {
+            margin-top: 1rem;
+        }
+
+        .restrict-toggle {
+            display: flex;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
         }
     }
 }
