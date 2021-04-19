@@ -376,7 +376,7 @@ export const BoardView = ({
         }))
         return (
             <div className="tool-layer">
-                <BoardViewMessage {...{ boardAccessStatus, sessionState }} />
+                <BoardViewMessage {...{ boardAccessStatus, sessionState, board }} />
 
                 <div className="navigation-toolbar">
                     <BackToAllBoardsLink {...{ navigateToBoard }} />
