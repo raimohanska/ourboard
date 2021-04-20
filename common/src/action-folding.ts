@@ -55,6 +55,9 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
             if (getItemIds(b).every((id) => createdItemIds.has(id))) {
                 try {
                     let tmp = createBoard("tmp")
+                    if (isBoardHistoryEntry(a) && a.serial !== undefined) {
+                        tmp.serial = a.serial - 1
+                    }
                     const [tmp2] = boardReducer(tmp, a)
                     const [tmp3] = boardReducer(tmp2, b)
                     const updatedItems = a.items.map((i) => i.id).map(getItem(tmp3))
