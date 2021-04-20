@@ -97,10 +97,11 @@ export const ITEM_TYPES = {
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
 export type TextItemProperties = ItemProperties & { text: string; fontSize?: number }
+export type NoteShape = "round" | "square" | "rect"
 export type Note = TextItemProperties & {
     type: typeof ITEM_TYPES.NOTE
     color: Color
-    shape: "round" | "square" | undefined
+    shape: NoteShape | undefined
 }
 export type Text = TextItemProperties & { type: typeof ITEM_TYPES.TEXT }
 export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string }
@@ -278,7 +279,7 @@ export function newNote(
     y: number = 20,
     width: number = 5,
     height: number = 5,
-    shape: "round" | "square" = "square",
+    shape: NoteShape = "square",
     z: number = 0,
 ): Note {
     return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z, shape }

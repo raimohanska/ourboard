@@ -48,7 +48,8 @@ export const SelectionBorder = ({
         const ref = (e: HTMLElement) =>
             onBoardItemDrag(e, id, board, focus, coordinateHelper, (b, items, xDiff, yDiff) => {
                 const updatedItems = items.map(({ current, dragStartPosition }) => {
-                    const maintainAspectRatio = current.type === "image" || current.type === "note"
+                    const maintainAspectRatio =
+                        current.type === "image" || (current.type === "note" && current.shape !== "rect")
                     if (maintainAspectRatio) {
                         let minDiff = Math.min(Math.abs(xDiff), Math.abs(yDiff))
                         if (minDiff < 0.1) {
