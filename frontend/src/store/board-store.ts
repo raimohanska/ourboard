@@ -92,6 +92,15 @@ export function BoardStore(
         return state
     }
 
+    function resetForBoard(boardId: Id) {
+        clearBoardState(boardId).then(() =>
+            connection.send({
+                action: "board.join",
+                boardId,
+            }),
+        )
+    }
+
     function CommandStack() {
         let stack = L.atom<PersistableBoardItemEvent[]>([])
         let canPop = L.view(stack, (s) => s.length > 0)
@@ -147,26 +156,32 @@ export function BoardStore(
             } else if (event.action === "ui.redo") {
                 return redoStack.pop(state, undoStack)
             } else if (isPersistableBoardItemEvent(event)) {
-                if (event.serial == undefined) {
-                    // No serial == is local event. TODO: maybe a nicer way to recognize this?
-                    redoStack.clear()
-                    const [board, reverse] = boardReducer(state.board!, event)
-                    if (reverse) undoStack.add(reverse)
-                    return flushIfPossible({ ...state, board, queue: addOrReplaceEvent(event, state.queue) })
-                } else {
-                    // Remote event
-                    const [{ board: newServerShadow, history: newServerHistory }] = boardHistoryReducer(
-                        { board: state.board!, history: state.serverHistory },
-                        event,
-                    )
-                    // Rebase local events on top of new server shadow
-                    // TODO: what if fails?
-                    const localEvents = [...state.queue, ...state.sent]
-                    const board = localEvents
-                        .filter(isBoardHistoryEntry)
-                        .reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
-                    //console.log(`Processed remote board event and laid ${localEvents.length} local events on top`, event)
-                    return { ...state, serverShadow: newServerShadow, board, serverHistory: newServerHistory }
+                try {
+                    if (event.serial == undefined) {
+                        // No serial == is local event. TODO: maybe a nicer way to recognize this?
+                        redoStack.clear()
+                        const [board, reverse] = boardReducer(state.board!, event)
+                        if (reverse) undoStack.add(reverse)
+                        return flushIfPossible({ ...state, board, queue: addOrReplaceEvent(event, state.queue) })
+                    } else {
+                        // Remote event
+                        const [{ board: newServerShadow, history: newServerHistory }] = boardHistoryReducer(
+                            { board: state.board!, history: state.serverHistory },
+                            event,
+                        )
+                        // Rebase local events on top of new server shadow
+                        // TODO: what if fails?
+                        const localEvents = [...state.queue, ...state.sent]
+                        const board = localEvents
+                            .filter(isBoardHistoryEntry)
+                            .reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
+                        //console.log(`Processed remote board event and laid ${localEvents.length} local events on top`, event)
+                        return { ...state, serverShadow: newServerShadow, board, serverHistory: newServerHistory }
+                    }
+                } catch (e) {
+                    console.error("Error applying event. Fetching as new board...", e)
+                    resetForBoard(event.boardId)
+                    return state
                 }
             } else if (event.action === "board.joined") {
                 return { ...state, users: state.users.concat(event) }
@@ -333,12 +348,7 @@ export function BoardStore(
                     })
                 } catch (e) {
                     console.error("Error initializing board. Fetching as new board...", e)
-                    clearBoardState(boardId).then(() =>
-                        connection.send({
-                            action: "board.join",
-                            boardId,
-                        }),
-                    )
+                    resetForBoard(boardId)
                     return state
                 }
             } else {
