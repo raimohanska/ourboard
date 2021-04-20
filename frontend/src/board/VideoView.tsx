@@ -3,7 +3,6 @@ import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Board, Image, Video } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
-import { SelectionBorder } from "./SelectionBorder"
 import { AssetStore } from "../store/asset-store"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
@@ -67,15 +66,6 @@ export const VideoView = ({
                 <p>Your user agent does not support the HTML5 Video element.</p>
             </video>
             {L.view(isLocked, (l) => l && <span className="lock">🔒</span>)}
-            {L.view(
-                selected,
-                tool,
-                (s, t) =>
-                    s &&
-                    t !== "connect" && (
-                        <SelectionBorder {...{ id, item: video, coordinateHelper, board, focus, dispatch }} />
-                    ),
-            )}
             <DragBorder {...{ id, board, toolController, coordinateHelper, focus, dispatch }} />
         </span>
     )

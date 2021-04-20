@@ -3,7 +3,6 @@ import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Board, Image } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
-import { SelectionBorder } from "./SelectionBorder"
 import { AssetStore } from "../store/asset-store"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
@@ -63,15 +62,6 @@ export const ImageView = ({
         >
             <img loading="lazy" src={L.view(image, (i) => assets.getAsset(i.assetId, i.src))} />
             {L.view(isLocked, (l) => l && <span className="lock">🔒</span>)}
-            {L.view(
-                selected,
-                tool,
-                (s, t) =>
-                    s &&
-                    t !== "connect" && (
-                        <SelectionBorder {...{ id, item: image, coordinateHelper, board, focus, dispatch }} />
-                    ),
-            )}
         </span>
     )
 }
