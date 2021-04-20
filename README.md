@@ -39,7 +39,7 @@ Command-X           Cut
 Command-Z           Undo
 Command-Shift-Z     Redo
 Command-D           Duplicate
-Arrow keys          Move selected items, bigger steps with shift
+Arrow keys          Move selected items. SHIFT for big steps, ALT for fine-tuning.
 ```
 
 ### Board access controls
