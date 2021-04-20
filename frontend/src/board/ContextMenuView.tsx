@@ -19,6 +19,7 @@ import { NOTE_COLORS } from "../../../common/src/colors"
 import { BoardFocus } from "./board-focus"
 import { item } from "lonna"
 import { packItems } from "./area-packer"
+import { selectedColor, black } from "../components/UIColors"
 
 export const ContextMenuView = ({
     dispatch,
@@ -217,6 +218,30 @@ export const ContextMenuView = ({
     type Shape = "square" | "round"
 
     function menuShapes() {
+        const shapes = [
+            {
+                id: "square",
+                svg: (color: Color) => (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path fill={color} d="M16 8v8H8V8h8m2-2H6v12h12V6z" />
+                    </svg>
+                ),
+            },
+            {
+                id: "round",
+                svg: (color: Color) => (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            fill={color}
+                            d="M12 6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6m0-2c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z"
+                        />
+                    </svg>
+                ),
+            },
+        ]
+
         const shapedItems = L.view(focusedItems, (items) => items.filter(isShapedItem))
         const anyShaped = L.view(shapedItems, (items) => items.length > 0)
         const currentShape = L.view(shapedItems, (items) =>
@@ -228,15 +253,17 @@ export const ContextMenuView = ({
                 ? []
                 : [
                       <div className="shapes icon-group">
-                          {["square", "round"].map((shape) => (
-                              <span
-                                  className={L.view(
-                                      currentShape,
-                                      (s) => `icon ${shape} ${s === shape ? "active" : ""}`,
-                                  )}
-                                  onClick={changeShape(shape as Shape)}
-                              />
-                          ))}
+                          {shapes.map((shape) => {
+                              return (
+                                  <span className="icon" onClick={changeShape(shape.id as Shape)}>
+                                      {L.view(
+                                          currentShape,
+                                          (s) => s === shape.id,
+                                          (selected) => shape.svg(selected ? selectedColor : black),
+                                      )}
+                                  </span>
+                              )
+                          })}
                       </div>,
                   ]
         })
@@ -250,27 +277,6 @@ export const ContextMenuView = ({
             }
         }
     }
-
-    const shapes = [
-        {
-            id: "square",
-            svg: (
-                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                    <path d="M0 0h24v24H0V0z" fill="none" />
-                    <path d="M16 8v8H8V8h8m2-2H6v12h12V6z" />
-                </svg>
-            ),
-        },
-        {
-            id: "round",
-            svg: (
-                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                    <path d="M0 0h24v24H0V0z" fill="none" />
-                    <path d="M12 6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6m0-2c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z" />
-                </svg>
-            ),
-        },
-    ]
 
     function areaTilingOptions() {
         const areasSelected = L.view(focusedItems, (items) =>
