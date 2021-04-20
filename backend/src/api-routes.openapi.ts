@@ -355,7 +355,12 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
                                                                                 color: { type: "string" },
                                                                                 shape: {
                                                                                     type: "string",
-                                                                                    enum: ["round", "square", "rect"],
+                                                                                    enum: [
+                                                                                        "round",
+                                                                                        "square",
+                                                                                        "rect",
+                                                                                        "diamond",
+                                                                                    ],
                                                                                 },
                                                                             },
                                                                         },
@@ -615,7 +620,12 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
                                                                                 color: { type: "string" },
                                                                                 shape: {
                                                                                     type: "string",
-                                                                                    enum: ["round", "square", "rect"],
+                                                                                    enum: [
+                                                                                        "round",
+                                                                                        "square",
+                                                                                        "rect",
+                                                                                        "diamond",
+                                                                                    ],
                                                                                 },
                                                                             },
                                                                         },

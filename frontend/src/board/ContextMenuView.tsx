@@ -278,6 +278,24 @@ export const ContextMenuView = ({
                     </svg>
                 ),
             },
+            {
+                id: "diamond",
+                svg: (color: Color) => (
+                    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect
+                            x="4"
+                            y="4"
+                            width="23"
+                            height="23"
+                            rx="1.5"
+                            stroke={color}
+                            stroke-width="3"
+                            stroke-linecap="round"
+                            transform="rotate(45 15.5 15.5)"
+                        />
+                    </svg>
+                ),
+            },
         ]
 
         const shapedItems = L.view(focusedItems, (items) => items.filter(isShapedItem))

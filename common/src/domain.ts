@@ -97,7 +97,7 @@ export const ITEM_TYPES = {
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
 export type TextItemProperties = ItemProperties & { text: string; fontSize?: number }
-export type NoteShape = "round" | "square" | "rect"
+export type NoteShape = "round" | "square" | "rect" | "diamond"
 export type Note = TextItemProperties & {
     type: typeof ITEM_TYPES.NOTE
     color: Color
