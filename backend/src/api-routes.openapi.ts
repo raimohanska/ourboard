@@ -355,7 +355,7 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
                                                                                 color: { type: "string" },
                                                                                 shape: {
                                                                                     type: "string",
-                                                                                    enum: ["round", "square"],
+                                                                                    enum: ["round", "square", "rect"],
                                                                                 },
                                                                             },
                                                                         },
@@ -615,7 +615,7 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
                                                                                 color: { type: "string" },
                                                                                 shape: {
                                                                                     type: "string",
-                                                                                    enum: ["round", "square"],
+                                                                                    enum: ["round", "square", "rect"],
                                                                                 },
                                                                             },
                                                                         },
