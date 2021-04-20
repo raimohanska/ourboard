@@ -5,8 +5,5 @@ export const Z_CONNECTIONS = 200000000
 export const Z_ITEMS_FROM = Z_CONTAINERS_UP_TO + 10
 
 export function itemZIndex(item: Item) {
-    if (item.type === "container") {
-        return Math.floor(1000000 - item.width * item.height)
-    }
-    return item.z + Z_ITEMS_FROM
+    return Math.floor(1000000 - item.width * item.height)
 }
