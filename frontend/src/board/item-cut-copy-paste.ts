@@ -31,14 +31,18 @@ export function findSelectedItems(currentFocus: BoardFocus, currentBoard: Board)
     const selectedIds = getSelectedIds(currentFocus)
     const items = findItemsRecursively([...selectedIds], currentBoard)
     const recursiveIds = new Set(items.map((i) => i.id))
-    const connections = currentBoard.connections.filter(
-        (c) =>
-            typeof c.from === "string" &&
-            typeof c.to === "string" &&
-            recursiveIds.has(c.from) &&
-            recursiveIds.has(c.to),
-    )
+    const connections = currentBoard.connections.filter((c) => {
+        // Include connections between these items and connections that have one end
+        // in these items and the other end not connected.
+        const ids = connectedIds(c)
+        return ids.length > 0 && !ids.some((id) => !recursiveIds.has(id))
+    })
     return { items, connections }
+}
+
+function connectedIds(connection: Connection) {
+    const endpoints = [connection.to, connection.from]
+    return endpoints.flatMap((ep) => (typeof ep === "string" ? [ep] : []))
 }
 
 export function makeCopies(
