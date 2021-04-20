@@ -154,35 +154,35 @@ export const ContextMenuView = ({
             return !hasItemsToAlign
                 ? []
                 : [
-                      <div className="align">
-                          {hasItemsToAlign && (
-                              <span
-                                  className="icon align_horizontal_left"
-                                  onClick={() => moveFocusedItems("x", getMinCoordinate)}
-                              />
-                          )}
+                    <div className="align">
+                        {hasItemsToAlign && (
+                            <span
+                                className="icon align_horizontal_left"
+                                onClick={() => moveFocusedItems("x", getMinCoordinate)}
+                            />
+                        )}
 
-                          {hasItemsToAlign && (
-                              <span
-                                  className="icon align_vertical_top"
-                                  onClick={() => moveFocusedItems("y", getMinCoordinate)}
-                              />
-                          )}
+                        {hasItemsToAlign && (
+                            <span
+                                className="icon align_vertical_top"
+                                onClick={() => moveFocusedItems("y", getMinCoordinate)}
+                            />
+                        )}
 
-                          {hasItemsToDistribute && (
-                              <span
-                                  className="icon horizontal_distribute"
-                                  onClick={() => moveFocusedItems("x", getDistributedCoordinate)}
-                              />
-                          )}
-                          {hasItemsToDistribute && (
-                              <span
-                                  className="icon vertical_distribute"
-                                  onClick={() => moveFocusedItems("y", getDistributedCoordinate)}
-                              />
-                          )}
-                      </div>,
-                  ]
+                        {hasItemsToDistribute && (
+                            <span
+                                className="icon horizontal_distribute"
+                                onClick={() => moveFocusedItems("x", getDistributedCoordinate)}
+                            />
+                        )}
+                        {hasItemsToDistribute && (
+                            <span
+                                className="icon vertical_distribute"
+                                onClick={() => moveFocusedItems("y", getDistributedCoordinate)}
+                            />
+                        )}
+                    </div>,
+                ]
         })
     }
 
@@ -194,18 +194,18 @@ export const ContextMenuView = ({
             return !anyColored
                 ? []
                 : [
-                      <div className="colors icon-group">
-                          {NOTE_COLORS.map((color) => {
-                              return (
-                                  <span
-                                      className={`icon color ${color === "#ffffff" ? "white" : color}`}
-                                      style={{ background: color }}
-                                      onClick={() => setColor(color)}
-                                  />
-                              )
-                          })}
-                      </div>,
-                  ]
+                    <div className="colors icon-group">
+                        {NOTE_COLORS.map((color) => {
+                            return (
+                                <span
+                                    className={`icon color ${color === "#ffffff" ? "white" : color}`}
+                                    style={{ background: color }}
+                                    onClick={() => setColor(color)}
+                                />
+                            )
+                        })}
+                    </div>,
+                ]
         })
 
         function setColor(color: Color) {
@@ -222,22 +222,19 @@ export const ContextMenuView = ({
             {
                 id: "square",
                 svg: (color: Color) => (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M0 0h24v24H0V0z" fill="none" />
-                        <path fill={color} d="M16 8v8H8V8h8m2-2H6v12h12V6z" />
+                    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0.5" y="0.5" width="31" height="31" rx="1.5" stroke={color} stroke-width="3" stroke-linecap="round"/>
                     </svg>
+
                 ),
             },
             {
                 id: "round",
                 svg: (color: Color) => (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M0 0h24v24H0V0z" fill="none" />
-                        <path
-                            fill={color}
-                            d="M12 6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6m0-2c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z"
-                        />
+                    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0.5" y="0.5" width="31" height="31" rx="15.5" stroke={color} stroke-width="3" stroke-linecap="round"/>
                     </svg>
+
                 ),
             },
         ]
@@ -252,20 +249,20 @@ export const ContextMenuView = ({
             return !anyShaped
                 ? []
                 : [
-                      <div className="shapes icon-group">
-                          {shapes.map((shape) => {
-                              return (
-                                  <span className="icon" onClick={changeShape(shape.id as Shape)}>
-                                      {L.view(
-                                          currentShape,
-                                          (s) => s === shape.id,
-                                          (selected) => shape.svg(selected ? selectedColor : black),
-                                      )}
-                                  </span>
-                              )
-                          })}
-                      </div>,
-                  ]
+                    <div className="shapes icon-group">
+                        {shapes.map((shape) => {
+                            return (
+                                <span className="icon" onClick={changeShape(shape.id as Shape)}>
+                                    {L.view(
+                                        currentShape,
+                                        (s) => s === shape.id,
+                                        (selected) => shape.svg(selected ? selectedColor : black),
+                                    )}
+                                </span>
+                            )
+                        })}
+                    </div>,
+                ]
         })
 
         function changeShape(newShape: Shape) {
@@ -286,10 +283,10 @@ export const ContextMenuView = ({
             areas.length !== 1
                 ? []
                 : [
-                      <div className="area-options">
-                          <span className="icon tile" onClick={() => packItemsInsideContainer(areas[0])} />
-                      </div>,
-                  ],
+                    <div className="area-options">
+                        <span className="icon tile" onClick={() => packItemsInsideContainer(areas[0])} />
+                    </div>,
+                ],
         )
 
         function packItemsInsideContainer(i: Container) {
@@ -312,25 +309,25 @@ export const ContextMenuView = ({
             !any
                 ? []
                 : [
-                      <div className="font-size icon-group">
-                          <span className="icon" onClick={increaseFont}>
-                              <svg viewBox="0 -3 25 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path
-                                      d="M7.11072 0.959999H8.93472L15.8947 18H13.5907L11.5747 13.008H4.42272L2.43072 18H0.126719L7.11072 0.959999ZM11.0947 11.328L8.02272 3.456L4.85472 11.328H11.0947ZM24.9129 8.616V10.344H22.0809V13.416H20.1609V10.344H17.3289V8.616H20.1609V5.544H22.0809V8.616H24.9129Z"
-                                      fill="black"
-                                  />
-                              </svg>
-                          </span>
-                          <span className="icon" onClick={decreaseFont}>
-                              <svg viewBox="0 -4 25 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path
-                                      d="M5.01913 0.639999H6.23513L10.8751 12H9.33913L7.99513 8.672H3.22713L1.89913 12H0.363125L5.01913 0.639999ZM7.67513 7.552L5.62713 2.304L3.51513 7.552H7.67513ZM12.0553 8.272V6.992H16.7753V8.272H12.0553Z"
-                                      fill="black"
-                                  />
-                              </svg>
-                          </span>
-                      </div>,
-                  ],
+                    <div className="font-size icon-group">
+                        <span className="icon" onClick={increaseFont}>
+                            <svg viewBox="0 -3 25 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M7.11072 0.959999H8.93472L15.8947 18H13.5907L11.5747 13.008H4.42272L2.43072 18H0.126719L7.11072 0.959999ZM11.0947 11.328L8.02272 3.456L4.85472 11.328H11.0947ZM24.9129 8.616V10.344H22.0809V13.416H20.1609V10.344H17.3289V8.616H20.1609V5.544H22.0809V8.616H24.9129Z"
+                                    fill="black"
+                                />
+                            </svg>
+                        </span>
+                        <span className="icon" onClick={decreaseFont}>
+                            <svg viewBox="0 -4 25 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M5.01913 0.639999H6.23513L10.8751 12H9.33913L7.99513 8.672H3.22713L1.89913 12H0.363125L5.01913 0.639999ZM7.67513 7.552L5.62713 2.304L3.51513 7.552H7.67513ZM12.0553 8.272V6.992H16.7753V8.272H12.0553Z"
+                                    fill="black"
+                                />
+                            </svg>
+                        </span>
+                    </div>,
+                ],
         )
 
         function increaseFont() {
