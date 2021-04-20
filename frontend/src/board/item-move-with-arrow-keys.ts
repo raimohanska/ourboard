@@ -14,8 +14,8 @@ function updatePosition(board: Board, item: Item, dx: number, dy: number): Item 
     }
 }
 
-function moveItem(board: Board, item: Item, key: string, shiftKey: boolean): Item {
-    const stepSize = shiftKey ? 10 : 1
+function moveItem(board: Board, item: Item, key: string, shiftKey: boolean, altKey: boolean): Item {
+    const stepSize = shiftKey ? 10 : altKey ? 0.1 : 1
     switch (key) {
         case "ArrowLeft":
             return updatePosition(board, item, -stepSize, 0)
@@ -41,7 +41,7 @@ export function itemMoveWithArrowKeysHandler(board: L.Property<Board>, dispatch:
                         const currentBoard = board.get()
                         const itemsAndConnections = findSelectedItems(focus.get(), currentBoard)
                         const movedItems = itemsAndConnections.items.map((item) =>
-                            moveItem(currentBoard, item, e.key, e.shiftKey),
+                            moveItem(currentBoard, item, e.key, e.shiftKey, e.altKey),
                         )
                         dispatch({ action: "item.move", boardId: currentBoard.id, items: movedItems })
                     }
