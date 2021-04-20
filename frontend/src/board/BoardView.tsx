@@ -143,10 +143,7 @@ export const BoardView = ({
             if (e.keyCode === 27) {
                 // esc
                 toolController.useDefaultTool()
-                const f = focus.get()
-                if (f.status === "adding") {
-                    focus.set({ status: "none" })
-                }
+                focus.set({ status: "none" })
             }
         })
 
