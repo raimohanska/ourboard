@@ -26,6 +26,10 @@ Adding images
 -   Add by dragging a file from your computer or from a browser window
 -   Add by pasting an image from the clipboard using Command-V
 
+Adding videos
+
+-   Add by dragging a file from your computer or from a browser window
+
 Keyboard shortcuts
 
 ```
