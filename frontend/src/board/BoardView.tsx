@@ -33,6 +33,7 @@ import * as G from "./geometry"
 import { HistoryView } from "./HistoryView"
 import { imageUploadHandler } from "./image-upload"
 import { ImageView } from "./ImageView"
+import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { itemCreateHandler } from "./item-create"
 import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { itemDeleteHandler } from "./item-delete"
@@ -172,7 +173,6 @@ export const BoardView = ({
     function onClick(e: JSX.MouseEvent) {
         const f = focus.get()
         if (f.status === "connection-adding") {
-            console.log("click -> end")
             toolController.useDefaultTool()
         } else if (f.status === "adding") {
             onAdd(f.item)
@@ -341,30 +341,47 @@ export const BoardView = ({
         type ToolbarPosition = { x?: number; y?: number; orientation: "vertical" | "horizontal" }
         const toolbarPosition = localStorageAtom<ToolbarPosition>("toolbarPosition", { orientation: "horizontal" })
         const toolbarEl = L.atom<HTMLElement | null>(null)
-        let startPos: Point | null = null
-        let dragStartedAt: Point | null = null
-        const onDragStart = (e: JSX.DragEvent) => {
-            if (e.target !== toolbarEl.get()) return
-            dragStartedAt = coordinateHelper.currentPageCoordinates.get()
-            startPos = toolbarEl.get()!.getBoundingClientRect()
-        }
-        const onDragEnd = (e: JSX.DragEvent) => {
-            if (!dragStartedAt) return
-            const endPos = coordinateHelper.currentPageCoordinates.get()
-            const diff = G.subtract(endPos, dragStartedAt!)
-            const minY = 70 // TODO: nasty constants
+        let cursorPosAtStart: G.Coordinates | null = null
+        let elementStartPos: G.Rect | null = null
+
+        const onDrag = (e: JSX.DragEvent) => {
+            if (!cursorPosAtStart) return
+            e.preventDefault()
+            const cursorCurrentPos = coordinateHelper.currentPageCoordinates.get()
+
+            const diff = G.subtract(cursorCurrentPos, cursorPosAtStart)
+
+            const minY = 70
             const minX = 16
+            const boardRect = containerElement.get()!.getBoundingClientRect()
+            const boardViewCenter = boardRect.x + boardRect.width / 2
+            const toolbarCenter = elementStartPos!.x + diff.x + elementStartPos!.width / 2
+            const centerDiff = Math.abs(toolbarCenter - boardViewCenter)
+
             const newPos = {
-                x: Math.max(startPos!.x + diff.x, minX),
-                y: Math.max(startPos!.y + diff.y, minY),
+                x: Math.max(elementStartPos!.x + diff.x, minX),
+                y: Math.max(elementStartPos!.y + diff.y, minY),
             }
-            if (newPos.y === minY) {
+
+            if (newPos.y === minY && centerDiff < 40) {
                 // If on top, fix to center default location
                 toolbarPosition.set({ orientation: "horizontal" })
             } else {
                 toolbarPosition.set({ ...newPos, orientation: newPos.x < 100 ? "vertical" : "horizontal" })
             }
-            dragStartedAt = null
+        }
+        const onDragOver = (e: JSX.DragEvent) => {
+            e.preventDefault()
+            // We need to contribute to currentPageCoordinates, otherwise they won't be updated when dragging over the menubar itself
+            coordinateHelper.currentPageCoordinates.set({ x: e.clientX, y: e.clientY })
+        }
+        const onDragStart = (e: JSX.DragEvent) => {
+            cursorPosAtStart = { x: e.clientX, y: e.clientY }
+            e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
+            elementStartPos = toolbarEl.get()!.getBoundingClientRect()
+        }
+        const onDragEnd = (e: JSX.DragEvent) => {
+            cursorPosAtStart = null
         }
         const toolbarStyle = L.view(toolbarPosition, (p) => ({
             top: p.y || undefined,
@@ -383,6 +400,8 @@ export const BoardView = ({
                     style={toolbarStyle}
                     ref={toolbarEl.set}
                     draggable="true"
+                    onDragOver={onDragOver}
+                    onDrag={onDrag}
                     onDragStart={onDragStart}
                     onDragEnd={onDragEnd}
                 >
