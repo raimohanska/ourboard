@@ -46,6 +46,10 @@ Command-D           Duplicate
 Arrow keys          Move selected items. SHIFT for big steps, ALT for fine-tuning.
 ```
 
+Pro tips
+
+-   You can drag the toolbar / palette around, if it gets in your way at the top-center position
+
 ### Board access controls
 
 All boards created using the UI are accessible to anyone with the link.
