@@ -189,43 +189,13 @@ export function boardReducer(
             ]
         }
         case "item.front":
-            let maxZ = 0
-            let maxZCount = 0
-            const itemsList = Object.values(board.items)
-            for (let i of itemsList) {
-                if (i.z > maxZ) {
-                    maxZCount = 1
-                    maxZ = i.z
-                } else if (i.z === maxZ) {
-                    maxZCount++
-                }
-            }
-            const isFine = (item: Item) => {
-                return !event.itemIds.includes(item.id) || item.z === maxZ
-            }
-            if (maxZCount === event.itemIds.length && itemsList.every(isFine)) {
-                // Requested items already on front
-                return [board, null]
-            }
-
-            const updated = event.itemIds.reduce((acc: Record<string, Item>, id) => {
-                const item = board.items[id]
-                if (!item) {
-                    console.warn(`Warning: trying to "item.front" nonexisting item ${id} on board ${board.id}`)
-                    return acc
-                }
-                const u = item.type !== "container" ? { ...item, z: maxZ + 1 } : item
-                acc[u.id] = u
-                return acc
-            }, {})
+            const idSet = new Set(event.itemIds)
+            const [frontItems, otherItems] = _.partition(Object.values(board.items), (i) => idSet.has(i.id))
 
             return [
                 {
                     ...board,
-                    items: {
-                        ...board.items,
-                        ...updated,
-                    },
+                    items: arrayToObject("id", [...otherItems, ...frontItems]),
                 },
                 null,
             ] // TODO: return item.back

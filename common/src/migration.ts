@@ -48,10 +48,10 @@ export function migrateBoard(board: Board) {
     return { ...board, connections: board.connections ?? [], width, height, items: arrayToObject("id", items) }
 
     function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {
-        const { width, height, z, type, ...rest } = item
+        const { width, height, type, ...rest } = item
 
         // Force type, width and height for all items
-        let fixedItem = { type: type || "note", width: width || 5, height: height || 5, z: z || 0, ...rest } as Item
+        let fixedItem = { type: type || "note", width: width || 5, height: height || 5, ...rest } as Item
         if (fixedItem.type === "container") {
             let container = fixedItem as Container & { items?: string[] }
             // Force container to have text
