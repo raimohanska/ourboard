@@ -1,5 +1,5 @@
 import { sleep } from "../../common/src/sleep"
-import { newNote, Point } from "../../common/src/domain"
+import { isNote, newNote, Point } from "../../common/src/domain"
 import { GenericServerConnection } from "../../frontend/src/store/server-connection"
 import WebSocket from "ws"
 import _ from "lodash"
@@ -31,7 +31,9 @@ function createTester(nickname: string, boardId: string) {
             connection.send({ action: "board.join", boardId })
         })
     connection.bufferedServerEvents.forEach((event) => {
-        if (event.action === "board.init") {
+        if (event.action === "board.init" && "board" in event) {
+            const boardAtInit = event.board
+            const notes = Object.values(boardAtInit.items).filter(isNote)
             setInterval(() => {
                 counter += increment
                 const position = add(center, {
@@ -39,12 +41,35 @@ function createTester(nickname: string, boardId: string) {
                     y: radius * Math.cos(counter / 100),
                 })
                 connection.send({ action: "cursor.move", position, boardId })
-                if (Math.random() < notesPerInterval)
+                if (Math.random() < notesPerInterval) {
+                    const note = newNote("NOTE " + counter, "black", position.x, position.y)
+                    notes.push(note)
                     connection.send({
                         action: "item.add",
                         boardId,
-                        items: [newNote("NOTE " + counter, "black", position.x, position.y)],
+                        items: [note],
                     })
+                }
+                if (Math.random() < editsPerInterval) {
+                    const target = _.sample(notes)!
+                    const updated = { ...target, text: "EDIT " + counter }
+                    connection.send({
+                        ackId: "perf",
+                        events: [
+                            {
+                                action: "item.front",
+                                boardId,
+                                itemIds: [updated.id]
+                            },
+                            {
+                                action: "item.update",
+                                boardId,
+                                items: [updated]
+                            }                            
+                        ]
+                    })
+                                     
+                }
             }, interval)
         }
         if (event.action === "board.join.ack") {
@@ -63,11 +88,13 @@ const BOARD_IDS = BOARD_ID.split(",")
 const DOMAIN = process.env.DOMAIN
 
 const NOTES_PER_SEC = parseFloat(process.env.NOTES_PER_SEC ?? "0.1")
+const EDITS_PER_SEC = parseFloat(process.env.EDITS_PER_SEC ?? "0")
 const CURSOR_MOVES_PER_SEC = parseFloat(process.env.CURSOR_MOVES_PER_SEC ?? "10")
 
 // Calculated vars
 const interval = 1000 / CURSOR_MOVES_PER_SEC
 const notesPerInterval = (NOTES_PER_SEC / 1000) * interval
+const editsPerInterval = (EDITS_PER_SEC / 1000) * interval
 console.log(
     `Starting ${USER_COUNT} testers, moving cursors ${CURSOR_MOVES_PER_SEC}/sec, creating notes ${NOTES_PER_SEC}`,
 )
