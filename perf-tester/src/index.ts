@@ -53,35 +53,6 @@ function createTester(nickname: string, boardId: string) {
     })
 }
 
-const kwargs = process.argv.slice(2)
-
-const ACCEPTED_KWARGS = ["--userCount", "--boardId"]
-
-const parsedKwargs: { userCount?: number; boardId?: string } = {}
-
-for (let i = 0; i < kwargs.length - 1; i += 2) {
-    const [argName, argValue] = [kwargs[i], kwargs[i + 1]]
-    if (!ACCEPTED_KWARGS.includes(argName)) {
-        throw Error(`Invalid argument ${argName}, expecting one or more of: ${ACCEPTED_KWARGS.join(", ")}`)
-    }
-
-    if (!argValue || argValue.startsWith("--")) {
-        throw Error(`Invalid value for ${argName}, got ${argValue}`)
-    }
-
-    const argNameStripped = argName.slice(2)
-
-    if (argNameStripped === "userCount") {
-        const argValueParsed = Number(argValue)
-        if (!Number.isInteger(argValueParsed)) {
-            throw Error(`Expected integer value for userCount, got ${argValue}`)
-        }
-        parsedKwargs[argNameStripped] = argValueParsed
-    } else if (argNameStripped === "boardId") {
-        parsedKwargs[argNameStripped] = argValue
-    }
-}
-
 // Environment variables.
 const USER_COUNT = parseInt(process.env.USER_COUNT ?? "10")
 const BOARD_ID = process.env.BOARD_ID
