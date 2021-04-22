@@ -60,16 +60,15 @@ function createTester(nickname: string, boardId: string) {
                             {
                                 action: "item.front",
                                 boardId,
-                                itemIds: [updated.id]
+                                itemIds: [updated.id],
                             },
                             {
                                 action: "item.update",
                                 boardId,
-                                items: [updated]
-                            }                            
-                        ]
+                                items: [updated],
+                            },
+                        ],
                     })
-                                     
                 }
             }, interval)
         }
