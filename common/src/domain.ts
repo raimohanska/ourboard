@@ -85,7 +85,7 @@ export type BoardCursorPositions = Record<Id, UserCursorPosition>
 
 export type Color = string
 
-export type ItemBounds = { x: number; y: number; width: number; height: number }
+export type ItemBounds = { x: number; y: number; width: number; height: number; z: number }
 export type ItemProperties = { id: string; containerId?: string } & ItemBounds
 
 export const ITEM_TYPES = {
@@ -280,8 +280,9 @@ export function newNote(
     width: number = 5,
     height: number = 5,
     shape: NoteShape = "square",
+    z: number = 0,
 ): Note {
-    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, shape }
+    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z, shape }
 }
 
 export function newSimilarNote(note: Note) {
@@ -294,12 +295,19 @@ export function newText(
     y: number = 20,
     width: number = 5,
     height: number = 2,
+    z: number = 0,
 ): Text {
-    return { id: uuid.v4(), type: "text", text, x, y, width, height }
+    return { id: uuid.v4(), type: "text", text, x, y, width, height, z }
 }
 
-export function newContainer(x: number = 20, y: number = 20, width: number = 30, height: number = 20): Container {
-    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height, color: "white" }
+export function newContainer(
+    x: number = 20,
+    y: number = 20,
+    width: number = 30,
+    height: number = 20,
+    z: number = 0,
+): Container {
+    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height, z, color: "white" }
 }
 
 export function newImage(
@@ -308,8 +316,9 @@ export function newImage(
     y: number = 20,
     width: number = 5,
     height: number = 5,
+    z: number = 0,
 ): Image {
-    return { id: uuid.v4(), type: "image", assetId, x, y, width, height }
+    return { id: uuid.v4(), type: "image", assetId, x, y, width, height, z }
 }
 
 export function newVideo(
@@ -318,8 +327,9 @@ export function newVideo(
     y: number = 20,
     width: number = 5,
     height: number = 5,
+    z: number = 0,
 ): Video {
-    return { id: uuid.v4(), type: "video", assetId, x, y, width, height }
+    return { id: uuid.v4(), type: "video", assetId, x, y, width, height, z }
 }
 
 export function getCurrentTime(): ISOTimeStamp {
