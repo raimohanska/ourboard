@@ -376,6 +376,7 @@ export const BoardView = ({
             coordinateHelper.currentPageCoordinates.set({ x: e.clientX, y: e.clientY })
         }
         const onDragStart = (e: JSX.DragEvent) => {
+            if (e.target !== toolbarEl.get()) return // drag started on a palette item
             cursorPosAtStart = { x: e.clientX, y: e.clientY }
             e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
             elementStartPos = toolbarEl.get()!.getBoundingClientRect()
