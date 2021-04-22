@@ -4,6 +4,7 @@ import { GenericServerConnection } from "../../frontend/src/store/server-connect
 import WebSocket from "ws"
 import _ from "lodash"
 import * as L from "lonna"
+import { NOTE_COLORS } from "../../common/src/colors"
 
 // hack, sue me
 // @ts-ignore
@@ -52,7 +53,7 @@ function createTester(nickname: string, boardId: string) {
                 }
                 if (Math.random() < editsPerInterval) {
                     const target = _.sample(notes)!
-                    const updated = { ...target, text: "EDIT " + counter }
+                    const updated = { ...target, text: "EDIT " + counter, color: _.sample(NOTE_COLORS)! }
                     connection.send({
                         ackId: "perf",
                         events: [
