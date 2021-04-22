@@ -166,7 +166,7 @@ export function BoardStore(
                     } else {
                         // Remote event
                         const [{ board: newServerShadow, history: newServerHistory }] = boardHistoryReducer(
-                            { board: state.board!, history: state.serverHistory },
+                            { board: state.serverShadow!, history: state.serverHistory },
                             event,
                         )
                         // Rebase local events on top of new server shadow
