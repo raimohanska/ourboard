@@ -26,7 +26,7 @@ export async function initDB() {
             CREATE TABLE IF NOT EXISTS app_user (id text PRIMARY KEY, email text NOT NULL);
             CREATE TABLE IF NOT EXISTS user_board (user_id text REFERENCES app_user(id), board_id text REFERENCES board(id), last_opened TIMESTAMP NOT NULL, PRIMARY KEY (user_id, board_id));
             ALTER TABLE board ADD COLUMN IF NOT EXISTS ws_host TEXT NULL;
-            ALTER TABLE board ADD COLUMN created_at TIMESTAMP NULL DEFAULT now();
+            ALTER TABLE board ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NULL DEFAULT now();
         `)
     })
 
