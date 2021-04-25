@@ -106,7 +106,7 @@ export const ItemView = ({
                 }
             })}
         >
-            { type !== "text" &&
+            {type !== "text" && (
                 <span
                     className={L.view(shape, (s) => "shape " + s)}
                     style={L.view(item, (i) => {
@@ -115,7 +115,7 @@ export const ItemView = ({
                         }
                     })}
                 />
-            }
+            )}
 
             {(type === "note" || type === "text" || type === "container") && (
                 <TextView item={item as L.Property<TextItem>} />
