@@ -53,7 +53,7 @@ function createTester(nickname: string, boardId: string) {
                 }
                 if (Math.random() < editsPerInterval) {
                     const target = _.sample(notes)!
-                    const updated = { ...target, text: "EDIT " + counter, color: _.sample(NOTE_COLORS)! }
+                    const updated = { ...target, text: "EDIT " + counter, color: _.sample(NOTE_COLORS)?.color! }
                     connection.send({
                         ackId: "perf",
                         events: [

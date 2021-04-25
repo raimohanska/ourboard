@@ -16,7 +16,7 @@ import {
     NoteShape,
 } from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
-import { NOTE_COLORS } from "../../../common/src/colors"
+import { NOTE_COLORS, TRANSPARENT } from "../../../common/src/colors"
 import { BoardFocus } from "./board-focus"
 import { item } from "lonna"
 import { packItems } from "./area-packer"
@@ -207,9 +207,9 @@ export const ContextMenuView = ({
                           {NOTE_COLORS.map((color) => {
                               return (
                                   <span
-                                      className={`icon color ${color === "#ffffff" ? "white" : color}`}
-                                      style={{ background: color }}
-                                      onClick={() => setColor(color)}
+                                      className={`icon color ${color.name}`}
+                                      style={{ background: color.color === TRANSPARENT ? undefined : color.color }}
+                                      onClick={() => setColor(color.color)}
                                   />
                               )
                           })}
