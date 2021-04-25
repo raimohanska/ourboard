@@ -37,7 +37,7 @@ export function autoFontSize(
     const elFont = coordinateHelper.elementFont(element)
     return L.view(
         L.view(item, "type"),
-        L.view(item, (i) => i.type === "note" && i.shape === "round"),
+        L.view(item, (i) => i.type === "note" && (i.shape === "round" || i.shape === "diamond")),
         L.view(item, "width"),
         L.view(item, "height"),
         fontSize,
