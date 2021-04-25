@@ -73,6 +73,7 @@ export const ItemView = ({
             return selected ? `${type}-selected${textSuffix}` : `${type}${textSuffix}`
         }),
     )
+    const shape = L.view(item, (i) => (i.type === "note" ? i.shape : "rect"))
 
     return (
         <span
@@ -86,29 +87,27 @@ export const ItemView = ({
                 L.view(item, getItemBackground),
                 (s, b) => `${type} ${"color-" + b.replace("#", "").toLowerCase()} ${s ? "selected" : ""}`,
             )}
-            style={L.view(item, selected, (i) => {
-                const background = getItemBackground(i)
-                const common = {
+            style={L.view(item, (i) => {
+                return {
                     top: 0,
                     left: 0,
                     height: i.height + "em",
                     width: i.width + "em",
                     transform: `translate(${i.x}em, ${i.y}em)`,
                     zIndex: itemZIndex(i),
-                    background,
                     position: "absolute",
                 }
-                const shape =
-                    i.type === "note" && i.shape === "round"
-                        ? {
-                              borderRadius: "50%",
-                              border: `${i.height / 10}em solid ${background}`,
-                              boxSizing: "border-box",
-                          }
-                        : {}
-                return { ...common, ...shape }
             })}
         >
+            <span
+                className={L.view(shape, (s) => "shape " + s)}
+                style={L.view(item, (i) => {
+                    return {
+                        background: getItemBackground(i),
+                    }
+                })}
+            />
+
             {(type === "note" || type === "text" || type === "container") && (
                 <TextView item={item as L.Property<TextItem>} />
             )}
