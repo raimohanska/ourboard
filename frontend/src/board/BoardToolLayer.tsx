@@ -125,13 +125,7 @@ export const BoardToolLayer = ({
             <div className="undo-redo-toolbar board-tool">
                 <UndoRedo {...{ dispatch, boardStore }} />
             </div>
-            {L.view(
-                viewRect,
-                (r) => r != null,
-                (r) => (
-                    <MiniMapView board={board} viewRect={viewRect} />
-                ),
-            )}
+            <MiniMapView board={board} viewRect={viewRect} />
             <div className="zoom-toolbar board-tool">
                 <ZoomControls {...{ zoom }} />
             </div>
