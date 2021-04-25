@@ -60,8 +60,11 @@ export const ContextMenuView = ({
         const minY = _.min(items.map((i) => i.y)) || 0
         const minX = _.min(items.map((i) => i.x)) || 0
         const maxY = _.max(items.map((i) => i.y + i.height)) || 0
+        const maxX = _.max(items.map((i) => i.x + i.width)) || 0
+        const alignRight = minX > vr.x + vr.width / 2
         return {
-            left: minX + "em",
+            left: alignRight ? undefined : `max(${minX}em, ${vr.x}em)`,
+            right: alignRight ? `calc(100% - min(${maxX}em, ${vr.x + vr.width}em))` : undefined,
             top: minY - vr.y > vr.height / 3 ? minY + "em" : `calc(${maxY}em + 4rem)`,
         }
     })
