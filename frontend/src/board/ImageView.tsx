@@ -45,7 +45,7 @@ export const ImageView = ({
         <span
             className="image"
             onClick={onClick}
-            ref={itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch) as any}
+            ref={itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch, false) as any}
             style={L.view(
                 image,
                 (p: Image) =>

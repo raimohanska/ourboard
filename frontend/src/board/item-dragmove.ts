@@ -15,6 +15,7 @@ export function itemDragToMove(
     toolController: ToolController,
     coordinateHelper: BoardCoordinateHelper,
     dispatch: Dispatch,
+    onlyWhenSelected: boolean,
 ) {
     const connector = drawConnectionHandler(board, coordinateHelper, focus, dispatch)
     return (elem: HTMLElement) =>
@@ -24,6 +25,7 @@ export function itemDragToMove(
             board,
             focus,
             coordinateHelper,
+            onlyWhenSelected,
             (b, items, xDiff, yDiff) => {
                 // Cant drag when connect tool is active
                 const t = toolController.tool.get()

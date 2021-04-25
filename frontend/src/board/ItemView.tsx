@@ -50,7 +50,7 @@ export const ItemView = ({
     const element = L.atom<HTMLElement | null>(null)
 
     const ref = (el: HTMLElement) => {
-        type !== "container" && itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch)(el)
+        itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch, type === "container")(el)
         element.set(el)
     }
 

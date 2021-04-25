@@ -2,7 +2,7 @@ import * as L from "lonna"
 import { Board, Item } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus } from "./board-focus"
+import { BoardFocus, getSelectedIds } from "./board-focus"
 import { Coordinates } from "./geometry"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
@@ -16,6 +16,7 @@ export function onBoardItemDrag(
     board: L.Property<Board>,
     focus: L.Atom<BoardFocus>,
     coordinateHelper: BoardCoordinateHelper,
+    onlyWhenSelected: boolean,
     doWhileDragging: (
         b: Board,
         items: { current: Item; dragStartPosition: Item }[],
@@ -28,10 +29,12 @@ export function onBoardItemDrag(
     let dragStartPositions: Record<string, Item>
     let currentPos: { x: number; y: number } | null = null
 
-    elem.addEventListener("dragstart", (e) => {
+    const dragEnabled = onlyWhenSelected ? L.view(focus, (f) => getSelectedIds(f).has(id)) : L.constant(true)
+
+    const onDragStart = (e: DragEvent) => {
+        const f = focus.get()
         e.stopPropagation()
         e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
-        const f = focus.get()
         if (f.status === "dragging") {
             if (!f.ids.has(id)) {
                 focus.set({ status: "dragging", ids: new Set([id]) })
@@ -44,8 +47,9 @@ export function onBoardItemDrag(
 
         dragStart = e
         dragStartPositions = board.get().items
-    })
-    elem.addEventListener("drag", (e) => {
+    }
+
+    const onDrag = (e: DragEvent) => {
         e.stopPropagation()
         const f = focus.get()
         if (f.status !== "dragging") {
@@ -73,9 +77,9 @@ export function onBoardItemDrag(
             }
         })
         doWhileDragging(b, items, xDiff, yDiff)
-    })
+    }
 
-    elem.addEventListener("dragend", (e) => {
+    const onDragEnd = (e: DragEvent) => {
         e.stopPropagation()
         focus.modify((f) => {
             if (f.status !== "dragging") {
@@ -89,5 +93,17 @@ export function onBoardItemDrag(
             currentPos = null
             return { status: "selected", ids: f.ids }
         })
+    }
+
+    dragEnabled.forEach((enabled) => {
+        if (enabled) {
+            elem.addEventListener("dragstart", onDragStart)
+            elem.addEventListener("drag", onDrag)
+            elem.addEventListener("dragend", onDragEnd)
+        } else {
+            elem.removeEventListener("dragstart", onDragStart)
+            elem.removeEventListener("drag", onDrag)
+            elem.removeEventListener("dragend", onDragEnd)
+        }
     })
 }

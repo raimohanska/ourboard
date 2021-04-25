@@ -46,7 +46,7 @@ export const VideoView = ({
         <span
             className="video"
             onClick={onClick}
-            ref={itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch) as any}
+            ref={itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch, false) as any}
             style={L.view(
                 video,
                 (p: Video) =>

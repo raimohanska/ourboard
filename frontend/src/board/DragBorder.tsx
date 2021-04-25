@@ -34,7 +34,8 @@ export const DragBorder = ({
     )
 
     function DragHandle({ position }: { position: Position }) {
-        const ref = (e: HTMLElement) => itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch)(e)
+        const ref = (e: HTMLElement) =>
+            itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch, false)(e)
 
         return <span ref={ref} draggable={true} className={`edge-drag ${position}`} />
     }

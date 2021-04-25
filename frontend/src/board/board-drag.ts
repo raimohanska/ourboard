@@ -8,7 +8,7 @@ import * as _ from "lodash"
 import { componentScope } from "harmaja"
 import { Tool } from "./tool-selection"
 
-export type DragAction = { action: "select"; selectedAtStart: Set<string> } | { action: "move" } | { action: "none" }
+export type DragAction = { action: "select"; selectedAtStart: Set<string> } | { action: "pan" } | { action: "none" }
 
 export function boardDragHandler({
     boardElem,
@@ -42,7 +42,7 @@ export function boardDragHandler({
             start.set(pos)
             current.set(pos)
             if (!shouldDragSelect) {
-                dragAction.set({ action: "move" })
+                dragAction.set({ action: "pan" })
             } else {
                 let selectedAtStart = e.shiftKey ? getSelectedIds(focus.get()) : new Set<string>()
                 focus.set(selectedAtStart.size > 0 ? { status: "selected", ids: selectedAtStart } : { status: "none" })
@@ -72,7 +72,7 @@ export function boardDragHandler({
                         toBeSelected.size > 0
                             ? focus.set({ status: "selected", ids: toBeSelected })
                             : focus.set({ status: "none" })
-                    } else if (da.action === "move") {
+                    } else if (da.action === "pan") {
                         const s = start.get()
                         const c = current.get()
                         s &&
@@ -93,7 +93,7 @@ export function boardDragHandler({
 
         function reset() {
             const da = dragAction.get()
-            if (da.action === "move") {
+            if (da.action === "pan") {
                 boardElem.get()!.style.transform = "translate(0, 0)"
                 if (!start.get() || !current.get()) return
                 const s = document.querySelector(".scroll-container")!
