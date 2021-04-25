@@ -1,62 +1,40 @@
 import * as H from "harmaja"
 import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
-import {
-    Board,
-    findItem,
-    Id,
-    Image,
-    Item,
-    newNote,
-    Note,
-    Point,
-    UserCursorPosition,
-    Video,
-} from "../../../common/src/domain"
+import { Board, findItem, Id, Image, Item, newNote, Note, Video } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { onClickOutside } from "../components/onClickOutside"
 import { isEmbedded } from "../embedding"
 import { AssetStore } from "../store/asset-store"
-import { BoardState, BoardStore } from "../store/board-store"
-import { Dispatch } from "../store/board-store"
+import { BoardState, BoardStore, Dispatch } from "../store/board-store"
+import { CursorsStore } from "../store/cursors-store"
 import { UserSessionState } from "../store/user-session-store"
 import { boardCoordinateHelper } from "./board-coordinates"
 import { boardDragHandler } from "./board-drag"
 import { BoardFocus, getSelectedIds, getSelectedItem, getSelectedItems } from "./board-focus"
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
-import { BoardViewHeader } from "./toolbars/BoardViewHeader"
-import { BoardViewMessage } from "./BoardViewMessage"
+import { BoardToolLayer } from "./BoardToolLayer"
 import { ConnectionsView } from "./ConnectionsView"
 import { ContextMenuView } from "./ContextMenuView"
 import { CursorsView } from "./CursorsView"
 import * as G from "./geometry"
-import { HistoryView } from "./HistoryView"
 import { imageUploadHandler } from "./image-upload"
 import { ImageView } from "./ImageView"
-import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { itemCreateHandler } from "./item-create"
 import { cutCopyPasteHandler } from "./item-cut-copy-paste"
 import { itemDeleteHandler } from "./item-delete"
 import { itemDuplicateHandler } from "./item-duplicate"
+import { itemMoveWithArrowKeysHandler } from "./item-move-with-arrow-keys"
 import { itemSelectAllHandler } from "./item-select-all"
 import { withCurrentContainer } from "./item-setcontainer"
 import { itemUndoHandler } from "./item-undo-redo"
 import { ItemView } from "./ItemView"
-import { MiniMapView } from "./MiniMapView"
 import { RectangularDragSelection } from "./RectangularDragSelection"
-import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
-import { VideoView } from "./VideoView"
-import { itemMoveWithArrowKeysHandler } from "./item-move-with-arrow-keys"
-import { PaletteView } from "./toolbars/PaletteView"
-import { ToolSelector } from "./toolbars/ToolSelector"
-import { UndoRedo } from "./toolbars/UndoRedo"
-import { ZoomControls } from "./toolbars/ZoomControls"
-import { BackToAllBoardsLink } from "./toolbars/BackToAllBoardsLink"
-import { ToolController } from "./tool-selection"
-import { reduce } from "lodash"
-import { localStorageAtom } from "./local-storage-atom"
-import { CursorsStore } from "../store/cursors-store"
 import { SelectionBorder } from "./SelectionBorder"
+import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
+import { ToolController } from "./tool-selection"
+import { BoardViewHeader } from "./toolbars/BoardViewHeader"
+import { VideoView } from "./VideoView"
 
 const emptyNote = newNote("")
 
@@ -264,7 +242,23 @@ export const BoardView = ({
                         </div>
                     </div>
                 </div>
-                <BoardToolLayer />
+                <BoardToolLayer
+                    {...{
+                        board,
+                        boardStore,
+                        containerElement,
+                        coordinateHelper,
+                        dispatch,
+                        zoom,
+                        focus,
+                        latestNote,
+                        navigateToBoard,
+                        onAdd,
+                        toolController,
+                        sessionState,
+                        viewRect,
+                    }}
+                />
             </div>
         </div>
     )
@@ -335,132 +329,5 @@ export const BoardView = ({
                     throw Error("Unsupported item: " + t)
             }
         })
-    }
-
-    function BoardToolLayer() {
-        type ToolbarPosition = { x?: number; y?: number; orientation: "vertical" | "horizontal" }
-        const toolbarPosition = localStorageAtom<ToolbarPosition>("toolbarPosition", { orientation: "horizontal" })
-        const toolbarEl = L.atom<HTMLElement | null>(null)
-        let cursorPosAtStart: G.Coordinates | null = null
-        let elementStartPos: G.Rect | null = null
-
-        const onDrag = (e: JSX.DragEvent) => {
-            if (!cursorPosAtStart) return
-            e.preventDefault()
-            const cursorCurrentPos = coordinateHelper.currentPageCoordinates.get()
-
-            const diff = G.subtract(cursorCurrentPos, cursorPosAtStart)
-
-            const minY = 70
-            const minX = 16
-            const boardRect = containerElement.get()!.getBoundingClientRect()
-            const boardViewCenter = boardRect.x + boardRect.width / 2
-            const toolbarCenter = elementStartPos!.x + diff.x + elementStartPos!.width / 2
-            const centerDiff = Math.abs(toolbarCenter - boardViewCenter)
-
-            const newPos = {
-                x: Math.max(elementStartPos!.x + diff.x, minX),
-                y: Math.max(elementStartPos!.y + diff.y, minY),
-            }
-
-            if (newPos.y === minY && centerDiff < 40) {
-                // If on top, fix to center default location
-                toolbarPosition.set({ orientation: "horizontal" })
-            } else {
-                toolbarPosition.set({ ...newPos, orientation: newPos.x < 100 ? "vertical" : "horizontal" })
-            }
-        }
-        const onDragOver = (e: JSX.DragEvent) => {
-            e.preventDefault()
-            // We need to contribute to currentPageCoordinates, otherwise they won't be updated when dragging over the menubar itself
-            coordinateHelper.currentPageCoordinates.set({ x: e.clientX, y: e.clientY })
-        }
-        const onDragStart = (e: JSX.DragEvent) => {
-            if (e.target !== toolbarEl.get()) return // drag started on a palette item
-            cursorPosAtStart = { x: e.clientX, y: e.clientY }
-            e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
-            elementStartPos = toolbarEl.get()!.getBoundingClientRect()
-        }
-        const onDragEnd = (e: JSX.DragEvent) => {
-            cursorPosAtStart = null
-        }
-        const toolbarStyle = L.view(toolbarPosition, (p) => ({
-            top: p.y || undefined,
-            left: p.x || undefined,
-            transform: p.x !== undefined ? "none" : undefined,
-        }))
-        return (
-            <div className="tool-layer">
-                <BoardViewMessage {...{ boardAccessStatus, sessionState, board }} />
-
-                <div className="navigation-toolbar">
-                    <BackToAllBoardsLink {...{ navigateToBoard }} />
-                </div>
-                <div
-                    className={L.view(toolbarPosition, (o) => `main-toolbar board-tool ${o.orientation}`)}
-                    style={toolbarStyle}
-                    ref={toolbarEl.set}
-                    draggable="true"
-                    onDragOver={onDragOver}
-                    onDrag={onDrag}
-                    onDragStart={onDragStart}
-                    onDragEnd={onDragEnd}
-                >
-                    <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
-                    <ToolSelector {...{ toolController }} />
-                </div>
-                <div className="undo-redo-toolbar board-tool">
-                    <UndoRedo {...{ dispatch, boardStore }} />
-                </div>
-                {L.view(
-                    viewRect,
-                    (r) => r != null,
-                    (r) => (
-                        <MiniMapView board={board} viewRect={viewRect} />
-                    ),
-                )}
-                <div className="zoom-toolbar board-tool">
-                    <ZoomControls {...{ zoom }} />
-                </div>
-                <HistoryView {...{ board, history, focus, dispatch }} />
-
-                {L.view(focus, (f) => {
-                    if (f.status !== "adding") return null
-                    const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
-                        position: "absolute",
-                        left: `${p.x - 20}px`,
-                        top: `${p.y - 20}px`,
-                        pointerEvents: "none",
-                    }))
-                    return (
-                        <span className="item-adding" style={style}>
-                            {f.element}
-                        </span>
-                    )
-                })}
-
-                {L.view(focus, tool, (f, t) => {
-                    if (t !== "connect") return null
-                    const text =
-                        f.status === "connection-adding"
-                            ? "Finish by clicking on target"
-                            : "Click on an item to make a connection"
-
-                    const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
-                        position: "absolute",
-                        left: `${p.x}px`,
-                        top: `${p.y + 20}px`,
-                        fontSize: "0.8rem",
-                        pointerEvents: "none",
-                        color: "#000000aa",
-                    }))
-                    return (
-                        <span className="item-adding" style={style}>
-                            {text} 
-                        </span>
-                    )
-                })}
-            </div>
-        )
     }
 }
