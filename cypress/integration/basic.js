@@ -307,7 +307,10 @@ describe("Board functionality", () => {
 
                 templateWithNewColor.click()
                 NotesWithText("Monoids").then((els) => {
-                    expect(els[0].style.background, `Note 'HELLO' should have turned ${newColor}`).to.equal(newColor)
+                    expect(
+                        els[0].querySelector(".shape").style.background,
+                        `Note 'HELLO' should have turned ${newColor}`,
+                    ).to.equal(newColor)
                 })
             })
     })
