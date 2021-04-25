@@ -16,23 +16,25 @@ let activeBoardState: LocalStorageBoard | undefined = undefined
 export async function getInitialBoardState(boardId: Id) {
     if (!activeBoardState || activeBoardState.serverShadow.id != boardId) {
         const localStorageKey = getStorageKey(boardId)
-        try {
-            const stringState = await localForage.getItem<string>(localStorageKey)
-            activeBoardState = JSON.parse(stringState!) as LocalStorageBoard
-            if (!activeBoardState || !activeBoardState.serverShadow) {
-                activeBoardState = undefined
-            }
-            if (activeBoardState) {
-                activeBoardState = {
-                    ...activeBoardState, // future migration code here
-                }
-            }
-        } catch (e) {
-            console.error(`Fetching local state for board ${boardId} from IndexedDB failed`, e)
-            await clearBoardState(boardId)
-        }
+        activeBoardState = await getStoredState(localStorageKey)
     }
     return activeBoardState
+}
+
+async function getStoredState(localStorageKey: string) {
+    try {
+        const stringState = await localForage.getItem<string>(localStorageKey)
+        const state = JSON.parse(stringState!) as LocalStorageBoard
+        if (!state || !state.serverShadow) {
+            return undefined
+        }
+        return {
+            ...state, // future migration code here
+        }
+    } catch (e) {
+        console.error(`Fetching local state ${localStorageKey} from IndexedDB failed`, e)
+        await clearStateByKey(localStorageKey)
+    }
 }
 
 function getStorageKey(boardId: string) {
@@ -59,11 +61,27 @@ const storeThrottled = _.throttle(
 )
 
 export async function clearBoardState(boardId: Id) {
-    activeBoardState = undefined
-    const localStorageKey = getStorageKey(boardId)
+    return await clearStateByKey(getStorageKey(boardId))
+}
+
+async function clearStateByKey(localStorageKey: string) {
     try {
         await localForage.removeItem(localStorageKey)
     } catch (err) {
-        console.error(`Clearing board state for ${boardId} failed`, err)
+        console.error(`Clearing board state for ${localStorageKey} failed`, err)
     }
+}
+
+export async function clearAllPrivateBoards() {
+    const keys = await localForage.keys()
+    await Promise.all(
+        keys.map(async (k) => {
+            if (!k.startsWith(BOARD_STORAGE_KEY_PREFIX)) return
+            const state = await getStoredState(k)
+            if (state && state.serverShadow.accessPolicy) {
+                console.log(`Clearing local state for private board ${k}`)
+                await clearStateByKey(k)
+            }
+        }),
+    )
 }

@@ -28,7 +28,13 @@ import {
     UserSessionInfo,
 } from "../../../common/src/domain"
 import { mkBootStrapEvent } from "../../../common/src/migration"
-import { clearBoardState, getInitialBoardState, LocalStorageBoard, storeBoardState } from "./board-local-store"
+import {
+    clearAllPrivateBoards,
+    clearBoardState,
+    getInitialBoardState,
+    LocalStorageBoard,
+    storeBoardState,
+} from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
 import _ from "lodash"
@@ -52,6 +58,10 @@ export type BoardState = {
     offline: boolean
     locks: ItemLocks
     users: UserSessionInfo[]
+}
+
+function emptyBoard(boardId: Id) {
+    return { id: boardId, name: "", ...defaultBoardSize, items: {}, connections: [], serial: 0 }
 }
 export function BoardStore(
     boardId: L.Property<Id | undefined>,
@@ -221,37 +231,37 @@ export function BoardStore(
             }
         } else {
             // Process these events only when not "ready"
-            if (event.action === "board.join.denied") {
-                const loginStatus = sessionInfo.get().status
-                if (state.status !== "loading") {
-                    console.error(`Got board.join.denied while in status ${state.status}`)
-                }
-                if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
-                    console.log(`Access denied to board: login in progress`)
-                    return { ...state, status: "denied-temporarily" }
-                } else if (event.reason === "not found") {
-                    console.log(`Access denied to board: ${event.reason}`)
-                    return { ...state, status: "not-found" }
-                } else if (
-                    loginStatus === "anonymous" ||
-                    loginStatus === "logged-out" ||
-                    loginStatus === "login-failed"
-                ) {
-                    console.log(`Access denied to board: login required`)
-                    return { ...state, status: "login-required" }
-                } else if (event.reason === "unauthorized") {
-                    console.warn(`Got "unauthorized" while logged in, likely login in progress...`)
-                    return state
-                } else if (event.reason === "forbidden") {
-                    console.log(`Access denied to board: ${event.reason}`)
-                    return { ...state, status: "denied-permanently" }
-                } else {
-                    console.error(`Unexpected board access denial: ${state.status}/${loginStatus}/${event.reason}`)
-                    return state
-                }
-            }
         }
         // Process these events in both ready and not-ready states
+        if (event.action === "ui.board.logged.out") {
+            return { ...state, board: emptyBoard(event.boardId), status: "denied-permanently" }
+        }
+        if (event.action === "board.join.denied") {
+            state = { ...state, board: emptyBoard(event.boardId) }
+            const loginStatus = sessionInfo.get().status
+            if (state.status !== "loading") {
+                console.error(`Got board.join.denied while in status ${state.status}`)
+            }
+            if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
+                console.log(`Access denied to board: login in progress`)
+                return { ...state, status: "denied-temporarily" }
+            } else if (event.reason === "not found") {
+                console.log(`Access denied to board: ${event.reason}`)
+                return { ...state, status: "not-found" }
+            } else if (loginStatus === "anonymous" || loginStatus === "logged-out" || loginStatus === "login-failed") {
+                console.log(`Access denied to board: login required`)
+                return { ...state, status: "login-required" }
+            } else if (event.reason === "unauthorized") {
+                console.warn(`Got "unauthorized" while logged in, likely login in progress...`)
+                return state
+            } else if (event.reason === "forbidden") {
+                console.log(`Access denied to board: ${event.reason}`)
+                return { ...state, status: "denied-permanently" }
+            } else {
+                console.error(`Unexpected board access denial: ${state.status}/${loginStatus}/${event.reason}`)
+                return state
+            }
+        }
         if (event.action === "ui.board.join.request") {
             console.log("ui.board.join.request -> reset")
             undoStack.clear()
@@ -282,7 +292,7 @@ export function BoardStore(
                 status: "loading",
                 queue: [],
                 sent: [],
-                board: { id: event.boardId, name: "", ...defaultBoardSize, items: {}, connections: [], serial: 0 },
+                board: emptyBoard(event.boardId),
             }
         } else if (event.action === "userinfo.set") {
             const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
@@ -430,7 +440,17 @@ export function BoardStore(
     })
 
     const sessionStatus = L.view(sessionInfo, (s) => s.status)
-    sessionStatus.onChange(checkReadyToJoin)
+    sessionStatus.onChange((s) => {
+        if (s === "logged-out") {
+            clearAllPrivateBoards()
+            const board = state.get().board
+            if (board && board.accessPolicy) {
+                dispatch({ action: "ui.board.logged.out", boardId: board.id })
+                return
+            }
+        }
+        checkReadyToJoin()
+    })
     connection.connected.onChange((connected) => {
         if (connected) {
             checkReadyToJoin()
