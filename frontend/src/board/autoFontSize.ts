@@ -1,6 +1,6 @@
 import { isUndefined } from "lodash"
 import * as L from "lonna"
-import { Item, TextItem } from "../../../common/src/domain"
+import { getItemShape, Item, TextItem } from "../../../common/src/domain"
 import { toPlainText } from "../components/sanitizeHTML"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Dimensions } from "./geometry"
@@ -37,16 +37,16 @@ export function autoFontSize(
     const elFont = coordinateHelper.elementFont(element)
     return L.view(
         L.view(item, "type"),
-        L.view(item, (i) => i.type === "note" && (i.shape === "round" || i.shape === "diamond")),
+        L.view(item, getItemShape),
         L.view(item, "width"),
         L.view(item, "height"),
         fontSize,
         text,
-        (t, isRound, w, h, fs, text) => {
+        (t, shape, w, h, fs, text) => {
             if (t !== "note") return fs + "em"
 
-            const width = isRound ? Math.sqrt(w ** 2 / 2) : w // pythagoras bullshit
-            const height = isRound ? Math.sqrt(h ** 2 / 2) : h
+            const width = shape === "round" ? Math.sqrt(w ** 2 / 2) : shape === "diamond" ? w / 2 : w
+            const height = shape === "round" ? Math.sqrt(h ** 2 / 2) : shape === "diamond" ? h / 2 : h
 
             const referenceFont = elFont.get()
             const plainText = toPlainText(text)

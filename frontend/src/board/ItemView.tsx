@@ -5,6 +5,7 @@ import {
     BoardHistoryEntry,
     getItemBackground,
     getItemIds,
+    getItemShape,
     Id,
     Item,
     ItemType,
@@ -73,7 +74,12 @@ export const ItemView = ({
             return selected ? `${type}-selected${textSuffix}` : `${type}${textSuffix}`
         }),
     )
-    const shape = L.view(item, (i) => (i.type === "note" ? i.shape : "rect"))
+
+    function itemPadding(i: Item) {
+        const shape = getItemShape(i)
+        return shape == "diamond" ? `${i.width / 4}em` : shape == "round" ? `${i.width / 8}em` : undefined
+    }
+    const shape = L.view(item, getItemShape)
 
     return (
         <span
@@ -96,6 +102,7 @@ export const ItemView = ({
                     transform: `translate(${i.x}em, ${i.y}em)`,
                     zIndex: itemZIndex(i),
                     position: "absolute",
+                    padding: itemPadding(i),
                 }
             })}
         >

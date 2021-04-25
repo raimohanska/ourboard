@@ -387,6 +387,10 @@ export function getItemBackground(i: Item) {
     return "none"
 }
 
+export function getItemShape(i: Item) {
+    return i.type === "note" && i.shape ? i.shape : "rect"
+}
+
 type NamespacedEvent<Namespace extends string, T = AppEvent> = T extends { action: `${Namespace}.${string}` }
     ? T
     : never
