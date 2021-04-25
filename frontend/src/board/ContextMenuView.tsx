@@ -62,7 +62,7 @@ export const ContextMenuView = ({
         const maxY = _.max(items.map((i) => i.y + i.height)) || 0
         return {
             left: minX + "em",
-            top: minY - vr.y > 16 ? minY + "em" : `calc(${maxY}em + 4rem)`,
+            top: minY - vr.y > vr.height / 3 ? minY + "em" : `calc(${maxY}em + 4rem)`,
         }
     })
 
