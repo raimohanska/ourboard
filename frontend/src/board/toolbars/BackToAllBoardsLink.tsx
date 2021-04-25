@@ -1,5 +1,6 @@
 import { h } from "harmaja"
 import { Id } from "../../../../common/src/domain"
+import { BackIcon } from "../../components/Icons"
 
 export function BackToAllBoardsLink({ navigateToBoard }: { navigateToBoard: (boardId: Id | undefined) => void }) {
     return (
@@ -11,7 +12,9 @@ export function BackToAllBoardsLink({ navigateToBoard }: { navigateToBoard: (boa
                 e.preventDefault()
             }}
         >
-            <span className="icon back" />
+            <span className="icon">
+                <BackIcon />
+            </span>
             All boards
         </a>
     )

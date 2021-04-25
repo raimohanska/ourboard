@@ -20,6 +20,7 @@ import { getItem } from "../../../common/src/domain"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 import { Checkbox } from "../components/components"
 import { Dispatch } from "../store/board-store"
+import { HistoryIcon } from "../components/Icons"
 
 type ParsedHistoryEntry = {
     timestamp: ISOTimeStamp
@@ -46,7 +47,9 @@ export const HistoryView = ({
     return (
         <div className={L.view(expanded, (e) => (e ? "history expanded" : "history"))}>
             <div className="history-icon-wrapper">
-                <span className="icon history" onClick={() => expanded.modify((e) => !e)} />
+                <span className="icon" onClick={() => expanded.modify((e) => !e)}>
+                    <HistoryIcon />
+                </span>
             </div>
             {L.view(expanded, (e) => e && <HistoryTable />)}
         </div>

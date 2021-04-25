@@ -24,12 +24,17 @@ import { selectedColor, black } from "../components/UIColors"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Rect } from "./geometry"
 import {
+    AlignHorizontalLeftIcon,
+    AlignVerticalTopIcon,
     DecreaseFontSizeIcon,
+    HorizontalDistributeIcon,
     IncreaseFontSizeIcon,
     ShapeDiamondIcon,
     ShapeRectIcon,
     ShapeRoundIcon,
     ShapeSquareIcon,
+    TileIcon,
+    VerticalDistributeIcon,
 } from "../components/Icons"
 
 export const ContextMenuView = ({
@@ -174,29 +179,41 @@ export const ContextMenuView = ({
                       <div className="align">
                           {hasItemsToAlign && (
                               <span
-                                  className="icon align_horizontal_left"
+                                  className="icon"
                                   onClick={() => moveFocusedItems("x", getMinCoordinate)}
-                              />
+                                  title="Align left"
+                              >
+                                  <AlignHorizontalLeftIcon />
+                              </span>
                           )}
 
                           {hasItemsToAlign && (
                               <span
-                                  className="icon align_vertical_top"
+                                  className="icon"
+                                  title="Align top"
                                   onClick={() => moveFocusedItems("y", getMinCoordinate)}
-                              />
+                              >
+                                  <AlignVerticalTopIcon />
+                              </span>
                           )}
 
                           {hasItemsToDistribute && (
                               <span
-                                  className="icon horizontal_distribute"
+                                  className="icon"
+                                  title="Distribute evenly"
                                   onClick={() => moveFocusedItems("x", getDistributedCoordinate)}
-                              />
+                              >
+                                  <HorizontalDistributeIcon />
+                              </span>
                           )}
                           {hasItemsToDistribute && (
                               <span
-                                  className="icon vertical_distribute"
+                                  className="icon"
+                                  title="Distribute evenly vertically"
                                   onClick={() => moveFocusedItems("y", getDistributedCoordinate)}
-                              />
+                              >
+                                  <VerticalDistributeIcon />
+                              </span>
                           )}
                       </div>,
                   ]
@@ -305,7 +322,9 @@ export const ContextMenuView = ({
                 ? []
                 : [
                       <div className="area-options">
-                          <span className="icon tile" onClick={() => packItemsInsideContainer(areas[0])} />
+                          <span className="icon" onClick={() => packItemsInsideContainer(areas[0])}>
+                              <TileIcon />
+                          </span>
                       </div>,
                   ],
         )

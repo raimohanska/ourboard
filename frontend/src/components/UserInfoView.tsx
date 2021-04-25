@@ -4,6 +4,7 @@ import { canLogin, UserSessionState, LoggingInServer } from "../store/user-sessi
 import { EditableSpan } from "./EditableSpan"
 import { signIn, signOut } from "../google-auth"
 import { Dispatch } from "../store/board-store"
+import { UserIcon } from "./Icons"
 
 export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessionState>; dispatch: Dispatch }) => {
     return (
@@ -14,7 +15,9 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                 (s) => `user-info ${s}`,
             )}
         >
-            <span className="icon user" />
+            <span className="icon">
+                <UserIcon />
+            </span>
             {L.view(
                 state,
                 (s) => s.status,

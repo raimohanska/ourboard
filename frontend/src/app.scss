@@ -833,57 +833,6 @@ a {
     background-size: contain;
     background-repeat: no-repeat;
     font-size: 1em !important;
-    &.edit {
-        background-image: url(img/edit.svg);
-    }
-    &.copy {
-        background-image: url(img/content_copy.svg);
-    }
-    &.link {
-        background-image: url(img/link.svg);
-    }
-    &.unlink {
-        background-image: url(img/link_off.svg);
-    }
-    &.zoom_in {
-        background-image: url(img/zoom_in.svg);
-    }
-    &.zoom_out {
-        background-image: url(img/zoom_out.svg);
-    }
-    &.back {
-        background-image: url(img/arrow_back.svg);
-    }
-    &.menu {
-        background-image: url(img/arrow_drop_down.svg);
-    }
-    &.user {
-        background-image: url(img/user.svg);
-    }
-    &.history {
-        background-image: url(img/history.svg);
-    }
-    &.align_horizontal_left {
-        background-image: url(img/align_horizontal_left.svg);
-    }
-    &.align_vertical_top {
-        background-image: url(img/align_vertical_top.svg);
-    }
-    &.horizontal_distribute {
-        background-image: url(img/horizontal_distribute.svg);
-    }
-    &.vertical_distribute {
-        background-image: url(img/vertical_distribute.svg);
-    }
-    &.plus {
-        background-image: url(img/add.svg);
-    }
-    &.minus {
-        background-image: url(img/remove.svg);
-    }
-    &.tile {
-        background-image: url(img/tile.svg);
-    }
     &.disabled {
         pointer-events: none;
         color: $disabled-color;
