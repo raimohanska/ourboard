@@ -23,6 +23,14 @@ import { packItems } from "./area-packer"
 import { selectedColor, black } from "../components/UIColors"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Rect } from "./geometry"
+import {
+    DecreaseFontSizeIcon,
+    IncreaseFontSizeIcon,
+    ShapeDiamondIcon,
+    ShapeRectIcon,
+    ShapeRoundIcon,
+    ShapeSquareIcon,
+} from "../components/Icons"
 
 export const ContextMenuView = ({
     dispatch,
@@ -229,72 +237,19 @@ export const ContextMenuView = ({
         const shapes: ShapeSymbol[] = [
             {
                 id: "square",
-                svg: (color: Color) => (
-                    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect
-                            x="0.5"
-                            y="0.5"
-                            width="31"
-                            height="31"
-                            rx="1.5"
-                            stroke={color}
-                            stroke-width="3"
-                            stroke-linecap="round"
-                        />
-                    </svg>
-                ),
+                svg: ShapeSquareIcon,
             },
             {
                 id: "round",
-                svg: (color: Color) => (
-                    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect
-                            x="0.5"
-                            y="0.5"
-                            width="31"
-                            height="31"
-                            rx="15.5"
-                            stroke={color}
-                            stroke-width="3"
-                            stroke-linecap="round"
-                        />
-                    </svg>
-                ),
+                svg: ShapeRoundIcon,
             },
             {
                 id: "rect",
-                svg: (color: Color) => (
-                    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect
-                            x="0.5"
-                            y="6.5"
-                            width="31"
-                            height="20"
-                            rx="1.5"
-                            stroke={color}
-                            stroke-width="3"
-                            stroke-linecap="round"
-                        />
-                    </svg>
-                ),
+                svg: ShapeRectIcon,
             },
             {
                 id: "diamond",
-                svg: (color: Color) => (
-                    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect
-                            x="4"
-                            y="4"
-                            width="23"
-                            height="23"
-                            rx="1.5"
-                            stroke={color}
-                            stroke-width="3"
-                            stroke-linecap="round"
-                            transform="rotate(45 15.5 15.5)"
-                        />
-                    </svg>
-                ),
+                svg: ShapeDiamondIcon,
             },
         ]
 
@@ -377,20 +332,10 @@ export const ContextMenuView = ({
                 : [
                       <div className="font-size icon-group">
                           <span className="icon" onClick={increaseFont}>
-                              <svg viewBox="0 -3 25 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path
-                                      d="M7.11072 0.959999H8.93472L15.8947 18H13.5907L11.5747 13.008H4.42272L2.43072 18H0.126719L7.11072 0.959999ZM11.0947 11.328L8.02272 3.456L4.85472 11.328H11.0947ZM24.9129 8.616V10.344H22.0809V13.416H20.1609V10.344H17.3289V8.616H20.1609V5.544H22.0809V8.616H24.9129Z"
-                                      fill="black"
-                                  />
-                              </svg>
+                              <IncreaseFontSizeIcon />
                           </span>
                           <span className="icon" onClick={decreaseFont}>
-                              <svg viewBox="0 -4 25 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path
-                                      d="M5.01913 0.639999H6.23513L10.8751 12H9.33913L7.99513 8.672H3.22713L1.89913 12H0.363125L5.01913 0.639999ZM7.67513 7.552L5.62713 2.304L3.51513 7.552H7.67513ZM12.0553 8.272V6.992H16.7753V8.272H12.0553Z"
-                                      fill="black"
-                                  />
-                              </svg>
+                              <DecreaseFontSizeIcon />
                           </span>
                       </div>,
                   ],
