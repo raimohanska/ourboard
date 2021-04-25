@@ -323,7 +323,7 @@ a {
                     border-radius: 50%;
                 }
                 &.diamond {
-                    transform: rotate(45deg);
+                    transform: rotate(45deg) scale(0.707);
                 }
             }
         }
