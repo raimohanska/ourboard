@@ -259,7 +259,7 @@ export const BoardView = ({
                             )}
                             <RectangularDragSelection {...{ rect: selectionRect }} />
                             <CursorsView {...{ cursors, sessions }} />
-                            <ContextMenuView {...{ latestNote, dispatch, board, focus }} />
+                            <ContextMenuView {...{ latestNote, dispatch, board, focus, viewRect }} />
                             <ConnectionsView {...{ board, zoom, dispatch, focus, coordinateHelper }} />
                         </div>
                     </div>
@@ -416,7 +416,7 @@ export const BoardView = ({
                     viewRect,
                     (r) => r != null,
                     (r) => (
-                        <MiniMapView board={board} viewRect={viewRect as L.Property<G.Rect>} />
+                        <MiniMapView board={board} viewRect={viewRect} />
                     ),
                 )}
                 <div className="zoom-toolbar board-tool">

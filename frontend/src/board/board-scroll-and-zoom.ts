@@ -71,7 +71,7 @@ export function boardScrollAndZoomHandler(
             const boardRect = boardElement.get()?.getBoundingClientRect()
             const viewRect = scrollElement.get()?.getBoundingClientRect()!
 
-            if (!boardRect || !viewRect) return null
+            if (!boardRect || !viewRect) return G.ZERO_RECT
 
             return {
                 x: coordinateHelper.pxToEm(viewRect.x - boardRect.x),

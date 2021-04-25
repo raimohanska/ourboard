@@ -21,15 +21,19 @@ import { BoardFocus } from "./board-focus"
 import { item } from "lonna"
 import { packItems } from "./area-packer"
 import { selectedColor, black } from "../components/UIColors"
+import { BoardCoordinateHelper } from "./board-coordinates"
+import { Rect } from "./geometry"
 
 export const ContextMenuView = ({
     dispatch,
     board,
     focus,
+    viewRect,
 }: {
     dispatch: Dispatch
     board: L.Property<Board>
     focus: L.Property<BoardFocus>
+    viewRect: L.Property<Rect>
 }) => {
     function itemIdsForContextMenu(f: BoardFocus): Id[] {
         switch (f.status) {
@@ -46,18 +50,19 @@ export const ContextMenuView = ({
         }
     }
 
-    const focusedItems = L.view(focus, board, (f) => {
+    const focusedItems = L.view(focus, board, (f, b) => {
         const itemIds = itemIdsForContextMenu(f)
-        return itemIds.flatMap((id) => findItem(board.get())(id) || [])
+        return itemIds.flatMap((id) => findItem(b)(id) || [])
     })
 
-    const style = L.view(focusedItems, (items) => {
+    const style = L.view(focusedItems, viewRect, (items, vr) => {
         if (items.length === 0) return null
         const minY = _.min(items.map((i) => i.y)) || 0
+        const minX = _.min(items.map((i) => i.x)) || 0
         const maxY = _.max(items.map((i) => i.y + i.height)) || 0
         return {
-            left: _.mean(items.map((i) => i.x)) + "em",
-            top: minY > 16 ? minY + "em" : `calc(${maxY}em + 4rem)`,
+            left: minX + "em",
+            top: minY - vr.y > 16 ? minY + "em" : `calc(${maxY}em + 4rem)`,
         }
     })
 
