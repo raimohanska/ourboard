@@ -150,6 +150,12 @@ Payload:
 }
 ```
 
+'
+
+### GET /api/v1/board/:boardId/history
+
+Returns the full history of given board in JSON format.
+
 ## Google Authentication integration
 
 Google authentication is supported. To enable this feature, you'll need to supply `GOOGLE_API_KEY` and `GOOGLE_CLIENT_ID` as environment variables
