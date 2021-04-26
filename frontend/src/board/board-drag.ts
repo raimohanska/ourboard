@@ -77,9 +77,9 @@ export function boardDragHandler({
                         const c = current.get()
                         s &&
                             c &&
-                            (el.style.transform = `translate(${coordinateHelper.emToPx(
+                            (el.style.transform = `translate(${coordinateHelper.emToPagePx(
                                 c.x - s.x,
-                            )}px, ${coordinateHelper.emToPx(c.y - s.y)}px)`)
+                            )}px, ${coordinateHelper.emToPagePx(c.y - s.y)}px)`)
                     }
                 },
                 15,
@@ -99,8 +99,8 @@ export function boardDragHandler({
                 const s = document.querySelector(".scroll-container")!
                 const { x: startX, y: startY } = start.get()!
                 const { x, y } = current.get()!
-                const xDiff = coordinateHelper.emToPx(startX - x)
-                const yDiff = coordinateHelper.emToPx(startY - y)
+                const xDiff = coordinateHelper.emToPagePx(startX - x)
+                const yDiff = coordinateHelper.emToPagePx(startY - y)
                 s.scrollBy(xDiff, yDiff)
             }
             dragAction.set({ action: "none" })

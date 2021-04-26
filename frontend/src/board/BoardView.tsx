@@ -64,7 +64,7 @@ export const BoardView = ({
     const locks = L.view(boardState, (s) => s.locks)
     const sessionId = L.view(sessionState, (s) => s.sessionId)
     const sessions = L.view(boardState, (s) => s.users)
-    const zoom = L.atom(1)
+    const zoom = L.atom({ zoom: 1, quickZoom: 1})
 
     const containerElement = L.atom<HTMLElement | null>(null)
     const scrollElement = L.atom<HTMLElement | null>(null)
@@ -198,11 +198,17 @@ export const BoardView = ({
     })
 
     const boardAccessStatus = L.view(boardState, (s) => s.status)
-
+    const quickZoom = L.view(zoom, "quickZoom")
+    const mainZoom = L.view(zoom, "zoom")
     const borderContainerStyle = L.combineTemplate({
-        width: L.view(board, (b) => b.width + "em"),
-        height: L.view(board, (b) => b.height + "em"),
-        fontSize: L.view(zoom, (z) => z + "em"),
+        width: L.view(board, quickZoom, b => b.width + "em"),
+        height: L.view(board, quickZoom, b => b.height + "em"),
+        fontSize: L.view(mainZoom, (z) => z + "em"),
+        transform: L.view(quickZoom, (z) => {
+            const percentTranslate = (z-1)/2*100
+            return `translate(${percentTranslate}%, ${percentTranslate}%) scale(${z})`
+        }),
+        "will-change": "transform, fontSize",
     })
 
     const className = L.view(
@@ -226,6 +232,7 @@ export const BoardView = ({
                             onClick={onClick}
                         >
                             <ListView observable={items} renderObservable={renderItem} getKey={(i) => i.id} />
+
                             {L.view(tool, (t) =>
                                 t === "connect" ? null : (
                                     <ListView

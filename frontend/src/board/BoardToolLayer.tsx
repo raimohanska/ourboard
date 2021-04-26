@@ -44,7 +44,7 @@ export const BoardToolLayer = ({
     toolController: ToolController
     dispatch: Dispatch
     viewRect: L.Property<G.Rect>
-    zoom: L.Atom<number>
+    zoom: L.Atom<{zoom: number, quickZoom: number}>
     focus: L.Atom<BoardFocus>
 }) => {
     const boardState = boardStore.state

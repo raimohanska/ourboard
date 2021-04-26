@@ -1,7 +1,7 @@
 import { componentScope } from "harmaja"
 import * as L from "lonna"
 import * as _ from "lodash"
-import { add, Coordinates, subtract, origin } from "./geometry"
+import { add, Coordinates, subtract, origin, multiply } from "./geometry"
 
 const newCoordinates = (x: number, y: number): Coordinates => {
     return { x, y }
@@ -18,13 +18,19 @@ export function boardCoordinateHelper(
     containerElem: L.Property<HTMLElement | null>,
     scrollElem: L.Property<HTMLElement | null>,
     boardElem: L.Property<HTMLElement | null>,
-    zoom: L.Property<number>,
+    zoom: L.Property<{ zoom: number, quickZoom: number}>
 ) {
+    const quickZoom = L.view(zoom, "quickZoom")
+
     function pxToEm(px: number) {
-        return px / baseFontSize()
+        return px / baseFontSize() / quickZoom.get()
     }
 
-    function emToPx(em: number) {
+    function emToPagePx(em: number) {
+        return em * baseFontSize() * quickZoom.get()
+    }
+
+    function emToBoardPx(em: number) {
         return em * baseFontSize()
     }
 
@@ -37,14 +43,17 @@ export function boardCoordinateHelper(
         return newCoordinates(a.x - b.x, a.y - b.y)
     }
 
-    const boardAbsolutePosition = L.view(boardElem, (b) => {
-        return b ? offset(b) : origin
+    const boardAbsolutePosition = L.view(boardElem, quickZoom, (b, z) => {
+        return b 
+            ? offset(b, true) 
+            : origin
     })
 
-    function offset(el: HTMLElement): Coordinates {
-        const o = { x: el.offsetLeft, y: el.offsetTop }
+    function offset(el: HTMLElement, isBoard: boolean): Coordinates {
+        let o = { x: el.offsetLeft, y: el.offsetTop }
+        
         if (el.parentElement) {
-            return add(o, offset(el.parentElement))
+            return add(o, offset(el.parentElement, false))
         }
         return o
     }
@@ -119,15 +128,13 @@ export function boardCoordinateHelper(
 
     function scrollCursorToBoardCoordinates(coords: Coordinates) {
         const diff = subtract(coords, currentBoardCoordinates.get())
-        const diffPixels = { x: emToPx(diff.x), y: emToPx(diff.y) }
+        const diffPixels = { x: emToPagePx(diff.x), y: emToPagePx(diff.y) }
         scrollElem.get()!.scrollLeft += diffPixels.x
         scrollElem.get()!.scrollTop += diffPixels.y
-        const diff2 = subtract(coords, currentBoardCoordinates.get())
-        const absDiff = Math.sqrt(diff2.x * diff2.x + diff2.y * diff2.y)
     }
 
     function elementFont(element: L.Property<HTMLElement | null>): L.Property<string> {
-        return L.view(element, zoom, (e, z) => {
+        return L.view(element, zoom, (e, z) => { // Note: needs zoom as input, otherwise wrong result, why?
             if (!e) return "10px arial"
             const { fontFamily, fontSize } = getComputedStyle(e)
             return `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
@@ -138,7 +145,7 @@ export function boardCoordinateHelper(
         L.changes,
         L.flatMapLatest((el) => L.fromEvent(el, "scroll"), componentScope()),
     )
-    const updateEvent = L.merge(scrollEvent, L.changes(zoom), L.changes(currentPageCoordinates))
+    const updateEvent = L.merge(scrollEvent, L.changes(zoom), L.changes(quickZoom), L.changes(currentPageCoordinates))
 
     // Mouse position in board coordinates
     const currentBoardCoordinates = updateEvent.pipe(
@@ -155,7 +162,8 @@ export function boardCoordinateHelper(
         currentBoardCoordinates,
         boardCoordDiffFromThisPageCoordinate: (coords: PageCoordinates) =>
             coordDiff(currentBoardCoordinates.get(), pageToBoardCoordinates(coords)),
-        emToPx,
+        emToPagePx,
+        emToBoardPx,
         pxToEm,
         scrollCursorToBoardCoordinates,
         elementFont,

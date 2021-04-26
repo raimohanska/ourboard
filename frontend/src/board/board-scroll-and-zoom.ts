@@ -16,7 +16,7 @@ export function boardScrollAndZoomHandler(
     board: L.Property<Board>,
     boardElement: L.Property<HTMLElement | null>,
     scrollElement: L.Property<HTMLElement | null>,
-    zoom: L.Atom<number>,
+    zoom: L.Atom<{ zoom: number, quickZoom: number}>,
     coordinateHelper: BoardCoordinateHelper,
     toolController: ToolController,
 ) {
@@ -49,7 +49,7 @@ export function boardScrollAndZoomHandler(
                     setTimeout(() => {
                         el.scrollTop = parsed.y
                         el.scrollLeft = parsed.x
-                        zoom.set(parsed.zoom)
+                        zoom.set({ zoom: parsed.zoom, quickZoom: 1 })
                     }, 0) // Need to wait for first render to have correct size. Causes a little flicker.
                 }
             }
@@ -57,7 +57,7 @@ export function boardScrollAndZoomHandler(
 
     scrollAndZoom.pipe(L.changes, L.debounce(100), L.applyScope(componentScope())).forEach((s) => {
         //console.log("Store position for board", localStorageKey.get())
-        localStorage[localStorageKey.get()] = JSON.stringify(s)
+        localStorage[localStorageKey.get()] = JSON.stringify({ ...s, zoom: s.zoom.zoom * s.zoom.quickZoom })
     })
 
     const changes = L.merge(
@@ -111,30 +111,45 @@ export function boardScrollAndZoomHandler(
         }
     }
 
+    
+    zoom.pipe(L.changes, L.debounce(200, componentScope())).forEach(z => {
+        if (z.quickZoom !== 1 && !scaleStart) {
+            zoom.set({ zoom: z.zoom * z.quickZoom, quickZoom: 1 })
+        }        
+    })
+
     function adjustZoom(fn: (previous: number) => number) {
         const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
-        zoom.modify((z) => _.clamp(fn(z), 0.2, 10))
+        zoom.modify((z) => { 
+            return { // TODO: clamp total zoom
+                quickZoom: _.clamp(fn(z.quickZoom), 0.2, 10), 
+                zoom: z.zoom 
+            }
+        })
         coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
     }
-
-    let scaleBus = L.bus<number>()
-    scaleBus.pipe(L.throttle(50, componentScope())).forEach((v) => adjustZoom(() => v))
-    let scaleStart: number = 1
+    let scaleStart: number | null = null
 
     function onGestureStart(e: any) {
         e.preventDefault()
         const scale = typeof e.scale === "number" && (e.scale as number)
         if (scale) {
-            scaleStart = zoom.get() / scale
+            scaleStart = zoom.get().quickZoom / scale
         }
     }
 
     function onGestureChange(e: any) {
         e.preventDefault()
         const scale = typeof e.scale === "number" && (e.scale as number)
-        if (scale) {
-            scaleBus.push(scale * scaleStart)
+        if (scale && scaleStart) {
+            const result = scale * scaleStart
+            adjustZoom(() => result)
         }
+    }
+
+    function onGestureEnd(e: any) {
+        onGestureChange(e)
+        scaleStart = null
     }
 
     H.onMount(() => {
@@ -142,7 +157,7 @@ export function boardScrollAndZoomHandler(
         document.addEventListener("wheel", wheelZoomHandler, { passive: false })
         document.addEventListener("gesturestart", onGestureStart)
         document.addEventListener("gesturechange", onGestureChange)
-        document.addEventListener("gestureend", onGestureChange)
+        document.addEventListener("gestureend", onGestureEnd)
     })
     H.onUnmount(() => {
         document.removeEventListener("wheel", wheelZoomHandler)

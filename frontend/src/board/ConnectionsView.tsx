@@ -19,7 +19,7 @@ export const ConnectionsView = ({
 }: {
     board: L.Property<Board>
     dispatch: Dispatch
-    zoom: L.Property<number>
+    zoom: L.Property<{ zoom: number, quickZoom: number}>
     coordinateHelper: BoardCoordinateHelper
     focus: L.Atom<BoardFocus>
 }) => {
@@ -93,16 +93,16 @@ export const ConnectionsView = ({
                             (from, to, cps) => {
                                 return quadraticCurveSVGPath(
                                     {
-                                        x: coordinateHelper.emToPx(from.point.x),
-                                        y: coordinateHelper.emToPx(from.point.y),
+                                        x: coordinateHelper.emToBoardPx(from.point.x),
+                                        y: coordinateHelper.emToBoardPx(from.point.y),
                                     },
                                     {
-                                        x: coordinateHelper.emToPx(to.point.x),
-                                        y: coordinateHelper.emToPx(to.point.y),
+                                        x: coordinateHelper.emToBoardPx(to.point.x),
+                                        y: coordinateHelper.emToBoardPx(to.point.y),
                                     },
                                     cps.map((cp) => ({
-                                        x: coordinateHelper.emToPx(cp.x),
-                                        y: coordinateHelper.emToPx(cp.y),
+                                        x: coordinateHelper.emToBoardPx(cp.x),
+                                        y: coordinateHelper.emToBoardPx(cp.y),
                                     })),
                                 )
                             },
@@ -148,8 +148,8 @@ export const ConnectionsView = ({
         })
 
         const wrapperStyle = L.view(cNode, (cn) => ({
-            top: coordinateHelper.emToPx(cn.node.point.y),
-            left: coordinateHelper.emToPx(cn.node.point.x),
+            top: `${cn.node.point.y}em`,
+            left: `${cn.node.point.x}em`,
             zIndex: Z_CONNECTIONS + 1,
         }))
 
