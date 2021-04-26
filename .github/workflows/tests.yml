@@ -46,7 +46,7 @@ jobs:
               with:
                   runTests: false
             - name: Run unit tests
-              run: yarn test-unit
+              run: yarn test:unit
             - name: Build
               run: yarn build
             - name: Run cypress tests

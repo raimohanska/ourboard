@@ -14,12 +14,13 @@ import _ from "lodash"
 import { BoardNavigation } from "./board-navigation"
 import { RecentBoardAttributes } from "../../common/src/domain"
 import { CursorsStore } from "./store/cursors-store"
+import boardLocalStore from "./store/board-local-store"
 
 const App = () => {
     const { boardId, page, navigateToBoard } = BoardNavigation()
     const connection = BrowserSideServerConnection()
     const sessionStore = UserSessionStore(connection, localStorage)
-    const boardStore = BoardStore(boardId, connection, sessionStore.sessionState)
+    const boardStore = BoardStore(boardId, connection, sessionStore.sessionState, boardLocalStore)
     const cursorsStore = CursorsStore(connection, sessionStore)
     const recentBoards = RecentBoards(connection, sessionStore)
     const assets = assetStore(connection, L.view(boardStore.state, "board"), boardStore.events)

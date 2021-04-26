@@ -28,13 +28,7 @@ import {
     UserSessionInfo,
 } from "../../../common/src/domain"
 import { mkBootStrapEvent } from "../../../common/src/migration"
-import {
-    clearAllPrivateBoards,
-    clearBoardState,
-    getInitialBoardState,
-    LocalStorageBoard,
-    storeBoardState,
-} from "./board-local-store"
+import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
 import _ from "lodash"
@@ -67,6 +61,7 @@ export function BoardStore(
     boardId: L.Property<Id | undefined>,
     connection: ServerConnection,
     sessionInfo: L.Property<UserSessionState>,
+    localStore: BoardLocalStore,
 ) {
     type BoardStoreEvent =
         | BoardHistoryEntry
@@ -103,7 +98,7 @@ export function BoardStore(
     }
 
     function resetForBoard(boardId: Id) {
-        clearBoardState(boardId).then(() =>
+        localStore.clearBoardState(boardId).then(() =>
             connection.send({
                 action: "board.join",
                 boardId,
@@ -224,7 +219,7 @@ export function BoardStore(
             } else if (event.action === "board.action.apply.failed") {
                 console.error("Failed to apply previous action. Resetting to server-side state...")
                 if (state.board) {
-                    clearBoardState(state.board.id)
+                    localStore.clearBoardState(state.board.id)
                     doJoin(state.board.id)
                 }
                 return state
@@ -428,12 +423,13 @@ export function BoardStore(
         }),
     )
     localBoardToSave.forEach(async (board) => {
-        await storeBoardState(board)
+        await localStore.storeBoardState(board)
     })
 
     boardId.forEach(async (boardId) => {
+        console.log("Board id", boardId)
         if (boardId) {
-            storedInitialState = await getInitialBoardState(boardId)
+            storedInitialState = await localStore.getInitialBoardState(boardId)
         }
         dispatch({ action: "ui.board.join.request", boardId })
         checkReadyToJoin()
@@ -442,7 +438,7 @@ export function BoardStore(
     const sessionStatus = L.view(sessionInfo, (s) => s.status)
     sessionStatus.onChange((s) => {
         if (s === "logged-out") {
-            clearAllPrivateBoards()
+            localStore.clearAllPrivateBoards()
             const board = state.get().board
             if (board && board.accessPolicy) {
                 dispatch({ action: "ui.board.logged.out", boardId: board.id })
@@ -467,7 +463,7 @@ export function BoardStore(
     }
 
     async function doJoin(boardId: Id) {
-        storedInitialState = await getInitialBoardState(boardId)
+        storedInitialState = await localStore.getInitialBoardState(boardId)
         connection.send({
             action: "board.join",
             boardId: boardId,

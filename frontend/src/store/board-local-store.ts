@@ -13,7 +13,7 @@ const BOARD_STORAGE_KEY_PREFIX = "board_"
 
 let activeBoardState: LocalStorageBoard | undefined = undefined
 
-export async function getInitialBoardState(boardId: Id) {
+async function getInitialBoardState(boardId: Id) {
     if (!activeBoardState || activeBoardState.serverShadow.id != boardId) {
         const localStorageKey = getStorageKey(boardId)
         activeBoardState = await getStoredState(localStorageKey)
@@ -43,7 +43,7 @@ function getStorageKey(boardId: string) {
 
 const maxLocalStoredHistory = 1000 // TODO: limit history to this, using snapshotting
 
-export async function storeBoardState(newState: LocalStorageBoard) {
+async function storeBoardState(newState: LocalStorageBoard): Promise<void> {
     activeBoardState = newState
     storeThrottled(activeBoardState)
 }
@@ -60,7 +60,7 @@ const storeThrottled = _.throttle(
     { leading: true, trailing: true },
 )
 
-export async function clearBoardState(boardId: Id) {
+async function clearBoardState(boardId: Id) {
     return await clearStateByKey(getStorageKey(boardId))
 }
 
@@ -72,7 +72,7 @@ async function clearStateByKey(localStorageKey: string) {
     }
 }
 
-export async function clearAllPrivateBoards() {
+async function clearAllPrivateBoards(): Promise<void> {
     const keys = await localForage.keys()
     await Promise.all(
         keys.map(async (k) => {
@@ -85,3 +85,17 @@ export async function clearAllPrivateBoards() {
         }),
     )
 }
+
+export type BoardLocalStore = {
+    getInitialBoardState: (boardId: Id) => Promise<LocalStorageBoard | undefined>
+    clearBoardState: (boardId: Id) => Promise<void>
+    clearAllPrivateBoards: () => Promise<void>
+    storeBoardState: (newState: LocalStorageBoard) => Promise<void>
+}
+
+export default {
+    getInitialBoardState,
+    clearBoardState,
+    clearAllPrivateBoards,
+    storeBoardState,
+} as BoardLocalStore
