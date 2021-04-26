@@ -181,7 +181,7 @@ export function BoardStore(
                         )
                         // Rebase local events on top of new server shadow
                         // TODO: what if fails?
-                        const localEvents = [...state.queue, ...state.sent]
+                        const localEvents = [...state.sent, ...state.queue]
                         const board = localEvents
                             .filter(isBoardHistoryEntry)
                             .reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
