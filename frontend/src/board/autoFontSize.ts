@@ -56,8 +56,8 @@ export function autoFontSize(
                 .filter((s) => s)
                 .map((s) => getTextDimensions(s, referenceFont))
             const spaceCharSize = getTextDimensions("", referenceFont)
-            const widthTarget = coordinateHelper.emToPx(width) * fullOptions.widthTarget
-            const heightTarget = coordinateHelper.emToPx(height) * fullOptions.heightTarget
+            const widthTarget = coordinateHelper.emToPagePx(width) * fullOptions.widthTarget
+            const heightTarget = coordinateHelper.emToPagePx(height) * fullOptions.heightTarget
 
             const maxWidth = widthTarget
             const lineSpacingEm = 0.4
