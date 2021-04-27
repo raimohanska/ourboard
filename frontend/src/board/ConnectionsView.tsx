@@ -19,7 +19,7 @@ export const ConnectionsView = ({
 }: {
     board: L.Property<Board>
     dispatch: Dispatch
-    zoom: L.Property<{ zoom: number, quickZoom: number}>
+    zoom: L.Property<{ zoom: number; quickZoom: number }>
     coordinateHelper: BoardCoordinateHelper
     focus: L.Atom<BoardFocus>
 }) => {

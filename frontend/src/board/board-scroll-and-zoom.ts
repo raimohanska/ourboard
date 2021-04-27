@@ -16,7 +16,7 @@ export function boardScrollAndZoomHandler(
     board: L.Property<Board>,
     boardElement: L.Property<HTMLElement | null>,
     scrollElement: L.Property<HTMLElement | null>,
-    zoom: L.Atom<{ zoom: number, quickZoom: number}>,
+    zoom: L.Atom<{ zoom: number; quickZoom: number }>,
     coordinateHelper: BoardCoordinateHelper,
     toolController: ToolController,
 ) {
@@ -111,19 +111,19 @@ export function boardScrollAndZoomHandler(
         }
     }
 
-    
-    zoom.pipe(L.changes, L.debounce(200, componentScope())).forEach(z => {
-        if (z.quickZoom !== 1 && !scaleStart) {
+    zoom.pipe(L.changes, L.debounce(200, componentScope())).forEach((z) => {
+        if (z.quickZoom !== 1 && !scaleStart) {
             zoom.set({ zoom: z.zoom * z.quickZoom, quickZoom: 1 })
-        }        
+        }
     })
 
     function adjustZoom(fn: (previous: number) => number) {
         const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
-        zoom.modify((z) => { 
-            return { // TODO: clamp total zoom
-                quickZoom: _.clamp(fn(z.quickZoom), 0.2, 10), 
-                zoom: z.zoom 
+        zoom.modify((z) => {
+            return {
+                // TODO: clamp total zoom
+                quickZoom: _.clamp(fn(z.quickZoom), 0.2, 10),
+                zoom: z.zoom,
             }
         })
         coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)

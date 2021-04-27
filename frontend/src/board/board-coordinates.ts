@@ -18,7 +18,7 @@ export function boardCoordinateHelper(
     containerElem: L.Property<HTMLElement | null>,
     scrollElem: L.Property<HTMLElement | null>,
     boardElem: L.Property<HTMLElement | null>,
-    zoom: L.Property<{ zoom: number, quickZoom: number}>
+    zoom: L.Property<{ zoom: number; quickZoom: number }>,
 ) {
     const quickZoom = L.view(zoom, "quickZoom")
 
@@ -44,14 +44,12 @@ export function boardCoordinateHelper(
     }
 
     const boardAbsolutePosition = L.view(boardElem, quickZoom, (b, z) => {
-        return b 
-            ? offset(b, true) 
-            : origin
+        return b ? offset(b, true) : origin
     })
 
     function offset(el: HTMLElement, isBoard: boolean): Coordinates {
         let o = { x: el.offsetLeft, y: el.offsetTop }
-        
+
         if (el.parentElement) {
             return add(o, offset(el.parentElement, false))
         }
@@ -134,7 +132,8 @@ export function boardCoordinateHelper(
     }
 
     function elementFont(element: L.Property<HTMLElement | null>): L.Property<string> {
-        return L.view(element, zoom, (e, z) => { // Note: needs zoom as input, otherwise wrong result, why?
+        return L.view(element, zoom, (e, z) => {
+            // Note: needs zoom as input, otherwise wrong result, why?
             if (!e) return "10px arial"
             const { fontFamily, fontSize } = getComputedStyle(e)
             return `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
