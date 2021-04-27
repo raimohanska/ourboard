@@ -180,7 +180,7 @@ export function BoardStore(
                         const board = localEvents
                             .filter(isBoardHistoryEntry)
                             .reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
-                        //console.log(`Processed remote board event and laid ${localEvents.length} local events on top`, event)
+                        //console.log(`Processed remote board event and rebased ${localEvents.length} local events on top`, event)
                         return { ...state, serverShadow: newServerShadow, board, serverHistory: newServerHistory }
                     }
                 } catch (e) {

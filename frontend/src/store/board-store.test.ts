@@ -8,8 +8,13 @@ import { sleep } from "../../../common/src/sleep"
 const board0 = createBoard("testboard")
 const item1 = newNote("hello1")
 const board1 = { ...board0, serial: 1, items: { [item1.id]: item1 } }
+const item1_1 = { ...item1, text: "hello1.1" }
+const board1_1 = { ...board1, serial: 2, items: { ...board1.items, [item1.id]: item1_1 } }
 const item2 = newNote("hello2")
-
+const board2 = { ...board1, serial: 1, items: { ...board1.items, [item2.id]: item2 } }
+const item2_1 = { ...item2, text: "hello2.1" }
+const board2_1 = { ...board2, serial: 2, items: { ...board2.items, [item1.id]: item1_1 } }
+const board2_2 = { ...board2, serial: 2, items: { ...board2.items, [item1.id]: item1_1, [item2.id]: item2_1 } }
 const bufferedServerEvents = L.bus<EventFromServer>()
 
 describe("Board Store", () => {
@@ -42,21 +47,49 @@ describe("Board Store", () => {
         expect(store.state.get().serverShadow).toEqual(store.state.get().board)
     })
 
-    it("Rebases local event when remote event arrives before ack", async () => {
+    it.only("Rebases local event when remote event arrives before ack", async () => {
         const store = await initBoardStore(board1)
+        // 1. Event applied locally, serverShadow and serial unchanged
         store.dispatch({ action: "item.add", boardId: board0.id, items: [item2] })
-        // TODO: continue test
+        expect(store.state.get().board).toEqual(board2)
+        expect(store.state.get().serverShadow).toEqual(board1)
+        expect(store.state.get().queue.length).toEqual(0)
+        expect(store.state.get().sent.length).toEqual(1)
+
+        // 2. Second local event gets queued, not sent to server before ack
+        store.dispatch({ action: "item.update", boardId: board0.id, items: [item2_1] })
+        expect(store.state.get().board).toEqual({ ...board2, items: { ...board2.items, [item2.id]: item2_1 } })
+        expect(store.state.get().serverShadow).toEqual(board1)
+        expect(store.state.get().queue.length).toEqual(1)
+        expect(store.state.get().sent.length).toEqual(1)
+
+        // 3. Event from server applied to serverShadow and locally, local event still unapplied to serverShadow
         bufferedServerEvents.push({
             action: "item.update",
             boardId: board0.id,
             items: [{ ...item1, text: "hello1.1" }],
-            serial: 1,
+            serial: 2,
             ...otherUserEventAttributes,
         })
+        expect(store.state.get().board).toEqual(board2_2)
+        expect(store.state.get().serverShadow).toEqual(board1_1)
+
+        // 4. Ack from server, update serverShadow and serial for the first local event
+        bufferedServerEvents.push({ action: "ack", ackId: "", serials: { [board0.id]: 3 } })
+        expect(store.state.get().board).toEqual({ ...board2_2, serial: 3 })
+        expect(store.state.get().serverShadow).toEqual({ ...board2_1, serial: 3 })
+        expect(store.state.get().queue.length).toEqual(0)
+        expect(store.state.get().sent.length).toEqual(1)
+
+        // 5. Ack from server, update for the second local event
+        bufferedServerEvents.push({ action: "ack", ackId: "", serials: { [board0.id]: 4 } })
+        expect(store.state.get().board).toEqual({ ...board2_2, serial: 4 })
+        expect(store.state.get().serverShadow).toEqual(store.state.get().board)
+        expect(store.state.get().queue.length).toEqual(0)
+        expect(store.state.get().sent.length).toEqual(0)
     })
 })
 
-// TODO: test rebasing, with both sent and unset locals, correct state at all phases
 // TODO: test diff init
 // TODO: test going offline, resync
 
