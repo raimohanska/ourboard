@@ -92,6 +92,8 @@ describe("Board Store", () => {
 
 // TODO: test diff init
 // TODO: test going offline, resync
+// TODO: test effects of server event buffering (bufferedServerEvents)
+// TODO: test undo, redo buffers
 
 const otherUserEventAttributes = { user: { userType: "unidentified", nickname: "joe" }, timestamp: "0" } as const
 
