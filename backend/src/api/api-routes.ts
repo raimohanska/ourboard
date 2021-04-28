@@ -1,9 +1,18 @@
 import { router } from "typera-express"
 import { boardCreate } from "./board-create"
+import { boardGet } from "./board-get"
 import { boardHistoryGet } from "./board-history-get"
 import { boardUpdate } from "./board-update"
 import { githubWebhook } from "./github-webhook"
 import { itemCreate } from "./item-create"
 import { itemCreateOrUpdate } from "./item-create-or-update"
 
-export default router(boardCreate, boardUpdate, githubWebhook, itemCreate, itemCreateOrUpdate, boardHistoryGet)
+export default router(
+    boardGet,
+    boardCreate,
+    boardUpdate,
+    githubWebhook,
+    itemCreate,
+    itemCreateOrUpdate,
+    boardHistoryGet,
+)

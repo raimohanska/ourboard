@@ -150,11 +150,13 @@ Payload:
 }
 ```
 
-'
+### GET /api/v1/board/:boardId
+
+Return board current state as JSON.
 
 ### GET /api/v1/board/:boardId/history
 
-Returns the full history of given board in JSON format.
+Returns the full history of given board as JSON.
 
 ## Google Authentication integration
 
