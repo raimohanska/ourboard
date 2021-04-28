@@ -154,6 +154,10 @@ Payload:
 
 Return board current state as JSON.
 
+### GET /api/v1/board/:boardId/hierarchy
+
+Return board current state in a hierarchical format (items inside containers)
+
 ### GET /api/v1/board/:boardId/history
 
 Returns the full history of given board as JSON.

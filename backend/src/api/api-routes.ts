@@ -1,6 +1,7 @@
 import { router } from "typera-express"
 import { boardCreate } from "./board-create"
 import { boardGet } from "./board-get"
+import { boardHierarchyGet } from "./board-hierarchy-get"
 import { boardHistoryGet } from "./board-history-get"
 import { boardUpdate } from "./board-update"
 import { githubWebhook } from "./github-webhook"
@@ -9,6 +10,7 @@ import { itemCreateOrUpdate } from "./item-create-or-update"
 
 export default router(
     boardGet,
+    boardHierarchyGet,
     boardCreate,
     boardUpdate,
     githubWebhook,
