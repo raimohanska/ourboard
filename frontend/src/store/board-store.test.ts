@@ -1,6 +1,16 @@
 import { BoardStore } from "./board-store"
 import * as L from "lonna"
-import { EventFromServer, UIEvent, EventWrapper, Id, createBoard, newNote, Board, BoardHistoryEntry, getBoardAttributes } from "../../../common/src/domain"
+import {
+    EventFromServer,
+    UIEvent,
+    EventWrapper,
+    Id,
+    createBoard,
+    newNote,
+    Board,
+    BoardHistoryEntry,
+    getBoardAttributes,
+} from "../../../common/src/domain"
 import { UserSessionState } from "./user-session-store"
 import { LocalStorageBoard } from "./board-local-store"
 import { sleep } from "../../../common/src/sleep"
@@ -26,10 +36,9 @@ const item2_1 = { ...item2, text: "hello2.1" }
 const board2_1 = { ...board2, serial: 2, items: { ...board2.items, [item1.id]: item1_1 } }
 const board2_2 = { ...board2, serial: 2, items: { ...board2.items, [item1.id]: item1_1, [item2.id]: item2_1 } }
 
-
 describe("Board Store", () => {
     it("Applies event from server", async () => {
-        const [store, serverEvents] = await initBoardStore({ serverSideBoard: board0 })
+        const [store, serverEvents] = await initBoardStore({ serverSideBoard: board0 })
 
         serverEvents.push(addItem1)
 
@@ -38,7 +47,7 @@ describe("Board Store", () => {
     })
 
     it("Applies local event", async () => {
-        const [store, serverEvents] = await initBoardStore({ serverSideBoard: board0 })
+        const [store, serverEvents] = await initBoardStore({ serverSideBoard: board0 })
 
         // 1. Event applied locally, serverShadow and serial unchanged
         store.dispatch({ action: "item.add", boardId: board0.id, items: [item1] })
@@ -96,16 +105,14 @@ describe("Board Store", () => {
 
 describe("With stored local state", () => {
     it("Without server-side changes", async () => {
-        const [store, serverEvents] = await initBoardStore({ 
-            serverSideBoard: board1, 
-            serverSideHistory: [
-                mkBootStrapEvent(board1.id, board1, board1.serial)
-            ],
+        const [store, serverEvents] = await initBoardStore({
+            serverSideBoard: board1,
+            serverSideHistory: [mkBootStrapEvent(board1.id, board1, board1.serial)],
             locallyStoredBoard: {
                 serverShadow: board1,
                 queue: [],
-                serverHistory: []
-            } 
+                serverHistory: [],
+            },
         })
 
         expect(store.state.get().board).toEqual(board1)
@@ -113,8 +120,8 @@ describe("With stored local state", () => {
     })
 
     it("With server-side changes", async () => {
-        const [store, serverEvents] = await initBoardStore({ 
-            serverSideBoard: { ...board2, serial: 2 }, 
+        const [store, serverEvents] = await initBoardStore({
+            serverSideBoard: { ...board2, serial: 2 },
             serverSideHistory: [
                 mkBootStrapEvent(board1.id, board1, board1.serial),
                 {
@@ -123,13 +130,13 @@ describe("With stored local state", () => {
                     items: [item2],
                     serial: 2,
                     ...otherUserEventAttributes,
-                }
+                },
             ],
             locallyStoredBoard: {
                 serverShadow: board1,
                 queue: [],
-                serverHistory: []
-            } 
+                serverHistory: [],
+            },
         })
 
         expect(store.state.get().board).toEqual({ ...board2, serial: 2 })
@@ -146,7 +153,15 @@ async function waitForBackgroundJobs() {
     await sleep(10)
 }
 
-async function initBoardStore({ serverSideBoard, locallyStoredBoard, serverSideHistory } : { serverSideBoard: Board, locallyStoredBoard?: LocalStorageBoard, serverSideHistory?: BoardHistoryEntry[] }) {
+async function initBoardStore({
+    serverSideBoard,
+    locallyStoredBoard,
+    serverSideHistory,
+}: {
+    serverSideBoard: Board
+    locallyStoredBoard?: LocalStorageBoard
+    serverSideHistory?: BoardHistoryEntry[]
+}) {
     const serverEvents = L.bus<EventFromServer>()
     const boardId = L.constant(serverSideBoard.id)
     const connected = L.atom(true)
@@ -196,16 +211,16 @@ async function initBoardStore({ serverSideBoard, locallyStoredBoard, serverSideH
         {
             action: "board.join",
             boardId: board0.id,
-            initAtSerial
+            initAtSerial,
         },
     ])
 
     if (initAtSerial) {
-        serverEvents.push({ 
-            action: "board.init", 
-            recentEvents: serverSideHistory!.filter(e => e.serial! > initAtSerial),
+        serverEvents.push({
+            action: "board.init",
+            recentEvents: serverSideHistory!.filter((e) => e.serial! > initAtSerial),
             boardAttributes: getBoardAttributes(serverSideBoard),
-            initAtSerial
+            initAtSerial,
         })
     } else {
         serverEvents.push({ action: "board.init", board: serverSideBoard })

@@ -1,5 +1,5 @@
 import { OpenAPIV3 } from "openapi-types"
-import apiRouteDefs from "./api-routes.openapi"
+import apiRouteDefs from "./api/api-routes.openapi"
 
 const openapiDoc: OpenAPIV3.Document = {
     openapi: "3.0.0",

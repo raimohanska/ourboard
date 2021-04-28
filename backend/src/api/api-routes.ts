@@ -12,20 +12,20 @@ import {
     isNote,
     Container,
     BoardAccessPolicyCodec,
-} from "../../common/src/domain"
-import { addBoard, getBoard, updateBoards, ServerSideBoardState } from "./board-state"
-import { getBoardHistory, getFullBoardHistory, updateBoard } from "./board-store"
-import { broadcastBoardEvent } from "./sessions"
+} from "../../../common/src/domain"
+import { addBoard, getBoard, updateBoards, ServerSideBoardState } from "../board-state"
+import { getBoardHistory, getFullBoardHistory, updateBoard } from "../board-store"
+import { broadcastBoardEvent } from "../sessions"
 import { encode as htmlEncode } from "html-entities"
 import _ from "lodash"
-import { RED, YELLOW } from "../../common/src/colors"
+import { RED, YELLOW } from "../../../common/src/colors"
 import { applyMiddleware, router } from "typera-express"
 import { wrapNative } from "typera-express/middleware"
 import { body, headers } from "typera-express/parser"
 import { badRequest, internalServerError, notFound, ok } from "typera-common/response"
 import * as t from "io-ts"
 import { NonEmptyString } from "io-ts-types"
-import { withDBClient } from "./db"
+import { withDBClient } from "../db"
 
 const route = applyMiddleware(wrapNative(bodyParser.json()))
 const apiTokenHeader = headers(t.partial({ API_TOKEN: t.string }))
