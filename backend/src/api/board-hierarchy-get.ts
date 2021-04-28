@@ -17,8 +17,8 @@ export const boardHierarchyGet = route
         }),
     )
 
-type ItemHierarchy = Item & { children: ItemHierarchy[] }
-function getBoardHierarchy(board: Board) {
+export type ItemHierarchy = Item & { children: ItemHierarchy[] }
+export function getBoardHierarchy(board: Board) {
     const allItems = Object.values(board.items)
     const rootItems = allItems.filter((i) => i.containerId === undefined).map(getItemHierarchy(allItems))
     return { ...board, items: rootItems }

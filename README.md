@@ -158,6 +158,14 @@ Return board current state as JSON.
 
 Return board current state in a hierarchical format (items inside containers)
 
+### GET /api/v1/board/:boardId/csv
+
+Return board current state in CSV format, where
+
+-   A container containing only leaf items (note, text) creates a row and each item in that container gets its own column
+-   Container name is a column on the left
+-   Any wrapping containers also add a column on the left
+
 ### GET /api/v1/board/:boardId/history
 
 Returns the full history of given board as JSON.
