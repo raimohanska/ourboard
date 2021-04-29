@@ -36,7 +36,7 @@ export function boardDragHandler({
         if (!el) return
         el.addEventListener("dragstart", (e) => {
             const t = tool.get()
-            const shouldDragSelect = t === "pan" ? !!e.altKey || !!e.shiftKey : true
+            const shouldDragSelect = t === "pan" ? !!e.altKey || !!e.shiftKey : !e.altKey
             e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
             const pos = coordinateHelper.pageToBoardCoordinates({ x: e.pageX, y: e.pageY })
             start.set(pos)
