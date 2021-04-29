@@ -318,9 +318,7 @@ function moveItems(board: Board, event: MoveItem) {
 
     const connectionMoves: Record<Id, Move> = {}
     for (let connection of board.connections) {
-        const move =
-            findAffectingMove(moves, itemsOnBoard, connection.from) &&
-            findAffectingMove(moves, itemsOnBoard, connection.to)
+        const move = findConnectionMove(connection, moves)
         if (move) {
             connectionMoves[connection.id] = move
         }
@@ -354,6 +352,22 @@ function moveItems(board: Board, event: MoveItem) {
     }
 }
 
+function findConnectionMove(connection: Connection, moves: Record<Id, Move>) {
+    const endPoints = [connection.to, connection.from]
+    let move: Move | null = null
+    for (let endPoint of endPoints) {
+        if (typeof endPoint === "string") {
+            if (moves[endPoint]) {
+                move = moves[endPoint]
+            } else {
+                // linked to item not being moved -> don't move
+                return null
+            }
+        }
+    }
+    return move
+}
+
 function moveEndPoint(endPoint: ConnectionEndPoint, move: Move) {
     if (typeof endPoint === "string") {
         return endPoint // points to an item
@@ -363,21 +377,6 @@ function moveEndPoint(endPoint: ConnectionEndPoint, move: Move) {
     return { ...endPoint, x, y }
 }
 
-function findAffectingMove(
-    moves: Record<Id, Move>,
-    itemsOnBoard: Record<Id, Item>,
-    endPoint: ConnectionEndPoint,
-): Move | null {
-    if (typeof endPoint === "string") {
-        return moves[endPoint] // Check if item found
-    }
-    for (let id in moves) {
-        const item = itemsOnBoard[id]
-        if (containedBy(endPoint, item)) return moves[id]
-    }
-    return null
-}
-
-export function containedBy(a: Point, b: Rect) {
+function containedBy(a: Point, b: Rect) {
     return a.x > b.x && a.y > b.y && a.x < b.x + b.width && a.y < b.y + b.height
 }
