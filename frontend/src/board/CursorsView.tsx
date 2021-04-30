@@ -2,19 +2,30 @@ import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
 import { UserCursorPosition, UserSessionInfo } from "../../../common/src/domain"
 import { CursorsStore } from "../store/cursors-store"
+import { BoardZoom } from "./board-scroll-and-zoom"
 
 export const CursorsView = ({
     sessions,
     cursors,
+    zoom,
 }: {
     cursors: CursorsStore
     sessions: L.Property<UserSessionInfo[]>
+    zoom: L.Property<BoardZoom>
 }) => {
-    const transition = cursors.cursorDelay.pipe(
-        L.throttle(2000),
-        L.applyScope(componentScope()),
+    const transitionFromCursorDelay = cursors.cursorDelay.pipe(
+        L.changes,
+        L.throttle(2000, componentScope()),
         L.map((d) => `all ${(Math.min(d, 1000) / 1000).toFixed(1)}s`),
     )
+    const transitionFromZoom = zoom.pipe(
+        L.changes,
+        L.map(() => "none"),
+    )
+    const transition = L.merge(transitionFromCursorDelay, transitionFromZoom).pipe(
+        L.toProperty("none", componentScope()),
+    )
+
     return (
         <ListView<UserCursorPosition, string>
             observable={cursors.cursors}
