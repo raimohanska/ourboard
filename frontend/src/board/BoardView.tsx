@@ -243,7 +243,7 @@ export const BoardView = ({
                                 ),
                             )}
                             <RectangularDragSelection {...{ rect: selectionRect }} />
-                            <CursorsView {...{ cursors, sessions, zoom }} />
+                            <CursorsView {...{ cursors, sessions, viewRect }} />
                             <ContextMenuView {...{ latestNote, dispatch, board, focus, viewRect }} />
                             <ConnectionsView {...{ board, zoom, dispatch, focus, coordinateHelper }} />
                         </div>

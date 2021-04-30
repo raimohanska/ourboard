@@ -3,22 +3,24 @@ import * as L from "lonna"
 import { UserCursorPosition, UserSessionInfo } from "../../../common/src/domain"
 import { CursorsStore } from "../store/cursors-store"
 import { BoardZoom } from "./board-scroll-and-zoom"
+import { Rect } from "./geometry"
+import _ from "lodash"
 
 export const CursorsView = ({
     sessions,
     cursors,
-    zoom,
+    viewRect,
 }: {
     cursors: CursorsStore
     sessions: L.Property<UserSessionInfo[]>
-    zoom: L.Property<BoardZoom>
+    viewRect: L.Property<Rect>
 }) => {
     const transitionFromCursorDelay = cursors.cursorDelay.pipe(
         L.changes,
         L.throttle(2000, componentScope()),
         L.map((d) => `all ${(Math.min(d, 1000) / 1000).toFixed(1)}s`),
     )
-    const transitionFromZoom = zoom.pipe(
+    const transitionFromZoom = viewRect.pipe(
         L.changes,
         L.map(() => "none"),
     )
@@ -30,28 +32,23 @@ export const CursorsView = ({
         <ListView<UserCursorPosition, string>
             observable={cursors.cursors}
             renderObservable={(sessionId: string, pos: L.Property<UserCursorPosition>) => {
-                const style = L.combineTemplate({
-                    transition: transition,
-                    left: L.view(
-                        pos,
-                        (p) => p.x,
-                        (x) => x + "em",
-                    ),
-                    top: L.view(
-                        pos,
-                        (p) => p.y,
-                        (y) => y + "em",
-                    ),
+                const style = L.view(pos, transition, viewRect, (p, t, vr) => {
+                    const x = _.clamp(p.x, vr.x, vr.x + vr.width - 1)
+                    const y = _.clamp(p.y, vr.y, vr.y + vr.height - 1)
+                    return {
+                        transition: t,
+                        left: x + "em",
+                        top: y + "em",
+                    }
                 })
+                const text = L.view(
+                    sessions,
+                    (sessions) => sessions.find((s) => s.sessionId === sessionId)?.nickname || null,
+                )
                 return (
                     <span className="cursor" style={style}>
                         <span className="arrow" />
-                        <span className="text">
-                            {L.view(
-                                sessions,
-                                (sessions) => sessions.find((s) => s.sessionId === sessionId)?.nickname || null,
-                            )}
-                        </span>
+                        <span className="text">{text}</span>
                     </span>
                 )
             }}
