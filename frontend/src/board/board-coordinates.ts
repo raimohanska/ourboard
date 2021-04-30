@@ -135,7 +135,7 @@ export function boardCoordinateHelper(
         L.changes,
         L.flatMapLatest((el) => L.fromEvent(el, "scroll"), componentScope()),
     )
-    const updateEvent = L.merge(scrollEvent, L.changes(zoom), L.changes(quickZoom), L.changes(currentPageCoordinates))
+    const updateEvent = L.merge(scrollEvent, L.changes(zoom), L.changes(currentPageCoordinates))
 
     // Mouse position in board coordinates
     const currentBoardCoordinates = updateEvent.pipe(
