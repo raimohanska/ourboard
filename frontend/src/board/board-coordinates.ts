@@ -44,14 +44,14 @@ export function boardCoordinateHelper(
     }
 
     const boardAbsolutePosition = L.view(boardElem, quickZoom, (b, z) => {
-        return b ? offset(b, true) : origin
+        return b ? offset(b) : origin
     })
 
-    function offset(el: HTMLElement, isBoard: boolean): Coordinates {
+    function offset(el: HTMLElement): Coordinates {
         let o = { x: el.offsetLeft, y: el.offsetTop }
 
         if (el.parentElement) {
-            return add(o, offset(el.parentElement, false))
+            return add(o, offset(el.parentElement))
         }
         return o
     }
