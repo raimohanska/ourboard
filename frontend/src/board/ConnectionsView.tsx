@@ -30,7 +30,7 @@ export const ConnectionsView = ({
     const connectionsWithItemsPopulated = L.view(
         L.view(board, (b) => ({ is: b.items, cs: b.connections })),
         focus,
-        zoom,
+        L.view(zoom, "zoom"),
         ({ is, cs }, f, z) => {
             return cs.map((c) => {
                 const fromItem: Point = isPoint(c.from) ? c.from : is[c.from]
