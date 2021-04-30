@@ -43,9 +43,10 @@ export function boardCoordinateHelper(
         return newCoordinates(a.x - b.x, a.y - b.y)
     }
 
-    const boardAbsolutePosition = L.view(boardElem, quickZoom, (b, z) => {
+    function getBoardAbsolutePosition() {
+        const b = boardElem.get()
         return b ? offset(b) : origin
-    })
+    }
 
     function offset(el: HTMLElement): Coordinates {
         let o = { x: el.offsetLeft, y: el.offsetTop }
@@ -57,7 +58,7 @@ export function boardCoordinateHelper(
     }
 
     function pageToPixelCoordinates(pp: PageCoordinates) {
-        return subtract(pp, boardAbsolutePosition.get())
+        return subtract(pp, getBoardAbsolutePosition())
     }
 
     function pageToBoardCoordinates(pageCoords: PageCoordinates): Coordinates {
@@ -79,7 +80,7 @@ export function boardCoordinateHelper(
     // Position on the viewport, with relation to the top-left corner of the board area.
     // If board is scrolled to top left corner, the top-left corner of actual board area (excluding borders) will be at (0, 0)
     let currentBoardViewPortCoordinates = L.view(currentPageCoordinates, (pp) =>
-        subtract(pp, boardAbsolutePosition.get()),
+        subtract(pp, getBoardAbsolutePosition()),
     )
 
     function pageCoordDiffToThisPoint(coords: PageCoordinates) {
