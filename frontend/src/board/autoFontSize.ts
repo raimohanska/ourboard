@@ -14,6 +14,12 @@ export type AutoFontSizeOptions = {
     heightTarget: number
 }
 
+function getElementFont(e: HTMLElement | null) {
+    if (!e) return "10px arial"
+    const { fontFamily, fontSize } = getComputedStyle(e)
+    return `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
+}
+
 const defaultOptions = {
     maxFontSize: Number.MAX_VALUE,
     minFontSize: 0,
@@ -34,7 +40,6 @@ export function autoFontSize(
 ): L.Property<string> {
     let fullOptions = { ...defaultOptions, ...options }
 
-    const elFont = coordinateHelper.elementFont(element)
     return L.view(
         L.view(item, "type"),
         L.view(item, getItemShape),
@@ -48,7 +53,7 @@ export function autoFontSize(
             const width = shape === "round" ? Math.sqrt(w ** 2 / 2) : shape === "diamond" ? w / 2 : w
             const height = shape === "round" ? Math.sqrt(h ** 2 / 2) : shape === "diamond" ? h / 2 : h
 
-            const referenceFont = elFont.get()
+            const referenceFont = getElementFont(element.get())
             const plainText = toPlainText(text)
             const split = plainText.split(/\s/)
             const words = split

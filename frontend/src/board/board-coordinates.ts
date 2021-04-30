@@ -131,15 +131,6 @@ export function boardCoordinateHelper(
         scrollElem.get()!.scrollTop += diffPixels.y
     }
 
-    function elementFont(element: L.Property<HTMLElement | null>): L.Property<string> {
-        return L.view(element, zoom, (e, z) => {
-            // Note: needs zoom as input, otherwise wrong result, why?
-            if (!e) return "10px arial"
-            const { fontFamily, fontSize } = getComputedStyle(e)
-            return `${fontSize} ${fontFamily}` // Firefox returns these properties separately, so can't just use computedStyle.font
-        })
-    }
-
     const scrollEvent = scrollElem.pipe(
         L.changes,
         L.flatMapLatest((el) => L.fromEvent(el, "scroll"), componentScope()),
@@ -165,6 +156,5 @@ export function boardCoordinateHelper(
         emToBoardPx,
         pxToEm,
         scrollCursorToBoardCoordinates,
-        elementFont,
     }
 }
