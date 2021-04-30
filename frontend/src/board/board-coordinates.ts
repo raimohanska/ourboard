@@ -2,6 +2,7 @@ import { componentScope } from "harmaja"
 import * as L from "lonna"
 import * as _ from "lodash"
 import { add, Coordinates, subtract, origin, multiply } from "./geometry"
+import { BoardZoom } from "./board-scroll-and-zoom"
 
 const newCoordinates = (x: number, y: number): Coordinates => {
     return { x, y }
@@ -18,7 +19,7 @@ export function boardCoordinateHelper(
     containerElem: L.Property<HTMLElement | null>,
     scrollElem: L.Property<HTMLElement | null>,
     boardElem: L.Property<HTMLElement | null>,
-    zoom: L.Property<{ zoom: number; quickZoom: number }>,
+    zoom: L.Property<BoardZoom>,
 ) {
     const quickZoom = L.view(zoom, "quickZoom")
 

@@ -8,6 +8,8 @@ import { Board } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { ToolController } from "./tool-selection"
 
+export type BoardZoom = { zoom: number; quickZoom: number }
+
 function nonNull<A>(x: A | null | undefined): x is A {
     return !!x
 }
@@ -16,7 +18,7 @@ export function boardScrollAndZoomHandler(
     board: L.Property<Board>,
     boardElement: L.Property<HTMLElement | null>,
     scrollElement: L.Property<HTMLElement | null>,
-    zoom: L.Atom<{ zoom: number; quickZoom: number }>,
+    zoom: L.Atom<BoardZoom>,
     coordinateHelper: BoardCoordinateHelper,
     toolController: ToolController,
 ) {

@@ -5,6 +5,7 @@ import { BoardStore, Dispatch } from "../store/board-store"
 import { UserSessionState } from "../store/user-session-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
+import { BoardZoom } from "./board-scroll-and-zoom"
 import { BoardViewMessage } from "./BoardViewMessage"
 import * as G from "./geometry"
 import { HistoryView } from "./HistoryView"
@@ -44,7 +45,7 @@ export const BoardToolLayer = ({
     toolController: ToolController
     dispatch: Dispatch
     viewRect: L.Property<G.Rect>
-    zoom: L.Atom<{ zoom: number; quickZoom: number }>
+    zoom: L.Atom<BoardZoom>
     focus: L.Atom<BoardFocus>
 }) => {
     const boardState = boardStore.state
