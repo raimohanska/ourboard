@@ -93,6 +93,7 @@ const RecentBoardsView = ({
             }
         }
     }
+    const lotsOfBoards = L.view(recentBoards.recentboards, (bs) => bs.length >= 10)
     return L.view(
         recentBoards.recentboards,
         (recent) => recent.length === 0,
@@ -102,20 +103,17 @@ const RecentBoardsView = ({
             ) : (
                 <div className="recent-boards">
                     <h2>Recent boards</h2>
-                    {L.view(
-                        recentBoards.recentboards,
-                        (bs) => bs.length > 10,
-                        (show) =>
-                            show ? (
-                                <div className="search">
-                                    <TextInput
-                                        onKeyDown={onKeyDown}
-                                        ref={inputRef}
-                                        value={filter}
-                                        placeholder="Search, hit enter!"
-                                    />
-                                </div>
-                            ) : null,
+                    {L.view(lotsOfBoards, (show) =>
+                        show ? (
+                            <div className="search">
+                                <TextInput
+                                    onKeyDown={onKeyDown}
+                                    ref={inputRef}
+                                    value={filter}
+                                    placeholder="Search, hit enter!"
+                                />
+                            </div>
+                        ) : null,
                     )}
                     <ul>
                         <ListView
@@ -164,28 +162,30 @@ const RecentBoardsView = ({
                                     </a>
                                 ),
                             )}
-                            {L.view(sort, (s) =>
-                                s === "alphabetical" ? (
-                                    <a
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault()
-                                            sort.set("recent-first")
-                                        }}
-                                    >
-                                        Show recent first
-                                    </a>
-                                ) : (
-                                    <a
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault()
-                                            sort.set("alphabetical")
-                                        }}
-                                    >
-                                        Sort alphabetically
-                                    </a>
-                                ),
+                            {L.view(sort, lotsOfBoards, (s, show) =>
+                                show ? (
+                                    s === "alphabetical" ? (
+                                        <a
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                sort.set("recent-first")
+                                            }}
+                                        >
+                                            Show recent first
+                                        </a>
+                                    ) : (
+                                        <a
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                sort.set("alphabetical")
+                                            }}
+                                        >
+                                            Sort alphabetically
+                                        </a>
+                                    )
+                                ) : null,
                             )}
                         </div>
                     }
