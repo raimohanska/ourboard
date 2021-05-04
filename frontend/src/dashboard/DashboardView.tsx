@@ -1,13 +1,15 @@
 import { h, Fragment, ListView } from "harmaja"
 import * as L from "lonna"
-import { BoardAccessPolicy, BoardStub, exampleBoard, Id } from "../../../common/src/domain"
+import { BoardAccessPolicy, BoardStub, exampleBoard, Id, RecentBoard } from "../../../common/src/domain"
 import { TextInput } from "../components/components"
 import { canLogin, UserSessionState } from "../store/user-session-store"
 import _ from "lodash"
+import * as R from "ramda"
 import { signIn, signOut } from "../google-auth"
 import { RecentBoards } from "../store/recent-boards"
 import { Dispatch } from "../store/board-store"
 import * as uuid from "uuid"
+import { localStorageAtom } from "../board/local-storage-atom"
 
 export const DashboardView = ({
     sessionState,
@@ -65,13 +67,22 @@ const RecentBoardsView = ({
     recentBoards: RecentBoards
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
-    const boardsToShow = L.view(recentBoards.recentboards, (bs) =>
-        _.sortBy(bs, (b) => b.opened)
-            .reverse()
-            .slice(0, 25),
+    const defaultLimit = 25
+
+    const limit = localStorageAtom("recentBoards.limit", defaultLimit)
+
+    const sort = localStorageAtom<"recent-first" | "alphabetical">("recentBoards.sort", "recent-first")
+
+    const boardsToShow = L.view(recentBoards.recentboards, limit, sort, (bs, l, s) =>
+        R.pipe(
+            R.sortWith([R.descend(R.prop("opened"))]),
+            (bs: RecentBoard[]) => bs.slice(0, l),
+            R.sortWith([s === "alphabetical" ? R.ascend((b) => b.name.toLowerCase()) : R.descend(R.prop("opened"))]),
+        )(bs),
     )
+    const moreBoards = L.view(limit, recentBoards.recentboards, (l, bs) => bs.length - l)
     return L.view(
-        boardsToShow,
+        recentBoards.recentboards,
         (recent) => recent.length === 0,
         (empty) =>
             empty ? (
@@ -101,6 +112,56 @@ const RecentBoardsView = ({
                             )}
                         />
                     </ul>
+                    {
+                        <div className="view-options">
+                            {L.view(moreBoards, limit, (c, l) =>
+                                c > 0 ? (
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            limit.set(Number.MAX_SAFE_INTEGER)
+                                        }}
+                                    >
+                                        Show {moreBoards} more
+                                    </a>
+                                ) : l === defaultLimit ? null : (
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            limit.set(defaultLimit)
+                                        }}
+                                    >
+                                        Show less
+                                    </a>
+                                ),
+                            )}
+                            {L.view(sort, (s) =>
+                                s === "alphabetical" ? (
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            sort.set("recent-first")
+                                        }}
+                                    >
+                                        Show recent first
+                                    </a>
+                                ) : (
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            sort.set("alphabetical")
+                                        }}
+                                    >
+                                        Sort alphabetically
+                                    </a>
+                                ),
+                            )}
+                        </div>
+                    }
                 </div>
             ),
     )

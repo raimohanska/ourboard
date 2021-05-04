@@ -770,6 +770,13 @@ a {
                 visibility: visible;
             }
         }
+        .view-options {
+            font-size: 0.8em;
+            margin-top: 1em;
+            a {
+                margin-right: 1em;
+            }
+        }
     }
     .create-board {
         box-sizing: border-box;
