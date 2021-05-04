@@ -68,19 +68,31 @@ const RecentBoardsView = ({
     navigateToBoard: (boardId: Id | undefined) => void
 }) => {
     const defaultLimit = 25
+    const filter = L.atom("")
 
     const limit = localStorageAtom("recentBoards.limit", defaultLimit)
 
     const sort = localStorageAtom<"recent-first" | "alphabetical">("recentBoards.sort", "recent-first")
 
-    const boardsToShow = L.view(recentBoards.recentboards, limit, sort, (bs, l, s) =>
+    const boardsToShow = L.view(recentBoards.recentboards, limit, sort, filter, (bs, l, s, f) =>
         R.pipe(
             R.sortWith([R.descend(R.prop("opened"))]),
-            (bs: RecentBoard[]) => bs.slice(0, l),
+            (bs: RecentBoard[]) => bs.filter((b) => b.name.toLowerCase().includes(f)).slice(0, l),
             R.sortWith([s === "alphabetical" ? R.ascend((b) => b.name.toLowerCase()) : R.descend(R.prop("opened"))]),
         )(bs),
     )
     const moreBoards = L.view(limit, recentBoards.recentboards, (l, bs) => bs.length - l)
+    const inputRef = (e: HTMLInputElement) => {
+        setTimeout(() => e.focus(), 0)
+    }
+    const onKeyDown = (e: JSX.KeyboardEvent) => {
+        if (e.keyCode === 13) {
+            const board = boardsToShow.get()[0]
+            if (board) {
+                navigateToBoard(board.id)
+            }
+        }
+    }
     return L.view(
         recentBoards.recentboards,
         (recent) => recent.length === 0,
@@ -90,6 +102,21 @@ const RecentBoardsView = ({
             ) : (
                 <div className="recent-boards">
                     <h2>Recent boards</h2>
+                    {L.view(
+                        recentBoards.recentboards,
+                        (bs) => bs.length > 10,
+                        (show) =>
+                            show ? (
+                                <div className="search">
+                                    <TextInput
+                                        onKeyDown={onKeyDown}
+                                        ref={inputRef}
+                                        value={filter}
+                                        placeholder="Search, hit enter!"
+                                    />
+                                </div>
+                            ) : null,
+                    )}
                     <ul>
                         <ListView
                             observable={boardsToShow}

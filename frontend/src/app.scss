@@ -759,6 +759,12 @@ a {
     }
 
     .recent-boards {
+        .search {
+            input {
+                outline: none;
+                margin-bottom: 1em;
+            }
+        }
         .remove {
             margin-left: 0.5em;
             font-size: 0.6em;
