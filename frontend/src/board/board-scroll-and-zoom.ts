@@ -115,7 +115,7 @@ export function boardScrollAndZoomHandler(
         }
     }
 
-    zoom.pipe(L.changes, L.debounce(200, componentScope())).forEach((z) => {
+    zoom.pipe(L.changes, L.debounce(50, componentScope())).forEach((z) => {
         if (z.quickZoom !== 1 && !scaleStart) {
             zoom.set({ zoom: z.zoom * z.quickZoom, quickZoom: 1 })
         }
