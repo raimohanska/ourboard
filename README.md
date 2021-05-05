@@ -172,7 +172,7 @@ Returns the full history of given board as JSON.
 
 ## Google Authentication integration
 
-Google authentication is supported. To enable this feature, you'll need to supply `GOOGLE_API_KEY` and `GOOGLE_CLIENT_ID` as environment variables
+Google authentication is supported. To enable this feature, you'll need to supply `GOOGLE_API_KEY` and `GOOGLE_CLIENT_ID` as environment variables. When running locally, you'll need to place these variables in both `frontend/.env` and `backend/.env`.
 
 ## Tech stack
 
