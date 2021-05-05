@@ -74,14 +74,17 @@ const RecentBoardsView = ({
 
     const sort = localStorageAtom<"recent-first" | "alphabetical">("recentBoards.sort", "recent-first")
 
-    const boardsToShow = L.view(recentBoards.recentboards, limit, sort, filter, (bs, l, s, f) =>
+    const matchingBoards = L.view(recentBoards.recentboards, filter, (bs, f) =>
+        bs.filter((b) => b.name.toLowerCase().includes(f))
+    )
+    const boardsToShow = L.view(matchingBoards, limit, sort, filter, (bs, l, s, f) =>
         R.pipe(
             R.sortWith([R.descend(R.prop("opened"))]),
-            (bs: RecentBoard[]) => bs.filter((b) => b.name.toLowerCase().includes(f)).slice(0, l),
+            (bs: RecentBoard[]) => bs.slice(0, l),
             R.sortWith([s === "alphabetical" ? R.ascend((b) => b.name.toLowerCase()) : R.descend(R.prop("opened"))]),
         )(bs),
     )
-    const moreBoards = L.view(limit, recentBoards.recentboards, (l, bs) => bs.length - l)
+    const moreBoards = L.view(limit, matchingBoards, (l, bs) => bs.length - l)
     const inputRef = (e: HTMLInputElement) => {
         setTimeout(() => e.focus(), 0)
     }
