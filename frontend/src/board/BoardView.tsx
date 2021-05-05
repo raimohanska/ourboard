@@ -18,7 +18,7 @@ import { ConnectionsView } from "./ConnectionsView"
 import { ContextMenuView } from "./ContextMenuView"
 import { CursorsView } from "./CursorsView"
 import * as G from "./geometry"
-import { imageUploadHandler } from "./image-upload"
+import { imageUploadHandler, imageDropHandler } from "./image-upload"
 import { ImageView } from "./ImageView"
 import { itemCreateHandler } from "./item-create"
 import { cutCopyPasteHandler } from "./item-cut-copy-paste"
@@ -94,22 +94,20 @@ export const BoardView = ({
 
     const doOnUnmount: Function[] = []
 
-    doOnUnmount.push(cutCopyPasteHandler(board, focus, coordinateHelper, dispatch))
-
     const itemsList = L.view(L.view(board, "items"), Object.values)
 
-    const boardRef = (el: HTMLElement) => {
-        boardElement.set(el)
-        function onURL(assetId: string, url: string) {
-            itemsList.get().forEach((i) => {
-                if ((i.type === "image" || i.type === "video") && i.assetId === assetId && i.src != url) {
-                    dispatch({ action: "item.update", boardId, items: [{ ...i, src: url }] })
-                }
-            })
-        }
-        doOnUnmount.push(imageUploadHandler(el, assets, coordinateHelper, focus, onAdd, onURL))
+    function onURL(assetId: string, url: string) {
+        itemsList.get().forEach((i) => {
+            if ((i.type === "image" || i.type === "video") && i.assetId === assetId && i.src != url) {
+                dispatch({ action: "item.update", boardId, items: [{ ...i, src: url }] })
+            }
+        })
     }
+    const uploadImageFile = imageUploadHandler(assets, coordinateHelper, onAdd, onURL)
 
+    doOnUnmount.push(cutCopyPasteHandler(board, focus, coordinateHelper, dispatch, uploadImageFile))
+
+    imageDropHandler(boardElement, assets, focus, uploadImageFile)
     itemCreateHandler(board, focus, latestNote, boardElement, onAdd)
     itemDeleteHandler(boardId, dispatch, focus)
     itemDuplicateHandler(board, dispatch, focus)
@@ -228,7 +226,7 @@ export const BoardView = ({
                         <div
                             className={L.view(tool, (t) => "board " + t)}
                             draggable={isFirefox ? L.view(focus, (f) => f.status !== "editing") : true}
-                            ref={boardRef}
+                            ref={boardElement.set}
                             onClick={onClick}
                         >
                             <ListView observable={items} renderObservable={renderItem} getKey={(i) => i.id} />

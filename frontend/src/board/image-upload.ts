@@ -1,63 +1,62 @@
+import * as L from "lonna"
 import { Item, newImage, newVideo } from "../../../common/src/domain"
 import { AssetStore, AssetURL } from "../store/asset-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
-import * as L from "lonna"
-import { Dimensions } from "./geometry"
 
+export function imageDropHandler(
+    boardElement: L.Atom<HTMLElement | null>,
+    assets: AssetStore,
+    focus: L.Atom<BoardFocus>,
+    uploadImageFile: (file: File) => Promise<void>,
+) {
+    boardElement.forEach((el) => {
+        if (el) {
+            function preventDefaults(e: any) {
+                e.preventDefault()
+                e.stopPropagation()
+            }
+            ;["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+                el.addEventListener(eventName, preventDefaults, false)
+            })
+
+            el.addEventListener("drop", handleDrop, false)
+            async function handleDrop(e: DragEvent) {
+                if (focus.get().status === "dragging") {
+                    return // was dragging an item
+                }
+
+                const url = e.dataTransfer?.getData("URL")
+                if (url) {
+                    // Try direct fetch first, and on CORS error fall back to letting the server request it
+                    const res = await fetch(url).catch(() => assets.getExternalAssetAsBytes(url))
+                    const blob = await res.blob()
+                    await uploadImageFile(blob as any)
+                } else {
+                    let dt = e.dataTransfer
+                    let files = dt!.files
+                    if (files.length === 0) {
+                        return
+                    }
+                    if (files.length != 1) {
+                        throw Error("Unexpected number of files: " + files.length)
+                    }
+                    const file = files[0]
+                    await uploadImageFile(file)
+                }
+            }
+        }
+    })
+}
+
+export type ImageUploadFunction = (file: File) => Promise<void>
 export function imageUploadHandler(
-    boardElement: HTMLElement,
     assets: AssetStore,
     coordinateHelper: BoardCoordinateHelper,
-    focus: L.Atom<BoardFocus>,
     onAdd: (item: Item) => void,
     onURL: (id: string, url: AssetURL) => void,
-) {
-    function preventDefaults(e: any) {
-        e.preventDefault()
-        e.stopPropagation()
-    }
-    ;["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-        boardElement.addEventListener(eventName, preventDefaults, false)
-    })
-
-    boardElement.addEventListener("drop", handleDrop, false)
-
-    const pasteHandler = (e: ClipboardEvent) => {
-        if (e.clipboardData) {
-            const imageFile = [...e.clipboardData.files].find((file) => file.type.startsWith("image/"))
-            imageFile && uploadImageFile(imageFile)
-        }
-    }
-
-    document.addEventListener("paste", pasteHandler)
-
-    async function handleDrop(e: DragEvent) {
-        if (focus.get().status === "dragging") {
-            return // was dragging an item
-        }
-
-        const url = e.dataTransfer?.getData("URL")
-        if (url) {
-            // Try direct fetch first, and on CORS error fall back to letting the server request it
-            const res = await fetch(url).catch(() => assets.getExternalAssetAsBytes(url))
-            const blob = await res.blob()
-            await uploadImageFile(blob as any)
-        } else {
-            let dt = e.dataTransfer
-            let files = dt!.files
-            if (files.length === 0) {
-                return
-            }
-            if (files.length != 1) {
-                throw Error("Unexpected number of files: " + files.length)
-            }
-            const file = files[0]
-            await uploadImageFile(file)
-        }
-    }
-
-    async function uploadImageFile(file: File) {
+): ImageUploadFunction {
+    return async (file: File): Promise<void> => {
         const info = await videoOrImageInfo(file)
         const [assetId, urlPromise] = await assets.uploadAsset(file)
         if (!info) {
@@ -81,10 +80,6 @@ export function imageUploadHandler(
             const finalUrl = await urlPromise
             onURL(assetId, finalUrl)
         }
-    }
-
-    return () => {
-        document.removeEventListener("paste", pasteHandler)
     }
 }
 

@@ -108,6 +108,7 @@ export function cutCopyPasteHandler(
     focus: L.Atom<BoardFocus>,
     coordinateHelper: BoardCoordinateHelper,
     dispatch: Dispatch,
+    uploadImageFile: (file: File) => Promise<void>,
 ) {
     const clipboardEventHandler = (e: ClipboardEvent) => {
         const currentFocus = focus.get()
@@ -129,6 +130,13 @@ export function cutCopyPasteHandler(
                 break
             }
             case "paste": {
+                if (e.clipboardData) {
+                    const imageFile = [...e.clipboardData.files].find((file) => file.type.startsWith("image/"))
+                    if (imageFile) {
+                        uploadImageFile(imageFile)
+                        return
+                    }
+                }
                 if (currentFocus.status === "editing") return
                 const rboardData = e.clipboardData?.getData("application/rboard")
                 if (!rboardData) {
