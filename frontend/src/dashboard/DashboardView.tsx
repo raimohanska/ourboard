@@ -128,8 +128,10 @@ const RecentBoardsView = ({
                                 <li>
                                     <a
                                         onClick={(e) => {
-                                            navigateToBoard(b.id)
-                                            e.preventDefault()
+                                            if (!e.altKey && !e.metaKey && !e.shiftKey) {
+                                                navigateToBoard(b.id)
+                                                e.preventDefault()
+                                            }
                                         }}
                                         href={`/b/${b.id}`}
                                     >
