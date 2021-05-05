@@ -1,20 +1,19 @@
-import { componentScope } from "harmaja"
+import { HarmajaRouter } from "harmaja-router"
 import * as L from "lonna"
-import { Id } from "../../common/src/domain"
 import "./app.scss"
-import { ReactiveRouter } from "harmaja-router"
+
+export const BOARD_PATH = "/b/:boardId"
+export const ROOT_PATH = "/"
+
+export const Routes = {
+    [ROOT_PATH]: () => ({ page: "Dashboard" as const }),
+    [BOARD_PATH]: ({ boardId }: { boardId: string }) => ({ page: "Board" as const, boardId }),
+    "": () => ({ page: "NotFound" as const }),
+}
+export type Routes = typeof Routes
 
 export function BoardNavigation() {
-    const BOARD_PATH = "/b/:boardId"
-    const ROOT_PATH = "/"
-    const router = ReactiveRouter(
-        {
-            [ROOT_PATH]: () => ({ page: "Dashboard" as const }),
-            [BOARD_PATH]: ({ boardId }) => ({ page: "Board" as const, boardId }),
-            "": () => ({ page: "NotFound" as const }),
-        },
-        L.globalScope,
-    )
+    const result = HarmajaRouter(Routes)
 
     const nicknameFromURL = new URLSearchParams(location.search).get("nickname")
     if (nicknameFromURL) {
@@ -24,19 +23,10 @@ export function BoardNavigation() {
         document.location.search = search.toString()
     }
 
-    const boardId = L.view(router.result, (r) => (r.page === "Board" ? r.boardId : undefined))
-
-    const navigateToBoard = (id: Id | undefined) => {
-        if (id) {
-            router.navigateByParams(BOARD_PATH, { boardId: id })
-        } else {
-            router.navigateByParams(ROOT_PATH)
-        }
-    }
+    const boardId = L.view(result, (r) => (r.page === "Board" ? r.boardId : undefined))
 
     return {
         boardId,
-        navigateToBoard,
-        page: router.result,
+        page: result,
     }
 }

@@ -26,7 +26,6 @@ export const BoardToolLayer = ({
     containerElement,
     sessionState,
     board,
-    navigateToBoard,
     onAdd,
     toolController,
     dispatch,
@@ -40,7 +39,6 @@ export const BoardToolLayer = ({
     containerElement: L.Atom<HTMLElement | null>
     sessionState: L.Property<UserSessionState>
     board: L.Property<Board>
-    navigateToBoard: (boardId: Id | undefined) => void
     onAdd: (i: Item) => void
     toolController: ToolController
     dispatch: Dispatch
@@ -108,7 +106,7 @@ export const BoardToolLayer = ({
             <BoardViewMessage {...{ boardAccessStatus, sessionState, board }} />
 
             <div className="navigation-toolbar">
-                <BackToAllBoardsLink {...{ navigateToBoard }} />
+                <BackToAllBoardsLink />
             </div>
             <div
                 className={L.view(toolbarPosition, (o) => `main-toolbar board-tool ${o.orientation}`)}

@@ -15,9 +15,10 @@ import { BoardNavigation } from "./board-navigation"
 import { RecentBoardAttributes } from "../../common/src/domain"
 import { CursorsStore } from "./store/cursors-store"
 import boardLocalStore from "./store/board-local-store"
+import { ReactiveRouter } from "harmaja-router"
 
 const App = () => {
-    const { boardId, page, navigateToBoard } = BoardNavigation()
+    const { boardId, page } = BoardNavigation()
     const connection = BrowserSideServerConnection()
     const sessionStore = UserSessionStore(connection, localStorage)
     const boardStore = BoardStore(boardId, connection, sessionStore.sessionState, boardLocalStore)
@@ -36,41 +37,43 @@ const App = () => {
         )
         .forEach(recentBoards.storeRecentBoard)
 
-    return L.view(page, (page) => {
-        switch (page.page) {
-            case "Board":
-                return L.view(
-                    boardStore.state,
-                    (s) => s.board !== undefined,
-                    (hasBoard) =>
-                        hasBoard ? (
-                            <BoardView
+    return (
+        <div>
+            {L.view(page, (page) => {
+                switch (page.page) {
+                    case "Board":
+                        return L.view(
+                            boardStore.state,
+                            (s) => s.board !== undefined,
+                            (hasBoard) =>
+                                hasBoard ? (
+                                    <BoardView
+                                        {...{
+                                            boardId: page.boardId,
+                                            cursors: cursorsStore,
+                                            assets,
+                                            boardStore,
+                                            sessionState: sessionStore.sessionState,
+                                            dispatch: boardStore.dispatch,
+                                        }}
+                                    />
+                                ) : null,
+                        )
+                    case "NotFound":
+                    case "Dashboard":
+                        return (
+                            <DashboardView
                                 {...{
-                                    boardId: page.boardId,
-                                    cursors: cursorsStore,
-                                    assets,
-                                    boardStore,
-                                    sessionState: sessionStore.sessionState,
                                     dispatch: boardStore.dispatch,
-                                    navigateToBoard,
+                                    sessionState: sessionStore.sessionState,
+                                    recentBoards,
                                 }}
                             />
-                        ) : null,
-                )
-            case "NotFound":
-            case "Dashboard":
-                return (
-                    <DashboardView
-                        {...{
-                            dispatch: boardStore.dispatch,
-                            sessionState: sessionStore.sessionState,
-                            recentBoards,
-                            navigateToBoard,
-                        }}
-                    />
-                )
-        }
-    })
+                        )
+                }
+            })}
+        </div>
+    )
 }
 
 H.mount(<App />, document.getElementById("root")!)

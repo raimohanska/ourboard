@@ -1,26 +1,25 @@
-import { h, Fragment, ListView } from "harmaja"
+import { Fragment, h, ListView } from "harmaja"
+import { getNavigator, Link } from "harmaja-router"
 import * as L from "lonna"
-import { BoardAccessPolicy, BoardStub, exampleBoard, Id, RecentBoard } from "../../../common/src/domain"
-import { TextInput } from "../components/components"
-import { canLogin, UserSessionState } from "../store/user-session-store"
-import _ from "lodash"
 import * as R from "ramda"
-import { signIn, signOut } from "../google-auth"
-import { RecentBoards } from "../store/recent-boards"
-import { Dispatch } from "../store/board-store"
 import * as uuid from "uuid"
+import { BoardAccessPolicy, BoardStub, exampleBoard, RecentBoard } from "../../../common/src/domain"
+import { BOARD_PATH, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
+import { TextInput } from "../components/components"
+import { signIn, signOut } from "../google-auth"
+import { Dispatch } from "../store/board-store"
+import { RecentBoards } from "../store/recent-boards"
+import { canLogin, UserSessionState } from "../store/user-session-store"
 
 export const DashboardView = ({
     sessionState,
     dispatch,
-    navigateToBoard,
     recentBoards,
 }: {
     sessionState: L.Property<UserSessionState>
     recentBoards: RecentBoards
     dispatch: Dispatch
-    navigateToBoard: (boardId: Id | undefined) => void
 }) => {
     return (
         <div id="root" className="dashboard">
@@ -30,8 +29,8 @@ export const DashboardView = ({
             <p>
                 Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
             </p>
-            <RecentBoardsView {...{ recentBoards, navigateToBoard, dispatch }} />
-            <CreateBoard {...{ dispatch, navigateToBoard, sessionState }} />
+            <RecentBoardsView {...{ recentBoards, dispatch }} />
+            <CreateBoard {...{ dispatch, sessionState }} />
             <GoogleLoginArea {...{ sessionState }} />
         </div>
     )
@@ -60,15 +59,8 @@ const GoogleLoginArea = ({ sessionState }: { sessionState: L.Property<UserSessio
     )
 }
 
-const RecentBoardsView = ({
-    recentBoards,
-    navigateToBoard,
-    dispatch,
-}: {
-    recentBoards: RecentBoards
-    navigateToBoard: (boardId: Id | undefined) => void
-    dispatch: Dispatch
-}) => {
+const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoards; dispatch: Dispatch }) => {
+    const navigator = getNavigator<Routes>()
     const defaultLimit = 25
     const filter = L.atom("")
 
@@ -94,123 +86,122 @@ const RecentBoardsView = ({
         if (e.keyCode === 13) {
             const board = boardsToShow.get()[0]
             if (board) {
-                navigateToBoard(board.id)
+                navigator.navigateByParams(BOARD_PATH, { boardId: board.id })
             }
         }
     }
     const lotsOfBoards = L.view(recentBoards.recentboards, (bs) => bs.length >= 10)
-    return L.view(
-        recentBoards.recentboards,
-        (recent) => recent.length === 0,
-        (empty) =>
-            empty ? (
-                <Welcome />
-            ) : (
-                <div className="recent-boards">
-                    <h2>Recent boards</h2>
-                    {L.view(lotsOfBoards, (show) =>
-                        show ? (
-                            <div className="search">
-                                <TextInput
-                                    onKeyDown={onKeyDown}
-                                    ref={inputRef}
-                                    value={filter}
-                                    placeholder="Search, hit enter!"
-                                />
-                            </div>
-                        ) : null,
-                    )}
-                    <ul>
-                        <ListView
-                            observable={boardsToShow}
-                            getKey={(b) => b.id}
-                            renderItem={(b) => (
-                                <li>
-                                    <a
-                                        onClick={(e) => {
-                                            if (!e.altKey && !e.metaKey && !e.shiftKey) {
-                                                navigateToBoard(b.id)
-                                                e.preventDefault()
-                                            }
-                                        }}
-                                        href={`/b/${b.id}`}
-                                    >
-                                        {b.name}
-                                    </a>
-                                    <a className="remove" onClick={() => recentBoards.removeRecentBoard(b)}>
-                                        remove
-                                    </a>
-                                </li>
-                            )}
-                        />
-                        {L.view(matchingBoards, filter, (bs, f) => {
-                            function createBoard() {
-                                console.log("asdf")
-                                const newBoard: BoardStub = { name: f, id: uuid.v4() }
-                                dispatch({ action: "board.add", payload: newBoard })
-                                setTimeout(() => navigateToBoard(newBoard.id), 100) // TODO: some ack based solution would be more reliable
-                            }
-                            return bs.length === 0 && f.length >= 3 ? (
-                                <li>
-                                    <a onClick={createBoard}>Create a new board named {f}</a>
-                                </li>
-                            ) : null
-                        })}
-                    </ul>
-                    {
-                        <div className="view-options">
-                            {L.view(moreBoards, limit, (c, l) =>
-                                c > 0 ? (
-                                    <a
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault()
-                                            limit.set(Number.MAX_SAFE_INTEGER)
-                                        }}
-                                    >
-                                        Show {moreBoards} more
-                                    </a>
-                                ) : l === defaultLimit ? null : (
-                                    <a
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault()
-                                            limit.set(defaultLimit)
-                                        }}
-                                    >
-                                        Show less
-                                    </a>
-                                ),
-                            )}
-                            {L.view(sort, lotsOfBoards, (s, show) =>
+    return (
+        <div>
+            {L.view(
+                recentBoards.recentboards,
+                (recent) => recent.length === 0,
+                (empty) =>
+                    empty ? (
+                        <Welcome />
+                    ) : (
+                        <div className="recent-boards">
+                            <h2>Recent boards</h2>
+                            {L.view(lotsOfBoards, (show) =>
                                 show ? (
-                                    s === "alphabetical" ? (
-                                        <a
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                sort.set("recent-first")
-                                            }}
-                                        >
-                                            Show recent first
-                                        </a>
-                                    ) : (
-                                        <a
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                sort.set("alphabetical")
-                                            }}
-                                        >
-                                            Sort alphabetically
-                                        </a>
-                                    )
+                                    <div className="search">
+                                        <TextInput
+                                            onKeyDown={onKeyDown}
+                                            ref={inputRef}
+                                            value={filter}
+                                            placeholder="Search, hit enter!"
+                                        />
+                                    </div>
                                 ) : null,
                             )}
+                            <ul>
+                                <ListView
+                                    observable={boardsToShow}
+                                    getKey={(b) => b.id}
+                                    renderItem={(b) => (
+                                        <li>
+                                            <Link<Routes> route={BOARD_PATH} boardId={b.id}>
+                                                {b.name}
+                                            </Link>
+                                            <a className="remove" onClick={() => recentBoards.removeRecentBoard(b)}>
+                                                remove
+                                            </a>
+                                        </li>
+                                    )}
+                                />
+                                {L.view(matchingBoards, filter, (bs, f) => {
+                                    function createBoard() {
+                                        console.log("asdf")
+                                        const newBoard: BoardStub = { name: f, id: uuid.v4() }
+                                        dispatch({ action: "board.add", payload: newBoard })
+                                        setTimeout(
+                                            () => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }),
+                                            100,
+                                        ) // TODO: some ack based solution would be more reliable
+                                    }
+                                    return bs.length === 0 && f.length >= 3 ? (
+                                        <li>
+                                            <a onClick={createBoard}>Create a new board named {f}</a>
+                                        </li>
+                                    ) : null
+                                })}
+                            </ul>
+                            {
+                                <div className="view-options">
+                                    {L.view(moreBoards, limit, (c, l) =>
+                                        c > 0 ? (
+                                            <a
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault()
+                                                    limit.set(Number.MAX_SAFE_INTEGER)
+                                                }}
+                                            >
+                                                Show {moreBoards} more
+                                            </a>
+                                        ) : l === defaultLimit ? null : (
+                                            <a
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault()
+                                                    limit.set(defaultLimit)
+                                                }}
+                                            >
+                                                Show less
+                                            </a>
+                                        ),
+                                    )}
+                                    {L.view(sort, lotsOfBoards, (s, show) =>
+                                        show ? (
+                                            s === "alphabetical" ? (
+                                                <a
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        sort.set("recent-first")
+                                                    }}
+                                                >
+                                                    Show recent first
+                                                </a>
+                                            ) : (
+                                                <a
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        sort.set("alphabetical")
+                                                    }}
+                                                >
+                                                    Sort alphabetically
+                                                </a>
+                                            )
+                                        ) : null,
+                                    )}
+                                </div>
+                            }
                         </div>
-                    }
-                </div>
-            ),
+                    ),
+            )}
+        </div>
     )
 }
 
@@ -227,15 +218,14 @@ const Welcome = () => {
 
 const CreateBoard = ({
     dispatch,
-    navigateToBoard,
     sessionState,
 }: {
     dispatch: Dispatch
-    navigateToBoard: (boardId: Id | undefined) => void
     sessionState: L.Property<UserSessionState>
 }) => {
     const boardName = L.atom("")
     const disabled = L.view(boardName, (n) => !n)
+    const navigator = getNavigator<Routes>()
 
     function createBoard(e: JSX.FormEvent) {
         e.preventDefault()
@@ -250,7 +240,7 @@ const CreateBoard = ({
             newBoard.accessPolicy = { ...ap, allowList: ap.allowList.concat({ email: ss.email }) }
         }
         dispatch({ action: "board.add", payload: newBoard })
-        setTimeout(() => navigateToBoard(newBoard.id), 100) // TODO: some ack based solution would be more reliable
+        setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
     }
 
     const restrictAccessToggle = L.atom(false)

@@ -45,7 +45,6 @@ export const BoardView = ({
     sessionState,
     assets,
     dispatch,
-    navigateToBoard,
 }: {
     boardId: string
     cursors: CursorsStore
@@ -53,7 +52,6 @@ export const BoardView = ({
     sessionState: L.Property<UserSessionState>
     assets: AssetStore
     dispatch: Dispatch
-    navigateToBoard: (boardId: Id | undefined) => void
 }) => {
     const boardState = boardStore.state
     const board = boardState.pipe(
@@ -257,7 +255,6 @@ export const BoardView = ({
                         zoom,
                         focus,
                         latestNote,
-                        navigateToBoard,
                         onAdd,
                         toolController,
                         sessionState,

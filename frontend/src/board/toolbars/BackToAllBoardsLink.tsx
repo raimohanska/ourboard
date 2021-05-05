@@ -1,21 +1,14 @@
 import { h } from "harmaja"
-import { Id } from "../../../../common/src/domain"
+import { Link } from "harmaja-router"
+import { Routes } from "../../board-navigation"
 import { BackIcon } from "../../components/Icons"
-
-export function BackToAllBoardsLink({ navigateToBoard }: { navigateToBoard: (boardId: Id | undefined) => void }) {
+export function BackToAllBoardsLink() {
     return (
-        <a
-            href="/"
-            className="navigation"
-            onClick={(e) => {
-                navigateToBoard(undefined)
-                e.preventDefault()
-            }}
-        >
+        <Link<Routes> href="/" className="navigation">
             <span className="icon">
                 <BackIcon />
             </span>
             All boards
-        </a>
+        </Link>
     )
 }
