@@ -30,7 +30,7 @@ export const DashboardView = ({
             <p>
                 Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
             </p>
-            <RecentBoardsView {...{ recentBoards, navigateToBoard }} />
+            <RecentBoardsView {...{ recentBoards, navigateToBoard, dispatch }} />
             <CreateBoard {...{ dispatch, navigateToBoard, sessionState }} />
             <GoogleLoginArea {...{ sessionState }} />
         </div>
@@ -63,9 +63,11 @@ const GoogleLoginArea = ({ sessionState }: { sessionState: L.Property<UserSessio
 const RecentBoardsView = ({
     recentBoards,
     navigateToBoard,
+    dispatch,
 }: {
     recentBoards: RecentBoards
     navigateToBoard: (boardId: Id | undefined) => void
+    dispatch: Dispatch
 }) => {
     const defaultLimit = 25
     const filter = L.atom("")
@@ -75,7 +77,7 @@ const RecentBoardsView = ({
     const sort = localStorageAtom<"recent-first" | "alphabetical">("recentBoards.sort", "recent-first")
 
     const matchingBoards = L.view(recentBoards.recentboards, filter, (bs, f) =>
-        bs.filter((b) => b.name.toLowerCase().includes(f))
+        bs.filter((b) => b.name.toLowerCase().includes(f)),
     )
     const boardsToShow = L.view(matchingBoards, limit, sort, filter, (bs, l, s, f) =>
         R.pipe(
@@ -139,6 +141,19 @@ const RecentBoardsView = ({
                                 </li>
                             )}
                         />
+                        {L.view(matchingBoards, filter, (bs, f) => {
+                            function createBoard() {
+                                console.log("asdf")
+                                const newBoard: BoardStub = { name: f, id: uuid.v4() }
+                                dispatch({ action: "board.add", payload: newBoard })
+                                setTimeout(() => navigateToBoard(newBoard.id), 100) // TODO: some ack based solution would be more reliable
+                            }
+                            return bs.length === 0 && f.length >= 3 ? (
+                                <li>
+                                    <a onClick={createBoard}>Create a new board named {f}</a>
+                                </li>
+                            ) : null
+                        })}
                     </ul>
                     {
                         <div className="view-options">
