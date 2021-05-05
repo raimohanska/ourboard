@@ -2,7 +2,7 @@ import { componentScope } from "harmaja"
 import * as L from "lonna"
 import { Id } from "../../common/src/domain"
 import "./app.scss"
-import { ReactiveRouter } from "./components/harmaja-router"
+import { ReactiveRouter } from "harmaja-router"
 
 export function BoardNavigation() {
     const BOARD_PATH = "/b/:boardId"
