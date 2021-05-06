@@ -20,11 +20,11 @@ function clearSelection() {
 
 export const HTMLEditableSpan = (props: EditableSpanProps) => {
     let { value, editingThis, cancel, ...rest } = props
-    const nameElement = L.atom<HTMLSpanElement | null>(null)
+    const editableElement = L.atom<HTMLSpanElement | null>(null)
     editingThis.pipe(L.changes).forEach((editing) => {
         if (editing) {
             setTimeout(() => {
-                nameElement.get()!.focus()
+                editableElement.get()!.focus()
                 document.execCommand("selectAll", false)
             }, 1)
         } else {
@@ -33,12 +33,12 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
     })
 
     const updateContent = () => {
-        const e = nameElement.get()
+        const e = editableElement.get()
         if (!e) return
         e.innerHTML = sanitizeHTML(value.get(), true)
     }
 
-    L.combine(value.pipe(L.applyScope(componentScope())), nameElement, (v, e) => ({ v, e })).forEach(({ v, e }) => {
+    L.combine(value.pipe(L.applyScope(componentScope())), editableElement, (v, e) => ({ v, e })).forEach(({ v, e }) => {
         if (!e) return
         if (e.innerHTML != v) {
             updateContent()
@@ -73,13 +73,13 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
             // esc
             cancel && cancel()
             editingThis.set(false)
-            nameElement.get()!.textContent = value.get()
+            editableElement.get()!.textContent = value.get()
         }
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
     const onKeyUp = onKeyPress
     const onInput = () => {
-        value.set(nameElement.get()!.innerHTML || "")
+        value.set(editableElement.get()!.innerHTML || "")
     }
     const onPaste = (e: JSX.ClipboardEvent<HTMLSpanElement>) => {
         e.preventDefault()
@@ -99,7 +99,7 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
                 onBlur={onBlur}
                 contentEditable={editingThis}
                 style={L.view(value, (v) => (v ? {} : { display: "inline-block", minWidth: "1em", minHeight: "1em" }))}
-                ref={nameElement.set}
+                ref={editableElement.set}
                 onKeyPress={onKeyPress}
                 onKeyUp={onKeyUp}
                 onKeyDown={onKeyDown}
