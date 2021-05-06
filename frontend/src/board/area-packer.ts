@@ -37,14 +37,21 @@ export function packItems(cont: Container, board: Board, binarySearch = PACK_BIN
     const items = values.filter((v) => v.containerId === cont.id && v.type !== "text" && v.type !== "container")
 
     const { width, height } = cont
-    const BORDER = 2
+    const borderTop = (cont.fontSize ?? 1) * 2
+    const otherBorders = 1
+    const borderBottom = otherBorders
+    const borderLeft = otherBorders
+    const borderRight = otherBorders
     const PADDING = 0.3
 
-    const b = new Bin(width - BORDER * 2, height - BORDER * 2, new heuristics.BottomLeft())
+    const availableWidth = width - borderLeft - borderRight
+    const availableHeight = height - borderTop - borderBottom
+
+    const b = new Bin(availableWidth, availableHeight, new heuristics.BottomLeft())
     const p = new Packer([b])
     const avgHeight = items.reduce((acc, i) => i.height + acc, 0) / items.length
 
-    const availableArea = (width - BORDER) * (height - BORDER) * binarySearch.multiplier
+    const availableArea = availableWidth * availableHeight * binarySearch.multiplier
 
     function totalArea(its: { width: number; height: number }[]) {
         return its.reduce((acc, it) => it.width * it.height + acc, 0)
@@ -95,8 +102,8 @@ export function packItems(cont: Container, board: Board, binarySearch = PACK_BIN
                 ...it,
                 width: rect.width - PADDING * 2,
                 height: rect.height - PADDING * 2,
-                x: BORDER + cont.x + rect.x,
-                y: BORDER + cont.y + rect.y,
+                x: borderLeft + cont.x + rect.x,
+                y: borderTop + cont.y + rect.y,
             }
         })
     }
