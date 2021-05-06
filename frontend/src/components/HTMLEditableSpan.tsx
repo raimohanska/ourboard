@@ -6,9 +6,7 @@ import { isURL, sanitizeHTML, createLinkHTML } from "./sanitizeHTML"
 export type EditableSpanProps = {
     value: L.Atom<string>
     editingThis: L.Atom<boolean>
-    showIcon?: boolean
-    cancel?: () => void
-} & JSX.DetailedHTMLProps<JSX.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>
+}
 
 const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1
 function clearSelection() {
@@ -19,7 +17,7 @@ function clearSelection() {
 }
 
 export const HTMLEditableSpan = (props: EditableSpanProps) => {
-    let { value, editingThis, cancel, ...rest } = props
+    let { value, editingThis } = props
     const editableElement = L.atom<HTMLSpanElement | null>(null)
     editingThis.pipe(L.changes).forEach((editing) => {
         if (editing) {
@@ -71,7 +69,6 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
             }
         } else if (e.keyCode === 27) {
             // esc
-            cancel && cancel()
             editingThis.set(false)
             editableElement.get()!.textContent = value.get()
         }
@@ -92,8 +89,7 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
     }
 
     return (
-        <span style={{ cursor: "pointer" }} {...rest}>
-            {!!props.showIcon && <span className="icon edit" style={{ marginRight: "0.3em", fontSize: "0.8em" }} />}
+        <span style={{ cursor: "pointer" }}>
             <span
                 className="editable"
                 onBlur={onBlur}
