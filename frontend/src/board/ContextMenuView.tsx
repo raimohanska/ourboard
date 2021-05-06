@@ -82,7 +82,7 @@ export const ContextMenuView = ({
         }
     })
 
-    const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes(), menuShapes(), areaTilingOptions()]
+    const widgetCreators = [menuAlignments(), menuColors(), menuFontSizes(), menuShapes(), menuAreaTiling()]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
 
     const captureEvents = (e: JSX.MouseEvent) => {
@@ -313,7 +313,7 @@ export const ContextMenuView = ({
         }
     }
 
-    function areaTilingOptions() {
+    function menuAreaTiling() {
         const areasSelected = L.view(focusedItems, (items) =>
             items.filter((i: Item): i is Container => i.type === "container"),
         )
