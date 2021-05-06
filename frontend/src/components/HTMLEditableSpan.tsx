@@ -70,7 +70,6 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
         } else if (e.keyCode === 27) {
             // esc
             editingThis.set(false)
-            editableElement.get()!.textContent = value.get()
         }
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
     }
