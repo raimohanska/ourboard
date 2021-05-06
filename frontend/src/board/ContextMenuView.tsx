@@ -14,6 +14,7 @@ import {
     Id,
     Container,
     NoteShape,
+    isContainer,
 } from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
 import { NOTE_COLORS, TRANSPARENT } from "../../../common/src/colors"
@@ -314,23 +315,41 @@ export const ContextMenuView = ({
     }
 
     function menuAreaTiling() {
-        const areasSelected = L.view(focusedItems, (items) =>
-            items.filter((i: Item): i is Container => i.type === "container"),
-        )
-        return L.view(areasSelected, (areas) =>
-            areas.length !== 1
-                ? []
-                : [
-                      <div className="area-options">
-                          <span className="icon" onClick={() => packItemsInsideContainer(areas[0])}>
-                              <TileIcon />
-                          </span>
-                      </div>,
-                  ],
+        const packables = L.view(focusedItems, (items) => {
+            if (items.length === 1) {
+                if (isContainer(items[0])) return items
+            }
+            if (items.length >= 1) {
+                const containerIds = new Set(items.map((i) => i.containerId))
+                if (containerIds.size === 1 && [...containerIds][0]) return items
+            }
+            return []
+        })
+        return L.view(
+            packables,
+            (ps) => ps.length > 0,
+            (show) =>
+                show
+                    ? [
+                          <div className="area-options">
+                              <span className="icon" onClick={() => packArbitraryItems(packables.get())}>
+                                  <TileIcon />
+                              </span>
+                          </div>,
+                      ]
+                    : [],
         )
 
-        function packItemsInsideContainer(i: Container) {
-            const packResult = packItems(i, board.get())
+        function packArbitraryItems(items: Item[]) {
+            const b = board.get()
+            if (items.length === 1 && isContainer(items[0])) {
+                packItemsInsideContainer(items[0], b)
+            } else {
+                packItemsInsideContainer(findItem(b)(items[0].containerId!) as Container, b)
+            }
+        }
+        function packItemsInsideContainer(container: Container, b: Board) {
+            const packResult = packItems(container, b)
 
             if (!packResult.ok) {
                 console.error("Packing container failed: " + packResult.error)
