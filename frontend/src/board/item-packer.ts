@@ -2,6 +2,8 @@
 import { BP2D } from "binpackingjs"
 const { Bin, Box, Packer, heuristics } = BP2D
 import { Board, Container, Item } from "../../../common/src/domain"
+import { Rect } from "./geometry"
+import { ITEM_MARGIN } from "./item-organizer"
 
 type PackItemsResult =
     | {
@@ -29,23 +31,9 @@ const PACK_BINARY_SEARCH_DEFAULT: {
     prev: [],
 }
 
-// This function is run recursively 'maxAttempts' times to find a good fit
-export function packItems(cont: Container, board: Board, binarySearch = PACK_BINARY_SEARCH_DEFAULT): PackItemsResult {
-    const is = board.items
-    const values = Object.values(is)
-    // Packing containers-in-containers not supported yet, and resizing text seems to cause overflow issues
-    const items = values.filter((v) => v.containerId === cont.id && v.type !== "text" && v.type !== "container")
-
-    const { width, height } = cont
-    const borderTop = (cont.fontSize ?? 1) * 2
-    const otherBorders = 1
-    const borderBottom = otherBorders
-    const borderLeft = otherBorders
-    const borderRight = otherBorders
-    const PADDING = 0.3
-
-    const availableWidth = width - borderLeft - borderRight
-    const availableHeight = height - borderTop - borderBottom
+export function packItems(targetRect: Rect, items: Item[], binarySearch = PACK_BINARY_SEARCH_DEFAULT): PackItemsResult {
+    const availableWidth = targetRect.width
+    const availableHeight = targetRect.height
 
     const b = new Bin(availableWidth, availableHeight, new heuristics.BottomLeft())
     const p = new Packer([b])
@@ -63,8 +51,8 @@ export function packItems(cont: Container, board: Board, binarySearch = PACK_BIN
             (multipleOfAverageHeight(it) * avgHeight * scale) / it.height
 
         const boxes = its.map((it) => {
-            const width = widthMultiplier(it) * it.width + PADDING * 2
-            const height = multipleOfAverageHeight(it) * avgHeight * scale + PADDING * 2
+            const width = widthMultiplier(it) * it.width + ITEM_MARGIN
+            const height = multipleOfAverageHeight(it) * avgHeight * scale + ITEM_MARGIN
             const box = new Box(width, height, true)
             box.data = { ...it, width, height }
             return box
@@ -100,10 +88,10 @@ export function packItems(cont: Container, board: Board, binarySearch = PACK_BIN
             const rect = packedBoxes.find((p: any) => p.data.id === it.id)!
             return {
                 ...it,
-                width: rect.width - PADDING * 2,
-                height: rect.height - PADDING * 2,
-                x: borderLeft + cont.x + rect.x,
-                y: borderTop + cont.y + rect.y,
+                width: rect.width - ITEM_MARGIN,
+                height: rect.height - ITEM_MARGIN,
+                x: targetRect.x + rect.x,
+                y: targetRect.y + rect.y,
             }
         })
     }
@@ -122,7 +110,7 @@ export function packItems(cont: Container, board: Board, binarySearch = PACK_BIN
             maxAttempts: binarySearch.maxAttempts,
             prev: [newItems, ...binarySearch.prev],
         }
-        return packItems(cont, board, newBinaryParams)
+        return packItems(targetRect, items, newBinaryParams)
     }
 
     const finalItems = [newItems, ...binarySearch.prev].find((candidate) => candidate !== null)

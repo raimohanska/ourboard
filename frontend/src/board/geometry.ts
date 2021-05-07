@@ -22,10 +22,10 @@ export function multiply(a: Coordinates, factor: number) {
 }
 
 export function overlaps(a: Rect, b: Rect) {
-    if (b.x > a.x + a.width) return false
-    if (b.x + b.width < a.x) return false
-    if (b.y > a.y + a.height) return false
-    if (b.y + b.height < a.y) return false
+    if (b.x >= a.x + a.width) return false
+    if (b.x + b.width <= a.x) return false
+    if (b.y >= a.y + a.height) return false
+    if (b.y + b.height <= a.y) return false
     return true
 }
 

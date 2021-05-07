@@ -1,29 +1,21 @@
 import { h, HarmajaOutput, ListView } from "harmaja"
-import * as L from "lonna"
 import _ from "lodash"
+import * as L from "lonna"
+import { NOTE_COLORS, TRANSPARENT } from "../../../common/src/colors"
 import {
     Board,
     Color,
-    findItem,
-    isColoredItem,
-    Item,
-    isTextItem,
-    Note,
-    isShapedItem,
-    ShapedItem,
-    Id,
     Container,
-    NoteShape,
+    findItem,
+    Id,
+    isColoredItem,
     isContainer,
+    isShapedItem,
+    isTextItem,
+    Item,
+    NoteShape,
+    ShapedItem,
 } from "../../../common/src/domain"
-import { Dispatch } from "../store/board-store"
-import { NOTE_COLORS, TRANSPARENT } from "../../../common/src/colors"
-import { BoardFocus } from "./board-focus"
-import { item } from "lonna"
-import { packItems } from "./area-packer"
-import { selectedColor, black } from "../components/UIColors"
-import { BoardCoordinateHelper } from "./board-coordinates"
-import { Rect } from "./geometry"
 import {
     AlignHorizontalLeftIcon,
     AlignVerticalTopIcon,
@@ -37,6 +29,12 @@ import {
     TileIcon,
     VerticalDistributeIcon,
 } from "../components/Icons"
+import { black, selectedColor } from "../components/UIColors"
+import { Dispatch } from "../store/board-store"
+import { BoardFocus } from "./board-focus"
+import { Rect } from "./geometry"
+import { contentRect, packableItems, organizeItems } from "./item-organizer"
+import { packItems } from "./item-packer"
 
 export const ContextMenuView = ({
     dispatch,
@@ -349,14 +347,22 @@ export const ContextMenuView = ({
             }
         }
         function packItemsInsideContainer(container: Container, b: Board) {
-            const packResult = packItems(container, b)
+            const targetRect = contentRect(container)
+            const itemsToPack = packableItems(container, b)
+            let organizedItems = organizeItems(itemsToPack, [], targetRect)
+            if (organizedItems.length === 0) {
+                console.log("Packing")
+                // Already organized -> Pack into equal size to fit
+                const packResult = packItems(targetRect, itemsToPack)
 
-            if (!packResult.ok) {
-                console.error("Packing container failed: " + packResult.error)
-                return
+                if (!packResult.ok) {
+                    console.error("Packing container failed: " + packResult.error)
+                    return
+                }
+                organizedItems = packResult.packedItems
             }
 
-            dispatch({ action: "item.update", boardId: board.get().id, items: packResult.packedItems })
+            dispatch({ action: "item.update", boardId: board.get().id, items: organizedItems })
         }
     }
 
