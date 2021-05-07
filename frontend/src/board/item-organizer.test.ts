@@ -38,4 +38,16 @@ describe("organizeItems", () => {
         ]
         expect(organizeItems(result1Shuffled, itemsToAvoid, rect)).toEqual([])
     })
+
+    it("Clean new rows when different sizes on a row", () => {
+        const itemsToAvoid = [
+            { ...newNote("a1"), x: 10, y: 10, width: 10, height: 50 },
+            { ...newNote("a2"), x: 20, y: 10, width: 90, height: 10 },
+        ]
+        const itemsToPlace = [b1, b2]
+        expect(organizeItems(itemsToPlace, itemsToAvoid, rect)).toEqual([
+            { ...b1, x: 10, y: 61 },
+            { ...b2, x: 31, y: 61 },
+        ])
+    })
 })

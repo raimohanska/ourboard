@@ -60,7 +60,8 @@ export function placeItem(
     for (let i = 0; i < 1000000; i++) {
         let place = { x: colX, y: rowY, width: item.width, height: item.height }
         //console.log(place)
-        let overlapping = itemsToAvoid.map((i) => marginRect(ITEM_MARGIN, i)).filter((r) => G.overlaps(place, r))
+        const toAvoidWithMargin = itemsToAvoid.map((i) => marginRect(ITEM_MARGIN, i))
+        let overlapping = toAvoidWithMargin.filter((r) => G.overlaps(place, r))
         if (overlapping.length === 0) {
             return { item: { ...item, ...place }, rowY, colX }
         } else {
@@ -71,7 +72,10 @@ export function placeItem(
                 colX = nextX
             } else {
                 colX = rect.x
-                rowY += rowResolution
+                const rowArea = { x: rect.x, y: rowY, width: rect.width, height: place.height }
+                const rowItemsWithMargin = toAvoidWithMargin.filter((i) => G.overlaps(i, rowArea))
+                const maxY = _.max(rowItemsWithMargin.map((i) => i.y + i.height))!
+                rowY = maxY
             }
         }
     }
