@@ -40,6 +40,7 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
                 logoutUser(appEvent, socket)
                 console.log(`${session.userInfo.name} logged out`)
             }
+            socket.close()
             return true
         }
         case "nickname.set": {

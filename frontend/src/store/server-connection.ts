@@ -135,5 +135,6 @@ export function GenericServerConnection(
         bufferedServerEvents,
         sentUIEvents: sentUIEvents as L.EventStream<UIEvent>,
         connected: L.view(connectionStatus, (s) => s === "connected"),
+        newSocket,
     }
 }

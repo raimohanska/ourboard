@@ -7,6 +7,10 @@ import { LIGHT_BLUE, PINK, RED, YELLOW } from "./colors"
 export type Id = string
 export type ISOTimeStamp = string
 
+export function optional<T extends t.Type<any>>(c: T) {
+    return t.union([c, t.undefined, t.null])
+}
+
 export type BoardAttributes = {
     id: Id
     name: string
@@ -21,19 +25,24 @@ export type Board = BoardAttributes & {
     serial: Serial
 }
 
+export const AccessLevelCodec = t.union([t.literal("read-write"), t.literal("read-only"), t.literal("none")])
+export type AccessLevel = t.TypeOf<typeof AccessLevelCodec>
+export const AccessListEntryCodec = t.union([
+    t.type({
+        email: t.string,
+        access: optional(AccessLevelCodec),
+    }),
+    t.type({
+        domain: t.string,
+        access: optional(AccessLevelCodec),
+    }),
+])
+export type AccessListEntry = t.TypeOf<typeof AccessListEntryCodec>
 export const BoardAccessPolicyCodec = t.union([
     t.undefined,
     t.type({
-        allowList: t.array(
-            t.union([
-                t.type({
-                    email: t.string,
-                }),
-                t.type({
-                    domain: t.string,
-                }),
-            ]),
-        ),
+        allowList: t.array(AccessListEntryCodec),
+        publicRead: optional(t.boolean),
     }),
 ])
 export type BoardAccessPolicy = t.TypeOf<typeof BoardAccessPolicyCodec>
@@ -234,12 +243,13 @@ export type Ack = { action: "ack"; ackId: string; serials: Record<Id, Serial> }
 export type ActionApplyFailed = { action: "board.action.apply.failed" }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
 export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo
-export type InitBoardNew = { action: "board.init"; board: Board }
+export type InitBoardNew = { action: "board.init"; board: Board; accessLevel: AccessLevel }
 export type InitBoardDiff = {
     action: "board.init"
     recentEvents: BoardHistoryEntry[]
     boardAttributes: BoardAttributes
     initAtSerial: Serial
+    accessLevel: AccessLevel
 }
 export type RenameBoard = { action: "board.rename"; boardId: Id; name: string }
 export type CursorMove = { action: "cursor.move"; position: CursorPosition; boardId: Id }
@@ -480,3 +490,33 @@ export function getBoardAttributes(board: Board): BoardAttributes {
 }
 
 export const BOARD_ITEM_BORDER_MARGIN = 0.5
+
+export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, userInfo: EventUserInfo): AccessLevel {
+    if (!accessPolicy) return "read-write"
+    let accessLevel: AccessLevel = accessPolicy.publicRead ? "read-only" : "none"
+    if (userInfo.userType === "unidentified" || userInfo.userType === "system") {
+        return accessLevel
+    }
+    const email = userInfo.email
+    const defaultAccess = "read-write"
+    for (let entry of accessPolicy.allowList) {
+        const nextLevel =
+            "email" in entry && entry.email === email
+                ? entry.access || defaultAccess
+                : "domain" in entry && email.endsWith(entry.domain)
+                ? entry.access || defaultAccess
+                : "none"
+        if (nextLevel === "none") continue
+        accessLevel = nextLevel
+        if (accessLevel === "read-write") return accessLevel
+    }
+    return accessLevel
+}
+
+export function canRead(a: AccessLevel) {
+    return a !== "none"
+}
+
+export function canWrite(a: AccessLevel) {
+    return a === "read-write"
+}

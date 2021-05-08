@@ -26,6 +26,8 @@ import {
     TransientBoardItemEvent,
     UIEvent,
     UserSessionInfo,
+    AccessLevel,
+    canWrite,
 } from "../../../common/src/domain"
 import { mkBootStrapEvent } from "../../../common/src/migration"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
@@ -44,6 +46,7 @@ export type BoardAccessStatus =
     | "not-found"
 export type BoardState = {
     status: BoardAccessStatus
+    accessLevel: AccessLevel
     board: Board | undefined
     serverShadow: Board | undefined
     queue: (BoardHistoryEntry | CursorMove)[] // serverShadow + queue = current board
@@ -163,6 +166,7 @@ export function BoardStore(
             } else if (isPersistableBoardItemEvent(event)) {
                 try {
                     if (event.serial == undefined) {
+                        if (!canWrite(state.accessLevel)) return state
                         // No serial == is local event. TODO: maybe a nicer way to recognize this?
                         redoStack.clear()
                         const [board, reverse] = boardReducer(state.board!, event)
@@ -344,6 +348,7 @@ export function BoardStore(
                     //console.log(`Init done and board at ${board.serial}`)
                     return flushIfPossible({
                         ...state,
+                        accessLevel: event.accessLevel,
                         status: "ready",
                         board,
                         serverShadow: newServerShadow,
@@ -362,6 +367,7 @@ export function BoardStore(
                     ...state,
                     status: "ready",
                     board: event.board,
+                    accessLevel: event.accessLevel,
                     serverShadow: event.board,
                     sent: [],
                     offline: false,
@@ -385,8 +391,9 @@ export function BoardStore(
         return state
     }
 
-    const initialState = {
+    const initialState: BoardState = {
         status: "none" as const,
+        accessLevel: "none",
         offline: true,
         serverShadow: undefined,
         board: undefined,
@@ -436,14 +443,21 @@ export function BoardStore(
     })
 
     const sessionStatus = L.view(sessionInfo, (s) => s.status)
-    sessionStatus.onChange((s) => {
-        if (s === "logged-out") {
+    const ss = sessionStatus.pipe(
+        L.changes,
+        L.scan([sessionStatus.get(), sessionStatus.get()] as const, ([a, b], next) => [b, next] as const),
+        L.applyScope(globalScope),
+    )
+    ss.onChange(([prev, s]) => {
+        if (s === "logged-out" && prev === "logged-in") {
+            console.log("CLEARING")
             localStore.clearAllPrivateBoards()
             const board = state.get().board
             if (board && board.accessPolicy) {
                 dispatch({ action: "ui.board.logged.out", boardId: board.id })
                 return
             }
+            connection.newSocket()
         }
         checkReadyToJoin()
     })

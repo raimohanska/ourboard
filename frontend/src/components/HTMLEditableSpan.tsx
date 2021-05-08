@@ -6,6 +6,7 @@ import { isURL, sanitizeHTML, createLinkHTML } from "./sanitizeHTML"
 export type EditableSpanProps = {
     value: L.Atom<string>
     editingThis: L.Atom<boolean>
+    editable: L.Property<boolean>
 }
 
 const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1
@@ -17,7 +18,7 @@ function clearSelection() {
 }
 
 export const HTMLEditableSpan = (props: EditableSpanProps) => {
-    let { value, editingThis } = props
+    let { value, editingThis, editable } = props
     const editableElement = L.atom<HTMLSpanElement | null>(null)
     editingThis.pipe(L.changes).forEach((editing) => {
         if (editing) {
@@ -92,7 +93,7 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
             <span
                 className="editable"
                 onBlur={onBlur}
-                contentEditable={editingThis}
+                contentEditable={L.and(editingThis, editable)}
                 style={L.view(value, (v) => (v ? {} : { display: "inline-block", minWidth: "1em", minHeight: "1em" }))}
                 ref={editableElement.set}
                 onKeyPress={onKeyPress}

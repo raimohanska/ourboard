@@ -21,6 +21,7 @@ import {
     isBoardHistoryEntry,
     EventUserInfoAuthenticated,
     getBoardAttributes,
+    AccessLevel,
 } from "../../common/src/domain"
 import { getBoard, maybeGetBoard, ServerSideBoardState } from "./board-state"
 import { getBoardHistory, verifyContinuity } from "./board-store"
@@ -41,6 +42,7 @@ export type UserSession = {
 export type UserSessionBoardEntry = {
     boardId: Id
     status: "ready" | "buffering"
+    accessLevel: AccessLevel
     bufferedEvents: BoardHistoryEntry[]
 }
 
@@ -137,6 +139,7 @@ function describeRange(events: BoardHistoryEntry[]) {
 export async function addSessionToBoard(
     boardState: ServerSideBoardState,
     origin: WsWrapper,
+    accessLevel: AccessLevel,
     initAtSerial?: Serial,
 ): Promise<void> {
     const session = sessions[origin.id]
@@ -144,7 +147,7 @@ export async function addSessionToBoard(
     const boardId = boardState.board.id
     boardState.sessions = [...boardState.sessions, session]
     if (initAtSerial) {
-        const entry = { boardId, status: "buffering", bufferedEvents: [] } as UserSessionBoardEntry
+        const entry = { boardId, status: "buffering", accessLevel, bufferedEvents: [] } as UserSessionBoardEntry
         // 1. Add session to the board with "buffering" status, to collect all events that were meant to be sent during this async initialization
         session.boardSession = entry
         try {
@@ -172,6 +175,7 @@ export async function addSessionToBoard(
                 boardAttributes,
                 recentEvents: [...dbEvents, ...inMemoryEvents, ...entry.bufferedEvents],
                 initAtSerial,
+                accessLevel,
             })
             //console.log(`Sending buffered events: ${describeRange(entry.bufferedEvents)}`)
             // 6. Set the client to "ready" status so that new events will be flushed
@@ -186,13 +190,15 @@ export async function addSessionToBoard(
             session.sendEvent({
                 action: "board.init",
                 board: boardState.board,
+                accessLevel,
             })
         }
     } else {
-        session.boardSession = { boardId, status: "ready", bufferedEvents: [] }
+        session.boardSession = { boardId, status: "ready", accessLevel, bufferedEvents: [] }
         session.sendEvent({
             action: "board.init",
             board: boardState.board,
+            accessLevel,
         })
     }
 

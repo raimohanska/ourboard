@@ -177,7 +177,8 @@ async function initBoardStore({
         connected,
         send,
         bufferedServerEvents: serverEvents,
-        sentUIEvents: null as any, // not used by BoardStore
+        sentUIEvents: null as any, // not used by BoardStore,
+        newSocket: function () {},
     }
 
     const localStore = {
@@ -221,9 +222,10 @@ async function initBoardStore({
             recentEvents: serverSideHistory!.filter((e) => e.serial! > initAtSerial),
             boardAttributes: getBoardAttributes(serverSideBoard),
             initAtSerial,
+            accessLevel: "read-write",
         })
     } else {
-        serverEvents.push({ action: "board.init", board: serverSideBoard })
+        serverEvents.push({ action: "board.init", board: serverSideBoard, accessLevel: "read-write" })
     }
 
     await waitForBackgroundJobs()

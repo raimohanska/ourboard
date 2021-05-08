@@ -3,10 +3,10 @@ import { getNavigator, Link } from "harmaja-router"
 import * as L from "lonna"
 import * as R from "ramda"
 import * as uuid from "uuid"
-import { BoardAccessPolicy, BoardStub, exampleBoard, RecentBoard } from "../../../common/src/domain"
+import { BoardAccessPolicy, BoardStub, exampleBoard, RecentBoard, AccessListEntry } from "../../../common/src/domain"
 import { BOARD_PATH, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
-import { TextInput } from "../components/components"
+import { Checkbox, TextInput } from "../components/components"
 import { signIn, signOut } from "../google-auth"
 import { Dispatch } from "../store/board-store"
 import { RecentBoards } from "../store/recent-boards"
@@ -237,15 +237,16 @@ const CreateBoard = ({
         if (ap && ss.status === "logged-in") {
             // Always add board creator's email to allowlist,
             // And show it as a disabled input in the allowlist form.
-            newBoard.accessPolicy = { ...ap, allowList: ap.allowList.concat({ email: ss.email }) }
+            newBoard.accessPolicy = { ...ap, allowList: ap.allowList.concat({ email: ss.email, access: "read-write" }) }
         }
         dispatch({ action: "board.add", payload: newBoard })
         setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
     }
 
     const restrictAccessToggle = L.atom(false)
-    const allowList = L.atom<({ email: string } | { domain: string })[]>([])
+    const allowList = L.atom<AccessListEntry[]>([])
     const inputRef = L.atom<HTMLInputElement | null>(null)
+    const allowPublicRead = L.atom(false)
     const currentInputText = L.atom("")
 
     inputRef.forEach((t) => {
@@ -257,7 +258,11 @@ const CreateBoard = ({
 
     function addToAllowListIfValid(input: string) {
         // LMAO at this validation
-        const entry = input.includes("@") ? { email: input } : input.includes(".") ? { domain: input } : null
+        const entry: AccessListEntry | null = input.includes("@")
+            ? { email: input, access: "read-write" }
+            : input.includes(".")
+            ? { domain: input, access: "read-write" }
+            : null
 
         if (entry) {
             allowList.modify((w) => [entry, ...w])
@@ -269,11 +274,13 @@ const CreateBoard = ({
         sessionState,
         restrictAccessToggle,
         allowList,
-        (s, r, a) => {
+        allowPublicRead,
+        (s, r, a, p) => {
             return !r || s.status !== "logged-in"
                 ? undefined
                 : {
                       allowList: a,
+                      publicRead: p,
                   }
         },
     )
@@ -346,6 +353,10 @@ const CreateBoard = ({
                                         </div>
                                     ),
                             )}
+
+                            <p>
+                                Anyone with the link can view <Checkbox checked={allowPublicRead} />
+                            </p>
                         </>
                     ),
             )}

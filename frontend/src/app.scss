@@ -550,6 +550,13 @@ a {
             pointer-events: all;
         }
 
+        &.read-only {
+            .main-toolbar,
+            .undo-redo-toolbar {
+                display: none;
+            }
+        }
+
         .toolbar {
             border: 2px solid $off-board-color;
             box-shadow: 0px 2px 6px 0px #00263a0f;

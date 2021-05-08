@@ -1,4 +1,11 @@
-import { AppEvent, BoardHistoryEntry, Id, isBoardItemEvent, isPersistableBoardItemEvent } from "../../common/src/domain"
+import {
+    AppEvent,
+    BoardHistoryEntry,
+    checkBoardAccess,
+    Id,
+    isBoardItemEvent,
+    isPersistableBoardItemEvent,
+} from "../../common/src/domain"
 import { getBoard, maybeGetBoard, updateBoards } from "./board-state"
 import { updateBoard } from "./board-store"
 import { MessageHandlerResult } from "./connection-handler"
@@ -10,7 +17,6 @@ import { getBoardInfo } from "./board-store"
 import { WsWrapper } from "./ws-wrapper"
 import { sleep } from "../../common/src/sleep"
 
-const IGNORE_ACCESS_POLICY = process.env.IGNORE_ACCESS_POLICY === "true"
 const WS_PROTOCOL = process.env.WS_PROTOCOL ?? "ws"
 const WS_HOST_LOCAL = (process.env.WS_HOST_LOCAL ?? "localhost:1337").split(",")
 const WS_HOST_DEFAULT = process.env.WS_HOST_DEFAULT ?? "localhost:1337"
@@ -56,13 +62,27 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
             return true
         }
 
-        const board = (await getBoard(appEvent.boardId))!
+        let board = (await getBoard(appEvent.boardId))!
         if (!session) {
             return true
         }
 
-        if (!IGNORE_ACCESS_POLICY && board.board.accessPolicy) {
-            if (session.userInfo.userType != "authenticated") {
+        const accessPolicy = board.board.accessPolicy
+        const accessLevel = checkBoardAccess(accessPolicy, session.userInfo)
+        if (session.userInfo.userType === "authenticated") {
+            if (accessLevel === "none") {
+                console.warn("Access denied to board by user not on allowList")
+                session.sendEvent({
+                    action: "board.join.denied",
+                    boardId: appEvent.boardId,
+                    reason: "forbidden",
+                })
+                return true
+            } else {
+                await associateUserWithBoard(session.userInfo.userId, appEvent.boardId)
+            }
+        } else {
+            if (accessLevel === "none") {
                 console.warn("Access denied to board by anonymous user")
                 session.sendEvent({
                     action: "board.join.denied",
@@ -71,27 +91,13 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
                 })
                 return true
             }
-            const email = session.userInfo.email
-            if (
-                !board.board.accessPolicy.allowList.some((entry) => {
-                    if ("email" in entry) {
-                        return entry.email === email
-                    } else {
-                        return email.endsWith(entry.domain)
-                    }
-                })
-            ) {
-                console.warn("Access denied to board by user not on allowList")
-                session.sendEvent({
-                    action: "board.join.denied",
-                    boardId: appEvent.boardId,
-                    reason: "forbidden",
-                })
-                return true
+            // Anonymize access policy for anonymous users
+            board = {
+                ...board,
+                board: { ...board.board, accessPolicy: accessPolicy ? { ...accessPolicy, allowList: [] } : undefined },
             }
-            await associateUserWithBoard(session.userInfo.userId, appEvent.boardId)
         }
-        await addSessionToBoard(board, socket, appEvent.initAtSerial)
+        await addSessionToBoard(board, socket, accessLevel, appEvent.initAtSerial)
         return true
     }
 
@@ -105,6 +111,10 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
         const state = await getBoard(boardId)
         if (!state) {
             return true // Just ignoring for now, see above todo
+        }
+        if (session.boardSession.accessLevel !== "read-write") {
+            console.warn("Trying to change read-only board")
+            return true
         }
         obtainLock(state.locks, appEvent, socket) // Allow even if was locked (offline use)
         if (isPersistableBoardItemEvent(appEvent)) {

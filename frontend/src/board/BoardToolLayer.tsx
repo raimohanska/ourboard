@@ -1,6 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { Board, Id, Item, Note } from "../../../common/src/domain"
+import { AccessLevel, Board, Id, Item, Note, canWrite } from "../../../common/src/domain"
 import { BoardStore, Dispatch } from "../store/board-store"
 import { UserSessionState } from "../store/user-session-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
@@ -26,6 +26,7 @@ export const BoardToolLayer = ({
     containerElement,
     sessionState,
     board,
+    accessLevel,
     onAdd,
     toolController,
     dispatch,
@@ -39,6 +40,7 @@ export const BoardToolLayer = ({
     containerElement: L.Atom<HTMLElement | null>
     sessionState: L.Property<UserSessionState>
     board: L.Property<Board>
+    accessLevel: L.Property<AccessLevel>
     onAdd: (i: Item) => void
     toolController: ToolController
     dispatch: Dispatch
@@ -102,7 +104,7 @@ export const BoardToolLayer = ({
         transform: p.x !== undefined ? "none" : undefined,
     }))
     return (
-        <div className="tool-layer">
+        <div className={L.view(accessLevel, (l) => "tool-layer " + (canWrite(l) ? "" : " read-only"))}>
             <BoardViewMessage {...{ boardAccessStatus, sessionState, board }} />
 
             <div className="navigation-toolbar">

@@ -1,7 +1,7 @@
 import * as H from "harmaja"
 import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
-import { Board, findItem, Id, Image, Item, newNote, Note, Video } from "../../../common/src/domain"
+import { Board, canWrite, findItem, Id, Image, Item, newNote, Note, Video } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { onClickOutside } from "../components/onClickOutside"
 import { isEmbedded } from "../embedding"
@@ -58,6 +58,7 @@ export const BoardView = ({
         L.map((s: BoardState) => s.board!),
         L.filter((b: Board) => !!b, componentScope()),
     )
+    const accessLevel = L.view(boardState, "accessLevel")
     const history = L.view(boardState, "serverHistory")
     const locks = L.view(boardState, (s) => s.locks)
     const sessionId = L.view(sessionState, (s) => s.sessionId)
@@ -217,7 +218,7 @@ export const BoardView = ({
 
     return (
         <div id="root" className={className}>
-            <BoardViewHeader {...{ board, sessionState, dispatch }} />
+            <BoardViewHeader {...{ board, sessionState, dispatch, accessLevel }} />
             <div className="content-container" ref={containerElement.set}>
                 <div className="scroll-container" ref={scrollElement.set}>
                     <div className="border-container" style={borderContainerStyle}>
@@ -240,7 +241,9 @@ export const BoardView = ({
                             )}
                             <RectangularDragSelection {...{ rect: selectionRect }} />
                             <CursorsView {...{ cursors, sessions, viewRect }} />
-                            <ContextMenuView {...{ latestNote, dispatch, board, focus, viewRect }} />
+                            {L.view(accessLevel, canWrite, (s) =>
+                                s ? <ContextMenuView {...{ latestNote, dispatch, board, focus, viewRect }} /> : null,
+                            )}
                             <ConnectionsView {...{ board, zoom, dispatch, focus, coordinateHelper }} />
                         </div>
                     </div>
@@ -248,6 +251,7 @@ export const BoardView = ({
                 <BoardToolLayer
                     {...{
                         board,
+                        accessLevel,
                         boardStore,
                         containerElement,
                         coordinateHelper,
@@ -292,6 +296,7 @@ export const BoardView = ({
                                 coordinateHelper,
                                 dispatch,
                                 toolController,
+                                accessLevel,
                             }}
                         />
                     )

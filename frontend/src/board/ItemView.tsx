@@ -1,8 +1,10 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import {
+    AccessLevel,
     Board,
     BoardHistoryEntry,
+    canWrite,
     getItemBackground,
     getItemIds,
     getItemShape,
@@ -25,6 +27,7 @@ import { itemZIndex } from "./zIndices"
 
 export const ItemView = ({
     board,
+    accessLevel,
     history,
     id,
     type,
@@ -36,6 +39,7 @@ export const ItemView = ({
     toolController,
 }: {
     board: L.Property<Board>
+    accessLevel: L.Property<AccessLevel>
     history: L.Property<BoardHistoryEntry[]>
     id: string
     type: ItemType
@@ -158,6 +162,7 @@ export const ItemView = ({
                             L.view(itemFocus, (f) => f === "editing"),
                             setEditing,
                         ),
+                        editable: L.view(accessLevel, canWrite),
                     }}
                 />
                 {showCoords && <small>{L.view(item, (p) => Math.floor(p.x) + ", " + Math.floor(p.y))}</small>}
