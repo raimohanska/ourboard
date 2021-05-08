@@ -36,14 +36,16 @@ export function itemMoveWithArrowKeysHandler(board: L.Property<Board>, dispatch:
             .pipe(L.applyScope(componentScope()))
             .forEach((e) => {
                 if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
-                    e.preventDefault()
                     if (eventName === "keydown") {
                         const currentBoard = board.get()
                         const itemsAndConnections = findSelectedItems(focus.get(), currentBoard)
-                        const movedItems = itemsAndConnections.items.map((item) =>
-                            moveItem(currentBoard, item, e.key, e.shiftKey, e.altKey),
-                        )
-                        dispatch({ action: "item.move", boardId: currentBoard.id, items: movedItems })
+                        if (itemsAndConnections.items.length > 0 || itemsAndConnections.connections.length > 0) {
+                            e.preventDefault()
+                            const movedItems = itemsAndConnections.items.map((item) =>
+                                moveItem(currentBoard, item, e.key, e.shiftKey, e.altKey),
+                            )
+                            dispatch({ action: "item.move", boardId: currentBoard.id, items: movedItems })
+                        }
                     }
                 }
             })
