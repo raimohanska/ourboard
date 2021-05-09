@@ -202,6 +202,13 @@ a {
             text-align: center;
             margin-left: 0.5em;
             margin-left: 1rem;
+            small {
+                color: gray;
+                border-radius: 0.5em;
+                padding: 1px 0.5em;
+                font-size: 0.6em;
+                vertical-align: middle;
+            }
         }
 
         .user-info {
