@@ -1,0 +1,116 @@
+#root.dashboard {
+    background: #f4f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    .content {
+        max-width: 30em;
+        min-width: 30em;
+        margin-top: 4em;
+    }
+    a {
+        text-decoration: none;
+    }
+    header {
+    }
+    main {
+        padding: 2em;
+        background: white;
+        border-radius: 11px;
+    }
+    a {
+        color: $orange;
+    }
+    button.sign-in {
+        margin-top: 1em;
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        .templates {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+    }
+
+    .user-content {
+        display: flex;
+        .user-info {
+            text-align: right;
+            font-size: 0.8rem;
+            padding-top: 0.6em;
+            button {
+                margin-top: 1.15em;
+            }
+        }
+    }
+
+    .recent-boards {
+        .search {
+            input {
+                outline: none;
+                margin-bottom: 1em;
+            }
+        }
+        .remove {
+            margin-left: 0.5em;
+            font-size: 0.6em;
+            visibility: hidden;
+            text-decoration: none;
+        }
+        li:hover {
+            .remove {
+                visibility: visible;
+            }
+        }
+        .view-options {
+            font-size: 0.8em;
+            margin-top: 1em;
+            a {
+                margin-right: 1em;
+            }
+        }
+    }
+    .create-board {
+        box-sizing: border-box;
+        max-width: min(100vw, 800px);
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+
+        [type="checkbox"] {
+            margin-left: 0;
+        }
+
+        .input-and-button {
+            width: 100%;
+            margin-bottom: 0.3rem;
+            display: flex;
+            flex: 1;
+
+            input {
+                flex: 1;
+            }
+            button {
+                margin-left: 1rem;
+                height: 2rem;
+            }
+
+            .filled-entry {
+                display: flex;
+                align-items: center;
+            }
+        }
+
+        .restrict-toggle {
+            display: flex;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    }
+}

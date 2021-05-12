@@ -1,0 +1,42 @@
+.dropshadow {
+    box-shadow: 3px 3px 15px 0px rgba(0, 0, 0, 0.16);
+}
+.dropshadow-shallow {
+    box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.16);
+}
+
+.textshadow {
+    text-shadow: -1px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.disabled-interaction {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.checkbox {
+    @extend .icon;
+    background-image: url(img/unchecked-checkbox.png);
+    cursor: pointer;
+    &.checked {
+        background-image: url(img/checked-checkbox.png);
+    }
+    width: initial;
+    min-width: 1em;
+    padding-left: 1.5em;
+    color: $black; /* to prevent link-like coloring for contained text */
+}
+
+.icon {
+    display: inline-block;
+    width: 1em;
+    min-width: 1em;
+    height: 1em;
+    background-size: contain;
+    background-repeat: no-repeat;
+    font-size: 1em !important;
+    &.disabled {
+        pointer-events: none;
+        color: $disabled-color;
+    }
+}

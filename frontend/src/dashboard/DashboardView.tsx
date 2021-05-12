@@ -23,38 +23,64 @@ export const DashboardView = ({
 }) => {
     return (
         <div id="root" className="dashboard">
-            <h1 id="app-title" data-test="app-title">
-                OurBoard
-            </h1>
-            <p>
-                Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
-            </p>
-            <RecentBoardsView {...{ recentBoards, dispatch }} />
-            <CreateBoard {...{ dispatch, sessionState }} />
-            <GoogleLoginArea {...{ sessionState }} />
+            <div className="content">
+                <header>
+                    <h1 id="app-title" data-test="app-title">
+                        OurBoard
+                    </h1>
+                    <p>
+                        Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
+                    </p>
+                </header>
+                <main>
+                    <CreateBoard {...{ dispatch, sessionState }} />
+                    <UserDataArea {...{ recentBoards, dispatch, sessionState }} />
+                    {L.view(sessionState, (user) => {
+                        switch (user.status) {
+                            case "logged-in":
+                                return null
+                            default:
+                                if (canLogin(user)) {
+                                    return (
+                                        <button className="sign-in" onClick={signIn}>
+                                            Sign in
+                                        </button>
+                                    )
+                                } else {
+                                    return null
+                                }
+                        }
+                    })}
+                </main>
+            </div>
         </div>
     )
 }
 
-const GoogleLoginArea = ({ sessionState }: { sessionState: L.Property<UserSessionState> }) => {
+const UserDataArea = ({
+    recentBoards,
+    dispatch,
+    sessionState,
+}: {
+    recentBoards: RecentBoards
+    dispatch: Dispatch
+    sessionState: L.Property<UserSessionState>
+}) => {
     return (
-        <div className="user-auth">
-            {L.view(sessionState, (user) => {
-                switch (user.status) {
-                    case "logged-in":
-                        return (
-                            <span>
-                                You're signed in as {user.name} <button onClick={signOut}>Sign out</button>
-                            </span>
-                        )
-                    default:
-                        if (canLogin(user)) {
-                            return <button onClick={signIn}>Sign in</button>
-                        } else {
-                            return null
-                        }
-                }
-            })}
+        <div>
+            {L.view(
+                recentBoards.recentboards,
+                (recent) => recent.length === 0,
+                (empty) =>
+                    empty ? (
+                        <Welcome />
+                    ) : (
+                        <div className="user-content">
+                            <RecentBoardsView {...{ recentBoards, dispatch }} />
+                            <GoogleLoginArea {...{ sessionState }} />
+                        </div>
+                    ),
+            )}
         </div>
     )
 }
@@ -101,7 +127,7 @@ const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoar
                         <Welcome />
                     ) : (
                         <div className="recent-boards">
-                            <h2>Recent boards</h2>
+                            <h2>Your recent boards</h2>
                             {L.view(lotsOfBoards, (show) =>
                                 show ? (
                                     <div className="search">
@@ -205,6 +231,22 @@ const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoar
     )
 }
 
+const GoogleLoginArea = ({ sessionState }: { sessionState: L.Property<UserSessionState> }) => {
+    return L.view(sessionState, (user) => {
+        switch (user.status) {
+            case "logged-in":
+                return (
+                    <span className="user-info">
+                        <span className="user-name">{user.name}</span>
+                        <button onClick={signOut}>Sign out</button>
+                    </span>
+                )
+            default:
+                return null
+        }
+    })
+}
+
 const Welcome = () => {
     return (
         <div>
@@ -288,11 +330,18 @@ const CreateBoard = ({
     return (
         <form onSubmit={createBoard} className="create-board">
             <h2>Create a board</h2>
-            <TextInput value={boardName} placeholder="Enter board name" />
+            <div className="input-and-button">
+                <TextInput value={boardName} placeholder="Enter board name" />
+                <button id="create-board-button" data-test="create-board-submit" type="submit" disabled={disabled}>
+                    Create
+                </button>
+            </div>
             {L.view(
                 sessionState,
-                (s) =>
-                    s.status === "logged-in" && (
+                disabled,
+                (s, d) =>
+                    s.status === "logged-in" &&
+                    !d && (
                         <div className="restrict-toggle">
                             <input
                                 id="domain-restrict"
@@ -360,9 +409,6 @@ const CreateBoard = ({
                         </>
                     ),
             )}
-            <button id="create-board-button" data-test="create-board-submit" type="submit" disabled={disabled}>
-                Create
-            </button>
         </form>
     )
 }

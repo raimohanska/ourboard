@@ -1,0 +1,100 @@
+html {
+    font-family: $font-family;
+    color: $black;
+}
+
+#root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    color: $link-color;
+    cursor: pointer;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 1.3em;
+    font-weight: normal;
+}
+
+input {
+    font-size: 1.1rem;
+    user-select: text;
+}
+input[type="text"] {
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    -webkit-appearance: none;
+    border: solid 1px #d1d1d1;
+    outline: none;
+}
+
+textarea {
+    font-size: 1rem;
+    font-family: $font-family;
+}
+
+button {
+    cursor: pointer;
+    font-size: 1rem;
+
+    border: 1px solid $orange;
+    color: $orange;
+    border-radius: 6px;
+    margin: 0;
+    padding: 0;
+    width: auto;
+    overflow: visible;
+    outline: none;
+
+    background: transparent;
+
+    /* Normalize `line-height`. Cannot be changed from `normal` in Firefox 4+. */
+    line-height: normal;
+
+    /* Corrects font smoothing for webkit */
+    -webkit-font-smoothing: inherit;
+    -moz-osx-font-smoothing: inherit;
+
+    /* Corrects inability to style clickable `input` types in iOS */
+    -webkit-appearance: none;
+
+    padding: 0.2em 2em;
+    max-height: 2em;
+
+    &.mini {
+        width: 1.5em;
+        margin: 0.3em;
+        padding: 0;
+    }
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    &:disabled {
+        border-color: $disabled-color;
+        color: $disabled-color;
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overscroll-behavior-x: none;
+}
+
+select {
+    border: 0;
+    border-bottom: 1px solid $black;
+    font: 0.7em $font-family;
+
+    &:focus {
+        outline: 0;
+    }
+}
