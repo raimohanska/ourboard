@@ -3154,10 +3154,10 @@ harmaja-router@^0.3.0:
   dependencies:
     path-to-regexp "^6.2.0"
 
-harmaja@^0.23, harmaja@^0.23.0:
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.23.0.tgz#62e7f982c8370b4cd22de7bf6a613c39ff1ace82"
-  integrity sha512-DLAB+UXFojlzdkMlZFH7O23HjTi17SvxXd6F8Y5zDE0cVsf07gsc9g+ZHdV6UivmcSNOpJgiA3LnpuH8vtclkA==
+harmaja@^0.24:
+  version "0.24.0"
+  resolved "https://registry.yarnpkg.com/harmaja/-/harmaja-0.24.0.tgz#e0da7f2e2d76cc43a34f0a681f157fc895bc023b"
+  integrity sha512-wnLvj5byYwvVZ7/j1yxADxfr2T3Umieydlc1tdaCaC+rdkLXx88k01bf40pAaF+Ch5gmhr4ymeE6VokihAsgCA==
 
 has-ansi@^2.0.0:
   version "2.0.0"
