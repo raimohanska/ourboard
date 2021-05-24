@@ -347,9 +347,18 @@
                 border-right: 5px solid transparent;
                 border-bottom: 10px solid $link-color;
             }
-            .text {
-                font-size: 0.5rem;
-                margin-left: 0.5rem;
+            .userInfo {
+                display: flex;
+                align-items: center;
+                margin-left: 0.6em;
+                img {
+                    border-radius: 50%;
+                    max-width: 1em;
+                }
+                .text {
+                    font-size: 0.5rem;
+                    margin-left: 0.3em;
+                }
             }
         }
 

@@ -53,10 +53,10 @@ export type AuthorizedByDomain = { domain: string }
 
 export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy">
 
-export type EventUserInfo =
-    | { nickname: string; userType: "unidentified" }
-    | { nickname: string; userType: "system" }
-    | EventUserInfoAuthenticated
+export type EventUserInfo = UnidentifiedUserInfo | SystemUserInfo | EventUserInfoAuthenticated
+
+export type UnidentifiedUserInfo = { nickname: string; userType: "unidentified" }
+export type SystemUserInfo = { nickname: string; userType: "system" }
 
 export type EventUserInfoAuthenticated = {
     nickname: string
@@ -66,7 +66,18 @@ export type EventUserInfoAuthenticated = {
     userId: string
 }
 
-export type UserSessionInfo = EventUserInfo & {
+export type SessionUserInfo = UnidentifiedUserInfo | SystemUserInfo | SessionUserInfoAuthenticated
+
+export type SessionUserInfoAuthenticated = {
+    nickname: string
+    userType: "authenticated"
+    name: string
+    email: string
+    picture: string | undefined
+    userId: string
+}
+
+export type UserSessionInfo = SessionUserInfo & {
     sessionId: Id
 }
 
@@ -203,7 +214,13 @@ export type LoginResponse =
 export type AddConnection = { action: "connection.add"; boardId: Id; connection: Connection }
 export type ModifyConnection = { action: "connection.modify"; boardId: Id; connection: Connection }
 export type DeleteConnection = { action: "connection.delete"; boardId: Id; connectionId: Id }
-export type AuthLogin = { action: "auth.login"; name: string; email: string; token: string }
+export type AuthLogin = {
+    action: "auth.login"
+    name: string
+    email: string
+    picture: string | undefined
+    token: string
+}
 export type AuthLogout = { action: "auth.logout" }
 export type Ping = { action: "ping" }
 export type AddItem = { action: "item.add"; boardId: Id; items: Item[]; connections?: Connection[] }

@@ -41,14 +41,21 @@ export const CursorsView = ({
                         top: y + "em",
                     }
                 })
-                const text = L.view(
-                    sessions,
-                    (sessions) => sessions.find((s) => s.sessionId === sessionId)?.nickname || null,
-                )
+                const userInfo = L.view(sessions, (sessions) => {
+                    const session = sessions.find((s) => s.sessionId === sessionId)
+                    return {
+                        name: session ? session.nickname : null,
+                        picture: session && session.userType === "authenticated" ? <img src={session.picture} /> : null,
+                    }
+                })
+
                 return (
                     <span className="cursor" style={style}>
                         <span className="arrow" />
-                        <span className="text">{text}</span>
+                        <span className="userInfo">
+                            {L.view(userInfo, "picture")}
+                            <span className="text">{L.view(userInfo, "name")}</span>
+                        </span>
                     </span>
                 )
             }}
