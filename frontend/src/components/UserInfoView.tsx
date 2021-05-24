@@ -7,6 +7,7 @@ import { Dispatch } from "../store/board-store"
 import { UserIcon } from "./Icons"
 
 export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessionState>; dispatch: Dispatch }) => {
+    const pictureURL = L.view(state, (s) => (s.status === "logged-in" ? s.picture : undefined))
     return (
         <span
             className={L.view(
@@ -15,9 +16,7 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                 (s) => `user-info ${s}`,
             )}
         >
-            <span className="icon">
-                <UserIcon />
-            </span>
+            <span className="icon">{L.view(pictureURL, (p) => (p ? <img src={p} /> : <UserIcon />))}</span>
             {L.view(
                 state,
                 (s) => s.status,
