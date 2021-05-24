@@ -157,6 +157,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 action: "auth.login",
                 name: state.name,
                 email: state.email,
+                picture: state.picture,
                 token: state.token,
             })
         } else if (state.nickname) {

@@ -30,6 +30,7 @@ export type GoogleAuthUserInfo =
 export type GoogleAuthenticatedUser = {
     name: string
     email: string
+    picture: string
     token: string
 }
 
@@ -56,18 +57,18 @@ export async function refreshUserInfo() {
     const resp = await GoogleAuth.currentUser.get().reloadAuthResponse()
     await updateSigninStatus()
     const gu = googleUser.get()
+    console.log("GU", gu)
     //console.log("TOKEN", gu.status === "signed-in" && gu.token)
     return gu
 }
 
-async function fetchUserInfo(): Promise<{ name: string; email: string }> {
-    const { name, email } = (
+async function fetchUserInfo(): Promise<{ name: string; email: string; picture: string }> {
+    const result = (
         await gapi.client.request({
             path: "https://www.googleapis.com/oauth2/v2/userinfo",
         })
     ).result
-
-    return { name, email } as const
+    return result
 }
 
 async function updateSigninStatus() {

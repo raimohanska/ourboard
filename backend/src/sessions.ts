@@ -2,7 +2,7 @@ import {
     BoardHistoryEntry,
     CursorPosition,
     CURSOR_POSITIONS_ACTION_TYPE,
-    EventUserInfo,
+    UnidentifiedUserInfo,
     Id,
     InitBoardDiff,
     InitBoardNew,
@@ -22,6 +22,7 @@ import {
     EventUserInfoAuthenticated,
     getBoardAttributes,
     AccessLevel,
+    SessionUserInfo,
 } from "../../common/src/domain"
 import { getBoard, maybeGetBoard, ServerSideBoardState } from "./board-state"
 import { getBoardHistory, verifyContinuity } from "./board-store"
@@ -33,7 +34,7 @@ import { StringifyCache, WsWrapper } from "./ws-wrapper"
 export type UserSession = {
     readonly sessionId: Id
     boardSession: UserSessionBoardEntry | null
-    userInfo: EventUserInfo
+    userInfo: SessionUserInfo
     sendEvent: (event: EventFromServer, cache?: StringifyCache) => void
     isOnBoard: (boardId: Id) => boolean
     close(): void
@@ -99,7 +100,7 @@ function userSession(socket: WsWrapper): UserSession {
     return session
 }
 
-function anonymousUser(nickname: string): EventUserInfo {
+function anonymousUser(nickname: string): UnidentifiedUserInfo {
     return { userType: "unidentified", nickname }
 }
 
@@ -252,7 +253,14 @@ export async function setVerifiedUserForSession(
     session: UserSession,
 ): Promise<EventUserInfoAuthenticated> {
     const userId = await getUserIdForEmail(event.email)
-    session.userInfo = { userType: "authenticated", nickname: event.name, name: event.name, email: event.email, userId }
+    session.userInfo = {
+        userType: "authenticated",
+        nickname: event.name,
+        name: event.name,
+        email: event.email,
+        picture: event.picture,
+        userId,
+    }
     if (session.boardSession) {
         // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
         sendTo(everyoneElseOnTheSameBoard(session.boardSession.boardId, session), { ...event, token: "********" })
