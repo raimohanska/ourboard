@@ -151,7 +151,7 @@ export async function addSessionToBoard(
         // 1. Add session to the board with "buffering" status, to collect all events that were meant to be sent during this async initialization
         session.boardSession = entry
         try {
-            const boardAttributes = getBoardAttributes(boardState.board)
+            const boardAttributes = getBoardAttributes(boardState.board, session.userInfo)
 
             //console.log(`Starting session at ${initAtSerial}`)
             // 2. capture all board events that haven't yet been flushed to the DB

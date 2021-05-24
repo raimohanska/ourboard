@@ -479,13 +479,18 @@ const isBoard = (u: unknown): u is Board => typeof u === "object" && !!u && "ite
 const getItems = (boardOrItems: Board | Record<string, Item>) =>
     isBoard(boardOrItems) ? boardOrItems.items : boardOrItems
 
-export function getBoardAttributes(board: Board): BoardAttributes {
+export function getBoardAttributes(board: Board, userInfo?: EventUserInfo): BoardAttributes {
+    const accessPolicy = board.accessPolicy
+        ? userInfo && userInfo.userType === "authenticated"
+            ? board.accessPolicy
+            : { ...board.accessPolicy, allowList: [] } // Anonymize access policy for anonymous users
+        : undefined
     return {
         id: board.id,
         name: board.name,
         width: board.width,
         height: board.height,
-        accessPolicy: board.accessPolicy,
+        accessPolicy,
     }
 }
 

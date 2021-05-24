@@ -91,11 +91,6 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
                 })
                 return true
             }
-            // Anonymize access policy for anonymous users
-            board = {
-                ...board,
-                board: { ...board.board, accessPolicy: accessPolicy ? { ...accessPolicy, allowList: [] } : undefined },
-            }
         }
         await addSessionToBoard(board, socket, accessLevel, appEvent.initAtSerial)
         return true
