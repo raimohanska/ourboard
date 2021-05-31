@@ -37,6 +37,8 @@ jobs:
                 node-version: [15.x]
         steps:
             - uses: actions/checkout@v2
+            - uses: microsoft/playwright-github-action@v1
+
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v1
               with:
@@ -55,3 +57,5 @@ jobs:
                   install: false
                   start: yarn start
                   wait-on: "http://localhost:1337"
+            - name: Run playwright tests
+              run: yarn test:playwright
