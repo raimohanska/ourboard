@@ -16,6 +16,7 @@
     "jest": "^26.6.3",
     "lint-staged": "^10.5.4",
     "npm-run-all": "^4.1.5",
+    "playwright": "^1.11.1",
     "prettier": "^2.2.1",
     "ts-jest": "^26.4.3",
     "typescript": "^4.0.2"
@@ -45,6 +46,8 @@
     "test:unit:common": "TEST_TARGET=common jest",
     "test:unit:frontend": "TEST_TARGET=frontend jest",
     "test:watch": "TEST_TARGET=frontend jest --watch",
+    "test:playwright": "TEST_TARGET=playwright jest --testTimeout=15000",
+    "test:playwright:debug": "TEST_TARGET=playwright PWDEBUG=1 jest --testTimeout=900000",
     "test-e2e:dev": "cypress run --headed || true",
     "cypress": "cypress open",
     "prettier:check": "prettier --check .",
