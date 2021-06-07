@@ -90,10 +90,12 @@ You can also specify board access policy, including individual users by email an
 ```js
 {
     "name": "board name as string",
-    "accessPolicy": [
-        { email: "coolgirl@reaktor.com" },
-        { domain: "reaktor.fi" }
-    ]
+    "accessPolicy": {
+        "allowList": [
+            { email: "coolgirl@reaktor.com" },
+            { domain: "reaktor.fi" }
+        ]
+    }
 }
 ```
 
