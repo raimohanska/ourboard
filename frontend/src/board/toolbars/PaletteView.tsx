@@ -120,7 +120,7 @@ export const NewContainer = ({ addItem: onAdd, focus }: { addItem: (i: Item) => 
         <NewItem
             type="container"
             title="Area"
-            tooltip="Drag to add new text note"
+            tooltip="Drag to add new area for organizing items"
             svg={svg}
             focus={focus}
             createItem={newContainer}
