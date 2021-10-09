@@ -13,6 +13,16 @@
         text-decoration: none;
     }
     header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        > * {
+            margin: 0;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 1rem;
+        }
     }
     .user-info {
         margin-top: 4em;
