@@ -255,7 +255,7 @@ const CreateBoard = ({
 
     function onSubmit(e: JSX.FormEvent) {
         e.preventDefault()
-        createBoard(boardName.get(), accessPolicy.get(), sessionState.get(), dispatch, navigator)
+        createBoard(boardName.get(), accessPolicy.get(), dispatch, navigator)
     }
 
     return (
@@ -272,14 +272,8 @@ const CreateBoard = ({
     )
 }
 
-function createBoard(
-    name: string,
-    ap: BoardAccessPolicy,
-    ss: UserSessionState,
-    dispatch: Dispatch,
-    navigator: Navigator<Routes>,
-) {
-    const newBoard: BoardStub = { name, id: uuid.v4() }
+function createBoard(name: string, ap: BoardAccessPolicy, dispatch: Dispatch, navigator: Navigator<Routes>) {
+    const newBoard: BoardStub = { name, id: uuid.v4(), accessPolicy: ap }
     dispatch({ action: "board.add", payload: newBoard })
     setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
 }
