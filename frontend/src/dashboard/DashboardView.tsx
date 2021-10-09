@@ -281,12 +281,6 @@ function createBoard(
     navigator: Navigator<Routes>,
 ) {
     const newBoard: BoardStub = { name, id: uuid.v4() }
-
-    if (ap && ss.status === "logged-in") {
-        // Always add board creator's email to allowlist,
-        // And show it as a disabled input in the allowlist form.
-        newBoard.accessPolicy = { ...ap, allowList: ap.allowList.concat({ email: ss.email, access: "read-write" }) }
-    }
     dispatch({ action: "board.add", payload: newBoard })
     setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
 }

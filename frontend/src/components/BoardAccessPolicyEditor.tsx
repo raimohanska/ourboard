@@ -11,7 +11,9 @@ type BoardAccessPolicyEditorProps = {
 export const BoardAccessPolicyEditor = ({ accessPolicy, user }: BoardAccessPolicyEditorProps) => {
     const restrictAccessToggle = L.atom(false)
     restrictAccessToggle.onChange((restrict) => {
-        accessPolicy.set(restrict ? { allowList: [], publicRead: false } : undefined)
+        accessPolicy.set(
+            restrict ? { allowList: [{ email: user.email, access: "read-write" }], publicRead: false } : undefined,
+        )
     })
 
     return (
@@ -105,18 +107,16 @@ const BoardAccessPolicyDetailsEditor = ({
                                     ? `Allowing everyone with an email address ending in ${entry.domain}`
                                     : `Allowing user ${entry.email}`}
                             </div>
-                            <button onClick={() => allowList.modify((w) => w.filter((e) => e !== entry))}>
+                            <button
+                                disabled={"email" in entry ? entry.email === user.email : false}
+                                onClick={() => allowList.modify((w) => w.filter((e) => e !== entry))}
+                            >
                                 Remove
                             </button>
                         </div>
                     )
                 }}
             />
-
-            <div className="input-and-button">
-                <div className="filled-entry">{`Allowing user ${user.email}`}</div>
-                <button disabled>Remove</button>
-            </div>
 
             <p className="allow-public-read">
                 <Checkbox checked={allowPublicRead} />
