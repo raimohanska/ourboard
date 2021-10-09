@@ -79,7 +79,6 @@ const UserDataArea = ({
                     ) : (
                         <div className="user-content">
                             <RecentBoardsView {...{ recentBoards, dispatch }} />
-                            <GoogleLoginArea {...{ sessionState }} />
                         </div>
                     ),
             )}
@@ -230,22 +229,6 @@ const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoar
             )}
         </div>
     )
-}
-
-const GoogleLoginArea = ({ sessionState }: { sessionState: L.Property<UserSessionState> }) => {
-    return L.view(sessionState, (user) => {
-        switch (user.status) {
-            case "logged-in":
-                return (
-                    <span className="user-info">
-                        <span className="user-name">{user.name}</span>
-                        <button onClick={signOut}>Sign out</button>
-                    </span>
-                )
-            default:
-                return null
-        }
-    })
 }
 
 const Welcome = () => {

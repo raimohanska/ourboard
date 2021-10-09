@@ -42,9 +42,6 @@
     a {
         color: $orange;
     }
-    button.sign-in {
-        margin-top: 1em;
-    }
     ul {
         list-style-type: none;
         padding: 0;
@@ -59,14 +56,6 @@
 
     .user-content {
         display: flex;
-        .user-info {
-            text-align: right;
-            font-size: 0.8rem;
-            padding-top: 0.6em;
-            button {
-                margin-top: 1.15em;
-            }
-        }
     }
 
     .recent-boards {
