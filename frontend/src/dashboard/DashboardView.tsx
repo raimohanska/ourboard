@@ -230,7 +230,6 @@ const CreateBoardOptions = ({
             accessPolicy.set(undefined)
         }
     })
-    accessPolicy.log()
 
     return L.view(
         sessionState,
