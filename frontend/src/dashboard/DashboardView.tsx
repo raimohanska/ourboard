@@ -1,5 +1,5 @@
 import { Fragment, h, ListView } from "harmaja"
-import { getNavigator, Link } from "harmaja-router"
+import { getNavigator, Link, Navigator } from "harmaja-router"
 import * as L from "lonna"
 import * as R from "ramda"
 import * as uuid from "uuid"
@@ -79,7 +79,7 @@ const UserDataArea = ({
                         <Welcome />
                     ) : (
                         <div className="user-content">
-                            <RecentBoardsView {...{ recentBoards, dispatch }} />
+                            <RecentBoardsView {...{ recentBoards, dispatch, sessionState }} />
                         </div>
                     ),
             )}
@@ -87,10 +87,19 @@ const UserDataArea = ({
     )
 }
 
-const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoards; dispatch: Dispatch }) => {
+const RecentBoardsView = ({
+    recentBoards,
+    dispatch,
+    sessionState,
+}: {
+    recentBoards: RecentBoards
+    sessionState: L.Property<UserSessionState>
+    dispatch: Dispatch
+}) => {
     const navigator = getNavigator<Routes>()
     const defaultLimit = 25
     const filter = L.atom("")
+    const accessPolicy: L.Atom<BoardAccessPolicy | undefined> = L.atom(undefined)
 
     const limit = localStorageAtom("recentBoards.limit", defaultLimit)
 
@@ -160,17 +169,23 @@ const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoar
                                     )}
                                 />
                                 {L.view(matchingBoards, filter, (bs, f) => {
-                                    function createBoard() {
+                                    function onClick() {
                                         const newBoard: BoardStub = { name: f, id: uuid.v4() }
                                         dispatch({ action: "board.add", payload: newBoard })
                                         setTimeout(
                                             () => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }),
                                             100,
                                         ) // TODO: some ack based solution would be more reliable
+
+                                        createBoard(f, accessPolicy.get(), sessionState.get(), dispatch, navigator)
                                     }
                                     return bs.length === 0 && f.length >= 3 ? (
                                         <li>
-                                            <a onClick={createBoard}>Create a new board named {f}</a>
+                                            <a onClick={onClick}>Create a new board named {f}</a>
+                                            <CreateBoardOptions
+                                                accessPolicy={accessPolicy}
+                                                sessionState={sessionState}
+                                            />
                                         </li>
                                     ) : null
                                 })}
@@ -245,6 +260,26 @@ const Welcome = () => {
     )
 }
 
+const CreateBoardOptions = ({
+    accessPolicy,
+    sessionState,
+}: {
+    accessPolicy: L.Atom<BoardAccessPolicy | undefined>
+    sessionState: L.Property<UserSessionState>
+}) => {
+    sessionState.onChange((s) => {
+        if (s.status !== "logged-in") {
+            accessPolicy.set(undefined)
+        }
+    })
+    accessPolicy.log()
+
+    return L.view(
+        sessionState,
+        (s) => s.status === "logged-in" && <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />,
+    )
+}
+
 const CreateBoard = ({
     dispatch,
     sessionState,
@@ -256,31 +291,14 @@ const CreateBoard = ({
     const disabled = L.view(boardName, (n) => !n)
     const navigator = getNavigator<Routes>()
     const accessPolicy: L.Atom<BoardAccessPolicy | undefined> = L.atom(undefined)
-    sessionState.onChange((s) => {
-        if (s.status !== "logged-in") {
-            accessPolicy.set(undefined)
-        }
-    })
-    accessPolicy.log()
 
-    function createBoard(e: JSX.FormEvent) {
+    function onSubmit(e: JSX.FormEvent) {
         e.preventDefault()
-        const newBoard: BoardStub = { name: boardName.get(), id: uuid.v4() }
-
-        const ap = accessPolicy.get()
-        const ss = sessionState.get()
-
-        if (ap && ss.status === "logged-in") {
-            // Always add board creator's email to allowlist,
-            // And show it as a disabled input in the allowlist form.
-            newBoard.accessPolicy = { ...ap, allowList: ap.allowList.concat({ email: ss.email, access: "read-write" }) }
-        }
-        dispatch({ action: "board.add", payload: newBoard })
-        setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
+        createBoard(boardName.get(), accessPolicy.get(), sessionState.get(), dispatch, navigator)
     }
 
     return (
-        <form onSubmit={createBoard} className="create-board">
+        <form onSubmit={onSubmit} className="create-board">
             <h2>Create a board</h2>
             <div className="input-and-button">
                 <TextInput value={boardName} placeholder="Enter board name" />
@@ -288,11 +306,25 @@ const CreateBoard = ({
                     Create
                 </button>
             </div>
-            {L.view(
-                disabled,
-                sessionState,
-                (d, s) => !d && s.status === "logged-in" && <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />,
-            )}
+            {L.view(disabled, (d) => !d && <CreateBoardOptions {...{ accessPolicy, sessionState }} />)}
         </form>
     )
+}
+
+function createBoard(
+    name: string,
+    ap: BoardAccessPolicy,
+    ss: UserSessionState,
+    dispatch: Dispatch,
+    navigator: Navigator<Routes>,
+) {
+    const newBoard: BoardStub = { name, id: uuid.v4() }
+
+    if (ap && ss.status === "logged-in") {
+        // Always add board creator's email to allowlist,
+        // And show it as a disabled input in the allowlist form.
+        newBoard.accessPolicy = { ...ap, allowList: ap.allowList.concat({ email: ss.email, access: "read-write" }) }
+    }
+    dispatch({ action: "board.add", payload: newBoard })
+    setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
 }
