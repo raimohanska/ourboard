@@ -330,7 +330,11 @@ export const ContextMenuView = ({
                 show
                     ? [
                           <div className="area-options">
-                              <span className="icon" onClick={() => packArbitraryItems(packables.get())}>
+                              <span
+                                  className="icon"
+                                  title="Organize contents"
+                                  onClick={() => packArbitraryItems(packables.get())}
+                              >
                                   <TileIcon />
                               </span>
                           </div>,
@@ -375,10 +379,10 @@ export const ContextMenuView = ({
                 ? []
                 : [
                       <div className="font-size icon-group">
-                          <span className="icon" onClick={increaseFont}>
+                          <span className="icon" onClick={increaseFont} title="Bigger font">
                               <IncreaseFontSizeIcon />
                           </span>
-                          <span className="icon" onClick={decreaseFont}>
+                          <span className="icon" onClick={decreaseFont} title="Smaller font">
                               <DecreaseFontSizeIcon />
                           </span>
                       </div>,
