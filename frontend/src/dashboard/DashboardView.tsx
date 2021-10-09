@@ -159,7 +159,6 @@ const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoar
                                 />
                                 {L.view(matchingBoards, filter, (bs, f) => {
                                     function createBoard() {
-                                        console.log("asdf")
                                         const newBoard: BoardStub = { name: f, id: uuid.v4() }
                                         dispatch({ action: "board.add", payload: newBoard })
                                         setTimeout(
