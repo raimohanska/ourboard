@@ -187,6 +187,8 @@ Google authentication is supported. To enable this feature, you'll need to suppl
 
 ## Dev
 
+Running locally requires `docker-compose` which is used for starting the local PostgreSQL database. The script below starts the database, but you must make sure you have a working docker setup on your machine, of course.
+
 Running locally:
 
 ```
