@@ -118,7 +118,9 @@ const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoar
             }
         }
     }
-    const lotsOfBoards = L.view(recentBoards.recentboards, (bs) => bs.length >= 2)
+    const aLot = 7
+    const lotsOfBoards = L.view(recentBoards.recentboards, (bs) => bs.length >= aLot)
+    const lotsOfShownBoards = L.view(matchingBoards, (bs) => bs.length >= aLot)
     return (
         <div>
             {L.view(
@@ -198,7 +200,7 @@ const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoar
                                             </a>
                                         ),
                                     )}
-                                    {L.view(sort, lotsOfBoards, (s, show) =>
+                                    {L.view(sort, lotsOfShownBoards, (s, show) =>
                                         show ? (
                                             s === "alphabetical" ? (
                                                 <a
