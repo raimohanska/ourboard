@@ -22,6 +22,7 @@ export const DashboardView = ({
     recentBoards: RecentBoards
     dispatch: Dispatch
 }) => {
+    const boardName = L.atom("")
     return (
         <div id="root" className="dashboard">
             <div className="content">
@@ -52,37 +53,23 @@ export const DashboardView = ({
                     })}
                 </div>
                 <main>
-                    <CreateBoard {...{ dispatch, sessionState }} />
-                    <UserDataArea {...{ recentBoards, dispatch, sessionState }} />
+                    <CreateBoard {...{ dispatch, sessionState, boardName, recentBoards }} />
+                    <div>
+                        {L.view(
+                            recentBoards.recentboards,
+                            (recent) => recent.length === 0,
+                            (empty) =>
+                                empty ? (
+                                    <Welcome />
+                                ) : (
+                                    <div className="user-content">
+                                        <RecentBoardsView {...{ recentBoards, dispatch, sessionState, boardName }} />
+                                    </div>
+                                ),
+                        )}
+                    </div>
                 </main>
             </div>
-        </div>
-    )
-}
-
-const UserDataArea = ({
-    recentBoards,
-    dispatch,
-    sessionState,
-}: {
-    recentBoards: RecentBoards
-    dispatch: Dispatch
-    sessionState: L.Property<UserSessionState>
-}) => {
-    return (
-        <div>
-            {L.view(
-                recentBoards.recentboards,
-                (recent) => recent.length === 0,
-                (empty) =>
-                    empty ? (
-                        <Welcome />
-                    ) : (
-                        <div className="user-content">
-                            <RecentBoardsView {...{ recentBoards, dispatch, sessionState }} />
-                        </div>
-                    ),
-            )}
         </div>
     )
 }
@@ -91,14 +78,16 @@ const RecentBoardsView = ({
     recentBoards,
     dispatch,
     sessionState,
+    boardName,
 }: {
     recentBoards: RecentBoards
     sessionState: L.Property<UserSessionState>
     dispatch: Dispatch
+    boardName: L.Atom<string>
 }) => {
     const navigator = getNavigator<Routes>()
     const defaultLimit = 25
-    const filter = L.atom("")
+    const filter = boardName
     const accessPolicy: L.Atom<BoardAccessPolicy | undefined> = L.atom(undefined)
 
     const limit = localStorageAtom("recentBoards.limit", defaultLimit)
@@ -133,26 +122,16 @@ const RecentBoardsView = ({
     return (
         <div>
             {L.view(
-                recentBoards.recentboards,
+                matchingBoards,
                 (recent) => recent.length === 0,
                 (empty) =>
-                    empty ? (
-                        <Welcome />
-                    ) : (
+                    empty ? null : (
                         <div className="recent-boards">
-                            <h2>Your recent boards</h2>
-                            {L.view(lotsOfBoards, (show) =>
-                                show ? (
-                                    <div className="search">
-                                        <TextInput
-                                            onKeyDown={onKeyDown}
-                                            ref={inputRef}
-                                            value={filter}
-                                            placeholder="Search, hit enter!"
-                                        />
-                                    </div>
-                                ) : null,
-                            )}
+                            <h2>
+                                {L.view(filter, (f) =>
+                                    f === "" ? "Your recent boards" : "Found in your recent boards",
+                                )}
+                            </h2>
                             <ul>
                                 <ListView
                                     observable={boardsToShow}
@@ -168,27 +147,6 @@ const RecentBoardsView = ({
                                         </li>
                                     )}
                                 />
-                                {L.view(matchingBoards, filter, (bs, f) => {
-                                    function onClick() {
-                                        const newBoard: BoardStub = { name: f, id: uuid.v4() }
-                                        dispatch({ action: "board.add", payload: newBoard })
-                                        setTimeout(
-                                            () => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }),
-                                            100,
-                                        ) // TODO: some ack based solution would be more reliable
-
-                                        createBoard(f, accessPolicy.get(), sessionState.get(), dispatch, navigator)
-                                    }
-                                    return bs.length === 0 && f.length >= 3 ? (
-                                        <li>
-                                            <a onClick={onClick}>Create a new board named {f}</a>
-                                            <CreateBoardOptions
-                                                accessPolicy={accessPolicy}
-                                                sessionState={sessionState}
-                                            />
-                                        </li>
-                                    ) : null
-                                })}
                             </ul>
                             {
                                 <div className="view-options">
@@ -254,7 +212,7 @@ const Welcome = () => {
         <div>
             <h2>Welcome to OurBoard!</h2>
             <p>
-                Please try the <a href={`/b/${exampleBoard.id}`}>Example Board</a>, or create a new board below.
+                Please try the <a href={`/b/${exampleBoard.id}`}>Example Board</a>, or create a new board above.
             </p>
         </div>
     )
@@ -283,14 +241,18 @@ const CreateBoardOptions = ({
 const CreateBoard = ({
     dispatch,
     sessionState,
+    boardName,
+    recentBoards,
 }: {
     dispatch: Dispatch
     sessionState: L.Property<UserSessionState>
+    boardName: L.Atom<string>
+    recentBoards: RecentBoards
 }) => {
-    const boardName = L.atom("")
     const disabled = L.view(boardName, (n) => !n)
     const navigator = getNavigator<Routes>()
     const accessPolicy: L.Atom<BoardAccessPolicy | undefined> = L.atom(undefined)
+    const hasRecentBoards = L.view(recentBoards.recentboards, (bs) => bs.length > 0)
 
     function onSubmit(e: JSX.FormEvent) {
         e.preventDefault()
@@ -299,7 +261,7 @@ const CreateBoard = ({
 
     return (
         <form onSubmit={onSubmit} className="create-board">
-            <h2>Create a board</h2>
+            <h2>{L.view(hasRecentBoards, (has) => (has ? "Find or create a board" : "Create a board"))}</h2>
             <div className="input-and-button">
                 <TextInput value={boardName} placeholder="Enter board name" />
                 <button id="create-board-button" data-test="create-board-submit" type="submit" disabled={disabled}>
