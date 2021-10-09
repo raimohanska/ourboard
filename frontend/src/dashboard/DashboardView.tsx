@@ -3,21 +3,15 @@ import { getNavigator, Link } from "harmaja-router"
 import * as L from "lonna"
 import * as R from "ramda"
 import * as uuid from "uuid"
-import {
-    BoardAccessPolicy,
-    BoardStub,
-    exampleBoard,
-    RecentBoard,
-    AccessListEntry,
-    BoardAccessPolicyDefined,
-} from "../../../common/src/domain"
+import { BoardAccessPolicy, BoardStub, exampleBoard, RecentBoard } from "../../../common/src/domain"
 import { BOARD_PATH, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
-import { Checkbox, TextInput } from "../components/components"
+import { BoardAccessPolicyEditor } from "../components/BoardAccessPolicyEditor"
+import { TextInput } from "../components/components"
 import { signIn, signOut } from "../google-auth"
 import { Dispatch } from "../store/board-store"
 import { RecentBoards } from "../store/recent-boards"
-import { canLogin, LoggedIn, UserSessionState } from "../store/user-session-store"
+import { canLogin, UserSessionState } from "../store/user-session-store"
 
 export const DashboardView = ({
     sessionState,
@@ -295,128 +289,8 @@ const CreateBoard = ({
             {L.view(
                 disabled,
                 sessionState,
-                (d, s) =>
-                    !d && s.status === "logged-in" && <BoardAccessPolicyControls {...{ accessPolicy, user: s }} />,
+                (d, s) => !d && s.status === "logged-in" && <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />,
             )}
         </form>
-    )
-}
-
-type BoardAccessPolicyControlsProps = {
-    accessPolicy: L.Atom<BoardAccessPolicy>
-    user: LoggedIn
-}
-const BoardAccessPolicyControls = ({ accessPolicy, user }: BoardAccessPolicyControlsProps) => {
-    const restrictAccessToggle = L.atom(false)
-    restrictAccessToggle.onChange((restrict) => {
-        accessPolicy.set(restrict ? { allowList: [], publicRead: false } : undefined)
-    })
-
-    return [
-        <div className="restrict-toggle">
-            <input
-                id="domain-restrict"
-                type="checkbox"
-                onChange={(e) => restrictAccessToggle.set(!!e.target.checked)}
-            />
-            <label htmlFor="domain-restrict">Restrict access to specific domains / email addresses</label>
-        </div>,
-        L.view(
-            accessPolicy,
-            (a) => !!a,
-            (a) =>
-                a && (
-                    <BoardAccessPolicyEditor
-                        accessPolicy={accessPolicy as L.Atom<BoardAccessPolicyDefined>}
-                        user={user}
-                    />
-                ),
-        ),
-    ]
-}
-
-const BoardAccessPolicyEditor = ({
-    accessPolicy,
-    user,
-}: {
-    accessPolicy: L.Atom<BoardAccessPolicyDefined>
-    user: LoggedIn
-}) => {
-    const allowList = L.view(accessPolicy, "allowList")
-    const inputRef = L.atom<HTMLInputElement | null>(null)
-    const allowPublicReadRaw = L.view(accessPolicy, "publicRead")
-    const allowPublicRead = L.atom<boolean>(
-        L.view(allowPublicReadRaw, (r) => !!r),
-        allowPublicReadRaw.set,
-    )
-    const currentInputText = L.atom("")
-
-    inputRef.forEach((t) => {
-        if (t) {
-            // Autofocus email/domain input field for better UX
-            t.focus()
-        }
-    })
-
-    function addToAllowListIfValid(input: string) {
-        // LMAO at this validation
-        const entry: AccessListEntry | null = input.includes("@")
-            ? { email: input, access: "read-write" }
-            : input.includes(".")
-            ? { domain: input, access: "read-write" }
-            : null
-
-        if (entry) {
-            allowList.modify((w) => [entry, ...w])
-            currentInputText.set("")
-        }
-    }
-
-    return (
-        <>
-            <div className="input-and-button">
-                <input
-                    ref={inputRef}
-                    onChange={(e) => currentInputText.set(e.target.value)}
-                    type="text"
-                    placeholder="e.g. 'mycompany.com' or 'john.doe@mycompany.com'"
-                />
-                <button
-                    onClick={(e) => {
-                        e.preventDefault()
-                        addToAllowListIfValid(currentInputText.get())
-                    }}
-                >
-                    Add
-                </button>
-            </div>
-
-            <ListView
-                observable={allowList}
-                renderItem={(entry) => {
-                    return (
-                        <div className="input-and-button">
-                            <div className="filled-entry">
-                                {"domain" in entry
-                                    ? `Allowing everyone with an email address ending in ${entry.domain}`
-                                    : `Allowing user ${entry.email}`}
-                            </div>
-                            <button onClick={() => allowList.modify((w) => w.filter((e) => e !== entry))}>
-                                Remove
-                            </button>
-                        </div>
-                    )
-                }}
-            />
-
-            <div className="input-and-button">
-                <div className="filled-entry">{`Allowing user ${user.email}`}</div>
-                <button disabled>Remove</button>
-            </div>
-
-            <p>
-                Anyone with the link can view <Checkbox checked={allowPublicRead} />
-            </p>
-        </>
     )
 }
