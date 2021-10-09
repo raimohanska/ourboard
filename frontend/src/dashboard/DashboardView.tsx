@@ -31,25 +31,25 @@ export const DashboardView = ({
                     <p>
                         Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
                     </p>
-                    <div className="user-info">
-                        {L.view(sessionState, (user) => {
-                            switch (user.status) {
-                                case "logged-in":
-                                    return (
-                                        <>
-                                            <span>{user.name}</span> <a onClick={signOut}>Sign out</a>
-                                        </>
-                                    )
-                                default:
-                                    if (canLogin(user)) {
-                                        return <a onClick={signIn}>Sign in</a>
-                                    } else {
-                                        return null
-                                    }
-                            }
-                        })}
-                    </div>
                 </header>
+                <div className="user-info">
+                    {L.view(sessionState, (user) => {
+                        switch (user.status) {
+                            case "logged-in":
+                                return (
+                                    <>
+                                        <span>{user.name}</span> <a onClick={signOut}>Sign out</a>
+                                    </>
+                                )
+                            default:
+                                if (canLogin(user)) {
+                                    return <a onClick={signIn}>Sign in</a>
+                                } else {
+                                    return null
+                                }
+                        }
+                    })}
+                </div>
                 <main>
                     <CreateBoard {...{ dispatch, sessionState }} />
                     <UserDataArea {...{ recentBoards, dispatch, sessionState }} />
