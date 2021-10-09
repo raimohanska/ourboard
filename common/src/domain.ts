@@ -38,13 +38,12 @@ export const AccessListEntryCodec = t.union([
     }),
 ])
 export type AccessListEntry = t.TypeOf<typeof AccessListEntryCodec>
-export const BoardAccessPolicyCodec = t.union([
-    t.undefined,
-    t.type({
-        allowList: t.array(AccessListEntryCodec),
-        publicRead: optional(t.boolean),
-    }),
-])
+export const BoardAccessPolicyDefinedCodec = t.type({
+    allowList: t.array(AccessListEntryCodec),
+    publicRead: optional(t.boolean),
+})
+export type BoardAccessPolicyDefined = t.TypeOf<typeof BoardAccessPolicyDefinedCodec>
+export const BoardAccessPolicyCodec = t.union([t.undefined, BoardAccessPolicyDefinedCodec])
 export type BoardAccessPolicy = t.TypeOf<typeof BoardAccessPolicyCodec>
 
 export type AuthorizedParty = AuthorizedByEmailAddress | AuthorizedByDomain

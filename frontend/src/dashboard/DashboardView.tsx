@@ -3,14 +3,21 @@ import { getNavigator, Link } from "harmaja-router"
 import * as L from "lonna"
 import * as R from "ramda"
 import * as uuid from "uuid"
-import { BoardAccessPolicy, BoardStub, exampleBoard, RecentBoard, AccessListEntry } from "../../../common/src/domain"
+import {
+    BoardAccessPolicy,
+    BoardStub,
+    exampleBoard,
+    RecentBoard,
+    AccessListEntry,
+    BoardAccessPolicyDefined,
+} from "../../../common/src/domain"
 import { BOARD_PATH, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
 import { Checkbox, TextInput } from "../components/components"
 import { signIn, signOut } from "../google-auth"
 import { Dispatch } from "../store/board-store"
 import { RecentBoards } from "../store/recent-boards"
-import { canLogin, UserSessionState } from "../store/user-session-store"
+import { canLogin, LoggedIn, UserSessionState } from "../store/user-session-store"
 
 export const DashboardView = ({
     sessionState,
@@ -117,7 +124,7 @@ const RecentBoardsView = ({ recentBoards, dispatch }: { recentBoards: RecentBoar
             }
         }
     }
-    const lotsOfBoards = L.view(recentBoards.recentboards, (bs) => bs.length >= 10)
+    const lotsOfBoards = L.view(recentBoards.recentboards, (bs) => bs.length >= 2)
     return (
         <div>
             {L.view(
@@ -252,6 +259,13 @@ const CreateBoard = ({
     const boardName = L.atom("")
     const disabled = L.view(boardName, (n) => !n)
     const navigator = getNavigator<Routes>()
+    const accessPolicy: L.Atom<BoardAccessPolicy | undefined> = L.atom(undefined)
+    sessionState.onChange((s) => {
+        if (s.status !== "logged-in") {
+            accessPolicy.set(undefined)
+        }
+    })
+    accessPolicy.log()
 
     function createBoard(e: JSX.FormEvent) {
         e.preventDefault()
@@ -269,10 +283,72 @@ const CreateBoard = ({
         setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
     }
 
+    return (
+        <form onSubmit={createBoard} className="create-board">
+            <h2>Create a board</h2>
+            <div className="input-and-button">
+                <TextInput value={boardName} placeholder="Enter board name" />
+                <button id="create-board-button" data-test="create-board-submit" type="submit" disabled={disabled}>
+                    Create
+                </button>
+            </div>
+            {L.view(
+                disabled,
+                sessionState,
+                (d, s) =>
+                    !d && s.status === "logged-in" && <BoardAccessPolicyControls {...{ accessPolicy, user: s }} />,
+            )}
+        </form>
+    )
+}
+
+type BoardAccessPolicyControlsProps = {
+    accessPolicy: L.Atom<BoardAccessPolicy>
+    user: LoggedIn
+}
+const BoardAccessPolicyControls = ({ accessPolicy, user }: BoardAccessPolicyControlsProps) => {
     const restrictAccessToggle = L.atom(false)
-    const allowList = L.atom<AccessListEntry[]>([])
+    restrictAccessToggle.onChange((restrict) => {
+        accessPolicy.set(restrict ? { allowList: [], publicRead: false } : undefined)
+    })
+
+    return [
+        <div className="restrict-toggle">
+            <input
+                id="domain-restrict"
+                type="checkbox"
+                onChange={(e) => restrictAccessToggle.set(!!e.target.checked)}
+            />
+            <label htmlFor="domain-restrict">Restrict access to specific domains / email addresses</label>
+        </div>,
+        L.view(
+            accessPolicy,
+            (a) => !!a,
+            (a) =>
+                a && (
+                    <BoardAccessPolicyEditor
+                        accessPolicy={accessPolicy as L.Atom<BoardAccessPolicyDefined>}
+                        user={user}
+                    />
+                ),
+        ),
+    ]
+}
+
+const BoardAccessPolicyEditor = ({
+    accessPolicy,
+    user,
+}: {
+    accessPolicy: L.Atom<BoardAccessPolicyDefined>
+    user: LoggedIn
+}) => {
+    const allowList = L.view(accessPolicy, "allowList")
     const inputRef = L.atom<HTMLInputElement | null>(null)
-    const allowPublicRead = L.atom(false)
+    const allowPublicReadRaw = L.view(accessPolicy, "publicRead")
+    const allowPublicRead = L.atom<boolean>(
+        L.view(allowPublicReadRaw, (r) => !!r),
+        allowPublicReadRaw.set,
+    )
     const currentInputText = L.atom("")
 
     inputRef.forEach((t) => {
@@ -296,103 +372,51 @@ const CreateBoard = ({
         }
     }
 
-    const accessPolicy: L.Property<BoardAccessPolicy> = L.combine(
-        sessionState,
-        restrictAccessToggle,
-        allowList,
-        allowPublicRead,
-        (s, r, a, p) => {
-            return !r || s.status !== "logged-in"
-                ? undefined
-                : {
-                      allowList: a,
-                      publicRead: p,
-                  }
-        },
-    )
-
     return (
-        <form onSubmit={createBoard} className="create-board">
-            <h2>Create a board</h2>
+        <>
             <div className="input-and-button">
-                <TextInput value={boardName} placeholder="Enter board name" />
-                <button id="create-board-button" data-test="create-board-submit" type="submit" disabled={disabled}>
-                    Create
+                <input
+                    ref={inputRef}
+                    onChange={(e) => currentInputText.set(e.target.value)}
+                    type="text"
+                    placeholder="e.g. 'mycompany.com' or 'john.doe@mycompany.com'"
+                />
+                <button
+                    onClick={(e) => {
+                        e.preventDefault()
+                        addToAllowListIfValid(currentInputText.get())
+                    }}
+                >
+                    Add
                 </button>
             </div>
-            {L.view(
-                sessionState,
-                disabled,
-                (s, d) =>
-                    s.status === "logged-in" &&
-                    !d && (
-                        <div className="restrict-toggle">
-                            <input
-                                id="domain-restrict"
-                                type="checkbox"
-                                onChange={(e) => restrictAccessToggle.set(!!e.target.checked)}
-                            />
-                            <label htmlFor="domain-restrict">
-                                Restrict access to specific domains / email addresses
-                            </label>
-                        </div>
-                    ),
-            )}
 
-            {L.view(
-                accessPolicy,
-                (a) =>
-                    !!a && (
-                        <>
-                            <div className="input-and-button">
-                                <input
-                                    ref={inputRef}
-                                    onChange={(e) => currentInputText.set(e.target.value)}
-                                    type="text"
-                                    placeholder="e.g. 'mycompany.com' or 'john.doe@mycompany.com'"
-                                />
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        addToAllowListIfValid(currentInputText.get())
-                                    }}
-                                >
-                                    Add
-                                </button>
+            <ListView
+                observable={allowList}
+                renderItem={(entry) => {
+                    return (
+                        <div className="input-and-button">
+                            <div className="filled-entry">
+                                {"domain" in entry
+                                    ? `Allowing everyone with an email address ending in ${entry.domain}`
+                                    : `Allowing user ${entry.email}`}
                             </div>
+                            <button onClick={() => allowList.modify((w) => w.filter((e) => e !== entry))}>
+                                Remove
+                            </button>
+                        </div>
+                    )
+                }}
+            />
 
-                            {a.allowList.map((entry) => {
-                                return (
-                                    <div className="input-and-button">
-                                        <div className="filled-entry">
-                                            {"domain" in entry
-                                                ? `Allowing everyone with an email address ending in ${entry.domain}`
-                                                : `Allowing single user ${entry.email}`}
-                                        </div>
-                                        <button onClick={() => allowList.modify((w) => w.filter((e) => e !== entry))}>
-                                            Remove
-                                        </button>
-                                    </div>
-                                )
-                            })}
+            <div className="input-and-button">
+                <div className="filled-entry">{`Allowing user ${user.email}`}</div>
+                <button disabled>Remove</button>
+            </div>
 
-                            {L.view(
-                                sessionState,
-                                (s) =>
-                                    s.status === "logged-in" && (
-                                        <div className="input-and-button">
-                                            <div className="filled-entry">{`Allowing single user ${s.email}`}</div>
-                                            <button disabled>Remove</button>
-                                        </div>
-                                    ),
-                            )}
-
-                            <p>
-                                Anyone with the link can view <Checkbox checked={allowPublicRead} />
-                            </p>
-                        </>
-                    ),
-            )}
-        </form>
+            <p>
+                Anyone with the link can view <Checkbox checked={allowPublicRead} />
+            </p>
+        </>
     )
 }
