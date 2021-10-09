@@ -1,7 +1,7 @@
 import { Fragment, h, ListView } from "harmaja"
 import * as L from "lonna"
 import { AccessListEntry, BoardAccessPolicy, BoardAccessPolicyDefined } from "../../../common/src/domain"
-import { Checkbox } from "../components/components"
+import { Checkbox, TextInput } from "../components/components"
 import { LoggedIn } from "../store/user-session-store"
 
 type BoardAccessPolicyEditorProps = {
@@ -14,27 +14,29 @@ export const BoardAccessPolicyEditor = ({ accessPolicy, user }: BoardAccessPolic
         accessPolicy.set(restrict ? { allowList: [], publicRead: false } : undefined)
     })
 
-    return [
-        <div className="restrict-toggle">
-            <input
-                id="domain-restrict"
-                type="checkbox"
-                onChange={(e) => restrictAccessToggle.set(!!e.target.checked)}
-            />
-            <label htmlFor="domain-restrict">Restrict access to specific domains / email addresses</label>
-        </div>,
-        L.view(
-            accessPolicy,
-            (a) => !!a,
-            (a) =>
-                a && (
-                    <BoardAccessPolicyDetailsEditor
-                        accessPolicy={accessPolicy as L.Atom<BoardAccessPolicyDefined>}
-                        user={user}
-                    />
-                ),
-        ),
-    ]
+    return (
+        <div className="board-access-editor">
+            <div className="restrict-toggle">
+                <Checkbox checked={restrictAccessToggle} />
+                <span>
+                    <label htmlFor="domain-restrict">Restrict access to specific domains / email addresses</label>
+                </span>
+            </div>
+            <div className="domain-restrict-details">
+                {L.view(
+                    accessPolicy,
+                    (a) => !!a,
+                    (a) =>
+                        a && (
+                            <BoardAccessPolicyDetailsEditor
+                                accessPolicy={accessPolicy as L.Atom<BoardAccessPolicyDefined>}
+                                user={user}
+                            />
+                        ),
+                )}
+            </div>
+        </div>
+    )
 }
 
 const BoardAccessPolicyDetailsEditor = ({
@@ -52,6 +54,16 @@ const BoardAccessPolicyDetailsEditor = ({
         allowPublicReadRaw.set,
     )
     const currentInputText = L.atom("")
+    const currentInputValid = L.view(currentInputText, (text) => parseAccessListEntry(text) !== null)
+
+    function parseAccessListEntry(input: string): AccessListEntry | null {
+        // LMAO at this validation
+        return input.includes("@")
+            ? { email: input, access: "read-write" }
+            : input.includes(".")
+            ? { domain: input, access: "read-write" }
+            : null
+    }
 
     inputRef.forEach((t) => {
         if (t) {
@@ -61,13 +73,7 @@ const BoardAccessPolicyDetailsEditor = ({
     })
 
     function addToAllowListIfValid(input: string) {
-        // LMAO at this validation
-        const entry: AccessListEntry | null = input.includes("@")
-            ? { email: input, access: "read-write" }
-            : input.includes(".")
-            ? { domain: input, access: "read-write" }
-            : null
-
+        const entry: AccessListEntry | null = parseAccessListEntry(input)
         if (entry) {
             allowList.modify((w) => [entry, ...w])
             currentInputText.set("")
@@ -77,17 +83,13 @@ const BoardAccessPolicyDetailsEditor = ({
     return (
         <>
             <div className="input-and-button">
-                <input
-                    ref={inputRef}
-                    onChange={(e) => currentInputText.set(e.target.value)}
-                    type="text"
-                    placeholder="e.g. 'mycompany.com' or 'john.doe@mycompany.com'"
-                />
+                <TextInput ref={inputRef} value={currentInputText} type="text" placeholder="Enter email or domain" />
                 <button
                     onClick={(e) => {
                         e.preventDefault()
                         addToAllowListIfValid(currentInputText.get())
                     }}
+                    disabled={L.not(currentInputValid)}
                 >
                     Add
                 </button>
@@ -116,8 +118,9 @@ const BoardAccessPolicyDetailsEditor = ({
                 <button disabled>Remove</button>
             </div>
 
-            <p>
-                Anyone with the link can view <Checkbox checked={allowPublicRead} />
+            <p className="allow-public-read">
+                <Checkbox checked={allowPublicRead} />
+                Anyone with the link can view
             </p>
         </>
     )
