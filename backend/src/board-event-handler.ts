@@ -127,6 +127,18 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
                         // special case: keeping name up to date as it's in a separate column
                         await updateBoard({ boardId: appEvent.boardId, name: appEvent.name })
                     }
+                    if (appEvent.action === "board.setAccessPolicy") {
+                        if (session.boardSession.accessLevel !== "admin") {
+                            console.warn("Trying to change access policy without admin access")
+                            return true
+                        }
+
+                        await updateBoard({
+                            boardId: appEvent.boardId,
+                            name: state.board.name,
+                            accessPolicy: appEvent.accessPolicy,
+                        })
+                    }
                     return { boardId, serial }
                 } catch (e) {
                     console.warn(`Error applying event ${JSON.stringify(appEvent)}: ${e} -> forcing board refresh`)

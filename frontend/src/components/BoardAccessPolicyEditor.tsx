@@ -9,7 +9,8 @@ type BoardAccessPolicyEditorProps = {
     user: LoggedIn
 }
 export const BoardAccessPolicyEditor = ({ accessPolicy, user }: BoardAccessPolicyEditorProps) => {
-    const restrictAccessToggle = L.atom(false)
+    const originalPolicy = accessPolicy.get()
+    const restrictAccessToggle = L.atom(!!originalPolicy && !originalPolicy.publicWrite)
     restrictAccessToggle.onChange((restrict) => {
         accessPolicy.set(defaultAccessPolicy(user, restrict))
     })

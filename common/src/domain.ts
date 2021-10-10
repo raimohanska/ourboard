@@ -186,6 +186,7 @@ export type PersistableBoardItemEvent =
     | BringItemToFront
     | BootstrapBoard
     | RenameBoard
+    | SetBoardAccessPolicy
 export type BoardInit = InitBoardNew | InitBoardDiff
 export type TransientBoardItemEvent = LockItem | UnlockItem
 export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
@@ -251,6 +252,11 @@ export type AddBoard = { action: "board.add"; payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Serial }
 export type AssociateBoard = { action: "board.associate"; boardId: Id; lastOpened: ISOTimeStamp }
 export type DissociateBoard = { action: "board.dissociate"; boardId: Id }
+export type SetBoardAccessPolicy = {
+    action: "board.setAccessPolicy"
+    boardId: Id
+    accessPolicy: BoardAccessPolicyDefined
+}
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
 export type DeniedJoinBoard =
     | {
@@ -373,7 +379,10 @@ export function getCurrentTime(): ISOTimeStamp {
 }
 
 export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent =>
-    a.action.startsWith("item.") || a.action.startsWith("connection.") || a.action === "board.rename"
+    a.action.startsWith("item.") ||
+    a.action.startsWith("connection.") ||
+    a.action === "board.rename" ||
+    a.action === "board.setAccessPolicy"
 
 export const isPersistableBoardItemEvent = (e: any): e is PersistableBoardItemEvent =>
     isBoardItemEvent(e) && !["item.lock", "item.unlock"].includes(e.action)
@@ -452,6 +461,7 @@ export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id
         case "item.bootstrap":
             return Object.keys(e.items)
         case "board.rename":
+        case "board.setAccessPolicy":
         case "connection.add":
         case "connection.modify":
         case "connection.delete":

@@ -63,7 +63,12 @@ export function BoardViewHeader({
                                     onClick={() =>
                                         modalContent.set(
                                             <SharingModalDialog
-                                                {...{ board, sessionState, dismiss: () => modalContent.set(null) }}
+                                                {...{
+                                                    board,
+                                                    sessionState,
+                                                    dismiss: () => modalContent.set(null),
+                                                    dispatch,
+                                                }}
                                             />,
                                         )
                                     }
@@ -81,18 +86,25 @@ const SharingModalDialog = ({
     board,
     sessionState,
     dismiss,
+    dispatch,
 }: {
     board: L.Property<Board>
     sessionState: L.Property<UserSessionState>
     dismiss: () => void
+    dispatch: Dispatch
 }) => {
     const originalAccessPolicy = board.get().accessPolicy
     const accessPolicy = L.atom(originalAccessPolicy)
+
     const copied = L.atom(false)
     function copyToClipboard() {
         navigator.clipboard.writeText(document.location.toString())
         copied.set(true)
         setTimeout(() => copied.set(false), 3000)
+    }
+    function saveChanges() {
+        dispatch({ action: "board.setAccessPolicy", boardId: board.get().id, accessPolicy: accessPolicy.get()! })
+        dismiss()
     }
     const adminAccess = L.view(
         sessionState,
@@ -111,7 +123,7 @@ const SharingModalDialog = ({
                         <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />
                         <p>
                             <button
-                                onClick={dismiss}
+                                onClick={saveChanges}
                                 disabled={L.view(accessPolicy, (ap) => ap === originalAccessPolicy)}
                             >
                                 Save changes
