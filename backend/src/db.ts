@@ -27,6 +27,7 @@ export async function initDB() {
             CREATE TABLE IF NOT EXISTS user_board (user_id text REFERENCES app_user(id), board_id text REFERENCES board(id), last_opened TIMESTAMP NOT NULL, PRIMARY KEY (user_id, board_id));
             ALTER TABLE board ADD COLUMN IF NOT EXISTS ws_host TEXT NULL;
             ALTER TABLE board ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NULL DEFAULT now();            
+            ALTER TABLE board_event ADD COLUMN IF NOT EXISTS saved_at TIMESTAMP NULL DEFAULT now();
         `)
     })
 
