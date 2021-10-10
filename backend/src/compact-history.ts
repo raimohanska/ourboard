@@ -70,7 +70,7 @@ export function compactBoardHistory(id: Id) {
             }
         } else {
             console.warn(`Aborting compaction of board ${id} due to inconsistent history`)
-            const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id])
+            const result = await client.query("SELECT content FROM board WHERE id=$1", [id])
             if (result.rowCount != 1) {
                 console.warn("Board not found!?")
                 return

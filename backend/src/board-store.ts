@@ -23,15 +23,11 @@ export async function getBoardInfo(id: Id): Promise<BoardInfo | null> {
 
 export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
     return await inTransaction(async (client) => {
-        const result = await client.query("SELECT content, history FROM board WHERE id=$1", [id])
+        const result = await client.query("SELECT content FROM board WHERE id=$1", [id])
         if (result.rows.length == 0) {
             return null
         } else {
             const snapshot = result.rows[0].content as Board
-            const legacyHistory = result.rows[0].history.history || []
-            if (legacyHistory.length) {
-                await migrateLegacyHistory(id, legacyHistory, client)
-            }
             let history: BoardHistoryEntry[]
             let initialBoard: Board
             if (snapshot.serial) {
@@ -114,20 +110,6 @@ export async function createAccessToken(board: Board): Promise<string> {
 
 export async function saveRecentEvents(id: Id, recentEvents: BoardHistoryEntry[]) {
     await inTransaction(async (client) => storeEventHistoryBundle(id, recentEvents, client))
-}
-
-async function migrateLegacyHistory(id: Id, history: BoardHistoryEntry[], client: PoolClient) {
-    if (history.length > 0) {
-        console.log(`Migrating event history for board ${id}, consisting of ${history.length} events`)
-        await storeEventHistoryBundle(id, history, client)
-        await client.query(`UPDATE board SET history='{}' WHERE board.id=$1`, [id])
-
-        console.log(
-            `Migrated event history of board ${id} with serials ${history[0].serial}..${
-                history[history.length - 1].serial
-            }`,
-        )
-    }
 }
 
 export async function getFullBoardHistory(id: Id, client: PoolClient): Promise<BoardHistoryEntry[]> {
