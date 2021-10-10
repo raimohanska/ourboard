@@ -19,7 +19,7 @@
     "esbuild": "^0.8.57",
     "fp-ts": "^2.9.5",
     "harmaja": "^0.24",
-    "harmaja-router": "^0.3.0",
+    "harmaja-router": "^0.3.2",
     "io-ts": "^2.2.15",
     "jsonwebtoken": "^8.5.1",
     "localforage": "^1.9.0",
