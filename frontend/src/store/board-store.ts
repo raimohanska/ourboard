@@ -412,7 +412,6 @@ export function BoardStore(
     const userTaggedLocalEvents = L.view(uiEvents, tagWithUser)
     const events = L.merge(userTaggedLocalEvents, connection.bufferedServerEvents)
     const state = events.pipe(L.scan(initialState, eventsReducer, globalScope))
-    state.log("state")
 
     // persistable events and undo/redo are put to the state queue above, others are sent here immediately
     uiEvents

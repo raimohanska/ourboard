@@ -2,7 +2,7 @@ import { Fragment, h, ListView } from "harmaja"
 import * as L from "lonna"
 import { AccessListEntry, BoardAccessPolicy, BoardAccessPolicyDefined } from "../../../common/src/domain"
 import { Checkbox, TextInput } from "../components/components"
-import { LoggedIn } from "../store/user-session-store"
+import { defaultAccessPolicy, LoggedIn } from "../store/user-session-store"
 
 type BoardAccessPolicyEditorProps = {
     accessPolicy: L.Atom<BoardAccessPolicy>
@@ -11,9 +11,7 @@ type BoardAccessPolicyEditorProps = {
 export const BoardAccessPolicyEditor = ({ accessPolicy, user }: BoardAccessPolicyEditorProps) => {
     const restrictAccessToggle = L.atom(false)
     restrictAccessToggle.onChange((restrict) => {
-        accessPolicy.set(
-            restrict ? { allowList: [{ email: user.email, access: "admin" }], publicRead: false } : undefined,
-        )
+        accessPolicy.set(defaultAccessPolicy(user, restrict))
     })
 
     return (
@@ -27,7 +25,7 @@ export const BoardAccessPolicyEditor = ({ accessPolicy, user }: BoardAccessPolic
             <div className="domain-restrict-details">
                 {L.view(
                     accessPolicy,
-                    (a) => !!a,
+                    (a) => !!a && !a.publicWrite,
                     (a) =>
                         a && (
                             <BoardAccessPolicyDetailsEditor

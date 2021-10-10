@@ -52,6 +52,7 @@ export type AccessListEntry = t.TypeOf<typeof AccessListEntryCodec>
 export const BoardAccessPolicyDefinedCodec = t.type({
     allowList: t.array(AccessListEntryCodec),
     publicRead: optional(t.boolean),
+    publicWrite: optional(t.boolean),
 })
 export type BoardAccessPolicyDefined = t.TypeOf<typeof BoardAccessPolicyDefinedCodec>
 export const BoardAccessPolicyCodec = t.union([t.undefined, BoardAccessPolicyDefinedCodec])
@@ -526,7 +527,11 @@ export const BOARD_ITEM_BORDER_MARGIN = 0.5
 
 export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, userInfo: EventUserInfo): AccessLevel {
     if (!accessPolicy) return "read-write"
-    let accessLevel: AccessLevel = accessPolicy.publicRead ? "read-only" : "none"
+    let accessLevel: AccessLevel = accessPolicy.publicWrite
+        ? "read-write"
+        : accessPolicy.publicRead
+        ? "read-only"
+        : "none"
     if (userInfo.userType === "unidentified" || userInfo.userType === "system") {
         return accessLevel
     }

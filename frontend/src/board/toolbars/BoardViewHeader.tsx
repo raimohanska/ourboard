@@ -101,7 +101,7 @@ const SharingModalDialog = ({
             <button onClick={copyToClipboard}>Copy board link</button>
             {L.view(copied, (c) => (c ? <span className="copied">Copied to clipboard.</span> : null))}
             {L.view(sessionState, (s) =>
-                s.status === "logged-in" ? (
+                s.status === "logged-in" && originalAccessPolicy ? (
                     <>
                         <h2>Manage board access</h2>
                         <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />
@@ -114,7 +114,12 @@ const SharingModalDialog = ({
                             </button>
                         </p>
                     </>
-                ) : null,
+                ) : (
+                    <>
+                        <h2>Board access</h2>
+                        <p>Anonymous boards are accessible to anyone with the link.</p>
+                    </>
+                ),
             )}
         </span>
     )

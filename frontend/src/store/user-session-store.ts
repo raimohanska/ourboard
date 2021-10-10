@@ -1,6 +1,6 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
-import { AppEvent, EventUserInfo, Id, UIEvent } from "../../../common/src/domain"
+import { AppEvent, BoardAccessPolicy, EventUserInfo, Id, UIEvent } from "../../../common/src/domain"
 import { GoogleAuthenticatedUser, GoogleAuthUserInfo, googleUser, signIn, refreshUserInfo } from "../google-auth"
 import { ServerConnection } from "./server-connection"
 
@@ -219,5 +219,17 @@ export function getAuthenticatedUser(state: UserSessionState): GoogleAuthenticat
         return state
     } else {
         return null
+    }
+}
+
+export function defaultAccessPolicy(sessionState: UserSessionState, restrictAccess: boolean): BoardAccessPolicy {
+    if (sessionState.status === "logged-in") {
+        return {
+            allowList: [{ email: sessionState.email, access: "admin" }],
+            publicRead: !restrictAccess,
+            publicWrite: !restrictAccess,
+        }
+    } else {
+        return undefined
     }
 }

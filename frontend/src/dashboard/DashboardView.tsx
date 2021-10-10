@@ -11,7 +11,7 @@ import { TextInput } from "../components/components"
 import { signIn, signOut } from "../google-auth"
 import { Dispatch } from "../store/board-store"
 import { RecentBoards } from "../store/recent-boards"
-import { canLogin, UserSessionState } from "../store/user-session-store"
+import { canLogin, defaultAccessPolicy, UserSessionState } from "../store/user-session-store"
 
 export const DashboardView = ({
     sessionState,
@@ -80,7 +80,6 @@ const RecentBoardsView = ({
     const navigator = getNavigator<Routes>()
     const defaultLimit = 25
     const filter = boardName
-    const accessPolicy: L.Atom<BoardAccessPolicy | undefined> = L.atom(undefined)
 
     const limit = localStorageAtom("recentBoards.limit", defaultLimit)
 
@@ -248,12 +247,6 @@ const CreateBoardOptions = ({
     accessPolicy: L.Atom<BoardAccessPolicy | undefined>
     sessionState: L.Property<UserSessionState>
 }) => {
-    sessionState.onChange((s) => {
-        if (s.status !== "logged-in") {
-            accessPolicy.set(undefined)
-        }
-    })
-
     return L.view(
         sessionState,
         (s) => s.status === "logged-in" && <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />,
@@ -273,7 +266,10 @@ const CreateBoard = ({
 }) => {
     const disabled = L.view(boardName, (n) => !n)
     const navigator = getNavigator<Routes>()
-    const accessPolicy: L.Atom<BoardAccessPolicy | undefined> = L.atom(undefined)
+    const accessPolicy: L.Atom<BoardAccessPolicy | undefined> = L.atom(defaultAccessPolicy(sessionState.get(), false))
+    sessionState.onChange((s) => {
+        accessPolicy.set(defaultAccessPolicy(s, false))
+    })
     const hasRecentBoards = L.view(recentBoards.recentboards, (bs) => bs.length > 0)
 
     function onSubmit(e: JSX.FormEvent) {
