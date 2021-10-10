@@ -13,6 +13,7 @@ import {
     Serial,
 } from "./domain"
 import { boardReducer } from "./board-reducer"
+import { some } from "lodash"
 
 export function mkBootStrapEvent(boardId: Id, snapshot: Board, serial: Serial = 1) {
     return {
@@ -34,7 +35,8 @@ export function arrayToObject<T, K extends keyof T>(key: K, arr: T[]) {
     }, {} as Record<string, T>)
 }
 
-export function migrateBoard(board: Board) {
+export function migrateBoard(origBoard: Board) {
+    const board = { ...origBoard }
     const items: Item[] = []
     const width = Math.max(board.width || 0, defaultBoardSize.width)
     const height = Math.max(board.height || 0, defaultBoardSize.height)
@@ -43,6 +45,15 @@ export function migrateBoard(board: Board) {
             console.warn("Duplicate item", item, "found on table", board.name)
         } else {
             items.push(migrateItem(item, items, board.items))
+        }
+    }
+    if (board.accessPolicy) {
+        if (!board.accessPolicy.allowList.some((e) => e.access === "admin")) {
+            console.log(`No board admin for board ${board.id} -> mapping all read-write users as admins`)
+            board.accessPolicy.allowList = board.accessPolicy.allowList.map((e) => ({
+                ...e,
+                access: e.access === "read-write" ? "admin" : e.access,
+            }))
         }
     }
     return { ...board, connections: board.connections ?? [], width, height, items: arrayToObject("id", items) }
