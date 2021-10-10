@@ -95,7 +95,6 @@ const SharingModalDialog = ({
 }) => {
     const originalAccessPolicy = board.get().accessPolicy
     const accessPolicy = L.atom(originalAccessPolicy)
-    console.log(originalAccessPolicy)
 
     const copied = L.atom(false)
     function copyToClipboard() {
