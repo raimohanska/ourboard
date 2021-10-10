@@ -224,7 +224,7 @@ const Welcome = ({ recentBoards, dispatch }: { recentBoards: RecentBoards; dispa
                             <h2>Welcome to OurBoard!</h2>
                             <p>
                                 Let us create a <a onClick={createTutorial}>Tutorial Board</a> just for you, or go ahead
-                                and create a new blank board below.{" "}
+                                and create a new blank board above.{" "}
                                 {L.view(showExampleLink, (s) =>
                                     s ? (
                                         <>
