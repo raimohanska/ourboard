@@ -3,7 +3,7 @@ import { getNavigator, Link } from "harmaja-router"
 import * as L from "lonna"
 import * as R from "ramda"
 import * as uuid from "uuid"
-import { BoardAccessPolicy, RecentBoard } from "../../../common/src/domain"
+import { BoardAccessPolicy, exampleBoard, RecentBoard } from "../../../common/src/domain"
 import { BOARD_PATH, createBoardAndNavigate, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
 import { BoardAccessPolicyEditor } from "../components/BoardAccessPolicyEditor"
@@ -223,7 +223,8 @@ const Welcome = ({ recentBoards, dispatch }: { recentBoards: RecentBoards; dispa
                             <h2>Welcome to OurBoard!</h2>
                             <p>
                                 Let us create a <a onClick={createTutorial}>Tutorial Board</a> just for you, or go ahead
-                                and create a new blank board below.
+                                and create a new blank board below. You may also check out the{" "}
+                                <a href={`/b/${exampleBoard.id}`}>Shared test board</a> if you dare!
                             </p>
                         </div>
                     ) : null,
