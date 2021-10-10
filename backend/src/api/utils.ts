@@ -1,31 +1,23 @@
 import * as bodyParser from "body-parser"
+import * as t from "io-ts"
+import { badRequest, internalServerError, notFound } from "typera-common/response"
+import { applyMiddleware } from "typera-express"
+import { wrapNative } from "typera-express/middleware"
+import { headers } from "typera-express/parser"
+import { YELLOW } from "../../../common/src/colors"
 import {
-    Board,
-    createBoard,
-    EventUserInfo,
-    BoardHistoryEntry,
     AppEvent,
+    Board,
+    BoardHistoryEntry,
+    Color,
+    Container,
+    EventUserInfo,
     newNote,
     Note,
-    Color,
     PersistableBoardItemEvent,
-    isNote,
-    Container,
-    BoardAccessPolicyCodec,
 } from "../../../common/src/domain"
-import { addBoard, getBoard, updateBoards, ServerSideBoardState } from "../board-state"
-import { getBoardHistory, getFullBoardHistory, updateBoard } from "../board-store"
+import { getBoard, ServerSideBoardState, updateBoards } from "../board-state"
 import { broadcastBoardEvent } from "../sessions"
-import { encode as htmlEncode } from "html-entities"
-import _ from "lodash"
-import { RED, YELLOW } from "../../../common/src/colors"
-import { applyMiddleware, router } from "typera-express"
-import { wrapNative } from "typera-express/middleware"
-import { body, headers } from "typera-express/parser"
-import { badRequest, internalServerError, notFound, ok } from "typera-common/response"
-import * as t from "io-ts"
-import { NonEmptyString } from "io-ts-types"
-import { withDBClient } from "../db"
 
 export const route = applyMiddleware(wrapNative(bodyParser.json()))
 export const apiTokenHeader = headers(t.partial({ API_TOKEN: t.string }))
