@@ -278,6 +278,7 @@ export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo
 export type InitBoardNew = { action: "board.init"; board: Board; accessLevel: AccessLevel }
 export type InitBoardDiff = {
     action: "board.init"
+    done: boolean
     recentEvents: BoardHistoryEntry[]
     boardAttributes: BoardAttributes
     initAtSerial: Serial

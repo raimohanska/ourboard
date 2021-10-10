@@ -219,13 +219,14 @@ async function initBoardStore({
     if (initAtSerial) {
         serverEvents.push({
             action: "board.init",
+            done: true,
             recentEvents: serverSideHistory!.filter((e) => e.serial! > initAtSerial),
             boardAttributes: getBoardAttributes(serverSideBoard),
             initAtSerial,
             accessLevel: "read-write",
         })
     } else {
-        serverEvents.push({ action: "board.init", board: serverSideBoard, accessLevel: "read-write" })
+        serverEvents.push({ action: "board.init", done: true, board: serverSideBoard, accessLevel: "read-write" })
     }
 
     await waitForBackgroundJobs()

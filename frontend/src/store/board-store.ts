@@ -57,6 +57,8 @@ export type BoardState = {
     users: UserSessionInfo[]
 }
 
+let initialServerSyncEventBuffer: BoardHistoryEntry[] = []
+
 function emptyBoard(boardId: Id) {
     return { id: boardId, name: "", ...defaultBoardSize, items: {}, connections: [], serial: 0 }
 }
@@ -305,6 +307,11 @@ export function BoardStore(
                     if (storedInitialState.serverShadow.id !== event.boardAttributes.id)
                         throw Error(`Trying to init board with nonmatching id`)
 
+                    initialServerSyncEventBuffer.push(...event.recentEvents)
+                    if (!event.done) {
+                        return state
+                    }
+
                     const usedLocalState =
                         state.board && state.board.id === boardId && state.serverShadow
                             ? { serverShadow: state.serverShadow, queue: state.queue.filter(isBoardHistoryEntry) }
@@ -325,15 +332,15 @@ export function BoardStore(
                     } as Board
 
                     const queue = usedLocalState.queue
-                    if (event.recentEvents.length > 0) {
+                    if (initialServerSyncEventBuffer.length > 0) {
                         console.log(
                             `Going to online mode. Init at ${event.initAtSerial} with ${
-                                event.recentEvents.length
+                                initialServerSyncEventBuffer.length
                             } new events. Board starts at ${initialBoard.serial} and first event is ${
-                                event.recentEvents[0]?.serial
-                            } and last ${event.recentEvents[event.recentEvents.length - 1]?.serial}. ${
-                                queue.length
-                            } local events queued, ${state.sent.length} awaiting ack.`,
+                                initialServerSyncEventBuffer[0].serial
+                            } and last ${
+                                initialServerSyncEventBuffer[initialServerSyncEventBuffer.length - 1].serial
+                            }. ${queue.length} local events queued, ${state.sent.length} awaiting ack.`,
                         )
                     } else {
                         console.log(
@@ -341,11 +348,16 @@ export function BoardStore(
                         )
                     }
                     // New server shadow = old server shadow + recent events from server
-                    const newServerShadow = event.recentEvents.reduce((b, e) => boardReducer(b, e)[0], initialBoard)
+                    const newServerShadow = initialServerSyncEventBuffer.reduce(
+                        (b, e) => boardReducer(b, e)[0],
+                        initialBoard,
+                    )
                     // Local board = server shadow + local queue
                     const board = queue.reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
-                    const newServerHistory = [...state.serverHistory, ...event.recentEvents]
-                    //console.log(`Init done and board at ${board.serial}`)
+                    const newServerHistory = [...state.serverHistory, ...initialServerSyncEventBuffer]
+
+                    initialServerSyncEventBuffer = []
+
                     return flushIfPossible({
                         ...state,
                         accessLevel: event.accessLevel,

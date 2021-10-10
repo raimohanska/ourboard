@@ -148,7 +148,7 @@ export async function addSessionToBoard(
     const boardId = boardState.board.id
     boardState.sessions = [...boardState.sessions, session]
     if (initAtSerial) {
-        const entry = { boardId, status: "buffering", accessLevel, bufferedEvents: [] } as UserSessionBoardEntry
+        const entry: UserSessionBoardEntry = { boardId, status: "buffering", accessLevel, bufferedEvents: [] }
         // 1. Add session to the board with "buffering" status, to collect all events that were meant to be sent during this async initialization
         session.boardSession = entry
         try {
@@ -160,26 +160,44 @@ export async function addSessionToBoard(
                 .concat(boardState.recentEvents)
                 .filter((e) => e.serial! > initAtSerial)
 
-            // 3. Fetch events from DB
+            // 3. Fetch events from DB as chunks
             // IMPORTANT NOTE: this is the only await here and must remain so, as the logic here depends on everything else being synchronous.
             console.log(`Loading board history for board ${boardState.board.id} session at serial ${initAtSerial}`)
 
-            const dbEvents = await getBoardHistory(boardState.board.id, initAtSerial)
+            await new Promise((res, rej) => {
+                getBoardHistory(boardState.board.id, initAtSerial, (e) => {
+                    if (e.state === "error") {
+                        return rej(e)
+                    }
+                    if (e.state === "chunk") {
+                        // Send a chunk of events with done: false, so that client knows to wait for more
+                        return session.sendEvent({
+                            action: "board.init",
+                            done: false,
+                            boardAttributes,
+                            recentEvents: e.chunk,
+                            initAtSerial,
+                            accessLevel,
+                        })
+                    }
+                    res(undefined)
+                })
+            })
             console.log(`Got board history for board ${boardState.board.id} session at serial ${initAtSerial}`)
 
-            //console.log(`Got history from DB: ${describeRange(dbEvents)} and in-memory: ${describeRange(inMemoryEvents)}`)
-            // 4. Verify that all this makes for a consistent timeline
-            verifyContinuity(boardId, initAtSerial, dbEvents, inMemoryEvents, entry.bufferedEvents)
-            // 5. Send the initialization event containing all these events.
+            // 4. Send the last chunk containing both the inMemoryEvents and the buffered events (done: true)
+            // In memory events: not yet flushed to DB when query was made
+            // Buffered events: events that occurred after the in memory events were captured
             session.sendEvent({
                 action: "board.init",
                 boardAttributes,
-                recentEvents: [...dbEvents, ...inMemoryEvents, ...entry.bufferedEvents],
+                done: true,
+                recentEvents: [...inMemoryEvents, ...entry.bufferedEvents],
                 initAtSerial,
                 accessLevel,
             })
-            //console.log(`Sending buffered events: ${describeRange(entry.bufferedEvents)}`)
-            // 6. Set the client to "ready" status so that new events will be flushed
+
+            // 5. Set the client to "ready" status so that new events will be flushed
             entry.status = "ready"
             entry.bufferedEvents = []
         } catch (e) {
@@ -190,6 +208,7 @@ export async function addSessionToBoard(
             entry.bufferedEvents = []
             session.sendEvent({
                 action: "board.init",
+                done: true,
                 board: boardState.board,
                 accessLevel,
             })
