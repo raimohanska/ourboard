@@ -3,6 +3,7 @@ import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
 import { Board, canWrite, findItem, Id, Image, Item, newNote, Note, Video } from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
+import { ModalContainer } from "../components/ModalContainer"
 import { onClickOutside } from "../components/onClickOutside"
 import { isEmbedded } from "../embedding"
 import { AssetStore } from "../store/asset-store"
@@ -215,10 +216,12 @@ export const BoardView = ({
 
     const items = L.view(L.view(board, "items"), Object.values)
     const selectedItems = L.view(board, focus, (b, f) => getSelectedItems(b)(f))
+    const modalContent = L.atom<any>(null)
 
     return (
         <div id="root" className={className}>
-            <BoardViewHeader {...{ board, sessionState, dispatch, accessLevel }} />
+            <ModalContainer content={modalContent} />
+            <BoardViewHeader {...{ board, sessionState, dispatch, accessLevel, modalContent }} />
             <div className="content-container" ref={containerElement.set}>
                 <div className="scroll-container" ref={scrollElement.set}>
                     <div className="border-container" style={borderContainerStyle}>
