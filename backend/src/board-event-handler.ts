@@ -1,6 +1,7 @@
 import {
     AppEvent,
     BoardHistoryEntry,
+    canWrite,
     checkBoardAccess,
     Id,
     isBoardItemEvent,
@@ -104,7 +105,7 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
         if (!state) {
             return true // Just ignoring for now, see above todo
         }
-        if (session.boardSession.accessLevel !== "read-write") {
+        if (!canWrite(session.boardSession.accessLevel)) {
             console.warn("Trying to change read-only board")
             return true
         }
@@ -125,6 +126,18 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
                     if (appEvent.action === "board.rename") {
                         // special case: keeping name up to date as it's in a separate column
                         await updateBoard({ boardId: appEvent.boardId, name: appEvent.name })
+                    }
+                    if (appEvent.action === "board.setAccessPolicy") {
+                        if (session.boardSession.accessLevel !== "admin") {
+                            console.warn("Trying to change access policy without admin access")
+                            return true
+                        }
+
+                        await updateBoard({
+                            boardId: appEvent.boardId,
+                            name: state.board.name,
+                            accessPolicy: appEvent.accessPolicy,
+                        })
                     }
                     return { boardId, serial }
                 } catch (e) {

@@ -494,7 +494,7 @@ export function BoardStore(
     }
 }
 
-function sessionState2UserInfo(state: UserSessionState): EventUserInfo {
+export function sessionState2UserInfo(state: UserSessionState): EventUserInfo {
     if (state.status === "logged-in") {
         return {
             userType: "authenticated",

@@ -2,18 +2,17 @@ import { Fragment, h, ListView } from "harmaja"
 import * as L from "lonna"
 import { AccessListEntry, BoardAccessPolicy, BoardAccessPolicyDefined } from "../../../common/src/domain"
 import { Checkbox, TextInput } from "../components/components"
-import { LoggedIn } from "../store/user-session-store"
+import { defaultAccessPolicy, LoggedIn } from "../store/user-session-store"
 
 type BoardAccessPolicyEditorProps = {
     accessPolicy: L.Atom<BoardAccessPolicy>
     user: LoggedIn
 }
 export const BoardAccessPolicyEditor = ({ accessPolicy, user }: BoardAccessPolicyEditorProps) => {
-    const restrictAccessToggle = L.atom(false)
+    const originalPolicy = accessPolicy.get()
+    const restrictAccessToggle = L.atom(!!originalPolicy && !originalPolicy.publicWrite)
     restrictAccessToggle.onChange((restrict) => {
-        accessPolicy.set(
-            restrict ? { allowList: [{ email: user.email, access: "read-write" }], publicRead: false } : undefined,
-        )
+        accessPolicy.set(defaultAccessPolicy(user, restrict))
     })
 
     return (
@@ -27,7 +26,7 @@ export const BoardAccessPolicyEditor = ({ accessPolicy, user }: BoardAccessPolic
             <div className="domain-restrict-details">
                 {L.view(
                     accessPolicy,
-                    (a) => !!a,
+                    (a) => !!a && !a.publicWrite,
                     (a) =>
                         a && (
                             <BoardAccessPolicyDetailsEditor
@@ -105,7 +104,7 @@ const BoardAccessPolicyDetailsEditor = ({
                             <div className="filled-entry">
                                 {"domain" in entry
                                     ? `Allowing everyone with an email address ending in ${entry.domain}`
-                                    : `Allowing user ${entry.email}`}
+                                    : `Allowing user ${entry.email} (${entry.access})`}
                             </div>
                             <button
                                 disabled={"email" in entry ? entry.email === user.email : false}

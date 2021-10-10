@@ -76,6 +76,8 @@ export function boardReducer(
         }
         case "board.rename":
             return [{ ...board, name: event.name }, null]
+        case "board.setAccessPolicy":
+            return [{ ...board, accessPolicy: event.accessPolicy }, null]
         case "item.bootstrap":
             //if (board.items.length > 0) throw Error("Trying to bootstrap non-empty board")
             return [{ ...board, items: event.items, connections: event.connections }, null]

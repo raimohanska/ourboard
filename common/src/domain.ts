@@ -31,7 +31,12 @@ export type Board = BoardAttributes &
 
 export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy"> & { templateId?: Id }
 
-export const AccessLevelCodec = t.union([t.literal("read-write"), t.literal("read-only"), t.literal("none")])
+export const AccessLevelCodec = t.union([
+    t.literal("admin"),
+    t.literal("read-write"),
+    t.literal("read-only"),
+    t.literal("none"),
+])
 export type AccessLevel = t.TypeOf<typeof AccessLevelCodec>
 export const AccessListEntryCodec = t.union([
     t.type({
@@ -47,6 +52,7 @@ export type AccessListEntry = t.TypeOf<typeof AccessListEntryCodec>
 export const BoardAccessPolicyDefinedCodec = t.type({
     allowList: t.array(AccessListEntryCodec),
     publicRead: optional(t.boolean),
+    publicWrite: optional(t.boolean),
 })
 export type BoardAccessPolicyDefined = t.TypeOf<typeof BoardAccessPolicyDefinedCodec>
 export const BoardAccessPolicyCodec = t.union([t.undefined, BoardAccessPolicyDefinedCodec])
@@ -180,6 +186,7 @@ export type PersistableBoardItemEvent =
     | BringItemToFront
     | BootstrapBoard
     | RenameBoard
+    | SetBoardAccessPolicy
 export type BoardInit = InitBoardNew | InitBoardDiff
 export type TransientBoardItemEvent = LockItem | UnlockItem
 export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
@@ -245,6 +252,11 @@ export type AddBoard = { action: "board.add"; payload: Board | BoardStub }
 export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Serial }
 export type AssociateBoard = { action: "board.associate"; boardId: Id; lastOpened: ISOTimeStamp }
 export type DissociateBoard = { action: "board.dissociate"; boardId: Id }
+export type SetBoardAccessPolicy = {
+    action: "board.setAccessPolicy"
+    boardId: Id
+    accessPolicy: BoardAccessPolicyDefined
+}
 export type AckJoinBoard = { action: "board.join.ack"; boardId: Id } & UserSessionInfo
 export type DeniedJoinBoard =
     | {
@@ -367,7 +379,10 @@ export function getCurrentTime(): ISOTimeStamp {
 }
 
 export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent =>
-    a.action.startsWith("item.") || a.action.startsWith("connection.") || a.action === "board.rename"
+    a.action.startsWith("item.") ||
+    a.action.startsWith("connection.") ||
+    a.action === "board.rename" ||
+    a.action === "board.setAccessPolicy"
 
 export const isPersistableBoardItemEvent = (e: any): e is PersistableBoardItemEvent =>
     isBoardItemEvent(e) && !["item.lock", "item.unlock"].includes(e.action)
@@ -446,6 +461,7 @@ export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id
         case "item.bootstrap":
             return Object.keys(e.items)
         case "board.rename":
+        case "board.setAccessPolicy":
         case "connection.add":
         case "connection.modify":
         case "connection.delete":
@@ -521,7 +537,11 @@ export const BOARD_ITEM_BORDER_MARGIN = 0.5
 
 export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, userInfo: EventUserInfo): AccessLevel {
     if (!accessPolicy) return "read-write"
-    let accessLevel: AccessLevel = accessPolicy.publicRead ? "read-only" : "none"
+    let accessLevel: AccessLevel = accessPolicy.publicWrite
+        ? "read-write"
+        : accessPolicy.publicRead
+        ? "read-only"
+        : "none"
     if (userInfo.userType === "unidentified" || userInfo.userType === "system") {
         return accessLevel
     }
@@ -534,11 +554,16 @@ export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, us
                 : "domain" in entry && email.endsWith(entry.domain)
                 ? entry.access || defaultAccess
                 : "none"
-        if (nextLevel === "none") continue
-        accessLevel = nextLevel
-        if (accessLevel === "read-write") return accessLevel
+        accessLevel = combineAccessLevels(accessLevel, nextLevel)
     }
     return accessLevel
+}
+
+function combineAccessLevels(a: AccessLevel, b: AccessLevel): AccessLevel {
+    if (a === "admin" || b === "admin") return "admin"
+    if (a === "read-write" || b === "read-write") return "read-write"
+    if (a === "read-only" || b === "read-only") return "read-only"
+    return "none"
 }
 
 export function canRead(a: AccessLevel) {
@@ -546,5 +571,5 @@ export function canRead(a: AccessLevel) {
 }
 
 export function canWrite(a: AccessLevel) {
-    return a === "read-write"
+    return a === "read-write" || a === "admin"
 }
