@@ -29,7 +29,7 @@ export type Board = BoardAttributes &
         serial: Serial
     }
 
-export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy">
+export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy"> & { templateId?: Id }
 
 export const AccessLevelCodec = t.union([t.literal("read-write"), t.literal("read-only"), t.literal("none")])
 export type AccessLevel = t.TypeOf<typeof AccessLevelCodec>
@@ -299,7 +299,6 @@ export const exampleBoard: Board = {
 }
 
 export function createBoard(name: string, accessPolicy?: BoardAccessPolicy): Board {
-    const id = uuid.v4()
     return { id: uuid.v4(), name, items: {}, accessPolicy, connections: [], ...defaultBoardSize, serial: 0 }
 }
 

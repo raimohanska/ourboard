@@ -1,5 +1,6 @@
-import { AppEvent, defaultBoardSize } from "../../common/src/domain"
+import { AppEvent, Board, checkBoardAccess, defaultBoardSize } from "../../common/src/domain"
 import { addBoard } from "./board-state"
+import { fetchBoard } from "./board-store"
 import { MessageHandlerResult } from "./connection-handler"
 import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
 import { getSession, logoutUser, setNicknameForSession, setVerifiedUserForSession } from "./sessions"
@@ -73,9 +74,28 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
             return true
         }
         case "board.add": {
-            const { payload } = appEvent
-            const board = { ...defaultBoardSize, items: {}, connections: [], ...payload, serial: 0 }
-            await addBoard(board)
+            const session = getSession(socket)
+            if (session) {
+                const { payload } = appEvent
+                let template: Board | null = null
+                if ("templateId" in payload && payload.templateId) {
+                    const aliased = process.env[`BOARD_ALIAS.${payload.templateId}`]
+                    const templateId = aliased || payload.templateId
+                    const found = await fetchBoard(templateId)
+                    if (found) {
+                        const accessLevel = checkBoardAccess(found.board.accessPolicy, session.userInfo)
+                        if (accessLevel === "none") {
+                            console.warn(`Trying to use board ${found.board.id} as template, without board permissions`)
+                            return true
+                        }
+                        template = { ...found.board, accessPolicy: undefined }
+                    } else {
+                        console.error(`Template ${payload.templateId} not found`)
+                    }
+                }
+                const board = { ...defaultBoardSize, items: {}, connections: [], ...template, ...payload, serial: 0 }
+                await addBoard(board)
+            }
             return true
         }
         case "ping": {

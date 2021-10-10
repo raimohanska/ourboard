@@ -1,7 +1,8 @@
-import { HarmajaRouter } from "harmaja-router"
+import { HarmajaRouter, Navigator } from "harmaja-router"
 import * as L from "lonna"
+import { Board, BoardStub } from "../../common/src/domain"
 import "./app.scss"
-import * as uuid from "uuid"
+import { Dispatch } from "./store/server-connection"
 
 export const BOARD_PATH = "/b/:boardId"
 export const ROOT_PATH = "/"
@@ -31,10 +32,6 @@ export function BoardNavigation() {
         page: result,
     }
 }
-
-import { Navigator } from "harmaja-router"
-import { Board, BoardAccessPolicy, BoardStub } from "../../common/src/domain"
-import { Dispatch } from "./store/server-connection"
 
 export function createBoardAndNavigate(newBoard: Board | BoardStub, dispatch: Dispatch, navigator: Navigator<Routes>) {
     dispatch({ action: "board.add", payload: newBoard })
