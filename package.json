@@ -56,6 +56,7 @@
     "perf-test:prod": "node perf-tester/dist/perf-tester/src/index.js",
     "format": "prettier --write .",
     "apidocs": "cd backend && yarn apidocs",
-    "compact-history": "cd backend && ts-node src/tools/history-compactor.ts"
+    "compact-history": "cd backend && ts-node src/tools/history-compactor.ts",
+    "psql": "psql postgres://r-board:secret@localhost:13338/r-board"
   }
 }

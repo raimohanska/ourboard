@@ -203,7 +203,7 @@ Run end-to end Cypress tests against the server you just started:
 
 Connect to the local PostgreSQL database
 
-    psql postgres://r-board:secret@localhost:13338/r-board
+    yarn psql
 
 ## Developing with production data
 
