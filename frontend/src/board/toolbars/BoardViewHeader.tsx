@@ -1,11 +1,11 @@
 import { h, Fragment } from "harmaja"
 import { getNavigator } from "harmaja-router"
 import * as L from "lonna"
-import { AccessLevel, Board } from "../../../../common/src/domain"
+import { AccessLevel, Board, checkBoardAccess } from "../../../../common/src/domain"
 import { createBoardAndNavigate, Routes } from "../../board-navigation"
 import { EditableSpan } from "../../components/EditableSpan"
 import { UserInfoView } from "../../components/UserInfoView"
-import { Dispatch } from "../../store/board-store"
+import { Dispatch, sessionState2UserInfo } from "../../store/board-store"
 import { UserSessionState } from "../../store/user-session-store"
 import * as uuid from "uuid"
 import { BoardAccessPolicyEditor } from "../../components/BoardAccessPolicyEditor"
@@ -94,16 +94,20 @@ const SharingModalDialog = ({
         copied.set(true)
         setTimeout(() => copied.set(false), 3000)
     }
+    const adminAccess = L.view(
+        sessionState,
+        (s) => checkBoardAccess(originalAccessPolicy, sessionState2UserInfo(s)) === "admin",
+    )
 
     return (
         <span className="sharing">
             <h2>Sharing</h2>
             <button onClick={copyToClipboard}>Copy board link</button>
             {L.view(copied, (c) => (c ? <span className="copied">Copied to clipboard.</span> : null))}
-            {L.view(sessionState, (s) =>
-                s.status === "logged-in" && originalAccessPolicy ? (
+            {L.view(sessionState, adminAccess, (s, admin) =>
+                s.status === "logged-in" && admin ? (
                     <>
-                        <h2>Manage board access</h2>
+                        <h2>Manage board permissions</h2>
                         <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />
                         <p>
                             <button
@@ -114,10 +118,18 @@ const SharingModalDialog = ({
                             </button>
                         </p>
                     </>
+                ) : originalAccessPolicy ? (
+                    <>
+                        <h2>Board permissions</h2>
+                        <p>You don't have the privileges to change board permissions</p>
+                    </>
                 ) : (
                     <>
-                        <h2>Board access</h2>
-                        <p>Anonymous boards are accessible to anyone with the link.</p>
+                        <h2>Board permissions</h2>
+                        <p>
+                            Anonymous boards are accessible to anyone with the link. To control board permissions,
+                            create a new board when logged in.
+                        </p>
                     </>
                 ),
             )}
