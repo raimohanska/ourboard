@@ -1,6 +1,7 @@
 html {
     font-family: $font-family;
     color: $black;
+    font-size: min(3vw, 100%);
 }
 
 #root {
