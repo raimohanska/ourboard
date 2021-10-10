@@ -29,7 +29,7 @@ describe("Initial screen", () => {
 
     it("Navigating to example board works via link", () => {
         cy.visit("http://localhost:1337")
-        cy.get("a").contains("Example Board").click()
+        cy.get("a").contains("Shared test board").click()
 
         cy.url().should("eq", "http://localhost:1337/b/default")
 
