@@ -212,6 +212,7 @@ const Welcome = ({ recentBoards, dispatch }: { recentBoards: RecentBoards; dispa
             navigator,
         )
     }
+    const showExampleLink = L.view(recentBoards.recentboards, (boards) => !boards.some((b) => b.id === exampleBoard.id))
     return (
         <span>
             {L.view(
@@ -223,8 +224,15 @@ const Welcome = ({ recentBoards, dispatch }: { recentBoards: RecentBoards; dispa
                             <h2>Welcome to OurBoard!</h2>
                             <p>
                                 Let us create a <a onClick={createTutorial}>Tutorial Board</a> just for you, or go ahead
-                                and create a new blank board below. You may also check out the{" "}
-                                <a href={`/b/${exampleBoard.id}`}>Shared test board</a> if you dare!
+                                and create a new blank board below.{" "}
+                                {L.view(showExampleLink, (s) =>
+                                    s ? (
+                                        <>
+                                            You may also check out the{" "}
+                                            <a href={`/b/${exampleBoard.id}`}>Shared test board</a> if you dare!
+                                        </>
+                                    ) : null,
+                                )}
                             </p>
                         </div>
                     ) : null,
