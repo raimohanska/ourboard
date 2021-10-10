@@ -2,11 +2,19 @@ import { Fragment, h } from "harmaja"
 import * as L from "lonna"
 
 export function ModalContainer({ content }: { content: L.Atom<any> }) {
+    const stopPropagation = (e: JSX.KeyboardEvent) => {
+        e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
+    }
     return L.view(content, (c) => {
         if (!c) return null
         return (
             <div className="modal-container">
-                <div onKeyUp={(e) => e.stopPropagation()} className="modal-dialog">
+                <div
+                    onKeyUp={stopPropagation}
+                    onKeyDown={stopPropagation}
+                    onKeyPress={stopPropagation}
+                    className="modal-dialog"
+                >
                     <div id="modal-close" className="modal-close" onClick={() => content.set(null)}>
                         <CrossIcon />
                     </div>
