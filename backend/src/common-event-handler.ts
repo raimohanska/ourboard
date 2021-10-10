@@ -79,7 +79,7 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
                 const { payload } = appEvent
                 let template: Board | null = null
                 if ("templateId" in payload && payload.templateId) {
-                    const aliased = process.env[`BOARD_ALIAS.${payload.templateId}`]
+                    const aliased = process.env[`BOARD_ALIAS_${payload.templateId}`]
                     const templateId = aliased || payload.templateId
                     const found = await fetchBoard(templateId)
                     if (found) {
@@ -90,7 +90,7 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
                         }
                         template = { ...found.board, accessPolicy: undefined }
                     } else {
-                        console.error(`Template ${payload.templateId} ${aliased ? `(${templateId})` : ""} not found`)
+                        console.error(`Template ${payload.templateId}${aliased ? `(${templateId})` : ""} not found`)
                     }
                 }
                 const board = { ...defaultBoardSize, items: {}, connections: [], ...template, ...payload, serial: 0 }
