@@ -63,9 +63,6 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
         }
 
         let board = (await getBoard(appEvent.boardId))!
-        if (!session) {
-            return true
-        }
 
         const accessPolicy = board.board.accessPolicy
         const accessLevel = checkBoardAccess(accessPolicy, session.userInfo)

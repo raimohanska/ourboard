@@ -19,11 +19,17 @@ export type BoardAttributes = {
     accessPolicy?: BoardAccessPolicy
 }
 
-export type Board = BoardAttributes & {
+export type BoardContents = {
     items: Record<Id, Item>
     connections: Connection[]
-    serial: Serial
 }
+
+export type Board = BoardAttributes &
+    BoardContents & {
+        serial: Serial
+    }
+
+export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy">
 
 export const AccessLevelCodec = t.union([t.literal("read-write"), t.literal("read-only"), t.literal("none")])
 export type AccessLevel = t.TypeOf<typeof AccessLevelCodec>
@@ -49,8 +55,6 @@ export type BoardAccessPolicy = t.TypeOf<typeof BoardAccessPolicyCodec>
 export type AuthorizedParty = AuthorizedByEmailAddress | AuthorizedByDomain
 export type AuthorizedByEmailAddress = { email: string }
 export type AuthorizedByDomain = { domain: string }
-
-export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy">
 
 export type EventUserInfo = UnidentifiedUserInfo | SystemUserInfo | EventUserInfoAuthenticated
 
@@ -233,7 +237,7 @@ export type IncreaseItemFont = { action: "item.font.increase"; boardId: Id; item
 export type DecreaseItemFont = { action: "item.font.decrease"; boardId: Id; itemIds: Id[] }
 export type BringItemToFront = { action: "item.front"; boardId: Id; itemIds: Id[] }
 export type DeleteItem = { action: "item.delete"; boardId: Id; itemIds: Id[] }
-export type BootstrapBoard = { action: "item.bootstrap"; boardId: Id; items: Record<Id, Item> }
+export type BootstrapBoard = { action: "item.bootstrap"; boardId: Id } & BoardContents
 export type LockItem = { action: "item.lock"; boardId: Id; itemId: Id }
 export type UnlockItem = { action: "item.unlock"; boardId: Id; itemId: Id }
 export type GotBoardLocks = { action: "board.locks"; boardId: Id; locks: ItemLocks }
@@ -494,6 +498,10 @@ const isBoard = (u: unknown): u is Board => typeof u === "object" && !!u && "ite
 
 const getItems = (boardOrItems: Board | Record<string, Item>) =>
     isBoard(boardOrItems) ? boardOrItems.items : boardOrItems
+
+export function isBoardEmpty(board: Board) {
+    return board.connections.length === 0 && Object.values(board.items).length === 0
+}
 
 export function getBoardAttributes(board: Board, userInfo?: EventUserInfo): BoardAttributes {
     const accessPolicy = board.accessPolicy

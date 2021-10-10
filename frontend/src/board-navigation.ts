@@ -1,6 +1,7 @@
 import { HarmajaRouter } from "harmaja-router"
 import * as L from "lonna"
 import "./app.scss"
+import * as uuid from "uuid"
 
 export const BOARD_PATH = "/b/:boardId"
 export const ROOT_PATH = "/"
@@ -29,4 +30,13 @@ export function BoardNavigation() {
         boardId,
         page: result,
     }
+}
+
+import { Navigator } from "harmaja-router"
+import { Board, BoardAccessPolicy, BoardStub } from "../../common/src/domain"
+import { Dispatch } from "./store/server-connection"
+
+export function createBoardAndNavigate(newBoard: Board | BoardStub, dispatch: Dispatch, navigator: Navigator<Routes>) {
+    dispatch({ action: "board.add", payload: newBoard })
+    setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
 }

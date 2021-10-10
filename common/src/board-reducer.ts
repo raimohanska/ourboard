@@ -78,7 +78,7 @@ export function boardReducer(
             return [{ ...board, name: event.name }, null]
         case "item.bootstrap":
             //if (board.items.length > 0) throw Error("Trying to bootstrap non-empty board")
-            return [{ ...board, items: event.items }, null]
+            return [{ ...board, items: event.items, connections: event.connections }, null]
         case "item.add":
             if (event.items.some((a) => board.items[a.id])) {
                 throw new Error("Adding duplicate item " + JSON.stringify(event.items))

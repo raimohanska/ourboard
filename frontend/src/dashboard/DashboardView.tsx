@@ -4,7 +4,7 @@ import * as L from "lonna"
 import * as R from "ramda"
 import * as uuid from "uuid"
 import { BoardAccessPolicy, BoardStub, exampleBoard, RecentBoard } from "../../../common/src/domain"
-import { BOARD_PATH, Routes } from "../board-navigation"
+import { BOARD_PATH, createBoardAndNavigate, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
 import { BoardAccessPolicyEditor } from "../components/BoardAccessPolicyEditor"
 import { TextInput } from "../components/components"
@@ -255,7 +255,8 @@ const CreateBoard = ({
 
     function onSubmit(e: JSX.FormEvent) {
         e.preventDefault()
-        createBoard(boardName.get(), accessPolicy.get(), dispatch, navigator)
+        const newBoard = { name: boardName.get(), id: uuid.v4(), accessPolicy: accessPolicy.get() }
+        createBoardAndNavigate(newBoard, dispatch, navigator)
     }
 
     return (
@@ -270,10 +271,4 @@ const CreateBoard = ({
             {L.view(disabled, (d) => !d && <CreateBoardOptions {...{ accessPolicy, sessionState }} />)}
         </form>
     )
-}
-
-function createBoard(name: string, ap: BoardAccessPolicy, dispatch: Dispatch, navigator: Navigator<Routes>) {
-    const newBoard: BoardStub = { name, id: uuid.v4(), accessPolicy: ap }
-    dispatch({ action: "board.add", payload: newBoard })
-    setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
 }

@@ -74,7 +74,7 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
         }
         case "board.add": {
             const { payload } = appEvent
-            const board = { ...defaultBoardSize, ...payload, items: {}, connections: [], serial: 0 }
+            const board = { ...defaultBoardSize, items: {}, connections: [], ...payload, serial: 0 }
             await addBoard(board)
             return true
         }
