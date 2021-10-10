@@ -1,7 +1,15 @@
 import { PoolClient } from "pg"
 import { boardReducer } from "../../common/src/board-reducer"
-import { Board, BoardAccessPolicy, BoardHistoryEntry, exampleBoard, Id, Serial } from "../../common/src/domain"
-import { migrateBoard } from "../../common/src/migration"
+import {
+    Board,
+    BoardAccessPolicy,
+    BoardHistoryEntry,
+    exampleBoard,
+    Id,
+    isBoardEmpty,
+    Serial,
+} from "../../common/src/domain"
+import { migrateBoard, mkBootStrapEvent } from "../../common/src/migration"
 import { inTransaction, withDBClient } from "./db"
 import * as uuid from "uuid"
 
@@ -42,13 +50,13 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
                         `Error fetching board history for snapshot update for board ${id}. Rebooting snaphot...`,
                     )
                     history = await getFullBoardHistory(id, client)
-                    initialBoard = { ...snapshot, items: {} }
+                    initialBoard = { ...snapshot, items: {}, connections: [] }
                 }
             } else {
                 console.warn(`Found legacy board snapshot for ${id}. You should not see this message.`) // TODO remove this legacy branch
                 history = await getFullBoardHistory(id, client)
                 console.log(`Fetched full history for board ${id}, consisting of ${history.length} events`)
-                initialBoard = { ...snapshot, items: {} }
+                initialBoard = { ...snapshot, items: {}, connections: [] }
             }
             const board = history.reduce((b, e) => boardReducer(b, e)[0], migrateBoard(initialBoard))
             const serial = (history.length > 0 ? history[history.length - 1].serial : snapshot.serial) || 0
@@ -74,6 +82,11 @@ export async function createBoard(board: Board): Promise<void> {
             board.name,
             mkSnapshot(board, 0),
         ])
+
+        if (!isBoardEmpty(board)) {
+            console.log(`Creating non-empty board ${board.id} -> bootstrapping history`)
+            storeEventHistoryBundle(board.id, [mkBootStrapEvent(board.id, board)], client)
+        }
     })
 }
 

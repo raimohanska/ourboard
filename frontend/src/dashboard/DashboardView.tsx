@@ -1,10 +1,10 @@
 import { Fragment, h, ListView } from "harmaja"
-import { getNavigator, Link, Navigator } from "harmaja-router"
+import { getNavigator, Link } from "harmaja-router"
 import * as L from "lonna"
 import * as R from "ramda"
 import * as uuid from "uuid"
-import { BoardAccessPolicy, BoardStub, exampleBoard, RecentBoard } from "../../../common/src/domain"
-import { BOARD_PATH, Routes } from "../board-navigation"
+import { BoardAccessPolicy, exampleBoard, RecentBoard } from "../../../common/src/domain"
+import { BOARD_PATH, createBoardAndNavigate, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
 import { BoardAccessPolicyEditor } from "../components/BoardAccessPolicyEditor"
 import { TextInput } from "../components/components"
@@ -55,19 +55,11 @@ export const DashboardView = ({
                 <main>
                     <CreateBoard {...{ dispatch, sessionState, boardName, recentBoards }} />
                     <div>
-                        {L.view(
-                            recentBoards.recentboards,
-                            (recent) => recent.length === 0,
-                            (empty) =>
-                                empty ? (
-                                    <Welcome />
-                                ) : (
-                                    <div className="user-content">
-                                        <RecentBoardsView {...{ recentBoards, dispatch, sessionState, boardName }} />
-                                    </div>
-                                ),
-                        )}
+                        <div className="user-content">
+                            <RecentBoardsView {...{ recentBoards, dispatch, sessionState, boardName }} />
+                        </div>
                     </div>
+                    <Welcome {...{ recentBoards, dispatch }} />
                 </main>
             </div>
         </div>
@@ -207,14 +199,37 @@ const RecentBoardsView = ({
     )
 }
 
-const Welcome = () => {
+const Welcome = ({ recentBoards, dispatch }: { recentBoards: RecentBoards; dispatch: Dispatch }) => {
+    const navigator = getNavigator<Routes>()
+    function createTutorial() {
+        createBoardAndNavigate(
+            {
+                id: uuid.v4(),
+                name: "My personal tutorial board",
+                templateId: "tutorial",
+            },
+            dispatch,
+            navigator,
+        )
+    }
     return (
-        <div>
-            <h2>Welcome to OurBoard!</h2>
-            <p>
-                Please try the <a href={`/b/${exampleBoard.id}`}>Example Board</a>, or create a new board above.
-            </p>
-        </div>
+        <span>
+            {L.view(
+                recentBoards.recentboards,
+                (recent) => recent.length < 3 && !recent.some((b) => b.name.toLowerCase().includes("tutorial")),
+                (empty) =>
+                    empty ? (
+                        <div>
+                            <h2>Welcome to OurBoard!</h2>
+                            <p>
+                                Let us create a <a onClick={createTutorial}>Tutorial Board</a> just for you, or go ahead
+                                and create a new blank board below. You may also check out the{" "}
+                                <a href={`/b/${exampleBoard.id}`}>Shared test board</a> if you dare!
+                            </p>
+                        </div>
+                    ) : null,
+            )}
+        </span>
     )
 }
 
@@ -255,7 +270,8 @@ const CreateBoard = ({
 
     function onSubmit(e: JSX.FormEvent) {
         e.preventDefault()
-        createBoard(boardName.get(), accessPolicy.get(), dispatch, navigator)
+        const newBoard = { name: boardName.get(), id: uuid.v4(), accessPolicy: accessPolicy.get() }
+        createBoardAndNavigate(newBoard, dispatch, navigator)
     }
 
     return (
@@ -270,10 +286,4 @@ const CreateBoard = ({
             {L.view(disabled, (d) => !d && <CreateBoardOptions {...{ accessPolicy, sessionState }} />)}
         </form>
     )
-}
-
-function createBoard(name: string, ap: BoardAccessPolicy, dispatch: Dispatch, navigator: Navigator<Routes>) {
-    const newBoard: BoardStub = { name, id: uuid.v4(), accessPolicy: ap }
-    dispatch({ action: "board.add", payload: newBoard })
-    setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
 }
