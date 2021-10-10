@@ -12,7 +12,7 @@ export const BoardAccessPolicyEditor = ({ accessPolicy, user }: BoardAccessPolic
     const restrictAccessToggle = L.atom(false)
     restrictAccessToggle.onChange((restrict) => {
         accessPolicy.set(
-            restrict ? { allowList: [{ email: user.email, access: "read-write" }], publicRead: false } : undefined,
+            restrict ? { allowList: [{ email: user.email, access: "admin" }], publicRead: false } : undefined,
         )
     })
 
@@ -105,7 +105,7 @@ const BoardAccessPolicyDetailsEditor = ({
                             <div className="filled-entry">
                                 {"domain" in entry
                                     ? `Allowing everyone with an email address ending in ${entry.domain}`
-                                    : `Allowing user ${entry.email}`}
+                                    : `Allowing user ${entry.email} (${entry.access})`}
                             </div>
                             <button
                                 disabled={"email" in entry ? entry.email === user.email : false}

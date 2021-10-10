@@ -1,6 +1,7 @@
 import {
     AppEvent,
     BoardHistoryEntry,
+    canWrite,
     checkBoardAccess,
     Id,
     isBoardItemEvent,
@@ -104,7 +105,7 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
         if (!state) {
             return true // Just ignoring for now, see above todo
         }
-        if (session.boardSession.accessLevel !== "read-write") {
+        if (!canWrite(session.boardSession.accessLevel)) {
             console.warn("Trying to change read-only board")
             return true
         }

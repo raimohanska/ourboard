@@ -31,7 +31,12 @@ export type Board = BoardAttributes &
 
 export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy"> & { templateId?: Id }
 
-export const AccessLevelCodec = t.union([t.literal("read-write"), t.literal("read-only"), t.literal("none")])
+export const AccessLevelCodec = t.union([
+    t.literal("admin"),
+    t.literal("read-write"),
+    t.literal("read-only"),
+    t.literal("none"),
+])
 export type AccessLevel = t.TypeOf<typeof AccessLevelCodec>
 export const AccessListEntryCodec = t.union([
     t.type({
@@ -534,11 +539,16 @@ export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, us
                 : "domain" in entry && email.endsWith(entry.domain)
                 ? entry.access || defaultAccess
                 : "none"
-        if (nextLevel === "none") continue
-        accessLevel = nextLevel
-        if (accessLevel === "read-write") return accessLevel
+        accessLevel = combineAccessLevels(accessLevel, nextLevel)
     }
     return accessLevel
+}
+
+function combineAccessLevels(a: AccessLevel, b: AccessLevel): AccessLevel {
+    if (a === "admin" || b === "admin") return "admin"
+    if (a === "read-write" || b === "read-write") return "read-write"
+    if (a === "read-only" || b === "read-only") return "read-only"
+    return "none"
 }
 
 export function canRead(a: AccessLevel) {
@@ -546,5 +556,5 @@ export function canRead(a: AccessLevel) {
 }
 
 export function canWrite(a: AccessLevel) {
-    return a === "read-write"
+    return a === "read-write" || a === "admin"
 }
