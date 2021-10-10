@@ -241,6 +241,7 @@ export const HistoryView = ({
                 }
             }
             case "board.rename":
+            case "board.setAccessPolicy":
             case "item.bootstrap": {
                 return null
             }
