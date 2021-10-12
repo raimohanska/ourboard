@@ -178,7 +178,7 @@ Google authentication is supported. To enable this feature, you'll need to suppl
 
 ## Tech stack
 
--   Typescript
+-   TypeScript
 -   [Harmaja](https://github.com/raimohanska/harmaja) frontend library
 -   WebSockets (express-ws / uWebSockets.js both!)
 -   Express server
