@@ -2,7 +2,7 @@ import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardCursorPositions, BoardHistoryEntry, Id, ItemLocks, Serial } from "../../common/src/domain"
 import { Locks } from "./locker"
 import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./board-store"
-import { broadcastItemLocks, getBoardSessionCount } from "./sessions"
+import { broadcastItemLocks, getBoardSessionCount, getSessionCount } from "./sessions"
 import { compactBoardHistory } from "./compact-history"
 import { sleep } from "../../common/src/sleep"
 import { UserSession } from "./sessions"
@@ -155,6 +155,10 @@ async function saveBoardChanges(state: ServerSideBoardState) {
     }
 }
 
+export function getActiveBoardCount() {
+    return boards.size
+}
+
 setInterval(() => {
-    console.log("Number of active boards: " + boards.size)
+    console.log("Statistics: active boards " + getActiveBoardCount() + ", sessions " + getSessionCount())
 }, 60000)

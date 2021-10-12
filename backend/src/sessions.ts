@@ -312,3 +312,7 @@ export const broadcastItemLocks = (() => {
         }, BROADCAST_DEBOUNCE_MS)
     }
 })()
+
+export function getSessionCount() {
+    return Object.values(sessions).length
+}
