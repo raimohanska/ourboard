@@ -39,50 +39,36 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             const snapshot = result.rows[0].content as Board
             let historyEventCount = 0
             let lastSerial = 0
-            let board: Board | undefined = undefined
+            let board = snapshot
 
             console.log("Loading history for board with snapshot at serial " + snapshot.serial)
-            const finishedBoard = await getBoardHistory(id, snapshot.serial, (chunk) => {
-                if (!board) {
-                    console.log("Got history for board with snapshot at serial " + snapshot.serial)
-                    board = snapshot
-                }
-
+            await getBoardHistory(id, snapshot.serial, (chunk) => {
                 board = chunk.reduce((b, e) => boardReducer(b, e)[0], board)
                 historyEventCount += chunk.length
                 lastSerial = chunk[chunk.length - 1].serial ?? snapshot.serial
-            })
-                .catch((error) => {
-                    console.error(error.message)
-                    console.error(
-                        `Error fetching board history for snapshot update for board ${id}. Rebooting snapshot...`,
-                    )
-                    return getFullBoardHistory(id, client, (chunk) => {
-                        if (!board) {
-                            board = { ...snapshot, items: {}, connections: [] }
-                        }
+            }).catch((error) => {
+                console.error(error.message)
+                console.error(`Error fetching board history for snapshot update for board ${id}. Rebooting snapshot...`)
 
-                        board = chunk.reduce((b, e) => boardReducer(b, e)[0], board)
-                        historyEventCount += chunk.length
-                        lastSerial = chunk[chunk.length - 1].serial ?? snapshot.serial
-                    })
+                board = { ...snapshot, items: {}, connections: [] }
+
+                return getFullBoardHistory(id, client, (chunk) => {
+                    board = chunk.reduce((b, e) => boardReducer(b, e)[0], board)
+                    historyEventCount += chunk.length
+                    lastSerial = chunk[chunk.length - 1].serial ?? snapshot.serial
                 })
-                .then(() => board as Board) // Yeah... tsc really doesn't understand what we're doing here
-
-            if (!finishedBoard) {
-                throw Error("Invariant violation, finishedBoard undefined after getBoardHistory")
-            }
+            })
 
             const serial = (historyEventCount > 0 ? lastSerial : snapshot.serial) || 0
             if (historyEventCount > 1000 || serial == 1 || !snapshot.serial /* rebooted */) {
                 console.log(`Saving snapshot history ${historyEventCount} serial ${serial}/${snapshot.serial}`)
-                await saveBoardSnapshot(mkSnapshot(finishedBoard, serial), client)
+                await saveBoardSnapshot(mkSnapshot(board, serial), client)
             }
             const accessTokens = (
                 await client.query("SELECT token FROM board_api_token WHERE board_id=$1", [id])
             ).rows.map((row) => row.token)
             console.log(`Board loaded`)
-            return { board: { ...finishedBoard, serial }, accessTokens }
+            return { board: { ...board, serial }, accessTokens }
         }
     })
 }
