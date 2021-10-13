@@ -164,25 +164,18 @@ export async function addSessionToBoard(
             // IMPORTANT NOTE: this is the only await here and must remain so, as the logic here depends on everything else being synchronous.
             console.log(`Loading board history for board ${boardState.board.id} session at serial ${initAtSerial}`)
 
-            await new Promise((res, rej) => {
-                getBoardHistory(boardState.board.id, initAtSerial, (e) => {
-                    if (e.state === "error") {
-                        return rej(e)
-                    }
-                    if (e.state === "chunk") {
-                        // Send a chunk of events with done: false, so that client knows to wait for more
-                        return session.sendEvent({
-                            action: "board.init",
-                            done: false,
-                            boardAttributes,
-                            recentEvents: e.chunk,
-                            initAtSerial,
-                            accessLevel,
-                        })
-                    }
-                    res(undefined)
+            await getBoardHistory(boardState.board.id, initAtSerial, (chunk) => {
+                // Send a chunk of events with done: false, so that client knows to wait for more
+                return session.sendEvent({
+                    action: "board.init",
+                    done: false,
+                    boardAttributes,
+                    recentEvents: chunk,
+                    initAtSerial,
+                    accessLevel,
                 })
             })
+
             console.log(`Got board history for board ${boardState.board.id} session at serial ${initAtSerial}`)
 
             // 4. Send the last chunk containing both the inMemoryEvents and the buffered events (done: true)
