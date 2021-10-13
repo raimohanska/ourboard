@@ -41,22 +41,18 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             let lastSerial = 0
             let board = snapshot
 
-            console.log("Loading history for board with snapshot at serial " + snapshot.serial)
-            await getBoardHistory(id, snapshot.serial, (chunk) => {
+            function updateBoardWithEventChunk(chunk: BoardHistoryEntry[]) {
                 board = chunk.reduce((b, e) => boardReducer(b, e)[0], board)
                 historyEventCount += chunk.length
                 lastSerial = chunk[chunk.length - 1].serial ?? snapshot.serial
-            }).catch((error) => {
+            }
+
+            console.log("Loading history for board with snapshot at serial " + snapshot.serial)
+            await getBoardHistory(id, snapshot.serial, updateBoardWithEventChunk).catch((error) => {
                 console.error(error.message)
                 console.error(`Error fetching board history for snapshot update for board ${id}. Rebooting snapshot...`)
-
                 board = { ...snapshot, items: {}, connections: [] }
-
-                return getFullBoardHistory(id, client, (chunk) => {
-                    board = chunk.reduce((b, e) => boardReducer(b, e)[0], board)
-                    historyEventCount += chunk.length
-                    lastSerial = chunk[chunk.length - 1].serial ?? snapshot.serial
-                })
+                return getFullBoardHistory(id, client, updateBoardWithEventChunk)
             })
 
             const serial = (historyEventCount > 0 ? lastSerial : snapshot.serial) || 0
