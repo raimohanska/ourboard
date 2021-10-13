@@ -45,7 +45,7 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             const finishedBoard = await getBoardHistory(id, snapshot.serial, (chunk) => {
                 if (!board) {
                     console.log("Got history for board with snapshot at serial " + snapshot.serial)
-                    board = migrateBoard(snapshot)
+                    board = snapshot
                 }
 
                 board = chunk.reduce((b, e) => boardReducer(b, e)[0], board)
@@ -59,7 +59,7 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
                     )
                     return getFullBoardHistory(id, client, (chunk) => {
                         if (!board) {
-                            board = migrateBoard({ ...snapshot, items: {}, connections: [] })
+                            board = { ...snapshot, items: {}, connections: [] }
                         }
 
                         board = chunk.reduce((b, e) => boardReducer(b, e)[0], board)
