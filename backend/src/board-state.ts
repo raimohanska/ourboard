@@ -61,6 +61,7 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState | null> {
                 return null
             } else {
                 boards.set(id, finalState)
+                console.log(`Board loaded into memory: ${id}`)
                 return finalState
             }
         } catch (e) {
