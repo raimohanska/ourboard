@@ -32,7 +32,6 @@ export const boardHistoryGet = route
                             stream.end()
                         })
                         .catch((e) => {
-                            stream.write(`],"error":${e.message}}`)
                             stream.end()
                         })
                 }),
