@@ -258,11 +258,11 @@ GOOGLE_CLIENT_ID
 ## Contribution
 
 See Issues!
-    
+
 ## A word from our sponsor
-    
+
 I want to thank [Reaktor](https://www.reaktor.com/) for the huge and essential support for this project!
-    
-- We (Reaktorian contributors) get some monetary support from the Reaktor open-source support program
-- Hosting costs covered by Reaktor (Heroku, AWS)
-- The UI design was done by Reaktor's experts (Mira Myllylä for the tool and Mari Halla-aho for the dashboard)
+
+-   We (Reaktorian contributors) get some monetary support from the Reaktor open-source support program
+-   Hosting costs covered by Reaktor (Heroku, AWS)
+-   The UI design was done by Reaktor's experts (Mira Myllylä for the tool and Mari Halla-aho for the dashboard)
