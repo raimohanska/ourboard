@@ -5,6 +5,10 @@ import {
     storeEventHistoryBundle,
     mkSnapshot,
     saveBoardSnapshot,
+    getBoardHistoryBundleMetas,
+    verifyContinuityFromMetas,
+    BoardHistoryBundleMeta,
+    getBoardHistoryBundlesWithLastSerialsBetween,
 } from "./board-store"
 import { withDBClient, inTransaction } from "./db"
 import _ from "lodash"
@@ -13,6 +17,69 @@ import { format } from "date-fns"
 import { boardReducer } from "../../common/src/board-reducer"
 import { PoolClient } from "pg"
 import { mkBootStrapEvent, migrateBoard } from "../../common/src/migration"
+
+export function quickCompactBoardHistory(id: Id) {
+    return inTransaction(async (client) => {
+        const bundleMetas = await getBoardHistoryBundleMetas(client, id)
+        if (bundleMetas.length === 0) return
+        const consistent = verifyContinuityFromMetas(id, 0, bundleMetas)
+        if (consistent) {
+            // Group in one-hour bundles
+            const groupedByHour = _.groupBy(bundleMetas, (b) => format(new Date(b.saved_at), "yyyy-MM-dd hh"))
+            //console.log("Grouped by date", groupedByDate)
+            const toCompact = Object.values(groupedByHour).filter((bs) => bs.length > 1)
+            let compacted = false
+            for (let bs of toCompact) {
+                console.log(`Compacting ${bs.length} bundles into one for board ${id}`)
+                const bundlesWithData = await getBoardHistoryBundlesWithLastSerialsBetween(
+                    client,
+                    id,
+                    bs[0].last_serial,
+                    bs[bs.length - 1].last_serial,
+                )
+                const eventArrays = bundlesWithData.map((b) => b.events.events)
+                const consistent = verifyContinuity(id, 0, ...eventArrays)
+                const events: BoardHistoryEntry[] = eventArrays.flat()
+                if (consistent) {
+                    // 1. delete existing bundles
+                    const deleteResult = await client.query(
+                        `DELETE FROM board_event where board_id=$1 and last_serial in (${bs
+                            .map((b) => b.last_serial)
+                            .join(",")})`,
+                        [id],
+                    )
+                    if (deleteResult.rowCount != bs.length) {
+                        throw Error(
+                            `Unexpected rowcount when deleting on compaction: ${deleteResult.rowCount} for board ${id}`,
+                        )
+                    }
+                    // 2. store as a single bundle
+                    await storeEventHistoryBundle(id, events, client)
+                } else {
+                    console.warn(
+                        `Aborting quick compaction of board ${id} due to inconsistent history, fallback to regular compaction`,
+                    )
+                    await compactBoardHistory(id)
+                    return
+                }
+                compacted = true
+            }
+            if (compacted) {
+            } else {
+                console.log(
+                    `Board ${id}: Verified ${bundleMetas.length} bundles containing ${
+                        bundleMetas[bundleMetas.length - 1].last_serial
+                    } events => no need to compact`,
+                )
+            }
+        } else {
+            console.warn(
+                `Aborting quick compaction of board ${id} due to inconsistent history, fallback to regular compaction`,
+            )
+            await compactBoardHistory(id)
+        }
+    })
+}
 
 // TODO: there are now some incomplete/inconsistent histories in production.
 //    Analyze and re-bootstrap them into consistency. This tool could do it!
@@ -25,7 +92,6 @@ export function compactBoardHistory(id: Id) {
         const consistent = verifyContinuity(id, 0, ...eventArrays)
         const events: BoardHistoryEntry[] = eventArrays.flat()
         if (consistent) {
-            const groups = Object.values(_.groupBy(events, (e) => Math.floor(e.serial! / 1000)))
             const sorted: DateBundle[] = []
             let current: DateBundle | null = null
             type DateBundle = { date: string; events: BoardHistoryEntry[] }

@@ -231,6 +231,7 @@ export function verifyContinuity(boardId: Id, init: Serial, ...histories: BoardH
     }
     return true
 }
+
 function verifyTwoPoints(boardId: Id, a: Serial, b: Serial) {
     if (b !== a + 1) {
         console.error(`History discontinuity: ${a} -> ${b} for board ${boardId}`)
@@ -274,6 +275,46 @@ export async function getBoardHistoryBundles(client: PoolClient, id: Id): Promis
             [id],
         )
     ).rows
+}
+
+export async function getBoardHistoryBundlesWithLastSerialsBetween(
+    client: PoolClient,
+    id: Id,
+    lsMin: Serial,
+    lsMax: Serial,
+): Promise<BoardHistoryBundle[]> {
+    return (
+        await client.query(
+            `SELECT board_id, last_serial, events FROM board_event WHERE board_id=$1 AND last_serial >= $2 AND last_serial <= $3 ORDER BY last_serial`,
+            [id, lsMin, lsMax],
+        )
+    ).rows
+}
+
+export type BoardHistoryBundleMeta = {
+    board_id: Id
+    first_serial: Serial
+    last_serial: Serial
+    saved_at: Date
+}
+
+export async function getBoardHistoryBundleMetas(client: PoolClient, id: Id): Promise<BoardHistoryBundleMeta[]> {
+    return (
+        await client.query(
+            `SELECT board_id, last_serial, first_serial, saved_at FROM board_event WHERE board_id=$1 ORDER BY last_serial`,
+            [id],
+        )
+    ).rows
+}
+
+export function verifyContinuityFromMetas(boardId: Id, init: Serial, bundles: BoardHistoryBundleMeta[]) {
+    for (let bundle of bundles) {
+        if (!verifyTwoPoints(boardId, init, bundle.first_serial)) {
+            return false
+        }
+        init = bundle.last_serial
+    }
+    return true
 }
 
 export async function findAllBoards(client: PoolClient): Promise<Id[]> {

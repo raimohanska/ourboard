@@ -3,7 +3,7 @@ import { Board, BoardCursorPositions, BoardHistoryEntry, Id, ItemLocks, Serial }
 import { Locks } from "./locker"
 import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./board-store"
 import { broadcastItemLocks, getBoardSessionCount, getSessionCount } from "./sessions"
-import { compactBoardHistory } from "./compact-history"
+import { compactBoardHistory, quickCompactBoardHistory } from "./compact-history"
 import { sleep } from "../../common/src/sleep"
 import { UserSession } from "./sessions"
 // A mutable state object for server side state
@@ -152,7 +152,7 @@ async function saveBoardChanges(state: ServerSideBoardState) {
     if (getBoardSessionCount(state.board.id) == 0) {
         console.log(`Purging board ${state.board.id} from memory`)
         boards.delete(state.board.id)
-        await compactBoardHistory(state.board.id)
+        await quickCompactBoardHistory(state.board.id)
     }
 }
 
