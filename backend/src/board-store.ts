@@ -250,12 +250,12 @@ export async function saveBoardSnapshot(board: Board, client: PoolClient) {
 
 export async function storeEventHistoryBundle(boardId: Id, events: BoardHistoryEntry[], client: PoolClient) {
     if (events.length > 0) {
-        const lastSerial = events[events.length - 1].serial || 0 // default to zero for legacy events. db constraint will prevent inserting two bundles with the same serial
-        await client.query(`INSERT INTO board_event(board_id, last_serial, events) VALUES ($1, $2, $3)`, [
-            boardId,
-            lastSerial,
-            { events },
-        ])
+        const firstSerial = events[0].serial!
+        const lastSerial = events[events.length - 1].serial!
+        await client.query(
+            `INSERT INTO board_event(board_id, first_serial, last_serial, events) VALUES ($1, $2, $3, $4)`,
+            [boardId, firstSerial, lastSerial, { events }],
+        )
     }
 }
 
