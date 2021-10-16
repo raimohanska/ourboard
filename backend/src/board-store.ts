@@ -1,4 +1,5 @@
 import { PoolClient } from "pg"
+import QueryStream from "pg-query-stream"
 import { boardReducer } from "../../common/src/board-reducer"
 import {
     Board,
@@ -36,38 +37,38 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             return null
         } else {
             const snapshot = result.rows[0].content as Board
-            let history: BoardHistoryEntry[]
-            let initialBoard: Board
-            if (snapshot.serial) {
-                try {
-                    console.log("Loading history for board with snapshot at serial " + snapshot.serial)
-                    history = await getBoardHistory(id, snapshot.serial)
-                    console.log("Got history for board with snapshot at serial " + snapshot.serial)
-                    //console.log( `Fetching partial history for board ${id}, starting at serial ${snapshot.serial}, consisting of ${history.length} events`, )
-                    initialBoard = snapshot
-                } catch (e) {
-                    console.error(
-                        `Error fetching board history for snapshot update for board ${id}. Rebooting snaphot...`,
-                    )
-                    history = await getFullBoardHistory(id, client)
-                    initialBoard = { ...snapshot, items: {}, connections: [] }
-                }
-            } else {
-                console.warn(`Found legacy board snapshot for ${id}. You should not see this message.`) // TODO remove this legacy branch
-                history = await getFullBoardHistory(id, client)
-                console.log(`Fetched full history for board ${id}, consisting of ${history.length} events`)
-                initialBoard = { ...snapshot, items: {}, connections: [] }
+            let historyEventCount = 0
+            let lastSerial = 0
+            let board = snapshot
+
+            function updateBoardWithEventChunk(chunk: BoardHistoryEntry[]) {
+                board = chunk.reduce((b, e) => boardReducer(b, e)[0], board)
+                historyEventCount += chunk.length
+                lastSerial = chunk[chunk.length - 1].serial ?? snapshot.serial
             }
-            const board = history.reduce((b, e) => boardReducer(b, e)[0], migrateBoard(initialBoard))
-            const serial = (history.length > 0 ? history[history.length - 1].serial : snapshot.serial) || 0
-            if (history.length > 1000 || serial == 1 || !snapshot.serial /* rebooted */) {
-                console.log(`Saving snapshot history ${history.length} serial ${serial}/${snapshot.serial}`)
+
+            console.log(`Loading history for board ${id} with snapshot at serial ${snapshot.serial}`)
+            await getBoardHistory(id, snapshot.serial, updateBoardWithEventChunk).catch((error) => {
+                console.error(error.message)
+                console.error(`Error fetching board history for snapshot update for board ${id}. Rebooting snapshot...`)
+                board = { ...snapshot, items: {}, connections: [] }
+                return getFullBoardHistory(id, client, updateBoardWithEventChunk)
+            })
+
+            const serial = (historyEventCount > 0 ? lastSerial : snapshot.serial) || 0
+            if (
+                historyEventCount > 1000 /* time to create a new snapshot*/ ||
+                serial == 1 /* first change ever*/ ||
+                !snapshot.serial /* rebooted */
+            ) {
+                console.log(
+                    `Saving snapshot for board ${id} at serial ${serial}/${snapshot.serial} with ${historyEventCount} new events`,
+                )
                 await saveBoardSnapshot(mkSnapshot(board, serial), client)
             }
             const accessTokens = (
                 await client.query("SELECT token FROM board_api_token WHERE board_id=$1", [id])
             ).rows.map((row) => row.token)
-            console.log(`Board loaded`)
             return { board: { ...board, serial }, accessTokens }
         }
     })
@@ -125,40 +126,92 @@ export async function saveRecentEvents(id: Id, recentEvents: BoardHistoryEntry[]
     await inTransaction(async (client) => storeEventHistoryBundle(id, recentEvents, client))
 }
 
-export async function getFullBoardHistory(id: Id, client: PoolClient): Promise<BoardHistoryEntry[]> {
-    return (
-        await client.query(`SELECT events FROM board_event WHERE board_id=$1 ORDER BY last_serial`, [id])
-    ).rows.flatMap((row) => row.events.events as BoardHistoryEntry[])
+type StreamingBoardEventCallback = (chunk: BoardHistoryEntry[]) => void
+
+// Due to memory concerns we fetch board histories from DB as chunks,
+// which are currently implemented as sort of a poor-man's observable
+function streamingBoardEventsQuery(text: string, values: any[], client: PoolClient, cb: StreamingBoardEventCallback) {
+    return new Promise((resolve, reject) => {
+        const query = new QueryStream(text, values)
+        const stream = client.query(query)
+        stream.on("error", reject)
+        stream.on("end", resolve)
+        stream.on("data", (row) => {
+            try {
+                const chunk = row.events?.events as BoardHistoryEntry[] | undefined
+
+                if (!chunk) {
+                    throw Error(`Unexpected DB row value ${chunk}`)
+                }
+
+                cb(chunk)
+            } catch (error) {
+                console.error(error)
+                stream.destroy()
+                reject(error)
+            }
+        })
+    })
 }
 
-export async function getBoardHistory(id: Id, afterSerial: Serial): Promise<BoardHistoryEntry[]> {
-    return withDBClient(async (client) => {
-        const historyEventsIncludingLatest = (
-            await client.query(
-                `SELECT events FROM board_event WHERE board_id=$1 AND last_serial >= $2 ORDER BY last_serial`,
-                [id, afterSerial],
+export function getFullBoardHistory(id: Id, client: PoolClient, cb: StreamingBoardEventCallback) {
+    return streamingBoardEventsQuery(
+        `SELECT events FROM board_event WHERE board_id=$1 ORDER BY last_serial`,
+        [id],
+        client,
+        cb,
+    )
+}
+
+export async function getBoardHistory(id: Id, afterSerial: Serial, cb: StreamingBoardEventCallback): Promise<void> {
+    await withDBClient(async (client) => {
+        let firstSerial = -1
+        let lastSerial = -1
+        let firstValidSerial = -1
+        await streamingBoardEventsQuery(
+            `SELECT events FROM board_event WHERE board_id=$1 AND last_serial >= $2 ORDER BY last_serial`,
+            [id, afterSerial],
+            client,
+            (chunk) => {
+                if (firstSerial === -1 && typeof chunk[0]?.serial === "number") {
+                    firstSerial = chunk[0]?.serial
+                }
+                lastSerial = chunk[chunk.length - 1].serial ?? -1
+
+                const validEventsAfter = chunk.filter((r) => r.serial! > afterSerial)
+                if (validEventsAfter.length === 0) {
+                    // Got chunk where no events have serial greater than the snapshot point -- discard it
+                    return
+                }
+
+                if (firstValidSerial === -1 && typeof validEventsAfter[0].serial === "number") {
+                    firstValidSerial = validEventsAfter[0].serial
+                }
+                cb(validEventsAfter)
+                return
+            },
+        )
+
+        // Client is up to date, ok
+        if (lastSerial === afterSerial) {
+            return
+        }
+
+        // Found continuous history, ok
+        if (firstValidSerial === afterSerial + 1) {
+            return
+        }
+
+        // Client claims to be in the future, not ok
+        if (firstValidSerial === -1) {
+            throw Error(
+                `Cannot find history to start after the requested serial ${afterSerial} for board ${id}. Seems like the requested serial is higher than currently stored in DB`,
             )
-        ).rows.flatMap((row) => row.events.events as BoardHistoryEntry[])
-
-        const historyEvents = historyEventsIncludingLatest.filter((e) => e.serial! > afterSerial)
-
-        //console.log( `Fetched board history for board ${id} after serial ${afterSerial} -> ${historyEvents.length} events`, )
-        if (historyEvents.length === 0) {
-            if (historyEventsIncludingLatest.length === 0) {
-                throw Error(
-                    `Cannot find history to start after the requested serial ${afterSerial} for board ${id}. Seems like the requested serial is higher than currently stored in DB`,
-                )
-            }
-            return historyEvents
-        }
-        if (historyEvents[0].serial === afterSerial + 1) {
-            return historyEvents
         }
 
+        // Found noncontinuous event timeline, not ok
         throw Error(
-            `Cannot find history to start after the requested serial ${afterSerial} for board ${id}. Found history for ${
-                historyEvents[0].serial
-            }..${historyEvents[historyEvents.length - 1].serial}`,
+            `Cannot find history to start after the requested serial ${afterSerial} for board ${id}. Found history for ${firstValidSerial}..${lastSerial}`,
         )
     })
 }

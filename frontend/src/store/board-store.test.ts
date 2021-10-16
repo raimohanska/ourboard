@@ -218,7 +218,9 @@ async function initBoardStore({
 
     if (initAtSerial) {
         serverEvents.push({
-            action: "board.init",
+            action: "board.init.diff",
+            first: true,
+            last: true,
             recentEvents: serverSideHistory!.filter((e) => e.serial! > initAtSerial),
             boardAttributes: getBoardAttributes(serverSideBoard),
             initAtSerial,
