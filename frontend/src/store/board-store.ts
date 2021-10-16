@@ -57,8 +57,6 @@ export type BoardState = {
     users: UserSessionInfo[]
 }
 
-let initialServerSyncEventBuffer: BoardHistoryEntry[] = []
-
 function emptyBoard(boardId: Id) {
     return { id: boardId, name: "", ...defaultBoardSize, items: {}, connections: [], serial: 0 }
 }
@@ -155,6 +153,8 @@ export function BoardStore(
     }
     let undoStack = CommandStack()
     let redoStack = CommandStack()
+
+    let initialServerSyncEventBuffer: BoardHistoryEntry[] = []
 
     const eventsReducer = (state: BoardState, event: BoardStoreEvent): BoardState => {
         if (state.status === "ready") {
@@ -299,95 +299,97 @@ export function BoardStore(
             const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
             return { ...state, users }
         } else if (event.action === "board.init") {
-            if ("initAtSerial" in event) {
-                const boardId = event.boardAttributes.id
-                try {
-                    if (!storedInitialState)
-                        throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
-                    if (storedInitialState.serverShadow.id !== event.boardAttributes.id)
-                        throw Error(`Trying to init board with nonmatching id`)
+            console.log("Going to online mode. Init as new board")
+            return {
+                ...state,
+                status: "ready",
+                board: event.board,
+                accessLevel: event.accessLevel,
+                serverShadow: event.board,
+                sent: [],
+                offline: false,
+                serverHistory: [
+                    //  Create a bootstrap event to make the local history consistent even though we don't have the full history from server.
+                    mkBootStrapEvent(event.board.id, event.board, event.board.serial),
+                ],
+            }
+        } else if (event.action === "board.init.diff") {
+            if (event.first) {
+                // Ensure local buffer empty on first chunk even if an earlier init was aborted.
+                initialServerSyncEventBuffer = []
+            }
+            const boardId = event.boardAttributes.id
+            try {
+                if (!storedInitialState)
+                    throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
+                if (storedInitialState.serverShadow.id !== event.boardAttributes.id)
+                    throw Error(`Trying to init board with nonmatching id`)
 
-                    initialServerSyncEventBuffer.push(...event.recentEvents)
-                    if (!event.done) {
-                        return state
-                    }
-
-                    const usedLocalState =
-                        state.board && state.board.id === boardId && state.serverShadow
-                            ? { serverShadow: state.serverShadow, queue: state.queue.filter(isBoardHistoryEntry) }
-                            : storedInitialState
-
-                    if (usedLocalState !== storedInitialState)
-                        console.log(
-                            `Using local state instead of stored. Using ${usedLocalState.queue.length} local events (out of ${state.queue.length})`,
-                        )
-
-                    const localSerial = usedLocalState.serverShadow.serial
-                    if (localSerial != event.initAtSerial)
-                        throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
-
-                    const initialBoard = {
-                        ...usedLocalState.serverShadow,
-                        ...event.boardAttributes,
-                    } as Board
-
-                    const queue = usedLocalState.queue
-                    if (initialServerSyncEventBuffer.length > 0) {
-                        console.log(
-                            `Going to online mode. Init at ${event.initAtSerial} with ${
-                                initialServerSyncEventBuffer.length
-                            } new events. Board starts at ${initialBoard.serial} and first event is ${
-                                initialServerSyncEventBuffer[0].serial
-                            } and last ${
-                                initialServerSyncEventBuffer[initialServerSyncEventBuffer.length - 1].serial
-                            }. ${queue.length} local events queued, ${state.sent.length} awaiting ack.`,
-                        )
-                    } else {
-                        console.log(
-                            `Init at ${event.initAtSerial}, no new events. ${queue.length} local events queued, ${state.sent.length} awaiting ack.`,
-                        )
-                    }
-                    // New server shadow = old server shadow + recent events from server
-                    const newServerShadow = initialServerSyncEventBuffer.reduce(
-                        (b, e) => boardReducer(b, e)[0],
-                        initialBoard,
-                    )
-                    // Local board = server shadow + local queue
-                    const board = queue.reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
-                    const newServerHistory = [...state.serverHistory, ...initialServerSyncEventBuffer]
-
-                    initialServerSyncEventBuffer = []
-
-                    return flushIfPossible({
-                        ...state,
-                        accessLevel: event.accessLevel,
-                        status: "ready",
-                        board,
-                        serverShadow: newServerShadow,
-                        queue,
-                        offline: false,
-                        serverHistory: newServerHistory,
-                    })
-                } catch (e) {
-                    console.error("Error initializing board. Fetching as new board...", e)
-                    resetForBoard(boardId)
+                initialServerSyncEventBuffer.push(...event.recentEvents)
+                if (!event.last) {
                     return state
                 }
-            } else {
-                console.log("Going to online mode. Init as new board")
-                return {
-                    ...state,
-                    status: "ready",
-                    board: event.board,
-                    accessLevel: event.accessLevel,
-                    serverShadow: event.board,
-                    sent: [],
-                    offline: false,
-                    serverHistory: [
-                        //  Create a bootstrap event to make the local history consistent even though we don't have the full history from server.
-                        mkBootStrapEvent(event.board.id, event.board, event.board.serial),
-                    ],
+
+                const usedLocalState =
+                    state.board && state.board.id === boardId && state.serverShadow
+                        ? { serverShadow: state.serverShadow, queue: state.queue.filter(isBoardHistoryEntry) }
+                        : storedInitialState
+
+                if (usedLocalState !== storedInitialState)
+                    console.log(
+                        `Using local state instead of stored. Using ${usedLocalState.queue.length} local events (out of ${state.queue.length})`,
+                    )
+
+                const localSerial = usedLocalState.serverShadow.serial
+                if (localSerial != event.initAtSerial)
+                    throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
+
+                const initialBoard = {
+                    ...usedLocalState.serverShadow,
+                    ...event.boardAttributes,
+                } as Board
+
+                const queue = usedLocalState.queue
+                if (initialServerSyncEventBuffer.length > 0) {
+                    console.log(
+                        `Going to online mode. Init at ${event.initAtSerial} with ${
+                            initialServerSyncEventBuffer.length
+                        } new events. Board starts at ${initialBoard.serial} and first event is ${
+                            initialServerSyncEventBuffer[0].serial
+                        } and last ${initialServerSyncEventBuffer[initialServerSyncEventBuffer.length - 1].serial}. ${
+                            queue.length
+                        } local events queued, ${state.sent.length} awaiting ack.`,
+                    )
+                } else {
+                    console.log(
+                        `Init at ${event.initAtSerial}, no new events. ${queue.length} local events queued, ${state.sent.length} awaiting ack.`,
+                    )
                 }
+                // New server shadow = old server shadow + recent events from server
+                const newServerShadow = initialServerSyncEventBuffer.reduce(
+                    (b, e) => boardReducer(b, e)[0],
+                    initialBoard,
+                )
+                // Local board = server shadow + local queue
+                const board = queue.reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
+                const newServerHistory = [...state.serverHistory, ...initialServerSyncEventBuffer]
+
+                initialServerSyncEventBuffer = []
+
+                return flushIfPossible({
+                    ...state,
+                    accessLevel: event.accessLevel,
+                    status: "ready",
+                    board,
+                    serverShadow: newServerShadow,
+                    queue,
+                    offline: false,
+                    serverHistory: newServerHistory,
+                })
+            } catch (e) {
+                console.error("Error initializing board. Fetching as new board...", e)
+                resetForBoard(boardId)
+                return state
             }
         } else if (event.action === "ui.offline") {
             if (!state.offline) {

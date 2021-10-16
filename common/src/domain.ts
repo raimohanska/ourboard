@@ -277,11 +277,12 @@ export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionI
 export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo
 export type InitBoardNew = { action: "board.init"; board: Board; accessLevel: AccessLevel }
 export type InitBoardDiff = {
-    action: "board.init"
-    done: boolean
+    action: "board.init.diff"
+    initAtSerial: Serial
+    first: boolean
+    last: boolean
     recentEvents: BoardHistoryEntry[]
     boardAttributes: BoardAttributes
-    initAtSerial: Serial
     accessLevel: AccessLevel
 }
 export type RenameBoard = { action: "board.rename"; boardId: Id; name: string }

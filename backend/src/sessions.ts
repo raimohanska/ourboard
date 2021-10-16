@@ -163,17 +163,19 @@ export async function addSessionToBoard(
             // 3. Fetch events from DB as chunks
             // IMPORTANT NOTE: this is the only await here and must remain so, as the logic here depends on everything else being synchronous.
             console.log(`Loading board history for board ${boardState.board.id} session at serial ${initAtSerial}`)
-
+            let first = true
             await getBoardHistory(boardState.board.id, initAtSerial, (chunk) => {
                 // Send a chunk of events with done: false, so that client knows to wait for more
-                return session.sendEvent({
-                    action: "board.init",
-                    done: false,
+                session.sendEvent({
+                    action: "board.init.diff",
+                    first,
+                    last: false,
                     boardAttributes,
                     recentEvents: chunk,
                     initAtSerial,
                     accessLevel,
                 })
+                first = false
             })
 
             console.log(`Got board history for board ${boardState.board.id} session at serial ${initAtSerial}`)
@@ -182,9 +184,10 @@ export async function addSessionToBoard(
             // In memory events: not yet flushed to DB when query was made
             // Buffered events: events that occurred after the in memory events were captured
             session.sendEvent({
-                action: "board.init",
+                action: "board.init.diff",
                 boardAttributes,
-                done: true,
+                first,
+                last: true,
                 recentEvents: [...inMemoryEvents, ...entry.bufferedEvents],
                 initAtSerial,
                 accessLevel,
@@ -201,7 +204,6 @@ export async function addSessionToBoard(
             entry.bufferedEvents = []
             session.sendEvent({
                 action: "board.init",
-                done: true,
                 board: boardState.board,
                 accessLevel,
             })
