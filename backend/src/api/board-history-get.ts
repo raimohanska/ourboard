@@ -14,27 +14,34 @@ export const boardHistoryGet = route
     .handler((request) =>
         checkBoardAPIAccess(request, async (board) => {
             return ok(
-                streamingBody(async (stream) => {
-                    // Due to memory concerns we fetch board histories from DB as chunks, so this API
-                    // response must also be chunked
-                    stream.write('{"history":[')
-                    let chunksProcessed = 0
+                streamingJSONBody("history", async (callback) => {
                     await withDBClient(
                         async (client) =>
-                            await getFullBoardHistory(board.board.id, client, (chunk) => {
-                                let prefix = chunksProcessed === 0 ? "" : ","
-                                stream.write(`${prefix}${chunk.map((ev) => JSON.stringify(ev)).join(",")}`)
-                                chunksProcessed++
-                            }),
+                            await getFullBoardHistory(board.board.id, client, (bundle) => bundle.forEach(callback)),
                     )
-                        .then(() => {
-                            stream.write("]}")
-                            stream.end()
-                        })
-                        .catch((e) => {
-                            stream.end()
-                        })
                 }),
             )
         }),
     )
+
+function streamingJSONBody(fieldName: string, generator: (callback: (item: any) => void) => Promise<void>) {
+    return streamingBody(async (stream) => {
+        // Due to memory concerns we fetch board histories from DB as chunks, so this API
+        // response must also be chunked
+        try {
+            stream.write(`{"${fieldName}":[`)
+            let chunksProcessed = 0
+            await generator((item) => {
+                let prefix = chunksProcessed === 0 ? "" : ","
+                stream.write(`${prefix}${JSON.stringify(item)}`)
+                chunksProcessed++
+            })
+            stream.write("]}")
+            stream.end()
+            //console.log(`Wrote ${chunksProcessed} chunks`)
+        } catch (e) {
+            console.error(`Error writing a streamed body: ${e}`)
+            stream.end()
+        }
+    })
+}
