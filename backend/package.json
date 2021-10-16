@@ -30,6 +30,7 @@
     "lonna": "^0.12.1",
     "monocle-ts": "^2.3.7",
     "newtype-ts": "^0.3.4",
+    "node-pg-migrate": "^6.0.0",
     "openapi-types": "^7.2.3",
     "pg": "^8.3.3",
     "pg-query-stream": "^4.2.1",
