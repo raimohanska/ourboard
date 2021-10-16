@@ -202,8 +202,12 @@ export async function getBoardHistory(id: Id, afterSerial: Serial, cb: Streaming
             return
         }
 
-        // Client claims to be in the future, not ok
         if (firstValidSerial === -1) {
+            if (afterSerial === 0) {
+                // Requesting from start, zero events found, is ok
+                return
+            }
+            // Client claims to be in the future, not ok
             throw Error(
                 `Cannot find history to start after the requested serial ${afterSerial} for board ${id}. Seems like the requested serial is higher than currently stored in DB`,
             )
