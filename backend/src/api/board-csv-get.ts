@@ -18,7 +18,7 @@ export const boardCSVGet = route
     .get("/api/v1/board/:boardId/csv")
     .use(apiTokenHeader)
     .handler((request) =>
-        checkBoardAPIAccess(request, async (boardState) => {
+        checkBoardAPIAccess("read", request, async (boardState) => {
             const board = boardState.board
             const textItemsWithParent = Object.values(board.items).filter(
                 (i) => i.containerId !== undefined && (i.type === "text" || i.type === "note"),

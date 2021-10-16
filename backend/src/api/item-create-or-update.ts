@@ -43,7 +43,7 @@ export const itemCreateOrUpdate = route
         ),
     )
     .handler((request) =>
-        checkBoardAPIAccess(request, async (board) => {
+        checkBoardAPIAccess("write", request, async (board) => {
             const { itemId } = request.routeParams
             let {
                 type,

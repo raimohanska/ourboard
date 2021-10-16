@@ -17,7 +17,7 @@ export const itemCreate = route
         body(t.type({ type: t.literal("note"), text: t.string, color: t.string, container: t.string })),
     )
     .handler((request) =>
-        checkBoardAPIAccess(request, async (board) => {
+        checkBoardAPIAccess("write", request, async (board) => {
             const { type, text, color, container } = request.body
             console.log(`POST item for board ${board.board.id}: ${JSON.stringify(request.req.body)}`)
             addItem(board, type, text, color, container)
