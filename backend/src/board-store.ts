@@ -56,7 +56,11 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             })
 
             const serial = (historyEventCount > 0 ? lastSerial : snapshot.serial) || 0
-            if (historyEventCount > 1000 || serial == 1 || !snapshot.serial /* rebooted */) {
+            if (
+                historyEventCount > 1000 /* time to create a new snapshot*/ ||
+                serial == 1 /* first change ever*/ ||
+                !snapshot.serial /* rebooted */
+            ) {
                 console.log(`Saving snapshot history ${historyEventCount} serial ${serial}/${snapshot.serial}`)
                 await saveBoardSnapshot(mkSnapshot(board, serial), client)
             }
