@@ -2,7 +2,7 @@ import { addHours, addSeconds } from "date-fns"
 import _ from "lodash"
 import { createBoard, getBoardHistoryBundleMetas, storeEventHistoryBundle } from "../../backend/src/board-store"
 import { quickCompactBoardHistory } from "../../backend/src/compact-history"
-import { initDB, inTransaction, withDBClient } from "../../backend/src/db"
+import { initDB, inTransaction, closeConnectionPool, withDBClient } from "../../backend/src/db"
 import { BoardHistoryEntry, EventUserInfo, Id, newBoard, Serial } from "../../common/src/domain"
 type BundleDesc = [Date, Serial, Serial]
 describe("quick compact", () => {
@@ -90,6 +90,8 @@ describe("quick compact", () => {
             [laterSave, 8, 8],
         ])
     })
+
+    afterAll(closeConnectionPool)
 })
 
 async function storeBundles(boardId: Id, bundles: BundleDesc[]) {

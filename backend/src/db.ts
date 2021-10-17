@@ -14,6 +14,10 @@ const pgConfig = {
 }
 const connectionPool = new pg.Pool(pgConfig)
 
+export function closeConnectionPool() {
+    connectionPool.end()
+}
+
 export async function initDB(backendDir: string = ".") {
     console.log("Running database migrations")
     await inTransaction((client) =>
