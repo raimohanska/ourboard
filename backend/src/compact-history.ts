@@ -16,8 +16,9 @@ import {
 } from "./board-store"
 import { inTransaction } from "./db"
 
-export function quickCompactBoardHistory(id: Id) {
-    return inTransaction(async (client) => {
+export async function quickCompactBoardHistory(id: Id) {
+    let fallback = false
+    const result = inTransaction(async (client) => {
         const bundleMetas = await getBoardHistoryBundleMetas(client, id)
         if (bundleMetas.length === 0) return
         const consistent = verifyContinuityFromMetas(id, 0, bundleMetas)
@@ -56,10 +57,7 @@ export function quickCompactBoardHistory(id: Id) {
                     // 2. store as a single bundle
                     await storeEventHistoryBundle(id, events, client, lastBundle.saved_at)
                 } else {
-                    console.warn(
-                        `Aborting quick compaction of board ${id} due to inconsistent history, fallback to regular compaction`,
-                    )
-                    await compactBoardHistory(id)
+                    fallback = true
                     return
                 }
                 compactions++
@@ -74,12 +72,17 @@ export function quickCompactBoardHistory(id: Id) {
             }
             return compactions
         } else {
-            console.warn(
-                `Aborting quick compaction of board ${id} due to inconsistent history, fallback to regular compaction`,
-            )
-            await compactBoardHistory(id)
+            fallback = true
         }
     })
+    if (fallback) {
+        console.warn(
+            `Aborting quick compaction of board ${id} due to inconsistent history, fallback to regular compaction`,
+        )
+        await compactBoardHistory(id)
+    } else {
+        return result
+    }
 }
 
 // TODO: get rid of the legacy compactor altogether after more experience with the quick one.
