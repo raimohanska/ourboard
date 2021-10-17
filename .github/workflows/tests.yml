@@ -37,8 +37,6 @@ jobs:
                 node-version: [15.x]
         steps:
             - uses: actions/checkout@v2
-            - uses: microsoft/playwright-github-action@v1
-
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v1
               with:
@@ -49,6 +47,10 @@ jobs:
                   runTests: false
             - name: Run unit tests
               run: yarn test:unit
+            - name: Wait for DB
+              run: yarn wait-for-db
+            - name: Run integration tests
+              run: yarn test:integration
             - name: Build
               run: yarn build
             - name: Run cypress tests

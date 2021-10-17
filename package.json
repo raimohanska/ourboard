@@ -43,7 +43,8 @@
     "build:backend": "yarn --cwd backend build",
     "build:perf-tester": "yarn --cwd perf-tester build",
     "test:unit": "jest",
-    "test:integration": "TEST_TARGET=integration npm-run-all --parallel start:db test:watch",
+    "test:integration": "TEST_TARGET=integration jest",
+    "test:integration:watch": "TEST_TARGET=integration jest --watchAll",
     "test:watch": "jest --watchAll",
     "test:playwright": "TEST_TARGET=playwright jest --testTimeout=15000",
     "test:playwright:debug": "TEST_TARGET=playwright PWDEBUG=1 jest --testTimeout=900000",
@@ -56,6 +57,7 @@
     "format": "prettier --write .",
     "apidocs": "cd backend && yarn apidocs",
     "compact-history": "cd backend && ts-node src/tools/history-compactor.ts",
+    "wait-for-db": "cd backend && ts-node src/tools/wait-for-db.ts",
     "psql": "psql postgres://r-board:secret@localhost:13338/r-board"
   }
 }
