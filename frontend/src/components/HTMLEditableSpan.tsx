@@ -52,7 +52,14 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
         .forEach(updateContent)
 
     const onBlur = (e: JSX.FocusEvent) => {
-        //editingThis.set(false)
+        // In Safari, Chrome, some spaces end up being non-breaking spaces in case of pasting content
+        // vs typing it. Didn't find a better way to fix it yet. Replacing innerHTML while editing would
+        // mess up cursor position, so we replace the nbsps onBlur instead.
+        const content = value.get()
+        const fixed = content.replaceAll("&nbsp;", " ")
+        if (fixed !== content) {
+            value.set(fixed)
+        }
     }
     const onKeyPress = (e: JSX.KeyboardEvent) => {
         e.stopPropagation() // To prevent propagating to higher handlers which, for instance prevent defaults for backspace
