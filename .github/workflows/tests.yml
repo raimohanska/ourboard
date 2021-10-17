@@ -57,5 +57,5 @@ jobs:
                   install: false
                   start: yarn start
                   wait-on: "http://localhost:1337"
-            # - name: Run playwright tests
-            #   run: yarn test:playwright
+            - name: Run playwright tests
+              run: yarn test:playwright
