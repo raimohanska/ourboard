@@ -82,10 +82,10 @@ export function quickCompactBoardHistory(id: Id) {
     })
 }
 
-// TODO: there are now some incomplete/inconsistent histories in production.
-//    Analyze and re-bootstrap them into consistency. This tool could do it!
-//    Fix is possible if there's a snapshot with a serial.
-// TODO: verify further with boardReducer
+// TODO: get rid of the legacy compactor altogether after more experience with the quick one.
+// It's role is currently work as a fallback in case the quick one fails. It's very unlikely though
+// that it can fix any problems for real. The actual need is more like rebooting the whole history in case
+// it's not consistent. And that would be the bootstrapHistory thing.
 export function compactBoardHistory(id: Id) {
     return inTransaction(async (client) => {
         const bundles = await getBoardHistoryBundles(client, id)
