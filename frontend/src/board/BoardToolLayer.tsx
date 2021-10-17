@@ -1,6 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { AccessLevel, Board, Id, Item, Note, canWrite } from "../../../common/src/domain"
+import { AccessLevel, Board, canWrite, Item, Note } from "../../../common/src/domain"
 import { BoardStore, Dispatch } from "../store/board-store"
 import { UserSessionState } from "../store/user-session-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
@@ -8,7 +8,6 @@ import { BoardFocus } from "./board-focus"
 import { BoardZoom } from "./board-scroll-and-zoom"
 import { BoardViewMessage } from "./BoardViewMessage"
 import * as G from "./geometry"
-import { HistoryView } from "./HistoryView"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { localStorageAtom } from "./local-storage-atom"
 import { MiniMapView } from "./MiniMapView"
@@ -130,7 +129,6 @@ export const BoardToolLayer = ({
             <div className="zoom-toolbar board-tool">
                 <ZoomControls {...{ zoom }} />
             </div>
-            <HistoryView {...{ board, history, focus, dispatch }} />
 
             {L.view(focus, (f) => {
                 if (f.status !== "adding") return null
