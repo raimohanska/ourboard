@@ -41,10 +41,10 @@ export async function quickCompactBoardHistory(id: Id) {
                 const eventArrays = bundlesWithData.map((b) => b.events.events)
                 const consistent = verifyContinuity(id, firstBundle.first_serial - 1, ...eventArrays)
                 const events: BoardHistoryEntry[] = eventArrays.flat()
-                if (consistent) {
+                if (consistent && bundlesWithData.length == bs.length) {
                     // 1. delete existing bundles
                     const deleteResult = await client.query(
-                        `DELETE FROM board_event where board_id=$1 and last_serial in (${bs
+                        `DELETE FROM board_event where board_id=$1 and last_serial in (${bundlesWithData
                             .map((b) => b.last_serial)
                             .join(",")})`,
                         [id],
