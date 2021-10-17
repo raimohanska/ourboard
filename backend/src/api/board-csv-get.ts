@@ -1,13 +1,8 @@
 import { createArrayCsvStringifier } from "csv-writer"
-import * as t from "io-ts"
-import { NonEmptyString } from "io-ts-types"
 import _ from "lodash"
-import { body } from "typera-express/parser"
-import { Board, BoardAccessPolicyCodec, Container, createBoard, Item, TextItem } from "../../../common/src/domain"
-import { addBoard } from "../board-state"
 import { ok } from "typera-common/response"
+import { Board, Container, Item, TextItem } from "../../../common/src/domain"
 import { apiTokenHeader, checkBoardAPIAccess, route } from "./utils"
-import { getBoardHierarchy } from "./board-hierarchy-get"
 
 /**
  * Gets board current contents

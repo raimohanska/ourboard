@@ -1,19 +1,4 @@
-import {
-    Board,
-    BoardAttributes,
-    BoardHistoryEntry,
-    BoardWithHistory,
-    CompactBoardHistory,
-    Container,
-    createBoard,
-    defaultBoardSize,
-    EventUserInfo,
-    Id,
-    Item,
-    Serial,
-} from "./domain"
-import { boardReducer } from "./board-reducer"
-import { some } from "lodash"
+import { Board, BoardHistoryEntry, Container, defaultBoardSize, Id, Item, Serial } from "./domain"
 
 export function mkBootStrapEvent(boardId: Id, snapshot: Board, serial: Serial = 1) {
     return {

@@ -5,7 +5,7 @@ import {
     UIEvent,
     EventWrapper,
     Id,
-    createBoard,
+    newBoard,
     newNote,
     Board,
     BoardHistoryEntry,
@@ -18,7 +18,7 @@ import { mkBootStrapEvent } from "../../../common/src/migration"
 
 const otherUserEventAttributes = { user: { userType: "unidentified", nickname: "joe" }, timestamp: "0" } as const
 
-const board0 = createBoard("testboard")
+const board0 = newBoard("testboard")
 const item1 = newNote("hello1")
 const addItem1: BoardHistoryEntry = {
     action: "item.add",

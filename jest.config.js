@@ -1,7 +1,8 @@
-const which = process.env.TEST_TARGET || "common"
-
+const roots = (process.env.TEST_TARGET || "common,frontend,backend")
+    .split(",")
+    .map((target) => `<rootDir>/${target}/src`)
 module.exports = {
-    roots: [`<rootDir>/${which}/src`],
+    roots,
     globals: {
         "ts-jest": {
             tsconfig: `<rootDir>/tsconfig.json`,

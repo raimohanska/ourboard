@@ -3,7 +3,7 @@ import {
     AppEvent,
     BoardHistoryEntry,
     BringItemToFront,
-    createBoard,
+    newBoard,
     CURSOR_POSITIONS_ACTION_TYPE,
     getItemIds,
     isBoardHistoryEntry,
@@ -54,7 +54,7 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
             const createdItemIds = new Set(getItemIds(a))
             if (getItemIds(b).every((id) => createdItemIds.has(id))) {
                 try {
-                    let tmp = createBoard("tmp")
+                    let tmp = newBoard("tmp")
                     if (isBoardHistoryEntry(a) && a.serial !== undefined) {
                         tmp.serial = a.serial - 1
                     }

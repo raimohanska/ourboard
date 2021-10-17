@@ -312,7 +312,7 @@ export const exampleBoard: Board = {
     serial: 0,
 }
 
-export function createBoard(name: string, accessPolicy?: BoardAccessPolicy): Board {
+export function newBoard(name: string, accessPolicy?: BoardAccessPolicy): Board {
     return { id: uuid.v4(), name, items: {}, accessPolicy, connections: [], ...defaultBoardSize, serial: 0 }
 }
 

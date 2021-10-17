@@ -249,13 +249,18 @@ export async function saveBoardSnapshot(board: Board, client: PoolClient) {
     client.query(`UPDATE board set name=$2, content=$3 WHERE id=$1`, [board.id, board.name, board])
 }
 
-export async function storeEventHistoryBundle(boardId: Id, events: BoardHistoryEntry[], client: PoolClient) {
+export async function storeEventHistoryBundle(
+    boardId: Id,
+    events: BoardHistoryEntry[],
+    client: PoolClient,
+    savedAt = new Date(),
+) {
     if (events.length > 0) {
         const firstSerial = events[0].serial!
         const lastSerial = events[events.length - 1].serial!
         await client.query(
-            `INSERT INTO board_event(board_id, first_serial, last_serial, events) VALUES ($1, $2, $3, $4)`,
-            [boardId, firstSerial, lastSerial, { events }],
+            `INSERT INTO board_event(board_id, first_serial, last_serial, events, saved_at) VALUES ($1, $2, $3, $4, $5)`,
+            [boardId, firstSerial, lastSerial, { events }, savedAt],
         )
     }
 }

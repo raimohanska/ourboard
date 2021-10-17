@@ -1,22 +1,20 @@
+import { format } from "date-fns"
+import _ from "lodash"
+import { PoolClient } from "pg"
+import { boardReducer } from "../../common/src/board-reducer"
+import { Board, BoardHistoryEntry, Id } from "../../common/src/domain"
+import { migrateBoard, mkBootStrapEvent } from "../../common/src/migration"
 import {
-    findAllBoards,
+    getBoardHistoryBundleMetas,
     getBoardHistoryBundles,
-    verifyContinuity,
-    storeEventHistoryBundle,
+    getBoardHistoryBundlesWithLastSerialsBetween,
     mkSnapshot,
     saveBoardSnapshot,
-    getBoardHistoryBundleMetas,
+    storeEventHistoryBundle,
+    verifyContinuity,
     verifyContinuityFromMetas,
-    BoardHistoryBundleMeta,
-    getBoardHistoryBundlesWithLastSerialsBetween,
 } from "./board-store"
-import { withDBClient, inTransaction } from "./db"
-import _ from "lodash"
-import { Board, BoardHistoryEntry, Id } from "../../common/src/domain"
-import { format } from "date-fns"
-import { boardReducer } from "../../common/src/board-reducer"
-import { PoolClient } from "pg"
-import { mkBootStrapEvent, migrateBoard } from "../../common/src/migration"
+import { inTransaction } from "./db"
 
 export function quickCompactBoardHistory(id: Id) {
     return inTransaction(async (client) => {
@@ -26,19 +24,21 @@ export function quickCompactBoardHistory(id: Id) {
         if (consistent) {
             // Group in one-hour bundles
             const groupedByHour = _.groupBy(bundleMetas, (b) => format(new Date(b.saved_at), "yyyy-MM-dd hh"))
-            //console.log("Grouped by date", groupedByDate)
+            //console.log("Grouped by date", groupedByHour)
             const toCompact = Object.values(groupedByHour).filter((bs) => bs.length > 1)
-            let compacted = false
+            let compactions = 0
             for (let bs of toCompact) {
                 console.log(`Compacting ${bs.length} bundles into one for board ${id}`)
+                const firstBundle = bs[0]
+                const lastBundle = bs[bs.length - 1]
                 const bundlesWithData = await getBoardHistoryBundlesWithLastSerialsBetween(
                     client,
                     id,
-                    bs[0].last_serial,
-                    bs[bs.length - 1].last_serial,
+                    firstBundle.last_serial,
+                    lastBundle.last_serial,
                 )
                 const eventArrays = bundlesWithData.map((b) => b.events.events)
-                const consistent = verifyContinuity(id, 0, ...eventArrays)
+                const consistent = verifyContinuity(id, firstBundle.first_serial - 1, ...eventArrays)
                 const events: BoardHistoryEntry[] = eventArrays.flat()
                 if (consistent) {
                     // 1. delete existing bundles
@@ -54,7 +54,7 @@ export function quickCompactBoardHistory(id: Id) {
                         )
                     }
                     // 2. store as a single bundle
-                    await storeEventHistoryBundle(id, events, client)
+                    await storeEventHistoryBundle(id, events, client, lastBundle.saved_at)
                 } else {
                     console.warn(
                         `Aborting quick compaction of board ${id} due to inconsistent history, fallback to regular compaction`,
@@ -62,9 +62,9 @@ export function quickCompactBoardHistory(id: Id) {
                     await compactBoardHistory(id)
                     return
                 }
-                compacted = true
+                compactions++
             }
-            if (compacted) {
+            if (compactions > 0) {
             } else {
                 console.log(
                     `Board ${id}: Verified ${bundleMetas.length} bundles containing ${
@@ -72,6 +72,7 @@ export function quickCompactBoardHistory(id: Id) {
                     } events => no need to compact`,
                 )
             }
+            return compactions
         } else {
             console.warn(
                 `Aborting quick compaction of board ${id} due to inconsistent history, fallback to regular compaction`,

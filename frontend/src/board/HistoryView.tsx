@@ -1,26 +1,24 @@
-import { h, Fragment, ListView, componentScope } from "harmaja"
+import { componentScope, Fragment, h, ListView } from "harmaja"
 import * as L from "lonna"
+import prettyMs from "pretty-ms"
+import { boardReducer } from "../../../common/src/board-reducer"
 import {
     Board,
     BoardHistoryEntry,
-    Id,
-    Item,
-    createBoard,
+    EventUserInfo,
+    findItem,
+    getItem,
     getItemIds,
     getItemText,
-    EventUserInfo,
+    Id,
     ISOTimeStamp,
+    Item,
     PersistableBoardItemEvent,
-    findItem,
 } from "../../../common/src/domain"
-import prettyMs from "pretty-ms"
-import _, { some } from "lodash"
-import { boardReducer } from "../../../common/src/board-reducer"
-import { getItem } from "../../../common/src/domain"
-import { BoardFocus, getSelectedIds } from "./board-focus"
 import { Checkbox } from "../components/components"
-import { Dispatch } from "../store/board-store"
 import { HistoryIcon } from "../components/Icons"
+import { Dispatch } from "../store/board-store"
+import { BoardFocus, getSelectedIds } from "./board-focus"
 
 type ParsedHistoryEntry = {
     timestamp: ISOTimeStamp

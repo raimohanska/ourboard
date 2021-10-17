@@ -14,14 +14,14 @@ const pgConfig = {
 }
 const connectionPool = new pg.Pool(pgConfig)
 
-export async function initDB() {
+export async function initDB(backendDir: string = ".") {
     console.log("Running database migrations")
     await inTransaction((client) =>
         migrate({
             count: 100000,
             databaseUrl: DATABASE_URL,
             migrationsTable: "pgmigrations",
-            dir: "./migrations",
+            dir: `${backendDir}/migrations`,
             direction: "up",
             dbClient: client,
         }),
