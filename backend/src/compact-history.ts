@@ -1,5 +1,5 @@
 import { format } from "date-fns"
-import _ from "lodash"
+import _, { last } from "lodash"
 import { PoolClient } from "pg"
 import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardHistoryEntry, Id } from "../../common/src/domain"
@@ -29,9 +29,11 @@ export async function quickCompactBoardHistory(id: Id) {
             const toCompact = Object.values(groupedByHour).filter((bs) => bs.length > 1)
             let compactions = 0
             for (let bs of toCompact) {
-                console.log(`Compacting ${bs.length} bundles into one for board ${id}`)
                 const firstBundle = bs[0]
                 const lastBundle = bs[bs.length - 1]
+                console.log(
+                    `Compacting ${bs.length} bundles into one for board ${id}, containing serials ${firstBundle.first_serial}...${lastBundle.last_serial}`,
+                )
                 const bundlesWithData = await getBoardHistoryBundlesWithLastSerialsBetween(
                     client,
                     id,
