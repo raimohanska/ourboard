@@ -221,7 +221,16 @@ export const BoardView = ({
     return (
         <div id="root" className={className}>
             <ModalContainer content={modalContent} />
-            <BoardViewHeader {...{ board, sessionState, dispatch, accessLevel, modalContent }} />
+            <BoardViewHeader
+                {...{
+                    board,
+                    sessionState,
+                    dispatch,
+                    accessLevel,
+                    modalContent,
+                    eventsFromServer: boardStore.eventsFromServer,
+                }}
+            />
             <div className="content-container" ref={containerElement.set}>
                 <div className="scroll-container" ref={scrollElement.set}>
                     <div className="border-container" style={borderContainerStyle}>

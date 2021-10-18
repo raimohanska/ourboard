@@ -1,6 +1,6 @@
 import { HarmajaRouter, Navigator } from "harmaja-router"
 import * as L from "lonna"
-import { Board, BoardStub } from "../../common/src/domain"
+import { Board, BoardStub, EventFromServer } from "../../common/src/domain"
 import "./app.scss"
 import { Dispatch } from "./store/server-connection"
 
@@ -33,7 +33,14 @@ export function BoardNavigation() {
     }
 }
 
-export function createBoardAndNavigate(newBoard: Board | BoardStub, dispatch: Dispatch, navigator: Navigator<Routes>) {
+export function createBoardAndNavigate(
+    newBoard: Board | BoardStub,
+    dispatch: Dispatch,
+    navigator: Navigator<Routes>,
+    serverEvents: L.EventStream<EventFromServer>,
+) {
     dispatch({ action: "board.add", payload: newBoard })
-    setTimeout(() => navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }), 100) // TODO: some ack based solution would be more reliable
+    serverEvents.forEach(
+        (e) => e.action === "board.add.ack" && navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }),
+    )
 }

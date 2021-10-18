@@ -166,9 +166,15 @@ export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEm
 export type BoardEvent = { boardId: Id }
 export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
 export type LocalUIEvent = Undo | Redo | BoardJoinRequest | BoardLoggedOut | GoOffline
-export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse
+export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse | AckAddBoard
 export type Serial = number
-export type AppEvent = BoardItemEvent | BoardStateSyncEvent | LocalUIEvent | ClientToServerRequest | LoginResponse
+export type AppEvent =
+    | BoardItemEvent
+    | BoardStateSyncEvent
+    | LocalUIEvent
+    | ClientToServerRequest
+    | LoginResponse
+    | AckAddBoard
 export type EventWrapper = {
     events: AppEvent[]
     ackId?: string
@@ -249,6 +255,7 @@ export type LockItem = { action: "item.lock"; boardId: Id; itemId: Id }
 export type UnlockItem = { action: "item.unlock"; boardId: Id; itemId: Id }
 export type GotBoardLocks = { action: "board.locks"; boardId: Id; locks: ItemLocks }
 export type AddBoard = { action: "board.add"; payload: Board | BoardStub }
+export type AckAddBoard = { action: "board.add.ack"; boardId: Id }
 export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Serial }
 export type AssociateBoard = { action: "board.associate"; boardId: Id; lastOpened: ISOTimeStamp }
 export type DissociateBoard = { action: "board.dissociate"; boardId: Id }

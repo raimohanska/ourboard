@@ -28,6 +28,7 @@ import {
     UserSessionInfo,
     AccessLevel,
     canWrite,
+    AckAddBoard,
 } from "../../../common/src/domain"
 import { mkBootStrapEvent } from "../../../common/src/migration"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
@@ -73,6 +74,7 @@ export function BoardStore(
         | LocalUIEvent
         | ClientToServerRequest
         | LoginResponse
+        | AckAddBoard
 
     function tagWithUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
         const user: EventUserInfo = sessionState2UserInfo(sessionInfo.get())
@@ -502,6 +504,7 @@ export function BoardStore(
     return {
         state,
         events,
+        eventsFromServer: connection.bufferedServerEvents,
         dispatch,
         canUndo: undoStack.canPop,
         canRedo: redoStack.canPop,

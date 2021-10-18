@@ -1,7 +1,7 @@
 import { h, Fragment } from "harmaja"
 import { getNavigator } from "harmaja-router"
 import * as L from "lonna"
-import { AccessLevel, Board, checkBoardAccess } from "../../../../common/src/domain"
+import { AccessLevel, Board, checkBoardAccess, EventFromServer } from "../../../../common/src/domain"
 import { createBoardAndNavigate, Routes } from "../../board-navigation"
 import { EditableSpan } from "../../components/EditableSpan"
 import { UserInfoView } from "../../components/UserInfoView"
@@ -16,12 +16,14 @@ export function BoardViewHeader({
     sessionState,
     dispatch,
     modalContent,
+    eventsFromServer,
 }: {
     board: L.Property<Board>
     accessLevel: L.Property<AccessLevel>
     sessionState: L.Property<UserSessionState>
     dispatch: Dispatch
     modalContent: L.Atom<any>
+    eventsFromServer: L.EventStream<EventFromServer>
 }) {
     const editingAtom = L.atom(false)
     const nameAtom = L.atom(
@@ -36,7 +38,7 @@ export function BoardViewHeader({
             id: uuid.v4(),
             accessPolicy: undefined,
         }
-        createBoardAndNavigate(newBoard, dispatch, navigator)
+        createBoardAndNavigate(newBoard, dispatch, navigator, eventsFromServer)
     }
 
     return (

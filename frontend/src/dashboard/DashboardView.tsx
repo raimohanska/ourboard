@@ -3,7 +3,7 @@ import { getNavigator, Link } from "harmaja-router"
 import * as L from "lonna"
 import * as R from "ramda"
 import * as uuid from "uuid"
-import { BoardAccessPolicy, exampleBoard, RecentBoard } from "../../../common/src/domain"
+import { BoardAccessPolicy, EventFromServer, exampleBoard, RecentBoard } from "../../../common/src/domain"
 import { BOARD_PATH, createBoardAndNavigate, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
 import { BoardAccessPolicyEditor } from "../components/BoardAccessPolicyEditor"
@@ -17,10 +17,12 @@ export const DashboardView = ({
     sessionState,
     dispatch,
     recentBoards,
+    eventsFromServer,
 }: {
     sessionState: L.Property<UserSessionState>
     recentBoards: RecentBoards
     dispatch: Dispatch
+    eventsFromServer: L.EventStream<EventFromServer>
 }) => {
     const boardName = L.atom("")
     return (
@@ -53,13 +55,15 @@ export const DashboardView = ({
                     })}
                 </div>
                 <main>
-                    <CreateBoard {...{ dispatch, sessionState, boardName, recentBoards }} />
+                    <CreateBoard {...{ dispatch, sessionState, boardName, recentBoards, eventsFromServer }} />
                     <div>
                         <div className="user-content">
-                            <RecentBoardsView {...{ recentBoards, dispatch, sessionState, boardName }} />
+                            <RecentBoardsView
+                                {...{ recentBoards, dispatch, sessionState, boardName, eventsFromServer }}
+                            />
                         </div>
                     </div>
-                    <Welcome {...{ recentBoards, dispatch }} />
+                    <Welcome {...{ recentBoards, dispatch, eventsFromServer }} />
                 </main>
             </div>
         </div>
@@ -198,7 +202,15 @@ const RecentBoardsView = ({
     )
 }
 
-const Welcome = ({ recentBoards, dispatch }: { recentBoards: RecentBoards; dispatch: Dispatch }) => {
+const Welcome = ({
+    recentBoards,
+    dispatch,
+    eventsFromServer,
+}: {
+    recentBoards: RecentBoards
+    dispatch: Dispatch
+    eventsFromServer: L.EventStream<EventFromServer>
+}) => {
     const navigator = getNavigator<Routes>()
     function createTutorial() {
         createBoardAndNavigate(
@@ -209,6 +221,7 @@ const Welcome = ({ recentBoards, dispatch }: { recentBoards: RecentBoards; dispa
             },
             dispatch,
             navigator,
+            eventsFromServer,
         )
     }
     const showExampleLink = L.view(recentBoards.recentboards, (boards) => !boards.some((b) => b.id === exampleBoard.id))
@@ -258,11 +271,13 @@ const CreateBoard = ({
     sessionState,
     boardName,
     recentBoards,
+    eventsFromServer,
 }: {
     dispatch: Dispatch
     sessionState: L.Property<UserSessionState>
     boardName: L.Atom<string>
     recentBoards: RecentBoards
+    eventsFromServer: L.EventStream<EventFromServer>
 }) => {
     const disabled = L.view(boardName, (n) => !n)
     const navigator = getNavigator<Routes>()
@@ -275,7 +290,7 @@ const CreateBoard = ({
     function onSubmit(e: JSX.FormEvent) {
         e.preventDefault()
         const newBoard = { name: boardName.get(), id: uuid.v4(), accessPolicy: accessPolicy.get() }
-        createBoardAndNavigate(newBoard, dispatch, navigator)
+        createBoardAndNavigate(newBoard, dispatch, navigator, eventsFromServer)
     }
 
     return (

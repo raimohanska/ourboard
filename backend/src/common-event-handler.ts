@@ -95,6 +95,7 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
                 }
                 const board = { ...defaultBoardSize, items: {}, connections: [], ...template, ...payload, serial: 0 }
                 await addBoard(board)
+                socket.send({ action: "board.add.ack", boardId: board.id })
             }
             return true
         }

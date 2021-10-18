@@ -67,6 +67,7 @@ const App = () => {
                                     dispatch: boardStore.dispatch,
                                     sessionState: sessionStore.sessionState,
                                     recentBoards,
+                                    eventsFromServer: connection.bufferedServerEvents,
                                 }}
                             />
                         )
