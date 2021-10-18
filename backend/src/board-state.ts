@@ -135,11 +135,13 @@ export async function awaitSavingChanges() {
 
 async function saveBoardChanges(state: ServerSideBoardState) {
     if (state.recentEvents.length > 0) {
-        console.log(`Saving board ${state.board.id}`)
         if (state.storingEvents.length > 0) {
             throw Error("Invariant failed: storingEvents not empty")
         }
         state.storingEvents = state.recentEvents.splice(0)
+        console.log(
+            `Saving board ${state.board.id} at serial ${state.board.serial} with ${state.storingEvents.length} new events`,
+        )
         try {
             await saveRecentEvents(state.board.id, state.storingEvents)
         } catch (e) {
