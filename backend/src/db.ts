@@ -3,10 +3,11 @@ import process from "process"
 import migrate from "node-pg-migrate"
 
 const DATABASE_URL = process.env.DATABASE_URL ?? "postgres://r-board:secret@localhost:13338/r-board"
+const DATABASE_SSL_ENABLED = process.env.DATABASE_SSL_ENABLED === "true"
 
 const pgConfig = {
     connectionString: DATABASE_URL,
-    ssl: process.env.DATABASE_URL
+    ssl: DATABASE_SSL_ENABLED
         ? {
               rejectUnauthorized: false,
           }
