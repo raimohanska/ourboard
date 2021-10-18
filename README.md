@@ -233,6 +233,7 @@ You should be able to host your own OurBoard instance pretty easily. Some enviro
 
 ```
 DATABASE_URL:          [Postgres database URL]
+DATABASE_SSL_ENABLED:  [Use SSL for database connection (optional; default = false)]
 DOMAIN:                [your domain name]
 REDIRECT_URL:          https://www.ourboard.io/
 WS_HOST_DEFAULT:       [your domain name]
