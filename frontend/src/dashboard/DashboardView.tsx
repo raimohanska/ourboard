@@ -63,7 +63,7 @@ export const DashboardView = ({
                             />
                         </div>
                     </div>
-                    <Welcome {...{ recentBoards, dispatch, eventsFromServer }} />
+                    <Welcome {...{ recentBoards, dispatch, eventsFromServer, sessionState }} />
                 </main>
             </div>
         </div>
@@ -206,10 +206,12 @@ const Welcome = ({
     recentBoards,
     dispatch,
     eventsFromServer,
+    sessionState,
 }: {
     recentBoards: RecentBoards
     dispatch: Dispatch
     eventsFromServer: L.EventStream<EventFromServer>
+    sessionState: L.Property<UserSessionState>
 }) => {
     const navigator = getNavigator<Routes>()
     function createTutorial() {
@@ -218,6 +220,7 @@ const Welcome = ({
                 id: uuid.v4(),
                 name: "My personal tutorial board",
                 templateId: "tutorial",
+                accessPolicy: defaultAccessPolicy(sessionState.get(), false),
             },
             dispatch,
             navigator,

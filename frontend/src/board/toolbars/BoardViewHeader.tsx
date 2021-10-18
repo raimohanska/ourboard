@@ -6,7 +6,7 @@ import { createBoardAndNavigate, Routes } from "../../board-navigation"
 import { EditableSpan } from "../../components/EditableSpan"
 import { UserInfoView } from "../../components/UserInfoView"
 import { Dispatch, sessionState2UserInfo } from "../../store/board-store"
-import { UserSessionState } from "../../store/user-session-store"
+import { UserSessionState, defaultAccessPolicy } from "../../store/user-session-store"
 import * as uuid from "uuid"
 import { BoardAccessPolicyEditor } from "../../components/BoardAccessPolicyEditor"
 
@@ -36,7 +36,7 @@ export function BoardViewHeader({
             ...board.get(),
             name: `${nameAtom.get()} copy`,
             id: uuid.v4(),
-            accessPolicy: undefined,
+            accessPolicy: defaultAccessPolicy(sessionState.get(), false),
         }
         createBoardAndNavigate(newBoard, dispatch, navigator, eventsFromServer)
     }
