@@ -1,27 +1,24 @@
 ---
 name: Bug Report
 about: Create a bug report to help us out
-title: ''
+title: ""
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 # Feature request story or issue
 
 ## Screenshot
 
-YOUR SCREENSHOT HERE: 
+YOUR SCREENSHOT HERE:
 
 ## Url
 
-- Url where you took the screenshot:
- - URL: 
+-   Url where you took the screenshot:
+-   URL:
 
 ## A sentence description of the problem
 
-Short DESCRIPTION: 
+Short DESCRIPTION:
 
-
-
-That's it!  Thanks.
+That's it! Thanks.
