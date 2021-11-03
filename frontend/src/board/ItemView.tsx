@@ -129,7 +129,6 @@ export const ItemView = ({
             {type === "container" && (
                 <DragBorder {...{ id, board, toolController, coordinateHelper, focus, dispatch }} />
             )}
-            {type === "note" && <AuthorInfo {...{ item: item as L.Property<TextItem>, itemHistory }} />}
         </span>
     )
 
@@ -166,34 +165,6 @@ export const ItemView = ({
                     }}
                 />
                 {showCoords && <small>{L.view(item, (p) => Math.floor(p.x) + ", " + Math.floor(p.y))}</small>}
-            </span>
-        )
-    }
-
-    function AuthorInfo({ item, itemHistory }: { item: L.Property<TextItem>; itemHistory: BoardHistoryEntry[] }) {
-        const color = L.view(item, (i) => (i.type === "note" ? i.color : "white"), contrastingColor)
-        const interestingHistory = itemHistory.filter((e) => e.action !== "item.move" && e.action !== "item.front")
-        const lastItem = interestingHistory[interestingHistory.length - 1]
-        const text = lastItem && lastItem.user.userType !== "system" ? lastItem.user.nickname : ""
-        const fontSize = autoFontSize(
-            item,
-            L.constant(1),
-            L.constant(text),
-            L.constant(false),
-            coordinateHelper,
-            element,
-            {
-                maxFontSize: 0.5,
-                minFontSize: 0.5,
-                maxLines: 1,
-                hideIfNoFit: true,
-                widthTarget: 0.55,
-            },
-        )
-        const style = L.combineTemplate({ color, fontSize })
-        return (
-            <span className="author" style={style}>
-                {text}
             </span>
         )
     }
