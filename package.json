@@ -31,11 +31,11 @@
     "perf-tester"
   ],
   "scripts": {
-    "start:dev": "npm-run-all --parallel start:db watch:frontend start:dev:backend typecheck:dev:frontend",
-    "start:dev:no-db": "npm-run-all --parallel watch:frontend start:dev:backend",
-    "start:db": "docker-compose up||true",
+    "dev": "npm-run-all --parallel dev:db watch:frontend dev:backend typecheck:dev:frontend",
+    "dev:no-db": "npm-run-all --parallel watch:frontend dev:backend",
+    "dev:db": "docker-compose up||true",
     "watch:frontend": "yarn --cwd frontend watch",
-    "start:dev:backend": "yarn --cwd backend start:dev",
+    "dev:backend": "yarn --cwd backend dev",
     "start": "yarn start:backend",
     "start:backend": "yarn --cwd backend start",
     "build": "yarn build:frontend && yarn build:backend && yarn build:perf-tester",

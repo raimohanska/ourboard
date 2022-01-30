@@ -28,7 +28,7 @@
     "build": "tsc",
     "start": "node .",
     "create-boards": "ts-node src/create-boards.ts",
-    "start:dev": "tsc-watch --onSuccess \"node .\" --preserveWatchOutput"
+    "dev": "tsc-watch --onSuccess \"node .\" --preserveWatchOutput"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.0",

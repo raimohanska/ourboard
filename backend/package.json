@@ -47,7 +47,7 @@
   },
   "scripts": {
     "start": "node --enable-source-maps .",
-    "start:dev": "npm-run-all --parallel watch apidocs:dev",
+    "dev": "npm-run-all --parallel watch apidocs:dev",
     "build": "tsc",
     "watch": "tsc-watch --onSuccess \"node --enable-source-maps .\" --preserveWatchOutput",
     "apidocs": "typera-openapi --prettify src/api-routes.ts",
