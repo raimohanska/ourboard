@@ -425,7 +425,7 @@ describe("Board functionality", () => {
         createNote("World", 350, 200)
         NotesWithText("Monoids").click({ force: true, shiftKey: true })
         NotesWithText("World").click({ force: true, shiftKey: true })
-        NotesWithText("World").trigger("keyup", { keyCode: BACKSPACE, which: BACKSPACE, force: true })
+        NotesWithText("World").trigger("keydown", { key: "Backspace", which: BACKSPACE, force: true })
 
         NotesWithText("Monoids").should("not.exist")
         NotesWithText("World").should("not.exist")
@@ -436,7 +436,7 @@ describe("Board functionality", () => {
         createNote("World", 350, 200)
         NotesWithText("Monoids").click({ force: true, shiftKey: true })
         NotesWithText("World").click({ force: true, shiftKey: true })
-        NotesWithText("World").trigger("keyup", { keyCode: DELETE, which: DELETE, force: true })
+        NotesWithText("World").trigger("keydown", { key: "Backspace", which: DELETE, force: true })
 
         NotesWithText("Monoids").should("not.exist")
         NotesWithText("World").should("not.exist")
