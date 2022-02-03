@@ -10,3 +10,4 @@ backend/localfiles/
 /ignore
 .DS_Store
 latest.dump
+.vscode
