@@ -1,36 +1,40 @@
-import { Browser, Page, chromium, webkit } from "playwright"
-
-let chromiumBrowser: Browser
-let webkitBrowser: Browser
+import { Browser, Page, chromium, test, expect } from "@playwright/test"
 
 const boardUrl = "http://localhost:1337/b/default"
 const notePalette = `[data-test="palette-new-note"]`
 
-beforeAll(async () => {
-    chromiumBrowser = await chromium.launch({ headless: true })
-    webkitBrowser = await webkit.launch({ headless: true })
-})
+test.describe("Two simultaneous users", () => {
+    let browser1: Browser
+    let browser2: Browser
 
-afterAll(async () => {
-    await chromiumBrowser.close()
-    await webkitBrowser.close()
-})
+    test.beforeAll(async () => {
+        browser1 = await chromium.launch({ headless: true })
+        browser2 = await chromium.launch({ headless: true })
+    })
 
-test("two anonymous users can see each other notes", async () => {
-    const userPage = await navigateToBoard(chromiumBrowser)
-    const anotherUserPage = await navigateToBoard(webkitBrowser)
+    test("two anonymous users can see each other notes", async () => {
+        const userPage = await navigateToBoard(browser1)
+        const anotherUserPage = await navigateToBoard(browser2)
 
-    // create 2 notes, one on each page
-    const userPageNoteText = `note-${semiUniqueId()}`
-    await createNoteWithText(0, userPageNoteText, userPage)
-    const anotherUserPageNoteText = `another-${semiUniqueId()}`
-    await createNoteWithText(500, anotherUserPageNoteText, anotherUserPage)
+        // create 2 notes, one on each page
+        const userPageNoteText = `note-${semiUniqueId()}`
+        await createNoteWithText(0, userPageNoteText, userPage)
+        const anotherUserPageNoteText = `another-${semiUniqueId()}`
+        await createNoteWithText(500, anotherUserPageNoteText, anotherUserPage)
 
-    const note = await anotherUserPage.waitForSelector(`[data-test^="note"][data-test*="${userPageNoteText}"]`)
-    const anotherNote = await userPage.waitForSelector(`[data-test^="note"][data-test*="${anotherUserPageNoteText}"]`)
+        const note = await anotherUserPage.waitForSelector(`[data-test^="note"][data-test*="${userPageNoteText}"]`)
+        const anotherNote = await userPage.waitForSelector(
+            `[data-test^="note"][data-test*="${anotherUserPageNoteText}"]`,
+        )
 
-    expect(note).not.toBeNull()
-    expect(anotherNote).not.toBeNull()
+        expect(note).not.toBeNull()
+        expect(anotherNote).not.toBeNull()
+    })
+
+    test.afterAll(async () => {
+        await browser1.close()
+        await browser2.close()
+    })
 })
 
 const semiUniqueId = () => {
