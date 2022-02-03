@@ -193,7 +193,7 @@ Running locally:
 
 ```
 yarn install
-yarn start:dev
+yarn dev
 ```
 
 Run end-to end Cypress tests against the server you just started:
@@ -213,7 +213,7 @@ Instead, do this.
 
 1. Capture a backup and download it: `heroku pg:backups:capture`, then `heroku pg:backups:download`.
 2. Restore the backup to your local database: `pg_restore --verbose --clean --no-acl --no-owner -d postgres://r-board:secret@localhost:13338/r-board latest.dump`
-3. Start you local server using `yarn start:dev`
+3. Start you local server using `yarn dev`
 
 If you need the local state for a given board in localStorage, you can
 
