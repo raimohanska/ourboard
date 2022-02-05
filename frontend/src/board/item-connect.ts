@@ -189,8 +189,22 @@ function findMidpoint(from: Point | Item | ConnectionEndPoint, to: Point | Item 
     const fromCoords = findNearestAttachmentLocationForConnectionNode(resolveEndpoint(from, b), resolveEndpoint(to, b))
     const toCoords = findNearestAttachmentLocationForConnectionNode(resolveEndpoint(to, b), resolveEndpoint(from, b))
     const midpoint = {
-        x: (fromCoords.point.x + toCoords.point.x) * 0.5,
-        y: (fromCoords.point.y + toCoords.point.y) * 0.5,
+        x: mid(fromCoords.point.x, toCoords.point.x),
+        y: mid(fromCoords.point.y, toCoords.point.y),
     }
+    if (toCoords.side === "left" || toCoords.side === "right")
+        return {
+            x: midpoint.x,
+            y: mid(midpoint.y, toCoords.point.y),
+        }
+    if (toCoords.side === "top" || toCoords.side === "bottom")
+        return {
+            x: mid(midpoint.x, toCoords.point.x),
+            y: midpoint.y,
+        }
     return midpoint
+}
+
+function mid(x: number, y: number) {
+    return (x + y) * 0.5
 }
