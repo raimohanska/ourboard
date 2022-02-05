@@ -1,5 +1,15 @@
 import * as L from "lonna"
-import { Board, Connection, Item, Point, isContainedBy, Id, isItem } from "../../../common/src/domain"
+import {
+    Board,
+    Connection,
+    Item,
+    Point,
+    isContainedBy,
+    Id,
+    isItem,
+    ConnectionEndPoint,
+    getItem,
+} from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Dispatch } from "../store/board-store"
 import * as uuid from "uuid"
@@ -80,13 +90,7 @@ export function drawConnectionHandler(
             } else {
                 // Change current connection endpoint
                 const destinationPoint = targetExistingItem ?? currentBoardCoords
-
-                const midpointFromReference = findNearestAttachmentLocationForConnectionNode(item, destinationPoint)
-                const midpointToReference = findNearestAttachmentLocationForConnectionNode(destinationPoint, item)
-                const midpoint = {
-                    x: (midpointFromReference.point.x + midpointToReference.point.x) * 0.5,
-                    y: (midpointFromReference.point.y + midpointToReference.point.y) * 0.5,
-                }
+                const midpoint = findMidpoint(item, destinationPoint, b)
 
                 // console.log({ item, midpoint, to: targetExistingItem ?? currentPos })
 
@@ -141,11 +145,19 @@ export function existingConnectionHandler(
             if (type === "to") {
                 const hitsItem = findTarget(items, connection.from, coords)
                 const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
-                dispatch({ action: "connection.modify", boardId: b.id, connection: { ...connection, to } })
+                dispatch({
+                    action: "connection.modify",
+                    boardId: b.id,
+                    connection: { ...connection, to, controlPoints: [findMidpoint(connection.from, to, b)] },
+                })
             } else if (type === "from") {
                 const hitsItem = findTarget(items, connection.to, coords)
                 const from = hitsItem && hitsItem.id !== connection.to ? hitsItem.id : coords
-                dispatch({ action: "connection.modify", boardId: b.id, connection: { ...connection, from } })
+                dispatch({
+                    action: "connection.modify",
+                    boardId: b.id,
+                    connection: { ...connection, from, controlPoints: [findMidpoint(connection.to, from, b)] },
+                })
             } else {
                 dispatch({
                     action: "connection.modify",
@@ -164,4 +176,21 @@ function findTarget(items: Record<Id, Item>, from: Item | Id | Point, currentPos
         .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i)) // match coordinates
         .sort((a, b) => (isContainedBy(items, a)(b) ? 1 : -1)) // most innermost first (containers last)
         .find((i) => !fromItem || !isContainedBy(items, i)(fromItem)) // does not contain the "from" item
+}
+
+function resolveEndpoint(e: Point | Item | ConnectionEndPoint, b: Board): Point | Item {
+    if (typeof e === "string") {
+        return getItem(b)(e)
+    }
+    return e
+}
+
+function findMidpoint(from: Point | Item | ConnectionEndPoint, to: Point | Item | ConnectionEndPoint, b: Board) {
+    const fromCoords = findNearestAttachmentLocationForConnectionNode(resolveEndpoint(from, b), resolveEndpoint(to, b))
+    const toCoords = findNearestAttachmentLocationForConnectionNode(resolveEndpoint(to, b), resolveEndpoint(from, b))
+    const midpoint = {
+        x: (fromCoords.point.x + toCoords.point.x) * 0.5,
+        y: (fromCoords.point.y + toCoords.point.y) * 0.5,
+    }
+    return midpoint
 }
