@@ -41,11 +41,11 @@ export const EditableSpan = (props: EditableSpanProps) => {
         editingThis.set(false)
     }
     const onKeyPress = (e: JSX.KeyboardEvent) => {
-        if (e.keyCode === 13) {
+        if (e.key === "Enter") {
             e.preventDefault()
             commit && commit()
             editingThis.set(false)
-        } else if (e.keyCode === 27) {
+        } else if (e.key === "Escape") {
             // esc
             cancel && cancel()
             editingThis.set(false)

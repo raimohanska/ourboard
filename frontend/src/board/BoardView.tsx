@@ -116,7 +116,7 @@ export const BoardView = ({
     itemUndoHandler(dispatch)
     itemSelectAllHandler(board, focus)
     installKeyboardShortcut(
-        (e) => e.keyCode === 27,
+        (e) => e.key === "Escape",
         () => {
             toolController.useDefaultTool()
             focus.set({ status: "none" })

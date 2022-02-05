@@ -75,7 +75,7 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
                 document.execCommand("italic", false)
                 e.preventDefault()
             }
-        } else if (e.keyCode === 27) {
+        } else if (e.key === "Escape") {
             // esc
             editingThis.set(false)
         }
