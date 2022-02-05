@@ -16,7 +16,7 @@ import { BoardFocus, getSelectedIds, getSelectedItem, getSelectedItems } from ".
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { BoardToolLayer } from "./BoardToolLayer"
 import { ConnectionsView } from "./ConnectionsView"
-import { ContextMenuView } from "./ContextMenuView"
+import { ContextMenuView } from "./contextmenu/ContextMenuView"
 import { CursorsView } from "./CursorsView"
 import * as G from "./geometry"
 import { imageUploadHandler, imageDropHandler } from "./image-upload"

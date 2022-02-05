@@ -1,0 +1,71 @@
+import { h } from "harmaja"
+import * as L from "lonna"
+import { Board, Container, findItem, isContainer, Item } from "../../../../common/src/domain"
+import { TileIcon } from "../../components/Icons"
+import { Dispatch } from "../../store/board-store"
+import { contentRect, organizeItems, packableItems } from "../item-organizer"
+import { packItems } from "../item-packer"
+
+type Props = {
+    focusedItems: L.Property<Item[]>
+    board: L.Property<Board>
+    dispatch: Dispatch
+}
+
+export function areaTilingMenu({ board, focusedItems, dispatch }: Props) {
+    const packables = L.view(focusedItems, (items) => {
+        if (items.length === 1) {
+            if (isContainer(items[0])) return items
+        }
+        if (items.length >= 1) {
+            const containerIds = new Set(items.map((i) => i.containerId))
+            if (containerIds.size === 1 && [...containerIds][0]) return items
+        }
+        return []
+    })
+    return L.view(
+        packables,
+        (ps) => ps.length > 0,
+        (show) =>
+            show
+                ? [
+                      <div className="area-options">
+                          <span
+                              className="icon"
+                              title="Organize contents"
+                              onClick={() => packArbitraryItems(packables.get())}
+                          >
+                              <TileIcon />
+                          </span>
+                      </div>,
+                  ]
+                : [],
+    )
+
+    function packArbitraryItems(items: Item[]) {
+        const b = board.get()
+        if (items.length === 1 && isContainer(items[0])) {
+            packItemsInsideContainer(items[0], b)
+        } else {
+            packItemsInsideContainer(findItem(b)(items[0].containerId!) as Container, b)
+        }
+    }
+    function packItemsInsideContainer(container: Container, b: Board) {
+        const targetRect = contentRect(container)
+        const itemsToPack = packableItems(container, b)
+        let organizedItems = organizeItems(itemsToPack, [], targetRect)
+        if (organizedItems.length === 0) {
+            console.log("Packing")
+            // Already organized -> Pack into equal size to fit
+            const packResult = packItems(targetRect, itemsToPack)
+
+            if (!packResult.ok) {
+                console.error("Packing container failed: " + packResult.error)
+                return
+            }
+            organizedItems = packResult.packedItems
+        }
+
+        dispatch({ action: "item.update", boardId: board.get().id, items: organizedItems })
+    }
+}
