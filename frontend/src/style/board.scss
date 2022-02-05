@@ -427,16 +427,28 @@
             .submenu {
                 @extend .ui-context-menu;
                 position: absolute;
+                display: flex;
+                align-items: flex-start;
                 top: -0.5em;
                 left: 0;
                 margin: 0;
 
-                .colors {
+                > * {
                     display: grid;
                     grid-auto-flow: initial;
                     column-gap: 0.5em;
                     row-gap: 0.5em;
+                    &:not(:first-child) {
+                        margin-left: 1em;
+                    }
+                }
+
+                .colors {
                     grid-template-columns: repeat(4, 1fr);
+                }
+
+                .shapes {
+                    grid-template-columns: repeat(2, 1fr);
                 }
             }
         }

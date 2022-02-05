@@ -7,7 +7,7 @@ import { BoardFocus } from "../board-focus"
 import { Rect } from "../geometry"
 import { alignmentsMenu } from "./alignments"
 import { areaTilingMenu } from "./areaTiling"
-import { colorsMainMenu, colorsMenu } from "./colors"
+import { colorsAndShapesMenu } from "./colorsAndShapes"
 import { fontSizesMenu } from "./fontSizes"
 import { shapesMenu } from "./shapes"
 
@@ -68,9 +68,8 @@ export const ContextMenuView = ({
     const props = { board, focusedItems, dispatch }
     const widgetCreators = [
         alignmentsMenu(props),
-        colorsMainMenu(props),
+        colorsAndShapesMenu(props),
         fontSizesMenu(props),
-        shapesMenu(props),
         areaTilingMenu(props),
     ]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
