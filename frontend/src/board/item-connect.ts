@@ -1,23 +1,14 @@
-import * as L from "lonna"
-import {
-    Board,
-    Connection,
-    Item,
-    Point,
-    isContainedBy,
-    Id,
-    isItem,
-    ConnectionEndPoint,
-    getItem,
-} from "../../../common/src/domain"
-import { BoardCoordinateHelper } from "./board-coordinates"
-import { Dispatch } from "../store/board-store"
-import * as uuid from "uuid"
-import { containedBy, findNearestAttachmentLocationForConnectionNode } from "./geometry"
 import _ from "lodash"
-import { ToolController } from "./tool-selection"
-import { BoardFocus } from "./board-focus"
+import * as L from "lonna"
 import { globalScope } from "lonna"
+import * as uuid from "uuid"
+import { findMidpoint } from "../../../common/src/connection-utils"
+import { Board, Connection, Id, isContainedBy, isItem, Item, Point } from "../../../common/src/domain"
+import { Dispatch } from "../store/board-store"
+import { BoardCoordinateHelper } from "./board-coordinates"
+import { BoardFocus } from "./board-focus"
+import { containedBy } from "./geometry"
+import { ToolController } from "./tool-selection"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -176,45 +167,4 @@ function findTarget(items: Record<Id, Item>, from: Item | Id | Point, currentPos
         .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i)) // match coordinates
         .sort((a, b) => (isContainedBy(items, a)(b) ? 1 : -1)) // most innermost first (containers last)
         .find((i) => !fromItem || !isContainedBy(items, i)(fromItem)) // does not contain the "from" item
-}
-
-function resolveEndpoint(e: Point | Item | ConnectionEndPoint, b: Board): Point | Item {
-    if (typeof e === "string") {
-        return getItem(b)(e)
-    }
-    return e
-}
-
-function findMidpoint(from: Point | Item | ConnectionEndPoint, to: Point | Item | ConnectionEndPoint, b: Board) {
-    const fromCoords = findNearestAttachmentLocationForConnectionNode(resolveEndpoint(from, b), resolveEndpoint(to, b))
-    const toCoords = findNearestAttachmentLocationForConnectionNode(resolveEndpoint(to, b), resolveEndpoint(from, b))
-    const midpoint = {
-        x: mid(fromCoords.point.x, toCoords.point.x),
-        y: mid(fromCoords.point.y, toCoords.point.y),
-    }
-    if (toCoords.side === "left" || toCoords.side === "right")
-        return {
-            x: midpoint.x,
-            y: mid(midpoint.y, toCoords.point.y),
-        }
-    if (toCoords.side === "top" || toCoords.side === "bottom")
-        return {
-            x: mid(midpoint.x, toCoords.point.x),
-            y: midpoint.y,
-        }
-    if (fromCoords.side === "left" || fromCoords.side === "right")
-        return {
-            x: midpoint.x,
-            y: mid(midpoint.y, fromCoords.point.y),
-        }
-    if (fromCoords.side === "top" || fromCoords.side === "bottom")
-        return {
-            x: mid(midpoint.x, fromCoords.point.x),
-            y: midpoint.y,
-        }
-    return midpoint
-}
-
-function mid(x: number, y: number) {
-    return (x + y) * 0.5
 }

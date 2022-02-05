@@ -21,6 +21,8 @@ import {
 import _ from "lodash"
 import { arrayToObject } from "./migration"
 import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
+import { boardHistoryReducer } from "./board-history-reducer"
+import { findMidpoint } from "./connection-utils"
 
 export function boardReducer(
     board: Board,
@@ -296,7 +298,7 @@ function updateItems(current: Record<Id, Item>, updateList: Item[]): Record<Id, 
 type Move = { xDiff: number; yDiff: number; containerChanged: boolean; containerId: Id | undefined }
 
 function moveItems(board: Board, event: MoveItem) {
-    const moves: Record<Id, Move> = {}
+    const itemMoves: Record<Id, Move> = {}
     const itemsOnBoard = board.items
 
     for (let mainItemMove of event.items) {
@@ -313,30 +315,36 @@ function moveItems(board: Board, event: MoveItem) {
             const movedId = movedItem.id
             if (movedId === id || isContainedBy(itemsOnBoard, mainItem)(movedItem)) {
                 const move = { xDiff, yDiff, containerChanged: movedId === id, containerId }
-                moves[movedId] = move
+                itemMoves[movedId] = move
             }
         }
     }
 
-    const connectionMoves: Record<Id, Move> = {}
+    const connectionMoves: Record<Id, ConnectionMove> = {}
     for (let connection of board.connections) {
-        const move = findConnectionMove(connection, moves)
+        const move = findConnectionMove(connection, itemMoves)
         if (move) {
             connectionMoves[connection.id] = move
         }
     }
-    let connections = board.connections.map((connection) => {
+
+    let connections: Connection[] = board.connections.map((connection) => {
         const move = connectionMoves[connection.id]
         if (!move) return connection
+        if (move.ends === "both")
+            return {
+                ...connection,
+                from: moveEndPoint(connection.from, move),
+                to: moveEndPoint(connection.to, move),
+                controlPoints: connection.controlPoints.map((cp) => moveEndPoint(cp, move)),
+            } as Connection
         return {
             ...connection,
-            from: moveEndPoint(connection.from, move),
-            to: moveEndPoint(connection.to, move),
-            controlPoints: connection.controlPoints.map((cp) => moveEndPoint(cp, move)),
-        } as Connection
+            controlPoints: [findMidpoint(connection.from, connection.to, board)],
+        }
     })
 
-    const updatedItems = Object.entries(moves).reduce(
+    const updatedItems = Object.entries(itemMoves).reduce(
         (items, [id, move]) => {
             const item = items[id]
             const updated = { ...item, x: item.x + move.xDiff, y: item.y + move.yDiff }
@@ -354,20 +362,25 @@ function moveItems(board: Board, event: MoveItem) {
     }
 }
 
-function findConnectionMove(connection: Connection, moves: Record<Id, Move>) {
+type ConnectionMove = (Move & { ends: "both" }) | { ends: "one" }
+
+function findConnectionMove(connection: Connection, moves: Record<Id, Move>): ConnectionMove | null {
     const endPoints = [connection.to, connection.from]
     let move: Move | null = null
+    let partial = false
     for (let endPoint of endPoints) {
         if (typeof endPoint === "string") {
             if (moves[endPoint]) {
                 move = moves[endPoint]
             } else {
-                // linked to item not being moved -> don't move
-                return null
+                // linked to item not being moved -> maybe a partial move
+                partial = true
             }
         }
     }
-    return move
+    if (!move) return null
+    if (partial) return { ends: "one" }
+    return { ends: "both", ...move }
 }
 
 function moveEndPoint(endPoint: ConnectionEndPoint, move: Move) {
