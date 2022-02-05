@@ -202,6 +202,16 @@ function findMidpoint(from: Point | Item | ConnectionEndPoint, to: Point | Item 
             x: mid(midpoint.x, toCoords.point.x),
             y: midpoint.y,
         }
+    if (fromCoords.side === "left" || fromCoords.side === "right")
+        return {
+            x: midpoint.x,
+            y: mid(midpoint.y, fromCoords.point.y),
+        }
+    if (fromCoords.side === "top" || fromCoords.side === "bottom")
+        return {
+            x: mid(midpoint.x, fromCoords.point.x),
+            y: midpoint.y,
+        }
     return midpoint
 }
 
