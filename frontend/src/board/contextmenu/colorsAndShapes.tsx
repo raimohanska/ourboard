@@ -16,7 +16,7 @@ export function colorsAndShapesMenu(props: Props) {
     const coloredItems = L.view(props.focusedItems, (items) => items.filter(isColoredItem))
     const showSubmenu = L.atom(false)
     const anyColored: L.Property<ColoredItem | null> = L.view(coloredItems, (items) => items[0] || null)
-    anyColored.forEach((hasAny) => !hasAny && showSubmenu.set(false))
+    coloredItems.forEach(() => showSubmenu.set(false))
 
     return L.view(anyColored, (anyColored) => {
         if (!anyColored) return []
