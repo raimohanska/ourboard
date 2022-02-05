@@ -30,7 +30,7 @@ import { itemSelectAllHandler } from "./item-select-all"
 import { withCurrentContainer } from "./item-setcontainer"
 import { itemUndoHandler } from "./item-undo-redo"
 import { ItemView } from "./ItemView"
-import { installKeyboardShortcut } from "./keyboard-shortcuts"
+import { installKeyboardShortcut, plainKey } from "./keyboard-shortcuts"
 import { RectangularDragSelection } from "./RectangularDragSelection"
 import { SelectionBorder } from "./SelectionBorder"
 import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
@@ -122,6 +122,7 @@ export const BoardView = ({
             focus.set({ status: "none" })
         },
     )
+    installKeyboardShortcut(plainKey("c"), () => toolController.tool.set("connect"))
     L.fromEvent<JSX.KeyboardEvent>(window, "click")
         .pipe(L.applyScope(componentScope()))
         .forEach((event) => {

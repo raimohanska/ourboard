@@ -37,6 +37,8 @@ DEL/Backspace       Delete item
 A                   Create new area
 N                   Create new note
 T                   Create new text box
+C                   Select the Connect tool
+Esc                 Select the default tool
 Command-V           Paste
 Command-C           Copy
 Command-X           Cut
