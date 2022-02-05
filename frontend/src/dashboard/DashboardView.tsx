@@ -100,19 +100,7 @@ const RecentBoardsView = ({
         )(bs),
     )
     const moreBoards = L.view(limit, matchingBoards, (l, bs) => bs.length - l)
-    const inputRef = (e: HTMLInputElement) => {
-        setTimeout(() => e.focus(), 0)
-    }
-    const onKeyDown = (e: JSX.KeyboardEvent) => {
-        if (e.keyCode === 13) {
-            const board = boardsToShow.get()[0]
-            if (board) {
-                navigator.navigateByParams(BOARD_PATH, { boardId: board.id })
-            }
-        }
-    }
     const aLot = 7
-    const lotsOfBoards = L.view(recentBoards.recentboards, (bs) => bs.length >= aLot)
     const lotsOfShownBoards = L.view(matchingBoards, (bs) => bs.length >= aLot)
     return (
         <div>
