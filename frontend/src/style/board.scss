@@ -401,21 +401,13 @@
                 }
             }
             .align {
-                &:not(:last-child) {
-                    margin-right: 1em;
-                }
-                .icon:not(:last-child) {
-                    margin-right: 0.5em;
-                }
             }
             .icon-group {
-                display: inline-block;
-                &:not(:last-child) {
-                    margin-right: 0.5em;
-                }
+                display: inline-grid;
+                grid-column-gap: 0.5em;
+                grid-auto-flow: column;
                 .icon {
                     &:not(:last-child) {
-                        margin-right: 0.5em;
                     }
                 }
                 .color {
@@ -429,6 +421,22 @@
                     &.transparent {
                         background: repeating-conic-gradient(#dddddd 0% 25%, transparent 0% 50%) 50%/0.5em 0.5em;
                     }
+                }
+            }
+
+            .submenu {
+                @extend .ui-context-menu;
+                position: absolute;
+                top: -0.5em;
+                left: 0;
+                margin: 0;
+
+                .colors {
+                    display: grid;
+                    grid-auto-flow: initial;
+                    column-gap: 0.5em;
+                    row-gap: 0.5em;
+                    grid-template-columns: repeat(4, 1fr);
                 }
             }
         }

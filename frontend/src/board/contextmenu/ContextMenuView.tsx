@@ -7,7 +7,7 @@ import { BoardFocus } from "../board-focus"
 import { Rect } from "../geometry"
 import { alignmentsMenu } from "./alignments"
 import { areaTilingMenu } from "./areaTiling"
-import { colorsMenu } from "./colors"
+import { colorsMainMenu, colorsMenu } from "./colors"
 import { fontSizesMenu } from "./fontSizes"
 import { shapesMenu } from "./shapes"
 
@@ -59,7 +59,7 @@ export const ContextMenuView = ({
     const props = { board, focusedItems, dispatch }
     const widgetCreators = [
         alignmentsMenu(props),
-        colorsMenu(props),
+        colorsMainMenu(props),
         fontSizesMenu(props),
         shapesMenu(props),
         areaTilingMenu(props),
