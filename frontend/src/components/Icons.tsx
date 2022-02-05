@@ -30,27 +30,58 @@ export const ZoomOutIcon = () => (
     </svg>
 )
 
-export const ShapeSquareIcon = (color: Color) => (
-    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.5" y="0.5" width="31" height="31" rx="1.5" stroke={color} stroke-width="3" stroke-linecap="round" />
-    </svg>
-)
-
-export const ShapeRoundIcon = (color: Color) => (
-    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.5" y="0.5" width="31" height="31" rx="15.5" stroke={color} stroke-width="3" stroke-linecap="round" />
-    </svg>
-)
-
-export const ShapeRectIcon = (color: Color) => (
-    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.5" y="6.5" width="31" height="20" rx="1.5" stroke={color} stroke-width="3" stroke-linecap="round" />
-    </svg>
-)
-
-export const ShapeDiamondIcon = (color: Color) => (
+export const ShapeSquareIcon = (color: Color, fill?: Color) => (
     <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect
+            x="0.5"
+            y="0.5"
+            width="31"
+            height="31"
+            rx="1.5"
+            stroke={color}
+            stroke-width="3"
+            stroke-linecap="round"
+            fill={fill}
+        />
+    </svg>
+)
+
+export const ShapeRoundIcon = (color: Color, fill?: Color) => (
+    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect
+            x="0.5"
+            y="0.5"
+            width="31"
+            height="31"
+            rx="15.5"
+            stroke={color}
+            stroke-width="3"
+            stroke-linecap="round"
+            fill={fill}
+        />
+    </svg>
+)
+
+export const ShapeRectIcon = (color: Color, fill?: Color) => (
+    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect
+            x="0.5"
+            y="6.5"
+            width="31"
+            height="20"
+            rx="1.5"
+            stroke={color}
+            stroke-width="3"
+            stroke-linecap="round"
+            fill={fill}
+        />
+    </svg>
+)
+
+export const ShapeDiamondIcon = (color: Color, fill?: Color) => (
+    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect
+            fill={fill}
             x="4"
             y="4"
             width="23"
