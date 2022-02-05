@@ -42,17 +42,26 @@ export const ContextMenuView = ({
         return itemIds.flatMap((id) => findItem(b)(id) || [])
     })
 
-    const style = L.view(focusedItems, viewRect, (items, vr) => {
-        if (items.length === 0) return null
+    const styleAndClass = L.view(focusedItems, viewRect, (items, vr) => {
+        const cn = "context-menu-positioner"
+        if (items.length === 0)
+            return {
+                style: null,
+                className: cn,
+            }
         const minY = _.min(items.map((i) => i.y)) || 0
         const minX = _.min(items.map((i) => i.x)) || 0
         const maxY = _.max(items.map((i) => i.y + i.height)) || 0
         const maxX = _.max(items.map((i) => i.x + i.width)) || 0
         const alignRight = minX > vr.x + vr.width / 2
+        const topOfItem = minY - vr.y > vr.height / 3
         return {
-            left: alignRight ? undefined : `max(${minX}em, ${vr.x}em)`,
-            right: alignRight ? `calc(100% - min(${maxX}em, ${vr.x + vr.width}em))` : undefined,
-            top: minY - vr.y > vr.height / 3 ? minY + "em" : `calc(${maxY}em + 4rem)`,
+            style: {
+                left: alignRight ? undefined : `max(${minX}em, ${vr.x}em)`,
+                right: alignRight ? `calc(100% - min(${maxX}em, ${vr.x + vr.width}em))` : undefined,
+                top: topOfItem ? minY + "em" : `calc(${maxY}em + 4rem)`,
+            },
+            className: cn + (topOfItem ? " item-top" : " item-bottom"),
         }
     })
 
@@ -74,7 +83,7 @@ export const ContextMenuView = ({
         (ws) => ws.length === 0,
         (hide) =>
             hide ? null : (
-                <div className="context-menu-positioner" style={style}>
+                <div className={L.view(styleAndClass, "className")} style={L.view(styleAndClass, "style")}>
                     <div className="context-menu" onDoubleClick={captureEvents} onClick={captureEvents}>
                         <ListView observable={activeWidgets} renderItem={(x) => x} getKey={(x) => x} />
                     </div>

@@ -440,6 +440,13 @@
                 }
             }
         }
+
+        &.item-top {
+            .context-menu .submenu {
+                bottom: 3.5em;
+                top: initial;
+            }
+        }
     }
 
     > .content-container > .tool-layer {
