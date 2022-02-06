@@ -1,4 +1,4 @@
-import { h, ListView } from "harmaja"
+import { h, HarmajaOutput, ListView } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
 import { Board, findItem, Id } from "../../../../common/src/domain"
@@ -65,7 +65,14 @@ export const ContextMenuView = ({
         }
     })
 
-    const props = { board, focusedItems, dispatch }
+    const submenu = L.atom<HarmajaOutput | null>(null)
+    L.view(
+        focusedItems,
+        (items) => items[0],
+        (i) => i?.id,
+    ).forEach(() => submenu.set(null))
+
+    const props = { board, focusedItems, dispatch, submenu }
     const widgetCreators = [
         alignmentsMenu(props),
         colorsAndShapesMenu(props),
@@ -86,6 +93,7 @@ export const ContextMenuView = ({
                     <div className="context-menu" onDoubleClick={captureEvents} onClick={captureEvents}>
                         <ListView observable={activeWidgets} renderItem={(x) => x} getKey={(x) => x} />
                     </div>
+                    {L.view(submenu, (show) => (show ? show : null))}
                 </div>
             ),
     )
