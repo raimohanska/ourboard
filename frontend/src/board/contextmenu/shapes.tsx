@@ -1,38 +1,27 @@
 import { h, HarmajaOutput } from "harmaja"
 import * as _ from "lodash"
 import * as L from "lonna"
-import { Board, Color, isShapedItem, Item, NoteShape, ShapedItem } from "../../../../common/src/domain"
+import { Color, isShapedItem, Item, NoteShape, ShapedItem } from "../../../../common/src/domain"
 import { ShapeDiamondIcon, ShapeRectIcon, ShapeRoundIcon, ShapeSquareIcon } from "../../components/Icons"
 import { black, selectedColor } from "../../components/UIColors"
-import { Dispatch } from "../../store/board-store"
+import { SubmenuProps } from "./ContextMenuView"
 
-type Props = {
-    focusedItems: L.Property<Item[]>
-    board: L.Property<Board>
-    dispatch: Dispatch
+const shapes = {
+    square: ShapeSquareIcon,
+    round: ShapeRoundIcon,
+    rect: ShapeRectIcon,
+    diamond: ShapeDiamondIcon,
 }
 
-export function shapesMenu({ board, focusedItems, dispatch }: Props) {
-    type ShapeSymbol = { id: NoteShape; svg: (c: Color) => HarmajaOutput }
-    const shapes: ShapeSymbol[] = [
-        {
-            id: "square",
-            svg: ShapeSquareIcon,
-        },
-        {
-            id: "round",
-            svg: ShapeRoundIcon,
-        },
-        {
-            id: "rect",
-            svg: ShapeRectIcon,
-        },
-        {
-            id: "diamond",
-            svg: ShapeDiamondIcon,
-        },
-    ]
+type ShapeIcon = (c: Color, f?: Color) => HarmajaOutput
+type ShapeIconAndId = { id: NoteShape; svg: ShapeIcon }
+const shapeSymbols: ShapeIconAndId[] = Object.entries(shapes).map(([id, svg]) => ({ id: id as NoteShape, svg }))
 
+export function getShapeIcon(item: Item): ShapeIcon {
+    return shapes[isShapedItem(item) ? item.shape || "square" : "square"]
+}
+
+export function shapesMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const shapedItems = L.view(focusedItems, (items) => items.filter(isShapedItem))
     const anyShaped = L.view(shapedItems, (items) => items.length > 0)
     const currentShape = L.view(shapedItems, (items) =>
@@ -44,7 +33,7 @@ export function shapesMenu({ board, focusedItems, dispatch }: Props) {
             ? []
             : [
                   <div className="shapes icon-group">
-                      {shapes.map((shape) => {
+                      {shapeSymbols.map((shape) => {
                           return (
                               <span className="icon" onClick={changeShape(shape.id)}>
                                   {L.view(

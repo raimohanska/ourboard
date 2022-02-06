@@ -297,7 +297,8 @@ describe("Board functionality", () => {
         NotesWithText("HELLO").click({ force: true })
         cy.get(".text").contains("HELLO").type("Monoids")
         cy.get(".context-menu").scrollIntoView().should("be.visible")
-        cy.get(".colors")
+        cy.get(".context-menu .colors-shapes .icon").click()
+        cy.get(".submenu .colors")
             .find(".color")
             .then((elements) => {
                 const templateWithNewColor = [...elements].find(

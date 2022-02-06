@@ -378,10 +378,13 @@
     .context-menu-positioner {
         @extend .ui-context-menu-positioner;
 
+        > * {
+            font-size: 1rem;
+        }
+
         .context-menu {
             @extend .ui-context-menu;
             display: flex;
-            font-size: 1rem;
             margin-top: -3em;
             cursor: pointer;
             .icon {
@@ -401,35 +404,73 @@
                 }
             }
             .align {
+            }
+        }
+
+        .icon-group {
+            display: inline-grid;
+            grid-column-gap: 0.5em;
+            grid-auto-flow: column;
+            .icon {
                 &:not(:last-child) {
-                    margin-right: 1em;
-                }
-                .icon:not(:last-child) {
-                    margin-right: 0.5em;
                 }
             }
-            .icon-group {
+            .color {
+                height: 1em;
+                width: 1em;
                 display: inline-block;
-                &:not(:last-child) {
-                    margin-right: 0.5em;
+                &.white,
+                &.transparent {
+                    border: 1px solid #eeeeee;
                 }
-                .icon {
-                    &:not(:last-child) {
-                        margin-right: 0.5em;
-                    }
+                &.transparent {
+                    background: repeating-conic-gradient(#dddddd 0% 25%, transparent 0% 50%) 50%/0.5em 0.5em;
                 }
-                .color {
-                    height: 1em;
-                    width: 1em;
-                    display: inline-block;
-                    &.white,
-                    &.transparent {
-                        border: 1px solid #eeeeee;
-                    }
-                    &.transparent {
-                        background: repeating-conic-gradient(#dddddd 0% 25%, transparent 0% 50%) 50%/0.5em 0.5em;
-                    }
+            }
+        }
+
+        .submenu {
+            @extend .ui-context-menu;
+            position: absolute;
+            display: flex;
+            align-items: flex-start;
+            top: -0.8em;
+            left: 0;
+            margin: 0;
+
+            > * {
+                display: grid;
+                grid-auto-flow: initial;
+                column-gap: 0.5em;
+                row-gap: 0.5em;
+                &:not(:first-child) {
+                    margin-left: 1em;
                 }
+            }
+
+            .colors {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .shapes {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            &.alignment.y {
+                left: 1.5em;
+            }
+
+            &.alignment.x {
+                .align {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+        }
+
+        &.item-top {
+            .submenu {
+                bottom: 3.1em;
+                top: initial;
             }
         }
     }

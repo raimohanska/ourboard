@@ -5,6 +5,9 @@
 
 .ui-context-menu {
     $menu-border: #cccccc;
+    display: grid;
+    grid-auto-flow: column;
+    grid-column-gap: 0.5em;
     padding: 0.5em;
     margin-top: -2.5em;
     border: 1px solid $menu-border;
