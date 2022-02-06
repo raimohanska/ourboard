@@ -458,6 +458,12 @@
             &.alignment.y {
                 left: 1.5em;
             }
+
+            &.alignment.x {
+                .align {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
         }
 
         &.item-top {
