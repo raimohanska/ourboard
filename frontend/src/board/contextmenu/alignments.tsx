@@ -3,25 +3,23 @@ import _ from "lodash"
 import * as L from "lonna"
 import { Board, Item } from "../../../../common/src/domain"
 import {
+    AlignHorizontalCenterIcon,
     AlignHorizontalLeftIcon,
+    AlignHorizontalRightIcon,
+    AlignVerticalBottomIcon,
+    AlignVerticalCenterIcon,
     AlignVerticalTopIcon,
     HorizontalDistributeIcon,
     VerticalDistributeIcon,
 } from "../../components/Icons"
 import { Dispatch } from "../../store/board-store"
+import { SubmenuProps } from "./ContextMenuView"
 
-type Props = {
-    focusedItems: L.Property<Item[]>
-    board: L.Property<Board>
-    dispatch: Dispatch
-    submenu: L.Atom<HarmajaOutput | null>
+function createSubMenu(axis: Axis, props: SubmenuProps) {
+    return <div className={`submenu alignment ${axis}`}>{alignmentsSubMenu(axis, props)}</div>
 }
 
-function createSubMenu(props: Props) {
-    return <div className="submenu">{alignmentsSubMenu(props)}</div>
-}
-
-export function alignmentsMenu(props: Props) {
+export function alignmentsMenu(axis: Axis, props: SubmenuProps) {
     // TODO duplication
     const hasItemsToAlign = L.view(props.focusedItems, (items) => items.length > 1)
     const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.length > 2)
@@ -33,10 +31,10 @@ export function alignmentsMenu(props: Props) {
                       {hasItemsToAlign && (
                           <span
                               className="icon"
-                              onClick={() => props.submenu.modify((v) => (v ? null : createSubMenu(props)))}
+                              onClick={() => props.submenu.modify((v) => (v ? null : createSubMenu(axis, props)))}
                               title="Align left"
                           >
-                              <AlignHorizontalLeftIcon />
+                              {axis == "x" ? <AlignHorizontalLeftIcon /> : <AlignVerticalTopIcon />}
                           </span>
                       )}
                   </div>,
@@ -44,57 +42,61 @@ export function alignmentsMenu(props: Props) {
     })
 }
 
-export function alignmentsSubMenu({ board, focusedItems, dispatch }: Props) {
-    const hasItemsToAlign = L.view(focusedItems, (items) => items.length > 1)
-    const hasItemsToDistribute = L.view(focusedItems, (items) => items.length > 2)
+type Axis = "x" | "y"
+type GetCoordinate = (
+    item: Item,
+    min: number,
+    max: number,
+    axis: Axis,
+    index: number,
+    numberOfItems: number,
+    sumOfPreviousSizes: number,
+    totalSumOfSizes: number,
+) => number
 
-    type Axis = "x" | "y"
-    type GetCoordinate = (
-        item: Item,
-        min: number,
-        max: number,
-        axis: Axis,
-        index: number,
-        numberOfItems: number,
-        sumOfPreviousSizes: number,
-        totalSumOfSizes: number,
-    ) => number
+function getItemSize(item: Item, axis: Axis) {
+    return axis === "x" ? item.width : item.height
+}
 
-    function getItemSize(item: Item, axis: Axis) {
-        return axis === "x" ? item.width : item.height
-    }
+function moveFocusedItems(
+    axis: Axis,
+    getCoordinateToSetToItem: GetCoordinate,
+    { board, focusedItems, dispatch }: SubmenuProps,
+) {
+    const b = board.get()
 
-    function moveFocusedItems(axis: Axis, getCoordinateToSetToItem: GetCoordinate) {
-        const b = board.get()
+    const itemsToMove = focusedItems.get()
+    const min = _.min(itemsToMove.map((i) => i[axis])) || 0
+    const max = _.max(itemsToMove.map((i) => i[axis] + getItemSize(i, axis))) || 0
+    const totalSumOfSizes = _.sum(itemsToMove.map((i) => getItemSize(i, axis), 0))
 
-        const itemsToMove = focusedItems.get()
-        const min = _.min(itemsToMove.map((i) => i[axis])) || 0
-        const max = _.max(itemsToMove.map((i) => i[axis] + getItemSize(i, axis))) || 0
-        const totalSumOfSizes = _.sum(itemsToMove.map((i) => getItemSize(i, axis), 0))
+    let sumOfPreviousSizes = 0
+    const updatedItems = focusedItems
+        .get()
+        .sort((item1, item2) => item1[axis] - item2[axis])
+        .map((item, index) => {
+            const newItem = {
+                ...item,
+                [axis]: getCoordinateToSetToItem(
+                    item,
+                    min,
+                    max,
+                    axis,
+                    index,
+                    itemsToMove.length,
+                    sumOfPreviousSizes,
+                    totalSumOfSizes,
+                ),
+            }
+            sumOfPreviousSizes += getItemSize(item, axis)
+            return newItem
+        })
+    dispatch({ action: "item.update", boardId: b.id, items: updatedItems })
+}
 
-        let sumOfPreviousSizes = 0
-        const updatedItems = focusedItems
-            .get()
-            .sort((item1, item2) => item1[axis] - item2[axis])
-            .map((item, index) => {
-                const newItem = {
-                    ...item,
-                    [axis]: getCoordinateToSetToItem(
-                        item,
-                        min,
-                        max,
-                        axis,
-                        index,
-                        itemsToMove.length,
-                        sumOfPreviousSizes,
-                        totalSumOfSizes,
-                    ),
-                }
-                sumOfPreviousSizes += getItemSize(item, axis)
-                return newItem
-            })
-        dispatch({ action: "item.update", boardId: b.id, items: updatedItems })
-    }
+export function alignmentsSubMenu(axis: Axis, props: SubmenuProps) {
+    const hasItemsToAlign = L.view(props.focusedItems, (items) => items.length > 1)
+    const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.length > 2)
 
     const getMinCoordinate: GetCoordinate = (_, min) => min
 
@@ -118,12 +120,13 @@ export function alignmentsSubMenu({ board, focusedItems, dispatch }: Props) {
     return L.combine(hasItemsToAlign, hasItemsToDistribute, (hasItemsToAlign, hasItemsToDistribute) => {
         return !hasItemsToAlign
             ? []
-            : [
+            : axis == "x"
+            ? [
                   <div className="align">
                       {hasItemsToAlign && (
                           <span
                               className="icon"
-                              onClick={() => moveFocusedItems("x", getMinCoordinate)}
+                              onClick={() => moveFocusedItems("x", getMinCoordinate, props)}
                               title="Align left"
                           >
                               <AlignHorizontalLeftIcon />
@@ -133,10 +136,20 @@ export function alignmentsSubMenu({ board, focusedItems, dispatch }: Props) {
                       {hasItemsToAlign && (
                           <span
                               className="icon"
-                              title="Align top"
-                              onClick={() => moveFocusedItems("y", getMinCoordinate)}
+                              onClick={() => moveFocusedItems("x", getCenterCoordinate, props)}
+                              title="Align left"
                           >
-                              <AlignVerticalTopIcon />
+                              <AlignHorizontalCenterIcon />
+                          </span>
+                      )}
+
+                      {hasItemsToAlign && (
+                          <span
+                              className="icon"
+                              onClick={() => moveFocusedItems("x", getMaxCoordinate, props)}
+                              title="Align left"
+                          >
+                              <AlignHorizontalRightIcon />
                           </span>
                       )}
 
@@ -144,16 +157,49 @@ export function alignmentsSubMenu({ board, focusedItems, dispatch }: Props) {
                           <span
                               className="icon"
                               title="Distribute evenly"
-                              onClick={() => moveFocusedItems("x", getDistributedCoordinate)}
+                              onClick={() => moveFocusedItems("x", getDistributedCoordinate, props)}
                           >
                               <HorizontalDistributeIcon />
+                          </span>
+                      )}
+                  </div>,
+              ]
+            : [
+                  <div className="align">
+                      {hasItemsToAlign && (
+                          <span
+                              className="icon"
+                              title="Align top"
+                              onClick={() => moveFocusedItems("y", getMinCoordinate, props)}
+                          >
+                              <AlignVerticalTopIcon />
+                          </span>
+                      )}
+
+                      {hasItemsToAlign && (
+                          <span
+                              className="icon"
+                              title="Align top"
+                              onClick={() => moveFocusedItems("y", getCenterCoordinate, props)}
+                          >
+                              <AlignVerticalCenterIcon />
+                          </span>
+                      )}
+
+                      {hasItemsToAlign && (
+                          <span
+                              className="icon"
+                              title="Align top"
+                              onClick={() => moveFocusedItems("y", getMaxCoordinate, props)}
+                          >
+                              <AlignVerticalBottomIcon />
                           </span>
                       )}
                       {hasItemsToDistribute && (
                           <span
                               className="icon"
                               title="Distribute evenly vertically"
-                              onClick={() => moveFocusedItems("y", getDistributedCoordinate)}
+                              onClick={() => moveFocusedItems("y", getDistributedCoordinate, props)}
                           >
                               <VerticalDistributeIcon />
                           </span>

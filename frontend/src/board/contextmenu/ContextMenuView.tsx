@@ -1,7 +1,7 @@
 import { h, HarmajaOutput, ListView } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
-import { Board, findItem, Id } from "../../../../common/src/domain"
+import { Board, findItem, Id, Item } from "../../../../common/src/domain"
 import { Dispatch } from "../../store/board-store"
 import { BoardFocus } from "../board-focus"
 import { Rect } from "../geometry"
@@ -9,7 +9,13 @@ import { alignmentsMenu } from "./alignments"
 import { areaTilingMenu } from "./areaTiling"
 import { colorsAndShapesMenu } from "./colorsAndShapes"
 import { fontSizesMenu } from "./fontSizes"
-import { shapesMenu } from "./shapes"
+
+export type SubmenuProps = {
+    focusedItems: L.Property<Item[]>
+    board: L.Property<Board>
+    dispatch: Dispatch
+    submenu: L.Atom<HarmajaOutput | null>
+}
 
 export const ContextMenuView = ({
     dispatch,
@@ -74,7 +80,8 @@ export const ContextMenuView = ({
 
     const props = { board, focusedItems, dispatch, submenu }
     const widgetCreators = [
-        alignmentsMenu(props),
+        alignmentsMenu("x", props),
+        alignmentsMenu("y", props),
         colorsAndShapesMenu(props),
         fontSizesMenu(props),
         areaTilingMenu(props),

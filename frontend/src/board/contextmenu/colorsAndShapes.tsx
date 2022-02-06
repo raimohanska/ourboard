@@ -1,19 +1,12 @@
-import { h, HarmajaOutput } from "harmaja"
+import { h } from "harmaja"
 import * as L from "lonna"
-import { NOTE_COLORS, TRANSPARENT } from "../../../../common/src/colors"
-import { Board, Color, ColoredItem, isColoredItem, Item } from "../../../../common/src/domain"
-import { Dispatch } from "../../store/board-store"
+import { NOTE_COLORS } from "../../../../common/src/colors"
+import { ColoredItem, isColoredItem } from "../../../../common/src/domain"
 import { colorsSubMenu } from "./colors"
+import { SubmenuProps } from "./ContextMenuView"
 import { getShapeIcon, shapesMenu } from "./shapes"
 
-type Props = {
-    focusedItems: L.Property<Item[]>
-    board: L.Property<Board>
-    submenu: L.Atom<HarmajaOutput | null>
-    dispatch: Dispatch
-}
-
-function createSubMenu(props: Props) {
+function createSubMenu(props: SubmenuProps) {
     return (
         <div className="submenu">
             {colorsSubMenu(props)}
@@ -22,7 +15,7 @@ function createSubMenu(props: Props) {
     )
 }
 
-export function colorsAndShapesMenu(props: Props) {
+export function colorsAndShapesMenu(props: SubmenuProps) {
     const coloredItems = L.view(props.focusedItems, (items) => items.filter(isColoredItem))
     const representativeColoredItem: L.Property<ColoredItem | null> = L.view(coloredItems, (items) => items[0] || null)
     return L.view(representativeColoredItem, (item) => {

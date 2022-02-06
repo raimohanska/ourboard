@@ -5,14 +5,9 @@ import { TileIcon } from "../../components/Icons"
 import { Dispatch } from "../../store/board-store"
 import { contentRect, organizeItems, packableItems } from "../item-organizer"
 import { packItems } from "../item-packer"
+import { SubmenuProps } from "./ContextMenuView"
 
-type Props = {
-    focusedItems: L.Property<Item[]>
-    board: L.Property<Board>
-    dispatch: Dispatch
-}
-
-export function areaTilingMenu({ board, focusedItems, dispatch }: Props) {
+export function areaTilingMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const packables = L.view(focusedItems, (items) => {
         if (items.length === 1) {
             if (isContainer(items[0])) return items

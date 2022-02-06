@@ -454,6 +454,10 @@
             .shapes {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            &.alignment.y {
+                left: 1.5em;
+            }
         }
 
         &.item-top {

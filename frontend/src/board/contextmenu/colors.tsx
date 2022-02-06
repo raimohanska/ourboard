@@ -1,16 +1,10 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import { NOTE_COLORS, TRANSPARENT } from "../../../../common/src/colors"
-import { Board, Color, isColoredItem, Item } from "../../../../common/src/domain"
-import { Dispatch } from "../../store/board-store"
+import { Color, isColoredItem } from "../../../../common/src/domain"
+import { SubmenuProps } from "./ContextMenuView"
 
-type Props = {
-    focusedItems: L.Property<Item[]>
-    board: L.Property<Board>
-    dispatch: Dispatch
-}
-
-export function colorsSubMenu({ board, focusedItems, dispatch }: Props) {
+export function colorsSubMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const coloredItems = L.view(focusedItems, (items) => items.filter(isColoredItem))
     const anyColored = L.view(coloredItems, (items) => items.length > 0)
 

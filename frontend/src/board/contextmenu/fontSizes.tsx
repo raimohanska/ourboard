@@ -1,16 +1,10 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { Board, isTextItem, Item } from "../../../../common/src/domain"
+import { isTextItem } from "../../../../common/src/domain"
 import { DecreaseFontSizeIcon, IncreaseFontSizeIcon } from "../../components/Icons"
-import { Dispatch } from "../../store/board-store"
+import { SubmenuProps } from "./ContextMenuView"
 
-type Props = {
-    focusedItems: L.Property<Item[]>
-    board: L.Property<Board>
-    dispatch: Dispatch
-}
-
-export function fontSizesMenu({ board, focusedItems, dispatch }: Props) {
+export function fontSizesMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const textItems = L.view(focusedItems, (items) => items.filter(isTextItem))
     const anyText = L.view(textItems, (items) => items.length > 0)
 

@@ -1,16 +1,10 @@
 import { h, HarmajaOutput } from "harmaja"
 import * as _ from "lodash"
 import * as L from "lonna"
-import { Board, Color, isShapedItem, Item, NoteShape, ShapedItem } from "../../../../common/src/domain"
+import { Color, isShapedItem, Item, NoteShape, ShapedItem } from "../../../../common/src/domain"
 import { ShapeDiamondIcon, ShapeRectIcon, ShapeRoundIcon, ShapeSquareIcon } from "../../components/Icons"
 import { black, selectedColor } from "../../components/UIColors"
-import { Dispatch } from "../../store/board-store"
-
-type Props = {
-    focusedItems: L.Property<Item[]>
-    board: L.Property<Board>
-    dispatch: Dispatch
-}
+import { SubmenuProps } from "./ContextMenuView"
 
 const shapes = {
     square: ShapeSquareIcon,
@@ -27,7 +21,7 @@ export function getShapeIcon(item: Item): ShapeIcon {
     return shapes[isShapedItem(item) ? item.shape || "square" : "square"]
 }
 
-export function shapesMenu({ board, focusedItems, dispatch }: Props) {
+export function shapesMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const shapedItems = L.view(focusedItems, (items) => items.filter(isShapedItem))
     const anyShaped = L.view(shapedItems, (items) => items.length > 0)
     const currentShape = L.view(shapedItems, (items) =>
