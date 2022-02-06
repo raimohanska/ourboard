@@ -15,7 +15,7 @@ import {
 import { Dispatch } from "../../store/board-store"
 import { SubmenuProps } from "./ContextMenuView"
 
-function createSubMenu(axis: Axis, props: SubmenuProps) {
+const createSubMenuByAxis = (axis: Axis) => (props: SubmenuProps) => {
     return <div className={`submenu alignment ${axis}`}>{alignmentsSubMenu(axis, props)}</div>
 }
 
@@ -23,6 +23,7 @@ export function alignmentsMenu(axis: Axis, props: SubmenuProps) {
     // TODO duplication
     const hasItemsToAlign = L.view(props.focusedItems, (items) => items.length > 1)
     const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.length > 2)
+    const createSubmenu = createSubMenuByAxis(axis)
     return L.combine(hasItemsToAlign, hasItemsToDistribute, (hasItemsToAlign, hasItemsToDistribute) => {
         return !hasItemsToAlign && !hasItemsToDistribute
             ? []
@@ -31,7 +32,7 @@ export function alignmentsMenu(axis: Axis, props: SubmenuProps) {
                       {hasItemsToAlign && (
                           <span
                               className="icon"
-                              onClick={() => props.submenu.modify((v) => (v ? null : createSubMenu(axis, props)))}
+                              onClick={() => props.submenu.modify((v) => (v === createSubmenu ? null : createSubmenu))}
                               title="Align left"
                           >
                               {axis == "x" ? <AlignHorizontalLeftIcon /> : <AlignVerticalTopIcon />}

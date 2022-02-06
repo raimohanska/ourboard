@@ -29,7 +29,7 @@ export function colorsAndShapesMenu(props: SubmenuProps) {
                   <div className="colors-shapes icon-group">
                       <span
                           className={`icon`}
-                          onClick={() => props.submenu.modify((v) => (v ? null : createSubMenu(props)))}
+                          onClick={() => props.submenu.modify((v) => (v == createSubMenu ? null : createSubMenu))}
                       >
                           {shapeIcon(color.color, color.color)}
                       </span>

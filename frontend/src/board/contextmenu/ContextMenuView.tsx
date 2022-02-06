@@ -14,8 +14,10 @@ export type SubmenuProps = {
     focusedItems: L.Property<Item[]>
     board: L.Property<Board>
     dispatch: Dispatch
-    submenu: L.Atom<HarmajaOutput | null>
+    submenu: L.Atom<SubMenuCreator | null>
 }
+
+export type SubMenuCreator = (props: SubmenuProps) => HarmajaOutput
 
 export const ContextMenuView = ({
     dispatch,
@@ -71,7 +73,7 @@ export const ContextMenuView = ({
         }
     })
 
-    const submenu = L.atom<HarmajaOutput | null>(null)
+    const submenu = L.atom<SubMenuCreator | null>(null)
     L.view(
         focusedItems,
         (items) => items[0],
@@ -100,7 +102,7 @@ export const ContextMenuView = ({
                     <div className="context-menu" onDoubleClick={captureEvents} onClick={captureEvents}>
                         <ListView observable={activeWidgets} renderItem={(x) => x} getKey={(x) => x} />
                     </div>
-                    {L.view(submenu, (show) => (show ? show : null))}
+                    {L.view(submenu, (show) => (show ? show(props) : null))}
                 </div>
             ),
     )
