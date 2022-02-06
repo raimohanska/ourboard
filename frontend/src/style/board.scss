@@ -86,6 +86,9 @@
                 font-size: 0.6em;
                 vertical-align: middle;
             }
+            a:not(:first-of-type) svg {
+                margin-left: 0.21em;
+            }
         }
 
         .user-info {
