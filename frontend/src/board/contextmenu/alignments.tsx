@@ -1,4 +1,4 @@
-import { h } from "harmaja"
+import { h, HarmajaOutput } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
 import { Board, Item } from "../../../../common/src/domain"
@@ -14,8 +14,37 @@ type Props = {
     focusedItems: L.Property<Item[]>
     board: L.Property<Board>
     dispatch: Dispatch
+    submenu: L.Atom<HarmajaOutput | null>
 }
-export function alignmentsMenu({ board, focusedItems, dispatch }: Props) {
+
+function createSubMenu(props: Props) {
+    return <div className="submenu">{alignmentsSubMenu(props)}</div>
+}
+
+export function alignmentsMenu(props: Props) {
+    // TODO duplication
+    const hasItemsToAlign = L.view(props.focusedItems, (items) => items.length > 1)
+    const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.length > 2)
+    return L.combine(hasItemsToAlign, hasItemsToDistribute, (hasItemsToAlign, hasItemsToDistribute) => {
+        return !hasItemsToAlign && !hasItemsToDistribute
+            ? []
+            : [
+                  <div className="align">
+                      {hasItemsToAlign && (
+                          <span
+                              className="icon"
+                              onClick={() => props.submenu.modify((v) => (v ? null : createSubMenu(props)))}
+                              title="Align left"
+                          >
+                              <AlignHorizontalLeftIcon />
+                          </span>
+                      )}
+                  </div>,
+              ]
+    })
+}
+
+export function alignmentsSubMenu({ board, focusedItems, dispatch }: Props) {
     const hasItemsToAlign = L.view(focusedItems, (items) => items.length > 1)
     const hasItemsToDistribute = L.view(focusedItems, (items) => items.length > 2)
 
