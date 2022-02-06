@@ -28,7 +28,7 @@ export function alignmentsMenu(axis: Axis, props: SubmenuProps) {
         return !hasItemsToAlign && !hasItemsToDistribute
             ? []
             : [
-                  <div className="align">
+                  <div className="icon-group align">
                       {hasItemsToAlign && (
                           <span
                               className="icon"
@@ -123,7 +123,7 @@ export function alignmentsSubMenu(axis: Axis, props: SubmenuProps) {
             ? []
             : axis == "x"
             ? [
-                  <div className="align">
+                  <div className="icon-group align">
                       {hasItemsToAlign && (
                           <span
                               className="icon"
@@ -166,7 +166,7 @@ export function alignmentsSubMenu(axis: Axis, props: SubmenuProps) {
                   </div>,
               ]
             : [
-                  <div className="align">
+                  <div className="icon-group align">
                       {hasItemsToAlign && (
                           <span
                               className="icon"

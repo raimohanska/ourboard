@@ -24,7 +24,7 @@ export function areaTilingMenu({ board, focusedItems, dispatch }: SubmenuProps) 
         (show) =>
             show
                 ? [
-                      <div className="area-options">
+                      <div className="icon-group area-options">
                           <span
                               className="icon"
                               title="Organize contents"

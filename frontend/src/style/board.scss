@@ -379,76 +379,67 @@
     }
 
     .context-menu-positioner {
-        @extend .ui-context-menu-positioner;
+        z-index: $z-index-menu;
+        position: absolute;
 
         > * {
             font-size: 1rem;
         }
 
         .context-menu {
-            @extend .ui-context-menu;
-            display: flex;
+            padding: 0.5em;
+            margin-top: -2.5em;
+            border: 1px solid #cccccc;
+            border-radius: 2px;
+            background: white;
+            &.hidden {
+                display: none;
+            }
+            display: grid;
+            grid-column-gap: 0.5em;
+            grid-row-gap: 0.5em;
+            grid-auto-flow: column;
             margin-top: -3em;
             cursor: pointer;
-            .icon {
-                position: relative;
-                &.active {
-                    &:after {
-                        content: "";
-                        position: absolute;
-                        pointer-events: none;
-                        border-bottom: 2px solid $black;
-                        top: 0;
-                        margin-bottom: -4px;
-                        bottom: 0;
-                        left: 0;
-                        right: 0;
-                    }
-                }
-            }
-            .align {
+
+            .icon-group {
+                grid-auto-flow: column;
             }
         }
 
         .icon-group {
             display: inline-grid;
             grid-column-gap: 0.5em;
-            grid-auto-flow: column;
-            .icon {
-                &:not(:last-child) {
-                }
+            grid-row-gap: 0.5em;
+        }
+
+        .icon.color {
+            height: 1em;
+            width: 1em;
+            display: inline-block;
+            &.white,
+            &.transparent {
+                border: 1px solid #eeeeee;
             }
-            .color {
-                height: 1em;
-                width: 1em;
-                display: inline-block;
-                &.white,
-                &.transparent {
-                    border: 1px solid #eeeeee;
-                }
-                &.transparent {
-                    background: repeating-conic-gradient(#dddddd 0% 25%, transparent 0% 50%) 50%/0.5em 0.5em;
-                }
+            &.transparent {
+                background: repeating-conic-gradient(#dddddd 0% 25%, transparent 0% 50%) 50%/0.5em 0.5em;
             }
         }
 
         .submenu {
-            @extend .ui-context-menu;
-            position: absolute;
+            padding: 0.5em;
+            border: 1px solid #cccccc;
+            border-radius: 2px;
+            background: white;
             display: flex;
+            position: absolute;
             align-items: flex-start;
             top: -0.8em;
             left: 0;
             margin: 0;
 
-            > * {
-                display: grid;
-                grid-auto-flow: initial;
-                column-gap: 0.5em;
-                row-gap: 0.5em;
-                &:not(:first-child) {
-                    margin-left: 1em;
-                }
+            > *:not(:first-child) {
+                margin-left: 1em;
             }
 
             .colors {
@@ -464,8 +455,8 @@
             }
 
             &.alignment.x {
-                .align {
-                    grid-template-columns: repeat(3, 1fr);
+                .icon-group {
+                    grid-auto-flow: column;
                 }
             }
         }
