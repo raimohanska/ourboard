@@ -151,9 +151,9 @@ export const ItemView = ({
             focused,
             coordinateHelper,
             element,
-        )
+        )        
         return (
-            <span className="text" style={L.combineTemplate({ fontSize, color })}>
+            <span className="text" onDoubleClick={e => e.stopPropagation()} style={L.combineTemplate({ fontSize, color })}>
                 <HTMLEditableSpan
                     {...{
                         value: textAtom,
