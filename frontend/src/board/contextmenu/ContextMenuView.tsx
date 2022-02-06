@@ -98,8 +98,13 @@ export const ContextMenuView = ({
         (ws) => ws.length === 0,
         (hide) =>
             hide ? null : (
-                <div className={L.view(styleAndClass, "className")} style={L.view(styleAndClass, "style")}>
-                    <div className="context-menu" onDoubleClick={captureEvents} onClick={captureEvents}>
+                <div
+                    className={L.view(styleAndClass, "className")}
+                    style={L.view(styleAndClass, "style")}
+                    onDoubleClick={captureEvents}
+                    onClick={captureEvents}
+                >
+                    <div className="context-menu">
                         <ListView observable={activeWidgets} renderItem={(x) => x} getKey={(x) => x} />
                     </div>
                     {L.view(submenu, (show) => (show ? show(props) : null))}
