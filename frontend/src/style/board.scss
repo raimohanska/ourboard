@@ -405,25 +405,26 @@
             }
             .align {
             }
-            .icon-group {
-                display: inline-grid;
-                grid-column-gap: 0.5em;
-                grid-auto-flow: column;
-                .icon {
-                    &:not(:last-child) {
-                    }
+        }
+
+        .icon-group {
+            display: inline-grid;
+            grid-column-gap: 0.5em;
+            grid-auto-flow: column;
+            .icon {
+                &:not(:last-child) {
                 }
-                .color {
-                    height: 1em;
-                    width: 1em;
-                    display: inline-block;
-                    &.white,
-                    &.transparent {
-                        border: 1px solid #eeeeee;
-                    }
-                    &.transparent {
-                        background: repeating-conic-gradient(#dddddd 0% 25%, transparent 0% 50%) 50%/0.5em 0.5em;
-                    }
+            }
+            .color {
+                height: 1em;
+                width: 1em;
+                display: inline-block;
+                &.white,
+                &.transparent {
+                    border: 1px solid #eeeeee;
+                }
+                &.transparent {
+                    background: repeating-conic-gradient(#dddddd 0% 25%, transparent 0% 50%) 50%/0.5em 0.5em;
                 }
             }
         }
