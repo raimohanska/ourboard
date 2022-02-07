@@ -109,7 +109,7 @@ export function rerouteConnection(c: Connection, b: Board): Connection {
     const resolvedTo = resolveEndpoint(c.to, b)
 
     const from = findNearestAttachmentLocationForConnectionNode(resolvedFrom, resolvedTo)
-    const to = findNearestAttachmentLocationForConnectionNode(resolvedTo, resolvedFrom)
+    const to = findNearestAttachmentLocationForConnectionNode(resolvedTo, from.point)
 
     const withNewMidPoint = {
         ...c,
