@@ -27,17 +27,27 @@ export function resolveItemEndpoint(e: ConnectionEndPointToItem, b: Board | Reco
     return getItem(b)(getEndPointItemId(e))
 }
 
-export function findNearestAttachmentLocationForConnectionNode(i: Point | Item, reference: Point): AttachmentLocation {
+export function findNearestAttachmentLocationForConnectionNode(i: Point | Item, reference: Point | Item): AttachmentLocation {
     if (!isItem(i)) return { side: "none", point: i }
-    const options = Object.entries(findAttachmenLocations(i)).map(([side, point]) => ({
+    const options: ItemAttachmentLocation[] = Object.entries(findAttachmentLocations(i)).map(([side, point]) => ({
         side: side as AttachmentSide,
         point,
         item: i,
     }))
-    return _.minBy(options, (p) => distance(p.point, reference))!
+    return _.minBy(options, (p) => distance(p.point, middlePoint(reference)))!
 }
 
-function findAttachmenLocations(i: Item): Record<AttachmentSide, Point> {
+function middlePoint(i: Point | Item) {
+    if (isItem(i)) {
+        return {
+            x: i.x + i.width / 2,
+            y: i.y + i.height / 2
+        }
+    }
+    return i
+}
+
+function findAttachmentLocations(i: Item): Record<AttachmentSide, Point> {
     const margin = 0.1
     function p(x: number, y: number) {
         return { x, y }
@@ -52,7 +62,7 @@ function findAttachmenLocations(i: Item): Record<AttachmentSide, Point> {
 }
 
 export function findAttachmentLocation(i: Item, side: AttachmentSide): ItemAttachmentLocation {
-    return { side, point: findAttachmenLocations(i)[side], item: i }
+    return { side, point: findAttachmentLocations(i)[side], item: i }
 }
 
 function findMidpoint(fromCoords: AttachmentLocation, toCoords: AttachmentLocation) {
