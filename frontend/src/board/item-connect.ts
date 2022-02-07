@@ -2,12 +2,22 @@ import _ from "lodash"
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import * as uuid from "uuid"
-import { findMidpoint } from "../../../common/src/connection-utils"
-import { Board, Connection, Id, isContainedBy, isItem, Item, Point } from "../../../common/src/domain"
+import { rerouteByNewControlPoints, rerouteConnection, resolveEndpoint } from "../../../common/src/connection-utils"
+import {
+    Board,
+    Connection,
+    ConnectionEndPoint,
+    Id,
+    isContainedBy,
+    isItem,
+    isItemEndPoint,
+    Item,
+    Point,
+} from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
-import { containedBy } from "./geometry"
+import { containedBy } from "../../../common/src/geometry"
 import { ToolController } from "./tool-selection"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
@@ -81,15 +91,16 @@ export function drawConnectionHandler(
             } else {
                 // Change current connection endpoint
                 const destinationPoint = targetExistingItem ?? currentBoardCoords
-                const midpoint = findMidpoint(item, destinationPoint, b)
 
                 // console.log({ item, midpoint, to: targetExistingItem ?? currentPos })
 
-                localConnection = {
-                    ...localConnection,
-                    controlPoints: [midpoint],
-                    to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
-                }
+                localConnection = rerouteConnection(
+                    {
+                        ...localConnection,
+                        to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
+                    },
+                    b,
+                )
 
                 dispatch({ action: "connection.modify", boardId: b.id, connection: localConnection })
             }
@@ -139,7 +150,7 @@ export function existingConnectionHandler(
                 dispatch({
                     action: "connection.modify",
                     boardId: b.id,
-                    connection: { ...connection, to, controlPoints: [findMidpoint(connection.from, to, b)] },
+                    connection: rerouteConnection({ ...connection, to }, b),
                 })
             } else if (type === "from") {
                 const hitsItem = findTarget(items, connection.to, coords)
@@ -147,21 +158,22 @@ export function existingConnectionHandler(
                 dispatch({
                     action: "connection.modify",
                     boardId: b.id,
-                    connection: { ...connection, from, controlPoints: [findMidpoint(connection.to, from, b)] },
+                    connection: rerouteConnection({ ...connection, from }, b),
                 })
             } else {
                 dispatch({
                     action: "connection.modify",
                     boardId: b.id,
-                    connection: { ...connection, controlPoints: [coords] },
+                    connection: rerouteByNewControlPoints(connection, [coords], b),
                 })
             }
         }, 20),
     )
 }
 
-function findTarget(items: Record<Id, Item>, from: Item | Id | Point, currentPos: Point) {
-    const fromItem = typeof from === "string" ? items[from] : isItem(from) ? from : null
+function findTarget(items: Record<Id, Item>, from: Item | ConnectionEndPoint, currentPos: Point) {
+    const resolved = resolveEndpoint(from, items)
+    const fromItem = isItem(resolved) ? resolved : null
 
     return Object.values(items)
         .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i)) // match coordinates

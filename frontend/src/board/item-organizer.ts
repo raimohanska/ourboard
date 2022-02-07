@@ -1,5 +1,5 @@
 import { Board, Container, Item } from "../../../common/src/domain"
-import * as G from "./geometry"
+import * as G from "../../../common/src/geometry"
 import _ from "lodash"
 
 const rowResolution = 1

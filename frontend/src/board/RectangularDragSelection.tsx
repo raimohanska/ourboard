@@ -1,6 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { Rect } from "./geometry"
+import { Rect } from "../../../common/src/geometry"
 
 export const RectangularDragSelection = ({ rect }: { rect: L.Property<Rect | null> }) => {
     return L.view(

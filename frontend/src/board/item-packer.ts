@@ -2,7 +2,7 @@
 import { BP2D } from "binpackingjs"
 const { Bin, Box, Packer, heuristics } = BP2D
 import { Board, Container, Item } from "../../../common/src/domain"
-import { Rect } from "./geometry"
+import { Rect } from "../../../common/src/geometry"
 import { ITEM_MARGIN } from "./item-organizer"
 
 type PackItemsResult =

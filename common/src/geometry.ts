@@ -1,5 +1,4 @@
-import * as _ from "lodash"
-import { AttachmentLocation, isItem, Item, Point } from "../../../common/src/domain"
+import { Point } from "./domain"
 export const origin = { x: 0, y: 0 }
 export type Coordinates = { x: number; y: number }
 export type Dimensions = { width: number; height: number }
@@ -55,19 +54,4 @@ export function rectFromPoints(a: Coordinates, b: Coordinates) {
     const height = Math.abs(a.y - b.y)
 
     return { x, y, width, height }
-}
-
-export function findNearestAttachmentLocationForConnectionNode(i: Point | Item, reference: Point): AttachmentLocation {
-    if (!isItem(i)) return { side: "none", point: i }
-    function p(x: number, y: number) {
-        return { x, y }
-    }
-    const margin = 0.1
-    const options = [
-        { side: "top" as const, point: p(i.x + i.width / 2, i.y - margin) },
-        { side: "left" as const, point: p(i.x - margin, i.y + i.height / 2) },
-        { side: "right" as const, point: p(i.x + i.width + margin, i.y + i.height / 2) },
-        { side: "bottom" as const, point: p(i.x + i.width / 2, i.y + i.height + margin) },
-    ]
-    return _.minBy(options, (p) => distance(p.point, reference))!
 }

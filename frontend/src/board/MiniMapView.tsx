@@ -2,7 +2,7 @@ import { h, ListView } from "harmaja"
 import * as L from "lonna"
 import _ from "lodash"
 import { Board, Item } from "../../../common/src/domain"
-import { Rect } from "./geometry"
+import { Rect } from "../../../common/src/geometry"
 
 export const MiniMapView = ({ viewRect, board }: { viewRect: L.Property<Rect>; board: L.Property<Board> }) => {
     const minimapDimensions = L.view(board, (rect) => {

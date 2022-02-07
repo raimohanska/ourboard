@@ -1,5 +1,5 @@
 import { Board, Id, Item } from "../../../common/src/domain"
-import { containedBy } from "./geometry"
+import { containedBy } from "../../../common/src/geometry"
 
 export function maybeChangeContainer(item: Item, items: Record<Id, Item>): Item | undefined {
     const candidates = Object.values(items)

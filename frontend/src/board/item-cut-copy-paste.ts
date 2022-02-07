@@ -12,13 +12,15 @@ import {
     newText,
     ConnectionEndPoint,
     BOARD_ITEM_BORDER_MARGIN,
+    isItemEndPoint,
+    getEndPointItemId,
 } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedIds } from "./board-focus"
 import { Dispatch } from "../store/board-store"
 import { YELLOW } from "../../../common/src/colors"
 import { sanitizeHTML } from "../components/sanitizeHTML"
-import * as G from "./geometry"
+import * as G from "../../../common/src/geometry"
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
@@ -71,8 +73,8 @@ export function makeCopies(
     return { toCreate, toSelect, connections }
 
     function translateEndpoint(endPoint: ConnectionEndPoint) {
-        if (typeof endPoint === "string") {
-            const newId = oldToNewId[endPoint]
+        if (isItemEndPoint(endPoint)) {
+            const newId = oldToNewId[getEndPointItemId(endPoint)]
             if (!newId) {
                 console.warn(`Target item ${endPoint} not found from pasted contents, assuming it exists on board`)
                 return endPoint

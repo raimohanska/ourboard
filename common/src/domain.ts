@@ -145,9 +145,24 @@ export type Connection = {
     controlPoints: Point[]
     to: ConnectionEndPoint
 }
-export type ConnectionEndPoint = Id | Point
-
-export type AttachmentLocation = { side: "left" | "right" | "top" | "bottom" | "none"; point: Point }
+export type ConnectionEndPoint = Point | ConnectionEndPointToItem
+export type ConnectionEndPointToItem = Id | ConectionEndPointDirectedToItem
+export type ConectionEndPointDirectedToItem = { id: Id; side: AttachmentSide }
+export function getEndPointItemId(e: ConnectionEndPointToItem) {
+    if (typeof e === "string") return e
+    return e.id
+}
+export function isItemEndPoint(e: ConnectionEndPoint): e is ConnectionEndPointToItem {
+    if (typeof e === "string") return true
+    if ("side" in e) return true
+    return false
+}
+export function isDirectedItemEndPoint(e: ConnectionEndPoint): e is ConectionEndPointDirectedToItem {
+    return isItemEndPoint(e) && typeof e === "object"
+}
+export type AttachmentSide = "left" | "right" | "top" | "bottom"
+export type AttachmentLocation = { side: "none"; point: Point } | ItemAttachmentLocation
+export type ItemAttachmentLocation = { side: AttachmentSide; point: Point; item: Item }
 
 export type RenderableConnection = Omit<Connection, "from" | "to"> & {
     from: AttachmentLocation

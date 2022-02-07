@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { getItemShape, Item, TextItem } from "../../../common/src/domain"
 import { toPlainText } from "../components/sanitizeHTML"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Dimensions } from "./geometry"
+import { Dimensions } from "../../../common/src/geometry"
 
 export type AutoFontSizeOptions = {
     maxFontSize: number

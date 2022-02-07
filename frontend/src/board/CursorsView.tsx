@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { UserCursorPosition, UserSessionInfo } from "../../../common/src/domain"
 import { CursorsStore } from "../store/cursors-store"
 import { BoardZoom } from "./board-scroll-and-zoom"
-import { Rect } from "./geometry"
+import { Rect } from "../../../common/src/geometry"
 import _ from "lodash"
 
 export const CursorsView = ({

@@ -1,4 +1,4 @@
-import { Rect, equalRect } from "../../frontend/src/board/geometry"
+import { Rect, equalRect } from "./geometry"
 import {
     AppEvent,
     Board,
@@ -17,12 +17,13 @@ import {
     ConnectionEndPoint,
     Point,
     isContainer,
+    getEndPointItemId,
+    isItemEndPoint,
 } from "./domain"
 import _ from "lodash"
 import { arrayToObject } from "./migration"
 import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
-import { boardHistoryReducer } from "./board-history-reducer"
-import { findMidpoint } from "./connection-utils"
+import { rerouteConnection } from "./connection-utils"
 
 export function boardReducer(
     board: Board,
@@ -331,17 +332,15 @@ function moveItems(board: Board, event: MoveItem) {
     let connections: Connection[] = board.connections.map((connection) => {
         const move = connectionMoves[connection.id]
         if (!move) return connection
-        if (move.ends === "both")
+        if (move.ends === "both") {
             return {
                 ...connection,
                 from: moveEndPoint(connection.from, move),
                 to: moveEndPoint(connection.to, move),
                 controlPoints: connection.controlPoints.map((cp) => moveEndPoint(cp, move)),
             } as Connection
-        return {
-            ...connection,
-            controlPoints: [findMidpoint(connection.from, connection.to, board)],
         }
+        return rerouteConnection(connection, board)
     })
 
     const updatedItems = Object.entries(itemMoves).reduce(
@@ -369,9 +368,10 @@ function findConnectionMove(connection: Connection, moves: Record<Id, Move>): Co
     let move: Move | null = null
     let partial = false
     for (let endPoint of endPoints) {
-        if (typeof endPoint === "string") {
-            if (moves[endPoint]) {
-                move = moves[endPoint]
+        if (isItemEndPoint(endPoint)) {
+            const itemId = getEndPointItemId(endPoint)
+            if (moves[itemId]) {
+                move = moves[itemId]
             } else {
                 // linked to item not being moved -> maybe a partial move
                 partial = true
@@ -384,7 +384,7 @@ function findConnectionMove(connection: Connection, moves: Record<Id, Move>): Co
 }
 
 function moveEndPoint(endPoint: ConnectionEndPoint, move: Move) {
-    if (typeof endPoint === "string") {
+    if (isItemEndPoint(endPoint)) {
         return endPoint // points to an item
     }
     const x = endPoint.x + move.xDiff

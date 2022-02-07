@@ -1,7 +1,7 @@
 import { componentScope } from "harmaja"
 import * as L from "lonna"
 import * as _ from "lodash"
-import { add, Coordinates, subtract, origin, multiply } from "./geometry"
+import { add, Coordinates, subtract, origin, multiply } from "../../../common/src/geometry"
 import { BoardZoom } from "./board-scroll-and-zoom"
 
 const newCoordinates = (x: number, y: number): Coordinates => {

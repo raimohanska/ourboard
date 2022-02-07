@@ -2,11 +2,21 @@ import * as H from "harmaja"
 import { Fragment, h, ListView } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
-import { AttachmentLocation, Board, isPoint, Point, RenderableConnection } from "../../../common/src/domain"
+import {
+    AttachmentLocation,
+    Board,
+    ConnectionEndPoint,
+    isDirectedItemEndPoint,
+    isPoint,
+    Item,
+    Point,
+    RenderableConnection,
+} from "../../../common/src/domain"
+import { findAttachmentLocation, resolveItemEndpoint } from "../../../common/src/connection-utils"
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
-import * as G from "./geometry"
+import * as G from "../../../common/src/geometry"
 import { existingConnectionHandler } from "./item-connect"
 import { Z_CONNECTIONS } from "./zIndices"
 
@@ -27,22 +37,32 @@ export const ConnectionsView = ({
     // Connection objects normally only hold the ID to the "from" and "to" items
     // This populates the actual object in place of the ID
 
+    function determineAttachmenLocation(
+        e: ConnectionEndPoint,
+        control: Point,
+        is: Record<string, Item>,
+    ): AttachmentLocation {
+        if (isDirectedItemEndPoint(e)) {
+            return findAttachmentLocation(resolveItemEndpoint(e, is), e.side)
+        }
+        const fromItem: Point = resolveEndpoint(e, is)
+        // Support legacy routing (side not fixed)
+        return findNearestAttachmentLocationForConnectionNode(fromItem, control)
+    }
     const connectionsWithItemsPopulated = L.view(
         L.view(board, (b) => ({ is: b.items, cs: b.connections })),
         focus,
         L.view(zoom, "zoom"),
         ({ is, cs }, f, z) => {
             return cs.map((c) => {
-                const fromItem: Point = isPoint(c.from) ? c.from : is[c.from]
-                const toItemOrPoint = isPoint(c.to) ? c.to : is[c.to]
+                const fromItem: Point = resolveEndpoint(c.from, is)
+                const toItemOrPoint = resolveEndpoint(c.to, is)
                 const firstControlPoint = c.controlPoints[0] || fromItem
                 const lastControlPoint = c.controlPoints[c.controlPoints.length - 1] || toItemOrPoint
-                const from = G.findNearestAttachmentLocationForConnectionNode(fromItem, firstControlPoint)
-                const to = G.findNearestAttachmentLocationForConnectionNode(toItemOrPoint, lastControlPoint)
                 return {
                     ...c,
-                    from,
-                    to,
+                    from: determineAttachmenLocation(c.from, firstControlPoint, is),
+                    to: determineAttachmenLocation(c.to, lastControlPoint, is),
                     selected: f.status === "connection-selected" && f.id === c.id,
                 }
             })
@@ -193,6 +213,7 @@ export const ConnectionsView = ({
 // @ts-ignore
 import { Bezier } from "bezier-js"
 import { BoardZoom } from "./board-scroll-and-zoom"
+import { findNearestAttachmentLocationForConnectionNode, resolveEndpoint } from "../../../common/src/connection-utils"
 
 function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
     if (!controlPoints || !controlPoints.length) {
