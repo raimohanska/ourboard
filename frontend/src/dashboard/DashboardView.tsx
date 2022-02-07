@@ -288,7 +288,7 @@ const CreateBoard = ({
         <form onSubmit={onSubmit} className="create-board">
             <h2>{L.view(hasRecentBoards, (has) => (has ? "Find or create a board" : "Create a board"))}</h2>
             <div className="input-and-button">
-                <TextInput value={boardName} placeholder="Enter board name" />
+                <TextInput value={boardName} autoFocus={true} placeholder="Enter board name" />
                 <button id="create-board-button" data-test="create-board-submit" type="submit" disabled={disabled}>
                     Create
                 </button>
