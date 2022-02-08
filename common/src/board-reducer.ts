@@ -171,8 +171,8 @@ export function boardReducer(
             const [connectionsToKeep, connectionsDeleted] = _.partition(
                 board.connections,
                 (c) =>
-                    (typeof c.from !== "string" || !idsToDelete.has(c.from)) &&
-                    (typeof c.to !== "string" || !idsToDelete.has(c.to)),
+                    (!isItemEndPoint(c.from) || !idsToDelete.has(getEndPointItemId(c.from))) &&
+                    (!isItemEndPoint(c.to) || !idsToDelete.has(getEndPointItemId(c.to))),
             )
 
             const updatedItems = { ...board.items }
@@ -247,8 +247,8 @@ function validateConnection(board: Board, connection: Connection) {
 
 function validateEndPoint(board: Board, connection: Connection, key: "to" | "from") {
     const endPoint = connection[key]
-    if (typeof endPoint === "string") {
-        const toItem = board.items[endPoint]
+    if (isItemEndPoint(endPoint)) {
+        const toItem = board.items[getEndPointItemId(endPoint)]
         if (!toItem) {
             throw Error(`Connection ${connection.id} refers to nonexisting item ${endPoint}`)
         }
@@ -329,7 +329,7 @@ function moveItems(board: Board, event: MoveItem) {
         }
     }
 
-    let connections: Connection[] = board.connections.map((connection) => {
+    let connections: Connection[] = board.connections.flatMap((connection) => {
         const move = connectionMoves[connection.id]
         if (!move) return connection
         if (move.ends === "both") {

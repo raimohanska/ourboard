@@ -44,7 +44,7 @@ export function findSelectedItems(currentFocus: BoardFocus, currentBoard: Board)
 
 function connectedIds(connection: Connection) {
     const endpoints = [connection.to, connection.from]
-    return endpoints.flatMap((ep) => (typeof ep === "string" ? [ep] : []))
+    return endpoints.flatMap((ep) => (isItemEndPoint(ep) ? [getEndPointItemId(ep)] : []))
 }
 
 export function makeCopies(
