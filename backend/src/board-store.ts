@@ -41,9 +41,9 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             let lastSerial = 0
             let board = snapshot
 
-            let i = 0;
+            let i = 0
             function updateBoardWithEventChunk(chunk: BoardHistoryEntry[]) {
-                board = chunk.reduce((b, e) => { 
+                board = chunk.reduce((b, e) => {
                     i++
                     return boardReducer(b, e)[0]
                 }, board)
@@ -51,10 +51,11 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
                 lastSerial = chunk[chunk.length - 1].serial ?? snapshot.serial
             }
 
-
             await getBoardHistory(id, snapshot.serial, updateBoardWithEventChunk).catch(async (error) => {
                 console.error(error.message)
-                console.error(`Error applying board history for snapshot update for board ${id}. Loop index ${i}. Rebooting snapshot...`)
+                console.error(
+                    `Error applying board history for snapshot update for board ${id}. Loop index ${i}. Rebooting snapshot...`,
+                )
                 i = 0
                 board = { ...snapshot, items: {}, connections: [] }
                 try {
