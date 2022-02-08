@@ -1,23 +1,24 @@
+import _ from "lodash"
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { addOrReplaceEvent, foldActions } from "../../../common/src/action-folding"
 import { boardHistoryReducer } from "../../../common/src/board-history-reducer"
 import { boardReducer } from "../../../common/src/board-reducer"
 import {
-    AppEvent,
+    AccessLevel,
+    AckAddBoard,
     Board,
     BoardHistoryEntry,
     BoardStateSyncEvent,
+    canWrite,
     ClientToServerRequest,
     CursorMove,
-    CURSOR_POSITIONS_ACTION_TYPE,
     defaultBoardSize,
-    EventFromServer,
     EventUserInfo,
     Id,
-    isLocalUIEvent,
-    isCursorMove,
     isBoardHistoryEntry,
+    isCursorMove,
+    isLocalUIEvent,
     isPersistableBoardItemEvent,
     ItemLocks,
     LocalUIEvent,
@@ -26,15 +27,11 @@ import {
     TransientBoardItemEvent,
     UIEvent,
     UserSessionInfo,
-    AccessLevel,
-    canWrite,
-    AckAddBoard,
 } from "../../../common/src/domain"
-import { mkBootStrapEvent } from "../../../common/src/migration"
+import { migrateBoard, mkBootStrapEvent } from "../../../common/src/migration"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
-import _ from "lodash"
 export type Dispatch = (e: UIEvent) => void
 export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardAccessStatus =
@@ -453,6 +450,9 @@ export function BoardStore(
         console.log("Board id", boardId)
         if (boardId) {
             storedInitialState = await localStore.getInitialBoardState(boardId)
+            if (storedInitialState) {
+                storedInitialState.serverShadow = migrateBoard(storedInitialState.serverShadow)
+            }
         }
         dispatch({ action: "ui.board.join.request", boardId })
         checkReadyToJoin()

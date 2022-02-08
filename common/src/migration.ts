@@ -43,7 +43,7 @@ export function migrateBoard(origBoard: Board) {
         }
     }
 
-    const connections = (board.connections ?? []).filter(c => {
+    const connections = (board.connections ?? []).filter((c) => {
         try {
             resolveEndpoint(c.from, board)
             resolveEndpoint(c.to, board)
@@ -53,10 +53,9 @@ export function migrateBoard(origBoard: Board) {
         }
         return true
     })
-    
+
     return { ...board, connections, width, height, items: arrayToObject("id", items) }
 }
-
 
 function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {
     const { width, height, z, type, ...rest } = item

@@ -68,8 +68,8 @@ describe("Migration", () => {
             })
         })
         it("Removes broken connections", () => {
-            const borkenEndpoint: ConnectionEndPoint = { id: "asdf", side: "bottom" } 
-            const borkenConn ={ from: borkenEndpoint, to: borkenEndpoint, id: "asfdoi", controlPoints: [] }
+            const borkenEndpoint: ConnectionEndPoint = { id: "asdf", side: "bottom" }
+            const borkenConn = { from: borkenEndpoint, to: borkenEndpoint, id: "asfdoi", controlPoints: [] }
 
             const b: Board = { ...exampleBoard, connections: [borkenConn] }
 
