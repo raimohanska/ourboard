@@ -1,3 +1,4 @@
+import { resolveEndpoint } from "./connection-utils"
 import { Board, BoardHistoryEntry, Container, defaultBoardSize, Id, Item, Serial } from "./domain"
 
 export function mkBootStrapEvent(boardId: Id, snapshot: Board, serial: Serial = 1) {
@@ -41,28 +42,41 @@ export function migrateBoard(origBoard: Board) {
             }))
         }
     }
-    return { ...board, connections: board.connections ?? [], width, height, items: arrayToObject("id", items) }
 
-    function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {
-        const { width, height, z, type, ...rest } = item
-
-        // Force type, width and height for all items
-        let fixedItem = { type: type || "note", width: width || 5, height: height || 5, z: z || 0, ...rest } as Item
-        if (fixedItem.type === "container") {
-            let container = fixedItem as Container & { items?: string[] }
-            // Force container to have text
-            container.text = container.text || ""
-            // If container had items property, migrate each corresponding item to have containerId of that container instead
-            if (container.items) {
-                const ids = container.items
-                delete container.items
-                ids.forEach((i) => {
-                    const containedItem = migratedItems.find((mi) => mi.id === i) || boardItems[i]
-                    containedItem && (containedItem.containerId = container.id)
-                })
-            }
+    const connections = (board.connections ?? []).filter(c => {
+        try {
+            resolveEndpoint(c.from, board)
+            resolveEndpoint(c.to, board)
+        } catch (e) {
+            console.error(`Error resolving connection ${JSON.stringify(c)}`)
+            return false
         }
+        return true
+    })
+    
+    return { ...board, connections, width, height, items: arrayToObject("id", items) }
+}
 
-        return fixedItem
+
+function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {
+    const { width, height, z, type, ...rest } = item
+
+    // Force type, width and height for all items
+    let fixedItem = { type: type || "note", width: width || 5, height: height || 5, z: z || 0, ...rest } as Item
+    if (fixedItem.type === "container") {
+        let container = fixedItem as Container & { items?: string[] }
+        // Force container to have text
+        container.text = container.text || ""
+        // If container had items property, migrate each corresponding item to have containerId of that container instead
+        if (container.items) {
+            const ids = container.items
+            delete container.items
+            ids.forEach((i) => {
+                const containedItem = migratedItems.find((mi) => mi.id === i) || boardItems[i]
+                containedItem && (containedItem.containerId = container.id)
+            })
+        }
     }
+
+    return fixedItem
 }
