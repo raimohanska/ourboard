@@ -263,6 +263,7 @@ export type MoveItem = {
     action: "item.move"
     boardId: Id
     items: { id: Id; x: number; y: number; containerId?: Id | undefined }[]
+    connections: { id: Id; xDiff: number; yDiff: number }[] | null // TODO: null is for legacy support
 }
 export type IncreaseItemFont = { action: "item.font.increase"; boardId: Id; itemIds: Id[] }
 export type DecreaseItemFont = { action: "item.font.decrease"; boardId: Id; itemIds: Id[] }
@@ -500,6 +501,12 @@ export const getItem = (boardOrItems: Board | Record<string, Item>) => (id: Id) 
     const item = findItem(boardOrItems)(id)
     if (!item) throw Error("Item not found: " + id)
     return item
+}
+
+export const getConnection = (b: Board) => (id: Id) => {
+    const conn = b.connections.find((c) => c.id === id)
+    if (!conn) throw Error("Connection not found: " + id)
+    return conn
 }
 
 export const findItem = (boardOrItems: Board | Record<string, Item>) => (id: Id) => {

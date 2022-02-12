@@ -53,8 +53,8 @@ export function itemDragToMove(
                         const container = maybeChangeContainer(current, b.items)
                         return { id: current.id, x, y, containerId: container ? container.id : undefined }
                     })
-
-                    dispatch({ action: "item.move", boardId: b.id, items: movedItems })
+                    // TODO: move connections
+                    dispatch({ action: "item.move", boardId: b.id, items: movedItems, connections: [] })
                 }
             },
             () => {

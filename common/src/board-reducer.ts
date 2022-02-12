@@ -19,6 +19,7 @@ import {
     isContainer,
     getEndPointItemId,
     isItemEndPoint,
+    getConnection,
 } from "./domain"
 import _, { isArray } from "lodash"
 import { arrayToObject } from "./migration"
@@ -163,6 +164,10 @@ export function boardReducer(
                         const item = getItem(board)(i.id)
                         return { id: i.id, x: item.x, y: item.y, containerId: item.containerId }
                     }),
+                    connections:
+                        event.connections?.map((c) => {
+                            return { id: c.id, xDiff: -c.xDiff, yDiff: -c.yDiff }
+                        }) || [],
                 },
             ]
         case "item.delete": {
@@ -297,11 +302,10 @@ function updateItems(current: Record<Id, Item>, updateList: Item[]): Record<Id, 
     return result
 }
 
-type Move = { xDiff: number; yDiff: number; containerChanged: boolean; containerId: Id | undefined }
-
 function moveItems(board: Board, event: MoveItem) {
-    const itemMoves: Record<Id, Move> = {}
+    const itemMoves: Record<Id, ItemMove> = {}
     const itemsOnBoard = board.items
+    const connectionMovesInEvent = event.connections || []
 
     for (let mainItemMove of event.items) {
         const { id, x, y, containerId } = mainItemMove
@@ -327,6 +331,15 @@ function moveItems(board: Board, event: MoveItem) {
         const move = findConnectionMove(connection, itemMoves)
         if (move) {
             connectionMoves[connection.id] = move
+        } else {
+            const m = connectionMovesInEvent.find((m) => m.id === connection.id)
+            if (m) {
+                connectionMoves[connection.id] = {
+                    ends: "both",
+                    xDiff: m.xDiff,
+                    yDiff: m.yDiff,
+                }
+            }
         }
     }
 
@@ -362,6 +375,8 @@ function moveItems(board: Board, event: MoveItem) {
     }
 }
 
+type Move = { xDiff: number; yDiff: number }
+type ItemMove = Move & { containerChanged: boolean; containerId: Id | undefined }
 type ConnectionMove = (Move & { ends: "both" }) | { ends: "one" }
 
 function findConnectionMove(connection: Connection, moves: Record<Id, Move>): ConnectionMove | null {

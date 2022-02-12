@@ -51,7 +51,6 @@ export function findSelectedItemsAndConnections(currentFocus: BoardFocus, curren
             from: detachEndPointIfItemNotFound(c.from, recursiveIds, currentBoard),
             to: detachEndPointIfItemNotFound(c.to, recursiveIds, currentBoard),
         }))
-    console.log({ items, connections })
     return { items, connections }
 }
 
