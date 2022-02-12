@@ -7,6 +7,7 @@ import {
     Board,
     Connection,
     ConnectionEndPoint,
+    getEndPointItemId,
     Id,
     isContainedBy,
     isItem,
@@ -75,7 +76,7 @@ export function drawConnectionHandler(
         const b = board.get()
         const boardId = b.id
 
-        const targetExistingItem = findTarget(b.items, item, currentBoardCoords)
+        const targetExistingItem = findTarget(b, item, currentBoardCoords, localConnection)
 
         if (targetExistingItem === item) {
             if (localConnection !== null) {
@@ -147,7 +148,7 @@ export function existingConnectionHandler(
             const items = b.items
             const coords = coordinateHelper.currentBoardCoordinates.get()
             if (type === "to") {
-                const hitsItem = findTarget(items, connection.from, coords)
+                const hitsItem = findTarget(b, connection.from, coords, connection)
                 const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
                 dispatch({
                     action: "connection.modify",
@@ -155,7 +156,7 @@ export function existingConnectionHandler(
                     connection: rerouteConnection({ ...connection, to }, b),
                 })
             } else if (type === "from") {
-                const hitsItem = findTarget(items, connection.to, coords)
+                const hitsItem = findTarget(b, connection.to, coords, connection)
                 const from = hitsItem && hitsItem.id !== connection.to ? hitsItem.id : coords
                 dispatch({
                     action: "connection.modify",
@@ -173,15 +174,34 @@ export function existingConnectionHandler(
     )
 }
 
-function findTarget(items: Record<Id, Item>, from: Item | ConnectionEndPoint, currentPos: Point) {
+function findTarget(
+    b: Board,
+    from: Item | ConnectionEndPoint,
+    currentPos: Point,
+    currentConnection: Connection | null,
+) {
+    const items = b.items
     const resolved = resolveEndpoint(from, items)
     const fromItem = isItem(resolved) ? resolved : null
 
     return Object.values(items)
         .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i)) // match coordinates
         .filter((i) => i.type !== "container" || isNearBorder(currentPos, i))
+        .filter((i) => !isItem(resolved) || !isConnected(b, i, resolved, currentConnection))
         .sort((a, b) => (isContainedBy(items, a)(b) ? 1 : -1)) // most innermost first (containers last)
         .find((i) => !fromItem || !isContainedBy(items, i)(fromItem)) // does not contain the "from" item
+}
+
+function isConnected(b: Board, x: Item, y: Item, connectionToIgnore: Connection | null) {
+    return b.connections.some((c) => connectionToIgnore != c && isConnectionRelated(x, c) && isConnectionRelated(y, c))
+}
+
+function isConnectionRelated(i: Item, c: Connection) {
+    return isEndPointRelated(i, c.from) || isEndPointRelated(i, c.to)
+}
+
+function isEndPointRelated(i: Item, c: ConnectionEndPoint) {
+    return isItemEndPoint(c) && getEndPointItemId(c) === i.id
 }
 
 function isNearBorder(point: Point, item: Item) {
