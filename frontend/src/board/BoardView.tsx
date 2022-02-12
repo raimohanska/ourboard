@@ -197,7 +197,7 @@ export const BoardView = ({
             boardElem: boardElement,
             coordinateHelper,
             focus,
-            tool,
+            toolController,
             dispatch,
         },
     })
