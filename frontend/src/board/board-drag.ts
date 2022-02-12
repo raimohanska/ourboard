@@ -9,6 +9,7 @@ import { componentScope } from "harmaja"
 import { Tool, ToolController } from "./tool-selection"
 import { Dispatch } from "../store/server-connection"
 import { drawConnectionHandler } from "./item-connect"
+import { emptySet } from "../../../common/src/sets"
 
 export type DragAction =
     | { action: "select"; selectedAtStart: Set<string> }
@@ -58,7 +59,11 @@ export function boardDragHandler({
                 dragAction.set({ action: "pan" })
             } else {
                 let selectedAtStart = e.shiftKey ? getSelectedItemIds(focus.get()) : new Set<string>()
-                focus.set(selectedAtStart.size > 0 ? { status: "selected", ids: selectedAtStart } : { status: "none" })
+                focus.set(
+                    selectedAtStart.size > 0
+                        ? { status: "selected", itemIds: selectedAtStart, connectionIds: emptySet() }
+                        : { status: "none" },
+                )
                 dragAction.set({ action: "select", selectedAtStart })
             }
         })
@@ -83,7 +88,7 @@ export function boardDragHandler({
                         const toBeSelected = new Set(overlapping.map((i) => i.id).concat([...da.selectedAtStart]))
 
                         toBeSelected.size > 0
-                            ? focus.set({ status: "selected", ids: toBeSelected })
+                            ? focus.set({ status: "selected", itemIds: toBeSelected, connectionIds: emptySet() })
                             : focus.set({ status: "none" })
                     } else if (da.action === "pan") {
                         const s = start.get()

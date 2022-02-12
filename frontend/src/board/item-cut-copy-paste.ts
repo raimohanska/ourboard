@@ -21,6 +21,7 @@ import { Dispatch } from "../store/board-store"
 import { YELLOW } from "../../../common/src/colors"
 import { sanitizeHTML } from "../components/sanitizeHTML"
 import * as G from "../../../common/src/geometry"
+import { emptySet } from "../../../common/src/sets"
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
@@ -117,7 +118,8 @@ export function cutCopyPasteHandler(
         const currentBoard = board.get()
         switch (e.type) {
             case "cut": {
-                if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
+                // TODO: support connections on clipboard as well
+                if (currentFocus.status !== "selected" || currentFocus.itemIds.size === 0) return
                 const clipboard = findSelectedItems(currentFocus, currentBoard)
                 dispatch({ action: "item.delete", boardId: currentBoard.id, itemIds: clipboard.items.map((i) => i.id) })
                 e.clipboardData!.setData("application/rboard", JSON.stringify(clipboard))
@@ -180,7 +182,11 @@ export function cutCopyPasteHandler(
                     const yDiff = Math.min(Math.max(currentCenter.y - yCenterOld, yDiffMin), yDiffMax)
                     const { toCreate, toSelect, connections } = makeCopies(clipboard, xDiff, yDiff)
                     dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate, connections })
-                    focus.set({ status: "selected", ids: new Set(toSelect.map((it) => it.id)) })
+                    focus.set({
+                        status: "selected",
+                        itemIds: new Set(toSelect.map((it) => it.id)),
+                        connectionIds: emptySet(),
+                    })
                     e.preventDefault()
                 }
                 break

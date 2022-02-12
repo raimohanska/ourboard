@@ -35,13 +35,12 @@ export const ContextMenuView = ({
             case "none":
             case "adding":
             case "connection-adding":
-            case "connection-selected":
             case "dragging":
                 return []
             case "editing":
-                return [f.id]
+                return [f.itemId]
             case "selected":
-                return [...f.ids]
+                return [...f.itemIds] // TODO: consider connections for context menu
         }
     }
 

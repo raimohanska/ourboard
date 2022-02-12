@@ -20,6 +20,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
 import { centerPoint, containedBy } from "../../../common/src/geometry"
 import { ToolController } from "./tool-selection"
+import { emptySet } from "../../../common/src/sets"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -122,7 +123,9 @@ export function drawConnectionHandler(
 
     const endDrag = () => {
         focus.set(
-            localConnection ? { status: "connection-selected", ids: new Set(localConnection.id) } : { status: "none" },
+            localConnection
+                ? { status: "selected", itemIds: emptySet(), connectionIds: new Set(localConnection.id) }
+                : { status: "none" },
         )
         localConnection = null
     }

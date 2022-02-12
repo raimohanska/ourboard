@@ -4,6 +4,7 @@ import { getItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedItemIds } from "./board-focus"
 import { Coordinates } from "../../../common/src/geometry"
+import { emptySet } from "../../../common/src/sets"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -36,13 +37,13 @@ export function onBoardItemDrag(
         e.stopPropagation()
         e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
         if (f.status === "dragging") {
-            if (!f.ids.has(id)) {
-                focus.set({ status: "dragging", ids: new Set([id]) })
+            if (!f.itemIds.has(id)) {
+                focus.set({ status: "dragging", itemIds: new Set([id]) })
             }
-        } else if (f.status === "selected" && f.ids.has(id)) {
-            focus.set({ status: "dragging", ids: f.ids })
+        } else if (f.status === "selected" && f.itemIds.has(id)) {
+            focus.set({ status: "dragging", itemIds: f.itemIds })
         } else {
-            focus.set({ status: "dragging", ids: new Set([id]) })
+            focus.set({ status: "dragging", itemIds: new Set([id]) })
         }
 
         dragStart = e
@@ -67,7 +68,7 @@ export function onBoardItemDrag(
         const { x: xDiff, y: yDiff } = newPos
 
         const b = board.get()
-        const items = [...f.ids].map((id) => {
+        const items = [...f.itemIds].map((id) => {
             const current = b.items[id]
             const dragStartPosition = dragStartPositions[id]
             if (!current || !dragStartPosition) throw Error("Item not found: " + id)
@@ -87,11 +88,11 @@ export function onBoardItemDrag(
             }
             if (doOnDrop) {
                 const b = board.get()
-                const items = [...f.ids].map(getItem(b))
+                const items = [...f.itemIds].map(getItem(b))
                 doOnDrop(b, items)
             }
             currentPos = null
-            return { status: "selected", ids: f.ids }
+            return { status: "selected", itemIds: f.itemIds, connectionIds: emptySet() }
         })
     }
 

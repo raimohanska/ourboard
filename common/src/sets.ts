@@ -12,3 +12,5 @@ export function difference<A>(setA: Set<A>, setB: Set<A>) {
     }
     return _difference
 }
+
+export const emptySet = <A>() => new Set<A>()

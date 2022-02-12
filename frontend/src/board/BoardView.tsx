@@ -38,6 +38,7 @@ import { ToolController } from "./tool-selection"
 import { BoardViewHeader } from "./toolbars/BoardViewHeader"
 import { VideoView } from "./VideoView"
 import { startConnecting } from "./item-connect"
+import { emptySet } from "../../../common/src/sets"
 
 const emptyNote = newNote("")
 
@@ -179,9 +180,9 @@ export const BoardView = ({
         dispatch({ action: "item.add", boardId, items: [item], connections: [] })
 
         if (item.type === "note" || item.type === "text") {
-            focus.set({ status: "editing", id: item.id })
+            focus.set({ status: "editing", itemId: item.id })
         } else {
-            focus.set({ status: "selected", ids: new Set([item.id]) })
+            focus.set({ status: "selected", itemIds: new Set([item.id]), connectionIds: emptySet() })
         }
     }
 
