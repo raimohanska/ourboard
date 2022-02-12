@@ -80,7 +80,7 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
     } else if (a.action === "item.front") {
         if (b.action === "item.front" && b.boardId === a.boardId && everyItemIdMatches(b, a)) return b
     } else if (a.action === "item.move") {
-        if (b.action === "item.move" && b.boardId === a.boardId && everyItemMatches(b, a)) return b
+        if (b.action === "item.move" && b.boardId === a.boardId && everyMovedItemMatches(b, a)) return b
     } else if (a.action === "item.update") {
         if (b.action === "item.update" && b.boardId === a.boardId && everyItemMatches(b, a)) return b
     } else if (a.action === "item.lock" || a.action === "item.unlock") {
@@ -91,14 +91,16 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
     return null
 }
 
-function everyItemMatches(evt: MoveItem | UpdateItem, evt2: MoveItem | UpdateItem) {
-    if (evt.action === "item.move" && evt.connections?.length) return false
-    if (evt2.action === "item.move" && evt2.connections?.length) return false
-    return (
-        evt.items.length === evt2.items.length &&
-        (evt.items as Item[]) /* TODO no assertion */
-            .every((it, ind) => evt2.items[ind].id === it.id)
-    )
+function everyItemMatches(evt: UpdateItem, evt2: UpdateItem) {
+    return arrayIdMatch(evt.items, evt2.items)
+}
+
+function everyMovedItemMatches(evt: MoveItem, evt2: MoveItem) {
+    return arrayIdMatch(evt.items, evt2.items) && arrayIdMatch(evt.connections || [], evt2.connections || [])
+}
+
+function arrayIdMatch<T extends { id: string }>(a: T[], b: T[]) {
+    return a.length === b.length && a.every((it, ind) => b[ind].id === it.id)
 }
 
 function everyItemIdMatches(evt: BringItemToFront, evt2: BringItemToFront) {
