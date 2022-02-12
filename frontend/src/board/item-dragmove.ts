@@ -5,7 +5,7 @@ import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainer } from "./item-setcontainer"
 import { Dispatch } from "../store/board-store"
-import { drawConnectionHandler } from "./item-connect"
+import { drawConnectionHandler, isConnectionAttachmentPoint } from "./item-connect"
 import { Tool, ToolController } from "./tool-selection"
 import { connectionRect } from "../../../common/src/connection-utils"
 
@@ -27,7 +27,7 @@ export function itemDragToMove(
             focus,
             coordinateHelper,
             onlyWhenSelected,
-            (b, items, connections, xDiff, yDiff) => {
+            (b, startPos, items, connections, xDiff, yDiff) => {
                 // Cant drag when connect tool is active
                 const t = toolController.tool.get()
 
@@ -39,7 +39,8 @@ export function itemDragToMove(
 
                 if (t === "connect") {
                     const { current, dragStartPosition } = items[0]
-                    connector.whileDragging(current, coordinateHelper.currentBoardCoordinates.get())
+                    const from = isConnectionAttachmentPoint(startPos, current) ? current : startPos
+                    connector.whileDragging(from, coordinateHelper.currentBoardCoordinates.get())
                 } else {
                     const margin = BOARD_ITEM_BORDER_MARGIN
                     const movedItems = items.map(({ dragStartPosition, current }) => {
