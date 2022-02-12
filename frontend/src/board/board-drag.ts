@@ -1,17 +1,19 @@
-import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
-import { Board, Item, Container, Point } from "../../../common/src/domain"
-import * as L from "lonna"
-import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
-import { BoardFocus, getSelectedItemIds } from "./board-focus"
-import { Rect, overlaps, rectFromPoints, Coordinates, containedBy } from "../../../common/src/geometry"
-import * as _ from "lodash"
 import { componentScope } from "harmaja"
-import { Tool, ToolController } from "./tool-selection"
+import * as _ from "lodash"
+import * as L from "lonna"
+import { connectionRect } from "../../../common/src/connection-utils"
+import { Board, Point } from "../../../common/src/domain"
+import { containedBy, overlaps, Rect, rectFromPoints } from "../../../common/src/geometry"
+import { emptySet } from "../../../common/src/sets"
 import { Dispatch } from "../store/server-connection"
+import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
+import { isAnythingSelected, BoardFocus, getSelectedItemIds, noFocus, getSelectedConnectionIds } from "./board-focus"
 import { drawConnectionHandler } from "./item-connect"
+import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
+import { ToolController } from "./tool-selection"
 
 export type DragAction =
-    | { action: "select"; selectedAtStart: Set<string> }
+    | { action: "select"; selectedAtStart: BoardFocus }
     | { action: "pan" }
     | { action: "none" }
     | { action: "connect"; startPos: Point }
@@ -57,13 +59,21 @@ export function boardDragHandler({
             } else if (!shouldDragSelect) {
                 dragAction.set({ action: "pan" })
             } else {
-                let selectedAtStart = e.shiftKey ? getSelectedItemIds(focus.get()) : new Set<string>()
-                focus.set(selectedAtStart.size > 0 ? { status: "selected", ids: selectedAtStart } : { status: "none" })
+                const f = focus.get()
+                const selectedAtStart = e.shiftKey ? f : noFocus
+                const anySelected = isAnythingSelected(selectedAtStart)
+                focus.set(
+                    anySelected
+                        ? {
+                              status: "selected",
+                              itemIds: getSelectedItemIds(selectedAtStart),
+                              connectionIds: getSelectedConnectionIds(selectedAtStart),
+                          }
+                        : noFocus,
+                )
                 dragAction.set({ action: "select", selectedAtStart })
             }
         })
-
-        const itemsList = L.view(L.view(board, "items"), Object.values)
 
         el.addEventListener(
             "drag",
@@ -75,16 +85,23 @@ export function boardDragHandler({
                     if (da.action === "select") {
                         const bounds = rect.get()!
                         const startPoint = start.get()!
-                        // Do not select container if drag originates from within container
-                        const overlapping = itemsList
-                            .get()
-                            .filter((i) => overlaps(i, bounds) && !containedBy(startPoint, i))
+                        const b = board.get()
 
-                        const toBeSelected = new Set(overlapping.map((i) => i.id).concat([...da.selectedAtStart]))
+                        const itemIds = new Set([
+                            ...Object.values(b.items)
+                                .filter((i) => overlaps(i, bounds) && !containedBy(startPoint, i)) // Do not select container if drag originates from within container
+                                .map((i) => i.id),
+                            ...getSelectedItemIds(da.selectedAtStart),
+                        ])
 
-                        toBeSelected.size > 0
-                            ? focus.set({ status: "selected", ids: toBeSelected })
-                            : focus.set({ status: "none" })
+                        const connectionIds = new Set([
+                            ...b.connections.filter((c) => overlaps(connectionRect(b)(c), bounds)).map((i) => i.id),
+                            ...getSelectedConnectionIds(da.selectedAtStart),
+                        ])
+
+                        itemIds.size + connectionIds.size > 0
+                            ? focus.set({ status: "selected", itemIds, connectionIds })
+                            : focus.set(noFocus)
                     } else if (da.action === "pan") {
                         const s = start.get()
                         const c = current.get()

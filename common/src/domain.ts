@@ -138,7 +138,7 @@ export type Video = ItemProperties & { type: typeof ITEM_TYPES.VIDEO; assetId: s
 export type Container = TextItemProperties & { type: typeof ITEM_TYPES.CONTAINER; color: Color }
 
 export type Point = { x: number; y: number }
-function Point(x: number, y: number) {
+export function Point(x: number, y: number) {
     return { x, y }
 }
 export const isPoint = (u: unknown): u is Point => typeof u === "object" && !!u && "x" in u && "y" in u
@@ -263,11 +263,12 @@ export type MoveItem = {
     action: "item.move"
     boardId: Id
     items: { id: Id; x: number; y: number; containerId?: Id | undefined }[]
+    connections: { id: Id; x: number; y: number }[] | null // Coords for start point. TODO: null is for legacy support
 }
 export type IncreaseItemFont = { action: "item.font.increase"; boardId: Id; itemIds: Id[] }
 export type DecreaseItemFont = { action: "item.font.decrease"; boardId: Id; itemIds: Id[] }
 export type BringItemToFront = { action: "item.front"; boardId: Id; itemIds: Id[] }
-export type DeleteItem = { action: "item.delete"; boardId: Id; itemIds: Id[] }
+export type DeleteItem = { action: "item.delete"; boardId: Id; itemIds: Id[]; connectionIds: Id[] | null } // TODO: null is legacy support
 export type BootstrapBoard = { action: "item.bootstrap"; boardId: Id } & BoardContents
 export type LockItem = { action: "item.lock"; boardId: Id; itemId: Id }
 export type UnlockItem = { action: "item.unlock"; boardId: Id; itemId: Id }
@@ -500,6 +501,12 @@ export const getItem = (boardOrItems: Board | Record<string, Item>) => (id: Id) 
     const item = findItem(boardOrItems)(id)
     if (!item) throw Error("Item not found: " + id)
     return item
+}
+
+export const getConnection = (b: Board) => (id: Id) => {
+    const conn = b.connections.find((c) => c.id === id)
+    if (!conn) throw Error("Connection not found: " + id)
+    return conn
 }
 
 export const findItem = (boardOrItems: Board | Record<string, Item>) => (id: Id) => {

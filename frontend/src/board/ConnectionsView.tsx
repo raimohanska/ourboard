@@ -15,7 +15,7 @@ import {
 import { findAttachmentLocation, resolveItemEndpoint } from "../../../common/src/connection-utils"
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus } from "./board-focus"
+import { BoardFocus, getSelectedConnectionIds } from "./board-focus"
 import * as G from "../../../common/src/geometry"
 import { existingConnectionHandler } from "./item-connect"
 import { Z_CONNECTIONS } from "./zIndices"
@@ -63,7 +63,7 @@ export const ConnectionsView = ({
                     ...c,
                     from: determineAttachmenLocation(c.from, firstControlPoint, is),
                     to: determineAttachmenLocation(c.to, lastControlPoint, is),
-                    selected: f.status === "connection-selected" && f.ids.has(c.id),
+                    selected: getSelectedConnectionIds(f).has(c.id),
                 }
             })
         },
@@ -180,10 +180,10 @@ export const ConnectionsView = ({
         const selectThisConnection = (e: JSX.MouseEvent) => {
             const id = cNode.get().id
             const f = focus.get()
-            if (e.shiftKey && f.status === "connection-selected") {
-                focus.set({ status: "connection-selected", ids: toggleInSet(id, f.ids) })
+            if (e.shiftKey && f.status === "selected") {
+                focus.set({ ...f, connectionIds: toggleInSet(id, f.connectionIds) })
             } else {
-                focus.set({ status: "connection-selected", ids: new Set([id]) })
+                focus.set({ status: "selected", connectionIds: new Set([id]), itemIds: emptySet() })
             }
         }
 
@@ -220,7 +220,7 @@ export const ConnectionsView = ({
 import { Bezier } from "bezier-js"
 import { BoardZoom } from "./board-scroll-and-zoom"
 import { findNearestAttachmentLocationForConnectionNode, resolveEndpoint } from "../../../common/src/connection-utils"
-import { toggleInSet } from "../../../common/src/sets"
+import { emptySet, toggleInSet } from "../../../common/src/sets"
 
 function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
     if (!controlPoints || !controlPoints.length) {

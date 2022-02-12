@@ -12,7 +12,7 @@ import { CursorsStore } from "../store/cursors-store"
 import { UserSessionState } from "../store/user-session-store"
 import { boardCoordinateHelper } from "./board-coordinates"
 import { boardDragHandler } from "./board-drag"
-import { BoardFocus, getSelectedItemIds, getSelectedItem, getSelectedItems } from "./board-focus"
+import { BoardFocus, getSelectedItemIds, getSelectedItem, getSelectedItems, noFocus } from "./board-focus"
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { BoardToolLayer } from "./BoardToolLayer"
 import { ConnectionsView } from "./ConnectionsView"
@@ -38,6 +38,7 @@ import { ToolController } from "./tool-selection"
 import { BoardViewHeader } from "./toolbars/BoardViewHeader"
 import { VideoView } from "./VideoView"
 import { startConnecting } from "./item-connect"
+import { emptySet } from "../../../common/src/sets"
 
 const emptyNote = newNote("")
 
@@ -120,7 +121,7 @@ export const BoardView = ({
         (e) => e.key === "Escape",
         () => {
             toolController.useDefaultTool()
-            focus.set({ status: "none" })
+            focus.set(noFocus)
         },
     )
     installKeyboardShortcut(plainKey("c"), () => toolController.tool.set("connect"))
@@ -129,12 +130,12 @@ export const BoardView = ({
         .forEach((event) => {
             if (!boardElement.get()!.contains(event.target as Node)) {
                 // Click outside => reset selection
-                focus.set({ status: "none" })
+                focus.set(noFocus)
             }
         })
 
     onClickOutside(boardElement, () => {
-        focus.set({ status: "none" })
+        focus.set(noFocus)
     })
 
     const { viewRect } = boardScrollAndZoomHandler(
@@ -164,7 +165,7 @@ export const BoardView = ({
                         coordinateHelper.currentBoardCoordinates.get(),
                     )
                 } else {
-                    focus.set({ status: "none" })
+                    focus.set(noFocus)
                 }
             }
         }
@@ -179,9 +180,9 @@ export const BoardView = ({
         dispatch({ action: "item.add", boardId, items: [item], connections: [] })
 
         if (item.type === "note" || item.type === "text") {
-            focus.set({ status: "editing", id: item.id })
+            focus.set({ status: "editing", itemId: item.id })
         } else {
-            focus.set({ status: "selected", ids: new Set([item.id]) })
+            focus.set({ status: "selected", itemIds: new Set([item.id]), connectionIds: emptySet() })
         }
     }
 

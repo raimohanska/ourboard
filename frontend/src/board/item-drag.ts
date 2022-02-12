@@ -1,9 +1,10 @@
 import * as L from "lonna"
-import { Board, Item } from "../../../common/src/domain"
+import { Board, Connection, getConnection, Item } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedItemIds } from "./board-focus"
 import { Coordinates } from "../../../common/src/geometry"
+import { emptySet } from "../../../common/src/sets"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -20,13 +21,14 @@ export function onBoardItemDrag(
     doWhileDragging: (
         b: Board,
         items: { current: Item; dragStartPosition: Item }[],
+        connections: { current: Connection; dragStartPosition: Connection }[],
         xDiff: number,
         yDiff: number,
     ) => void,
     doOnDrop?: (b: Board, current: Item[]) => void,
 ) {
     let dragStart: DragEvent | null = null
-    let dragStartPositions: Record<string, Item>
+    let dragStartPositions: Board
     let currentPos: { x: number; y: number } | null = null
 
     const dragEnabled = onlyWhenSelected ? L.view(focus, (f) => getSelectedItemIds(f).has(id)) : L.constant(true)
@@ -36,17 +38,17 @@ export function onBoardItemDrag(
         e.stopPropagation()
         e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
         if (f.status === "dragging") {
-            if (!f.ids.has(id)) {
-                focus.set({ status: "dragging", ids: new Set([id]) })
+            if (!f.itemIds.has(id)) {
+                focus.set({ status: "dragging", itemIds: new Set([id]), connectionIds: emptySet() })
             }
-        } else if (f.status === "selected" && f.ids.has(id)) {
-            focus.set({ status: "dragging", ids: f.ids })
+        } else if (f.status === "selected" && f.itemIds.has(id)) {
+            focus.set({ status: "dragging", itemIds: f.itemIds, connectionIds: f.connectionIds })
         } else {
-            focus.set({ status: "dragging", ids: new Set([id]) })
+            focus.set({ status: "dragging", itemIds: new Set([id]), connectionIds: emptySet() })
         }
 
         dragStart = e
-        dragStartPositions = board.get().items
+        dragStartPositions = board.get()
     }
 
     const onDrag = (e: DragEvent) => {
@@ -67,16 +69,22 @@ export function onBoardItemDrag(
         const { x: xDiff, y: yDiff } = newPos
 
         const b = board.get()
-        const items = [...f.ids].map((id) => {
+        const items = [...f.itemIds].map((id) => {
             const current = b.items[id]
-            const dragStartPosition = dragStartPositions[id]
+            const dragStartPosition = dragStartPositions.items[id]
             if (!current || !dragStartPosition) throw Error("Item not found: " + id)
             return {
                 current,
                 dragStartPosition,
             }
         })
-        doWhileDragging(b, items, xDiff, yDiff)
+        const connections = [...f.connectionIds].map((id) => {
+            const current = getConnection(b)(id)
+            const dragStartPosition = getConnection(dragStartPositions)(id)
+            if (!current || !dragStartPosition) throw Error("Connection not found: " + id)
+            return { current, dragStartPosition }
+        })
+        doWhileDragging(b, items, connections, xDiff, yDiff)
     }
 
     const onDragEnd = (e: DragEvent) => {
@@ -87,11 +95,11 @@ export function onBoardItemDrag(
             }
             if (doOnDrop) {
                 const b = board.get()
-                const items = [...f.ids].map(getItem(b))
+                const items = [...f.itemIds].map(getItem(b))
                 doOnDrop(b, items)
             }
             currentPos = null
-            return { status: "selected", ids: f.ids }
+            return { status: "selected", itemIds: f.itemIds, connectionIds: f.connectionIds }
         })
     }
 

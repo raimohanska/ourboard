@@ -13,6 +13,7 @@ import {
     ItemType,
     TextItem,
 } from "../../../common/src/domain"
+import { emptySet } from "../../../common/src/sets"
 import { HTMLEditableSpan } from "../components/HTMLEditableSpan"
 import { Dispatch } from "../store/board-store"
 import { autoFontSize } from "./autoFontSize"
@@ -141,7 +142,11 @@ export const ItemView = ({
 
         const setEditing = (e: boolean) => {
             dispatch({ action: "item.front", boardId: board.get().id, itemIds: [id] })
-            focus.set(e ? { status: "editing", id } : { status: "selected", ids: new Set([id]) })
+            focus.set(
+                e
+                    ? { status: "editing", itemId: id }
+                    : { status: "selected", itemIds: new Set([id]), connectionIds: emptySet() },
+            )
         }
         const color = L.view(item, getItemBackground, contrastingColor)
         const fontSize = autoFontSize(

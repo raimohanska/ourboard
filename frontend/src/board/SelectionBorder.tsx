@@ -46,7 +46,7 @@ export const SelectionBorder = ({
 
     function DragCorner({ vertical, horizontal }: { vertical: Vertical; horizontal: Horizontal }) {
         const ref = (e: HTMLElement) =>
-            onBoardItemDrag(e, id, board, focus, coordinateHelper, false, (b, items, xDiff, yDiff) => {
+            onBoardItemDrag(e, id, board, focus, coordinateHelper, false, (b, items, connections, xDiff, yDiff) => {
                 const updatedItems = items.map(({ current, dragStartPosition }) => {
                     const maintainAspectRatio =
                         current.type === "image" || (current.type === "note" && current.shape !== "rect")

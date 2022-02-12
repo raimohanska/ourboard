@@ -1,11 +1,10 @@
 import * as L from "lonna"
 import { Board, ItemType } from "../../../common/src/domain"
-import { toggleInSet } from "../../../common/src/sets"
+import { emptySet, toggleInSet } from "../../../common/src/sets"
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus, getSelectedItemIds } from "./board-focus"
+import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "./board-focus"
 import { startConnecting } from "./item-connect"
-import { findSelectedItems } from "./item-cut-copy-paste"
 import { ToolController } from "./tool-selection"
 
 export function itemSelectionHandler(
@@ -19,9 +18,9 @@ export function itemSelectionHandler(
 ) {
     const itemFocus = L.view(focus, (f) => {
         if (f.status === "none" || f.status === "adding" || f.status === "connection-adding") return "none"
-        if (f.status === "selected") return f.ids.has(id) ? "selected" : "none"
-        if (f.status === "dragging") return f.ids.has(id) ? "dragging" : "none"
-        if (f.status === "editing") return f.id === id ? "editing" : "none"
+        if (f.status === "selected") return f.itemIds.has(id) ? "selected" : "none"
+        if (f.status === "dragging") return f.itemIds.has(id) ? "dragging" : "none"
+        if (f.status === "editing") return f.itemId === id ? "editing" : "none"
         return "none"
     })
 
@@ -36,13 +35,17 @@ export function itemSelectionHandler(
             startConnecting(board, coordinateHelper, dispatch, toolController, focus, item)
             e.stopPropagation()
         } else if (e.shiftKey && (f.status === "selected" || f.status === "editing")) {
-            focus.set({ status: "selected", ids: toggleInSet(id, selectedIds) })
-        } else if (f.status === "none" || f.status === "connection-selected") {
-            focus.set({ status: "selected", ids: new Set([id]) })
+            focus.set({
+                status: "selected",
+                itemIds: toggleInSet(id, selectedIds),
+                connectionIds: getSelectedConnectionIds(f),
+            })
+        } else if (f.status === "none") {
+            focus.set({ status: "selected", itemIds: new Set([id]), connectionIds: emptySet() })
         } else if ((f.status === "selected" || f.status === "editing") && !selectedIds.has(id)) {
-            focus.set({ status: "selected", ids: new Set([id]) })
+            focus.set({ status: "selected", itemIds: new Set([id]), connectionIds: emptySet() })
         } else if (f.status === "selected" && (type === "note" || type === "text")) {
-            focus.set({ status: "editing", id })
+            focus.set({ status: "editing", itemId: id })
         }
     }
 

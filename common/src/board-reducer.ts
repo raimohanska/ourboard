@@ -19,11 +19,12 @@ import {
     isContainer,
     getEndPointItemId,
     isItemEndPoint,
+    getConnection,
 } from "./domain"
 import _, { isArray } from "lodash"
 import { arrayToObject } from "./migration"
 import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
-import { rerouteConnection } from "./connection-utils"
+import { rerouteConnection, resolveEndpoint } from "./connection-utils"
 
 export function boardReducer(
     board: Board,
@@ -116,7 +117,7 @@ export function boardReducer(
 
             return [
                 { ...boardWithAddedItems, connections: [...board.connections, ...connectionsToAdd] },
-                { action: "item.delete", boardId: board.id, itemIds: event.items.map((i) => i.id) },
+                { action: "item.delete", boardId: board.id, itemIds: event.items.map((i) => i.id), connectionIds: [] },
             ]
         case "item.font.increase":
             return [
@@ -163,20 +164,27 @@ export function boardReducer(
                         const item = getItem(board)(i.id)
                         return { id: i.id, x: item.x, y: item.y, containerId: item.containerId }
                     }),
+                    connections:
+                        event.connections?.map((c) => {
+                            const conn = getConnection(board)(c.id)
+                            const startPoint = resolveEndpoint(conn.from, board)
+                            return { id: c.id, x: startPoint.x, y: startPoint.y }
+                        }) || [],
                 },
             ]
         case "item.delete": {
-            const idsToDelete = findItemIdsRecursively(event.itemIds, board)
-
+            const itemIdsToDelete = findItemIdsRecursively(event.itemIds, board)
+            const connectionIdsToDelete = new Set(event.connectionIds || [])
             const [connectionsToKeep, connectionsDeleted] = _.partition(
                 board.connections,
                 (c) =>
-                    (!isItemEndPoint(c.from) || !idsToDelete.has(getEndPointItemId(c.from))) &&
-                    (!isItemEndPoint(c.to) || !idsToDelete.has(getEndPointItemId(c.to))),
+                    !connectionIdsToDelete.has(c.id) &&
+                    (!isItemEndPoint(c.from) || !itemIdsToDelete.has(getEndPointItemId(c.from))) &&
+                    (!isItemEndPoint(c.to) || !itemIdsToDelete.has(getEndPointItemId(c.to))),
             )
 
             const updatedItems = { ...board.items }
-            idsToDelete.forEach((id) => {
+            itemIdsToDelete.forEach((id) => {
                 delete updatedItems[id]
             })
             return [
@@ -188,7 +196,7 @@ export function boardReducer(
                 {
                     action: "item.add",
                     boardId: board.id,
-                    items: Array.from(idsToDelete).map(getItem(board)),
+                    items: Array.from(itemIdsToDelete).map(getItem(board)),
                     connections: connectionsDeleted,
                 },
             ]
@@ -296,11 +304,10 @@ function updateItems(current: Record<Id, Item>, updateList: Item[]): Record<Id, 
     return result
 }
 
-type Move = { xDiff: number; yDiff: number; containerChanged: boolean; containerId: Id | undefined }
-
 function moveItems(board: Board, event: MoveItem) {
-    const itemMoves: Record<Id, Move> = {}
+    const itemMoves: Record<Id, ItemMove> = {}
     const itemsOnBoard = board.items
+    const connectionMovesInEvent = event.connections || []
 
     for (let mainItemMove of event.items) {
         const { id, x, y, containerId } = mainItemMove
@@ -326,6 +333,16 @@ function moveItems(board: Board, event: MoveItem) {
         const move = findConnectionMove(connection, itemMoves)
         if (move) {
             connectionMoves[connection.id] = move
+        } else {
+            const m = connectionMovesInEvent.find((m) => m.id === connection.id)
+            if (m) {
+                const startPoint = resolveEndpoint(connection.from, board)
+                connectionMoves[connection.id] = {
+                    ends: "both",
+                    xDiff: m.x - startPoint.x,
+                    yDiff: m.y - startPoint.y,
+                }
+            }
         }
     }
 
@@ -361,6 +378,8 @@ function moveItems(board: Board, event: MoveItem) {
     }
 }
 
+type Move = { xDiff: number; yDiff: number }
+type ItemMove = Move & { containerChanged: boolean; containerId: Id | undefined }
 type ConnectionMove = (Move & { ends: "both" }) | { ends: "one" }
 
 function findConnectionMove(connection: Connection, moves: Record<Id, Move>): ConnectionMove | null {

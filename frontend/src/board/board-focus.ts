@@ -1,14 +1,12 @@
-import { HarmajaChild, HarmajaOutput } from "harmaja"
+import { HarmajaChild } from "harmaja"
 import { Board, findItem, Id, Item } from "../../../common/src/domain"
-import { getItem } from "../../../common/src/domain"
-import { difference } from "../../../common/src/sets"
+import { difference, emptySet } from "../../../common/src/sets"
 
 export type BoardFocus =
     | { status: "none" }
-    | { status: "selected"; ids: Set<Id> }
-    | { status: "dragging"; ids: Set<Id> }
-    | { status: "connection-selected"; ids: Set<Id> }
-    | { status: "editing"; id: Id }
+    | { status: "selected"; itemIds: Set<Id>; connectionIds: Set<Id> }
+    | { status: "dragging"; itemIds: Set<Id>; connectionIds: Set<Id> }
+    | { status: "editing"; itemId: Id }
     | { status: "adding"; element: HarmajaChild; item: Item }
     | { status: "connection-adding" }
 
@@ -17,13 +15,25 @@ export function getSelectedItemIds(f: BoardFocus): Set<Id> {
         case "none":
         case "adding":
         case "connection-adding":
-        case "connection-selected":
-            return new Set()
+            return emptySet()
         case "editing":
-            return new Set([f.id])
+            return new Set([f.itemId])
         case "selected":
         case "dragging":
-            return f.ids
+            return f.itemIds
+    }
+}
+
+export function getSelectedConnectionIds(f: BoardFocus): Set<Id> {
+    switch (f.status) {
+        case "none":
+        case "adding":
+        case "editing":
+        case "connection-adding":
+            return emptySet()
+        case "dragging":
+        case "selected":
+            return f.connectionIds
     }
 }
 
@@ -35,23 +45,40 @@ export const getSelectedItem = (b: Board) => (f: BoardFocus): Item | null => {
     return getSelectedItems(b)(f)[0] || null
 }
 
-export function removeFromSelection(selection: BoardFocus, toRemove: Set<Id>): BoardFocus {
+export const isAnythingSelected = (f: BoardFocus) =>
+    getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0
+
+export function removeFromSelection(
+    selection: BoardFocus,
+    toRemoveItems: Set<Id>,
+    toRemoveConnections: Set<Id>,
+): BoardFocus {
     switch (selection.status) {
         case "adding":
         case "none":
         case "connection-adding":
             return selection
         case "editing":
-            return toRemove.has(selection.id) ? { status: "none" } : selection
+            return toRemoveItems.has(selection.itemId) ? noFocus : selection
         case "dragging":
-        case "connection-selected":
         case "selected":
-            selection = { ...selection, ids: difference(selection.ids, toRemove) }
-            return selection.ids.size > 0 ? selection : { status: "none" }
+            selection = {
+                ...selection,
+                itemIds: difference(selection.itemIds, toRemoveItems),
+                connectionIds: difference(selection.connectionIds, toRemoveConnections),
+            }
+            return selection.itemIds.size + selection.connectionIds.size > 0 ? selection : noFocus
     }
 }
 
-export function removeNonExistingFromSelection(selection: BoardFocus, existing: Set<Id>): BoardFocus {
-    const nonExistent = difference(getSelectedItemIds(selection), existing)
-    return removeFromSelection(selection, nonExistent)
+export function removeNonExistingFromSelection(
+    selection: BoardFocus,
+    existingItemIds: Set<Id>,
+    existingConnectionIds: Set<Id>,
+): BoardFocus {
+    const toRemoveItems = difference(getSelectedItemIds(selection), existingItemIds)
+    const toRemoveConnections = difference(getSelectedConnectionIds(selection), existingConnectionIds)
+    return removeFromSelection(selection, toRemoveItems, toRemoveConnections)
 }
+
+export const noFocus: BoardFocus = { status: "none" }

@@ -1,12 +1,13 @@
-import { componentScope } from "harmaja"
 import * as L from "lonna"
-import { Board, BOARD_ITEM_BORDER_MARGIN, Item } from "../../../common/src/domain"
-import { BoardFocus } from "./board-focus"
+import { connectionRect, resolveEndpoint } from "../../../common/src/connection-utils"
+import { Board, BOARD_ITEM_BORDER_MARGIN } from "../../../common/src/domain"
+import { Rect } from "../../../common/src/geometry"
 import { Dispatch } from "../store/board-store"
-import { findSelectedItems } from "./item-cut-copy-paste"
+import { BoardFocus } from "./board-focus"
+import { findSelectedItemsAndConnections } from "./item-cut-copy-paste"
 import { installKeyboardShortcut } from "./keyboard-shortcuts"
 
-function updatePosition(board: Board, item: Item, dx: number, dy: number): Item {
+function updatePosition<T extends Rect>(board: Board, item: T, dx: number, dy: number): T {
     const margin = BOARD_ITEM_BORDER_MARGIN
     return {
         ...item,
@@ -15,7 +16,7 @@ function updatePosition(board: Board, item: Item, dx: number, dy: number): Item 
     }
 }
 
-function moveItem(board: Board, item: Item, key: string, shiftKey: boolean, altKey: boolean): Item {
+function moveItem<T extends Rect>(board: Board, item: T, key: string, shiftKey: boolean, altKey: boolean): T {
     const stepSize = shiftKey ? 10 : altKey ? 0.1 : 1
     switch (key) {
         case "ArrowLeft":
@@ -35,12 +36,25 @@ export function itemMoveWithArrowKeysHandler(board: L.Property<Board>, dispatch:
         (e) => ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key),
         (e) => {
             const currentBoard = board.get()
-            const itemsAndConnections = findSelectedItems(focus.get(), currentBoard)
+            const itemsAndConnections = findSelectedItemsAndConnections(focus.get(), currentBoard)
             if (itemsAndConnections.items.length > 0 || itemsAndConnections.connections.length > 0) {
                 const movedItems = itemsAndConnections.items.map((item) =>
                     moveItem(currentBoard, item, e.key, e.shiftKey, e.altKey),
                 )
-                dispatch({ action: "item.move", boardId: currentBoard.id, items: movedItems })
+                const movedConnections = itemsAndConnections.connections.map((connection) => {
+                    const rect = connectionRect(currentBoard)(connection)
+                    const movedRect = moveItem(currentBoard, rect, e.key, e.shiftKey, e.altKey)
+                    const xDiff = movedRect.x - rect.x
+                    const yDiff = movedRect.y - rect.y
+                    const startPoint = resolveEndpoint(connection.from, currentBoard)
+                    return { id: connection.id, x: startPoint.x + xDiff, y: startPoint.y + yDiff }
+                })
+                dispatch({
+                    action: "item.move",
+                    boardId: currentBoard.id,
+                    items: movedItems,
+                    connections: movedConnections,
+                })
             }
         },
     )

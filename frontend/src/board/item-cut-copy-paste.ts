@@ -16,11 +16,13 @@ import {
     getEndPointItemId,
 } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus, getSelectedItemIds } from "./board-focus"
+import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "./board-focus"
 import { Dispatch } from "../store/board-store"
 import { YELLOW } from "../../../common/src/colors"
 import { sanitizeHTML } from "../components/sanitizeHTML"
 import * as G from "../../../common/src/geometry"
+import { emptySet } from "../../../common/src/sets"
+import { connectionRect, resolveEndpoint } from "../../../common/src/connection-utils"
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
@@ -29,17 +31,35 @@ export type ItemsAndConnections = {
     connections: Connection[]
 }
 
-export function findSelectedItems(currentFocus: BoardFocus, currentBoard: Board): ItemsAndConnections {
-    const selectedIds = getSelectedItemIds(currentFocus)
-    const items = findItemsRecursively([...selectedIds], currentBoard)
+export function findSelectedItemsAndConnections(currentFocus: BoardFocus, currentBoard: Board): ItemsAndConnections {
+    const selectedItemIds = getSelectedItemIds(currentFocus)
+    const selectedConnectionIds = getSelectedConnectionIds(currentFocus)
+    const items = findItemsRecursively([...selectedItemIds], currentBoard)
     const recursiveIds = new Set(items.map((i) => i.id))
-    const connections = currentBoard.connections.filter((c) => {
-        // Include connections between these items and connections that have one end
-        // in these items and the other end not connected.
-        const ids = connectedIds(c)
-        return ids.length > 0 && !ids.some((id) => !recursiveIds.has(id))
-    })
+    const connections = currentBoard.connections
+        .filter((c) => {
+            if (selectedConnectionIds.has(c.id)) {
+                return true
+            }
+            // Include connections between these items and connections that have one end
+            // in these items and the other end not connected.
+            const ids = connectedIds(c)
+            return ids.length > 0 && !ids.some((id) => !recursiveIds.has(id))
+        })
+        .map((c) => ({
+            ...c,
+            from: detachEndPointIfItemNotFound(c.from, recursiveIds, currentBoard),
+            to: detachEndPointIfItemNotFound(c.to, recursiveIds, currentBoard),
+        }))
     return { items, connections }
+}
+
+function detachEndPointIfItemNotFound(ep: ConnectionEndPoint, itemIds: Set<Id>, currentBoard: Board) {
+    if (isItemEndPoint(ep) && !itemIds.has(getEndPointItemId(ep))) {
+        const resolved = resolveEndpoint(ep, currentBoard)
+        return Point(resolved.x, resolved.y)
+    }
+    return ep
 }
 
 function connectedIds(connection: Connection) {
@@ -117,16 +137,21 @@ export function cutCopyPasteHandler(
         const currentBoard = board.get()
         switch (e.type) {
             case "cut": {
-                if (currentFocus.status !== "selected" || currentFocus.ids.size === 0) return
-                const clipboard = findSelectedItems(currentFocus, currentBoard)
-                dispatch({ action: "item.delete", boardId: currentBoard.id, itemIds: clipboard.items.map((i) => i.id) })
+                if (currentFocus.status !== "selected") return
+                const clipboard = findSelectedItemsAndConnections(currentFocus, currentBoard)
+                dispatch({
+                    action: "item.delete",
+                    boardId: currentBoard.id,
+                    itemIds: clipboard.items.map((i) => i.id),
+                    connectionIds: [...getSelectedConnectionIds(currentFocus)],
+                })
                 e.clipboardData!.setData("application/rboard", JSON.stringify(clipboard))
                 e.preventDefault()
                 break
             }
             case "copy": {
                 if (currentFocus.status !== "selected") return
-                const clipboard = findSelectedItems(currentFocus, currentBoard)
+                const clipboard = findSelectedItemsAndConnections(currentFocus, currentBoard)
                 e.clipboardData!.setData("application/rboard", JSON.stringify(clipboard))
                 e.preventDefault()
                 break
@@ -166,21 +191,30 @@ export function cutCopyPasteHandler(
                         return
                     }
                     const requiredMargin = BOARD_ITEM_BORDER_MARGIN
-                    const xDiffMin = -_.min(clipboard.items.map((i) => i.x))! + requiredMargin
-                    const yDiffMin = -_.min(clipboard.items.map((i) => i.y))! + requiredMargin
-                    const xDiffMax =
-                        board.get().width - _.max(clipboard.items.map((i) => i.x + i.width))! - requiredMargin
-                    const yDiffMax =
-                        board.get().height - _.max(clipboard.items.map((i) => i.y + i.height))! - requiredMargin
-                    const xCenterOld = _.sum(clipboard.items.map((i) => i.x + i.width / 2)) / clipboard.items.length
-                    const yCenterOld = _.sum(clipboard.items.map((i) => i.y + i.height / 2)) / clipboard.items.length
+                    const itemRecord = Object.fromEntries(clipboard.items.map((i) => [i.id, i]))
+                    const theItems = [...clipboard.items, ...clipboard.connections.map(connectionRect(itemRecord))]
+                    if (theItems.length === 0) {
+                        console.log("Empty clipboard")
+                        return
+                    }
+                    const xDiffMin = -_.min(theItems.map((i) => i.x))! + requiredMargin
+                    const yDiffMin = -_.min(theItems.map((i) => i.y))! + requiredMargin
+                    const xDiffMax = board.get().width - _.max(theItems.map((i) => i.x + i.width))! - requiredMargin
+                    const yDiffMax = board.get().height - _.max(theItems.map((i) => i.y + i.height))! - requiredMargin
+                    const xCenterOld = _.sum(theItems.map((i) => i.x + i.width / 2)) / theItems.length
+                    const yCenterOld = _.sum(theItems.map((i) => i.y + i.height / 2)) / theItems.length
                     const currentCenter = coordinateHelper.currentBoardCoordinates.get()
 
                     const xDiff = Math.min(Math.max(currentCenter.x - xCenterOld, xDiffMin), xDiffMax)
                     const yDiff = Math.min(Math.max(currentCenter.y - yCenterOld, yDiffMin), yDiffMax)
                     const { toCreate, toSelect, connections } = makeCopies(clipboard, xDiff, yDiff)
+
                     dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate, connections })
-                    focus.set({ status: "selected", ids: new Set(toSelect.map((it) => it.id)) })
+                    focus.set({
+                        status: "selected",
+                        itemIds: new Set(toSelect.map((it) => it.id)),
+                        connectionIds: emptySet(),
+                    })
                     e.preventDefault()
                 }
                 break
