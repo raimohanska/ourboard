@@ -138,6 +138,9 @@ export type Video = ItemProperties & { type: typeof ITEM_TYPES.VIDEO; assetId: s
 export type Container = TextItemProperties & { type: typeof ITEM_TYPES.CONTAINER; color: Color }
 
 export type Point = { x: number; y: number }
+function Point(x: number, y: number) {
+    return { x, y }
+}
 export const isPoint = (u: unknown): u is Point => typeof u === "object" && !!u && "x" in u && "y" in u
 export type Connection = {
     id: Id

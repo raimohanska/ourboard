@@ -13,8 +13,9 @@ import {
     ConnectionEndPointToItem,
     ItemAttachmentLocation,
 } from "./domain"
-import { distance } from "./geometry"
+import { distance, subtract } from "./geometry"
 import * as _ from "lodash"
+import { getAngleDeg, Vector2 } from "./vector2"
 
 export function resolveEndpoint(e: Point | Item | ConnectionEndPoint, b: Board | Record<string, Item>): Point | Item {
     if (isItemEndPoint(e)) {
@@ -33,7 +34,33 @@ export function findNearestAttachmentLocationForConnectionNode(
 ): AttachmentLocation {
     if (!isItem(i)) return { side: "none", point: i }
     const options: ItemAttachmentLocation[] = findItemAttachmentLocations(i)
-    return _.minBy(options, (p) => distance(p.point, middlePoint(reference)))!
+    const from = middlePoint(reference)
+    return withStraightestAngle(options, from)!
+}
+
+function angleDiff(option: ItemAttachmentLocation, from: Point) {
+    const directionFromEndPoint: Vector2 = subtract(from, option.point)
+    const endpointDirection = getEndPointDirection(option.side)
+    const diff = Math.abs(getAngleDeg(directionFromEndPoint) - getAngleDeg(endpointDirection))
+    if (diff > 180) return 360 - diff
+    return diff
+}
+
+function withStraightestAngle(options: ItemAttachmentLocation[], to: Point) {
+    return _.minBy(options, (p) => angleDiff(p, to))
+}
+
+function getEndPointDirection(side: AttachmentSide): Vector2 {
+    switch (side) {
+        case "top":
+            return Vector2(0, -1)
+        case "right":
+            return Vector2(1, 0)
+        case "bottom":
+            return Vector2(0, 1)
+        case "left":
+            return Vector2(-1, 0)
+    }
 }
 
 function middlePoint(i: Point | Item) {
@@ -113,8 +140,9 @@ export function rerouteConnection(c: Connection, b: Board): Connection {
     const resolvedFrom = resolveEndpoint(c.from, b)
     const resolvedTo = resolveEndpoint(c.to, b)
 
-    const to = findNearestAttachmentLocationForConnectionNode(resolvedTo, resolvedFrom)
+    let to = findNearestAttachmentLocationForConnectionNode(resolvedTo, resolvedFrom)
     const from = findNearestAttachmentLocationForConnectionNode(resolvedFrom, to.point)
+    to = findNearestAttachmentLocationForConnectionNode(resolvedTo, from.point)
 
     const withNewMidPoint = {
         ...c,
