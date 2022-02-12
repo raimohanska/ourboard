@@ -17,7 +17,7 @@ import {
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
-import { containedBy } from "../../../common/src/geometry"
+import { centerPoint, containedBy } from "../../../common/src/geometry"
 import { ToolController } from "./tool-selection"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
@@ -179,6 +179,16 @@ function findTarget(items: Record<Id, Item>, from: Item | ConnectionEndPoint, cu
 
     return Object.values(items)
         .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i)) // match coordinates
+        .filter((i) => i.type !== "container" || isNearBorder(currentPos, i))
         .sort((a, b) => (isContainedBy(items, a)(b) ? 1 : -1)) // most innermost first (containers last)
         .find((i) => !fromItem || !isContainedBy(items, i)(fromItem)) // does not contain the "from" item
+}
+
+function isNearBorder(point: Point, item: Item) {
+    const center = centerPoint(item)
+    const factor = 0.9
+    return (
+        Math.abs(point.x - center.x) > (item.width / 2) * factor ||
+        Math.abs(point.y - center.y) > (item.height / 2) * factor
+    )
 }

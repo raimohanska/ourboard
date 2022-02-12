@@ -1,20 +1,20 @@
-import {
-    Board,
-    ConnectionEndPoint,
-    getItem,
-    Item,
-    Point,
-    isItem,
-    Connection,
-    AttachmentLocation,
-    getEndPointItemId,
-    isItemEndPoint,
-    AttachmentSide,
-    ConnectionEndPointToItem,
-    ItemAttachmentLocation,
-} from "./domain"
-import { distance, subtract } from "./geometry"
 import * as _ from "lodash"
+import {
+    AttachmentLocation,
+    AttachmentSide,
+    Board,
+    Connection,
+    ConnectionEndPoint,
+    ConnectionEndPointToItem,
+    getEndPointItemId,
+    getItem,
+    isItem,
+    isItemEndPoint,
+    Item,
+    ItemAttachmentLocation,
+    Point,
+} from "./domain"
+import { centerPoint, subtract } from "./geometry"
 import { getAngleDeg, Vector2 } from "./vector2"
 
 export function resolveEndpoint(e: Point | Item | ConnectionEndPoint, b: Board | Record<string, Item>): Point | Item {
@@ -34,7 +34,7 @@ export function findNearestAttachmentLocationForConnectionNode(
 ): AttachmentLocation {
     if (!isItem(i)) return { side: "none", point: i }
     const options: ItemAttachmentLocation[] = findItemAttachmentLocations(i)
-    const from = middlePoint(reference)
+    const from = centerPoint(reference)
     return withStraightestAngle(options, from)!
 }
 
@@ -61,16 +61,6 @@ function getEndPointDirection(side: AttachmentSide): Vector2 {
         case "left":
             return Vector2(-1, 0)
     }
-}
-
-function middlePoint(i: Point | Item) {
-    if (isItem(i)) {
-        return {
-            x: i.x + i.width / 2,
-            y: i.y + i.height / 2,
-        }
-    }
-    return i
 }
 
 const sides: AttachmentSide[] = ["top", "left", "bottom", "right"]

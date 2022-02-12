@@ -55,3 +55,17 @@ export function rectFromPoints(a: Coordinates, b: Coordinates) {
 
     return { x, y, width, height }
 }
+
+export function isRect(i: Point | Rect): i is Rect {
+    return "width" in i
+}
+
+export function centerPoint(i: Point | Rect) {
+    if (isRect(i)) {
+        return {
+            x: i.x + i.width / 2,
+            y: i.y + i.height / 2,
+        }
+    }
+    return i
+}
