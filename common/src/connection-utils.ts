@@ -14,7 +14,7 @@ import {
     ItemAttachmentLocation,
     Point,
 } from "./domain"
-import { centerPoint, subtract } from "./geometry"
+import { centerPoint, Rect, subtract } from "./geometry"
 import { getAngleDeg, Vector2 } from "./vector2"
 
 export function resolveEndpoint(e: Point | Item | ConnectionEndPoint, b: Board | Record<string, Item>): Point | Item {
@@ -162,4 +162,22 @@ export function rerouteByNewControlPoints(c: Connection, controlPoints: Point[],
 
 function mid(x: number, y: number) {
     return (x + y) * 0.5
+}
+
+export const connectionRect = (b: Board | Record<string, Item>) => (c: Connection): Rect => {
+    const start = resolveEndpoint(c.from, b)
+    const end = resolveEndpoint(c.to, b)
+    const allPoints = [start, ...c.controlPoints, end]
+    const minX = _.min(allPoints.map((p) => p.x))!
+    const maxX = _.max(allPoints.map((p) => p.x))!
+    const minY = _.min(allPoints.map((p) => p.y))!
+    const maxY = _.max(allPoints.map((p) => p.y))!
+    const x = minX
+    if (isNaN(x)) {
+        throw Error("Assertion fail")
+    }
+    const y = minY
+    const width = maxX - minX
+    const height = maxY - minY
+    return { x, y, width, height }
 }

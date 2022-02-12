@@ -19,7 +19,7 @@ import {
 import { Checkbox } from "../components/components"
 import { HistoryIcon } from "../components/Icons"
 import { Dispatch } from "../store/board-store"
-import { BoardFocus, getSelectedItemIds } from "./board-focus"
+import { BoardFocus, getSelectedItemIds, noFocus } from "./board-focus"
 
 type ParsedHistoryEntry = {
     timestamp: ISOTimeStamp
@@ -59,7 +59,7 @@ export const HistoryView = ({
         // At least it's done only when the history table is visible and debounced with 1000 milliseconds.
         const parsedHistory = history.pipe(L.debounce(1000, componentScope()), L.map(parseFullHistory))
         const forSelectedItem = L.atom(false)
-        const historyFocus = L.view(focus, forSelectedItem, (f, s) => (s ? f : ({ status: "none" } as BoardFocus)))
+        const historyFocus = L.view(focus, forSelectedItem, (f, s) => (s ? f : noFocus))
         const focusedHistory = L.combine(parsedHistory, historyFocus, focusHistory)
         const clippedHistory = L.view(focusedHistory, clipHistory)
 

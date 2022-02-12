@@ -45,6 +45,9 @@ export const getSelectedItem = (b: Board) => (f: BoardFocus): Item | null => {
     return getSelectedItems(b)(f)[0] || null
 }
 
+export const isAnythingSelected = (f: BoardFocus) =>
+    getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0
+
 export function removeFromSelection(
     selection: BoardFocus,
     toRemoveItems: Set<Id>,
@@ -56,17 +59,17 @@ export function removeFromSelection(
         case "connection-adding":
             return selection
         case "editing":
-            return toRemoveItems.has(selection.itemId) ? { status: "none" } : selection
+            return toRemoveItems.has(selection.itemId) ? noFocus : selection
         case "dragging":
             selection = { ...selection, itemIds: difference(selection.itemIds, toRemoveItems) }
-            return selection.itemIds.size > 0 ? selection : { status: "none" }
+            return selection.itemIds.size > 0 ? selection : noFocus
         case "selected":
             selection = {
                 ...selection,
                 itemIds: difference(selection.itemIds, toRemoveItems),
                 connectionIds: difference(selection.connectionIds, toRemoveConnections),
             }
-            return selection.itemIds.size + selection.connectionIds.size > 0 ? selection : { status: "none" }
+            return selection.itemIds.size + selection.connectionIds.size > 0 ? selection : noFocus
     }
 }
 
@@ -79,3 +82,5 @@ export function removeNonExistingFromSelection(
     const toRemoveConnections = difference(getSelectedConnectionIds(selection), existingConnectionIds)
     return removeFromSelection(selection, toRemoveItems, toRemoveConnections)
 }
+
+export const noFocus: BoardFocus = { status: "none" }

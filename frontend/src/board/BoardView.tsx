@@ -12,7 +12,7 @@ import { CursorsStore } from "../store/cursors-store"
 import { UserSessionState } from "../store/user-session-store"
 import { boardCoordinateHelper } from "./board-coordinates"
 import { boardDragHandler } from "./board-drag"
-import { BoardFocus, getSelectedItemIds, getSelectedItem, getSelectedItems } from "./board-focus"
+import { BoardFocus, getSelectedItemIds, getSelectedItem, getSelectedItems, noFocus } from "./board-focus"
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { BoardToolLayer } from "./BoardToolLayer"
 import { ConnectionsView } from "./ConnectionsView"
@@ -121,7 +121,7 @@ export const BoardView = ({
         (e) => e.key === "Escape",
         () => {
             toolController.useDefaultTool()
-            focus.set({ status: "none" })
+            focus.set(noFocus)
         },
     )
     installKeyboardShortcut(plainKey("c"), () => toolController.tool.set("connect"))
@@ -130,12 +130,12 @@ export const BoardView = ({
         .forEach((event) => {
             if (!boardElement.get()!.contains(event.target as Node)) {
                 // Click outside => reset selection
-                focus.set({ status: "none" })
+                focus.set(noFocus)
             }
         })
 
     onClickOutside(boardElement, () => {
-        focus.set({ status: "none" })
+        focus.set(noFocus)
     })
 
     const { viewRect } = boardScrollAndZoomHandler(
@@ -165,7 +165,7 @@ export const BoardView = ({
                         coordinateHelper.currentBoardCoordinates.get(),
                     )
                 } else {
-                    focus.set({ status: "none" })
+                    focus.set(noFocus)
                 }
             }
         }

@@ -2,7 +2,13 @@ import * as L from "lonna"
 import * as _ from "lodash"
 import { Board, Id, ItemLocks } from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
-import { BoardFocus, getSelectedItemIds, removeFromSelection, removeNonExistingFromSelection } from "./board-focus"
+import {
+    BoardFocus,
+    getSelectedItemIds,
+    noFocus,
+    removeFromSelection,
+    removeNonExistingFromSelection,
+} from "./board-focus"
 import { componentScope } from "harmaja"
 import { emptySet } from "../../../common/src/sets"
 
@@ -45,14 +51,14 @@ export function synchronizeFocusWithServer(
 
     // selection where illegal (locked) items are removed
     const resolvedFocus = events.pipe(
-        L.scan({ status: "none" } as BoardFocus, (currentFocus, event) => {
+        L.scan(noFocus, (currentFocus, event) => {
             return narrowFocus("status" in event ? event : currentFocus, circumstances.get())
         }),
         L.skipDuplicates<BoardFocus>(_.isEqual, componentScope()),
     )
 
     function narrowFocus(focus: BoardFocus, { locks, sessionId: sessionId, board }: CircumStances): BoardFocus {
-        if (!sessionId) return { status: "none" }
+        if (!sessionId) return noFocus
         // TODO consider selected connection in locking as well maybe
         const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter((itemId) => locks[itemId] !== sessionId))
         const nonLocked = removeFromSelection(focus, itemsWhereSomeoneElseHasLock, emptySet())

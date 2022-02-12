@@ -22,7 +22,7 @@ import { YELLOW } from "../../../common/src/colors"
 import { sanitizeHTML } from "../components/sanitizeHTML"
 import * as G from "../../../common/src/geometry"
 import { emptySet } from "../../../common/src/sets"
-import { resolveEndpoint } from "../../../common/src/connection-utils"
+import { connectionRect, resolveEndpoint } from "../../../common/src/connection-utils"
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
@@ -232,19 +232,4 @@ export function cutCopyPasteHandler(
             document.removeEventListener(eventType, clipboardEventHandler)
         })
     }
-}
-
-const connectionRect = (b: Board | Record<string, Item>) => (c: Connection): G.Rect => {
-    const start = resolveEndpoint(c.from, b)
-    const end = resolveEndpoint(c.to, b)
-    const allPoints = [start, ...c.controlPoints, end]
-    const minX = _.min(allPoints.map((p) => p.x))!
-    const maxX = _.max(allPoints.map((p) => p.x))!
-    const minY = _.min(allPoints.map((p) => p.y))!
-    const maxY = _.max(allPoints.map((p) => p.y))!
-    const x = minX
-    const y = minY
-    const width = maxX - minX
-    const height = maxY - minY
-    return { x, y, width, height }
 }
