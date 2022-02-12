@@ -99,8 +99,6 @@ export function boardDragHandler({
                             ...getSelectedConnectionIds(da.selectedAtStart),
                         ])
 
-                        console.log(connectionIds)
-
                         itemIds.size + connectionIds.size > 0
                             ? focus.set({ status: "selected", itemIds, connectionIds })
                             : focus.set(noFocus)

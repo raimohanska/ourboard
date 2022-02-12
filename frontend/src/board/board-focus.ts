@@ -5,7 +5,7 @@ import { difference, emptySet } from "../../../common/src/sets"
 export type BoardFocus =
     | { status: "none" }
     | { status: "selected"; itemIds: Set<Id>; connectionIds: Set<Id> }
-    | { status: "dragging"; itemIds: Set<Id> }
+    | { status: "dragging"; itemIds: Set<Id>; connectionIds: Set<Id> }
     | { status: "editing"; itemId: Id }
     | { status: "adding"; element: HarmajaChild; item: Item }
     | { status: "connection-adding" }
@@ -30,8 +30,8 @@ export function getSelectedConnectionIds(f: BoardFocus): Set<Id> {
         case "adding":
         case "editing":
         case "connection-adding":
-        case "dragging":
             return emptySet()
+        case "dragging":
         case "selected":
             return f.connectionIds
     }
@@ -61,8 +61,6 @@ export function removeFromSelection(
         case "editing":
             return toRemoveItems.has(selection.itemId) ? noFocus : selection
         case "dragging":
-            selection = { ...selection, itemIds: difference(selection.itemIds, toRemoveItems) }
-            return selection.itemIds.size > 0 ? selection : noFocus
         case "selected":
             selection = {
                 ...selection,

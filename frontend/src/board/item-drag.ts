@@ -1,5 +1,5 @@
 import * as L from "lonna"
-import { Board, Item } from "../../../common/src/domain"
+import { Board, Connection, getConnection, Item } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedItemIds } from "./board-focus"
@@ -21,13 +21,14 @@ export function onBoardItemDrag(
     doWhileDragging: (
         b: Board,
         items: { current: Item; dragStartPosition: Item }[],
+        connections: { current: Connection; dragStartPosition: Connection }[],
         xDiff: number,
         yDiff: number,
     ) => void,
     doOnDrop?: (b: Board, current: Item[]) => void,
 ) {
     let dragStart: DragEvent | null = null
-    let dragStartPositions: Record<string, Item>
+    let dragStartPositions: Board
     let currentPos: { x: number; y: number } | null = null
 
     const dragEnabled = onlyWhenSelected ? L.view(focus, (f) => getSelectedItemIds(f).has(id)) : L.constant(true)
@@ -38,16 +39,16 @@ export function onBoardItemDrag(
         e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
         if (f.status === "dragging") {
             if (!f.itemIds.has(id)) {
-                focus.set({ status: "dragging", itemIds: new Set([id]) })
+                focus.set({ status: "dragging", itemIds: new Set([id]), connectionIds: emptySet() })
             }
         } else if (f.status === "selected" && f.itemIds.has(id)) {
-            focus.set({ status: "dragging", itemIds: f.itemIds })
+            focus.set({ status: "dragging", itemIds: f.itemIds, connectionIds: f.connectionIds })
         } else {
-            focus.set({ status: "dragging", itemIds: new Set([id]) })
+            focus.set({ status: "dragging", itemIds: new Set([id]), connectionIds: emptySet() })
         }
 
         dragStart = e
-        dragStartPositions = board.get().items
+        dragStartPositions = board.get()
     }
 
     const onDrag = (e: DragEvent) => {
@@ -70,14 +71,20 @@ export function onBoardItemDrag(
         const b = board.get()
         const items = [...f.itemIds].map((id) => {
             const current = b.items[id]
-            const dragStartPosition = dragStartPositions[id]
+            const dragStartPosition = dragStartPositions.items[id]
             if (!current || !dragStartPosition) throw Error("Item not found: " + id)
             return {
                 current,
                 dragStartPosition,
             }
         })
-        doWhileDragging(b, items, xDiff, yDiff)
+        const connections = [...f.connectionIds].map((id) => {
+            const current = getConnection(b)(id)
+            const dragStartPosition = getConnection(dragStartPositions)(id)
+            if (!current || !dragStartPosition) throw Error("Connection not found: " + id)
+            return { current, dragStartPosition }
+        })
+        doWhileDragging(b, items, connections, xDiff, yDiff)
     }
 
     const onDragEnd = (e: DragEvent) => {
@@ -92,7 +99,7 @@ export function onBoardItemDrag(
                 doOnDrop(b, items)
             }
             currentPos = null
-            return { status: "selected", itemIds: f.itemIds, connectionIds: emptySet() }
+            return { status: "selected", itemIds: f.itemIds, connectionIds: f.connectionIds }
         })
     }
 

@@ -15,7 +15,7 @@ import {
 import { findAttachmentLocation, resolveItemEndpoint } from "../../../common/src/connection-utils"
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus } from "./board-focus"
+import { BoardFocus, getSelectedConnectionIds } from "./board-focus"
 import * as G from "../../../common/src/geometry"
 import { existingConnectionHandler } from "./item-connect"
 import { Z_CONNECTIONS } from "./zIndices"
@@ -63,7 +63,7 @@ export const ConnectionsView = ({
                     ...c,
                     from: determineAttachmenLocation(c.from, firstControlPoint, is),
                     to: determineAttachmenLocation(c.to, lastControlPoint, is),
-                    selected: f.status === "selected" && f.connectionIds.has(c.id),
+                    selected: getSelectedConnectionIds(f).has(c.id),
                 }
             })
         },
