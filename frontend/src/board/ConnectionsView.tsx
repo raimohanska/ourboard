@@ -63,7 +63,7 @@ export const ConnectionsView = ({
                     ...c,
                     from: determineAttachmenLocation(c.from, firstControlPoint, is),
                     to: determineAttachmenLocation(c.to, lastControlPoint, is),
-                    selected: f.status === "connection-selected" && f.id === c.id,
+                    selected: f.status === "connection-selected" && f.ids.has(c.id),
                 }
             })
         },
@@ -177,8 +177,14 @@ export const ConnectionsView = ({
             transform: ang !== null ? `rotate(${ang}deg)` : undefined,
         }))
 
-        const selectThisConnection = () => {
-            focus.set({ status: "connection-selected", id: cNode.get().id })
+        const selectThisConnection = (e: JSX.MouseEvent) => {
+            const id = cNode.get().id
+            const f = focus.get()
+            if (e.shiftKey && f.status === "connection-selected") {
+                focus.set({ status: "connection-selected", ids: toggleInSet(id, f.ids) })
+            } else {
+                focus.set({ status: "connection-selected", ids: new Set([id]) })
+            }
         }
 
         return (
@@ -214,6 +220,7 @@ export const ConnectionsView = ({
 import { Bezier } from "bezier-js"
 import { BoardZoom } from "./board-scroll-and-zoom"
 import { findNearestAttachmentLocationForConnectionNode, resolveEndpoint } from "../../../common/src/connection-utils"
+import { toggleInSet } from "../../../common/src/sets"
 
 function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
     if (!controlPoints || !controlPoints.length) {

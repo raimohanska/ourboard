@@ -20,7 +20,7 @@ import {
     getEndPointItemId,
     isItemEndPoint,
 } from "./domain"
-import _ from "lodash"
+import _, { isArray } from "lodash"
 import { arrayToObject } from "./migration"
 import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
 import { rerouteConnection } from "./connection-utils"
@@ -38,16 +38,19 @@ export function boardReducer(
     }
     switch (event.action) {
         case "connection.add": {
-            const { connection } = event
-            validateConnection(board, connection)
+            const connections = isArray(event.connection) ? event.connection : [event.connection]
 
-            if (board.connections.some((c) => c.id === connection.id)) {
-                throw Error(`Connection ${connection.id} already exists on board ${board.id}`)
+            for (let connection of connections) {
+                validateConnection(board, connection)
+
+                if (board.connections.some((c) => c.id === connection.id)) {
+                    throw Error(`Connection ${connection.id} already exists on board ${board.id}`)
+                }
             }
 
             return [
-                { ...board, connections: board.connections.concat(connection) },
-                { action: "connection.delete", boardId: event.boardId, connectionId: event.connection.id },
+                { ...board, connections: [...board.connections, ...connections] },
+                { action: "connection.delete", boardId: event.boardId, connectionId: connections.map((c) => c.id) },
             ]
         }
         case "connection.modify": {
@@ -65,16 +68,13 @@ export function boardReducer(
             ]
         }
         case "connection.delete": {
-            const { connectionId } = event
+            const ids = new Set(typeof event.connectionId === "string" ? [event.connectionId] : event.connectionId)
 
-            const existingConnection = board.connections.find((c) => c.id === connectionId)
-            if (!existingConnection) {
-                throw Error(`Trying to delete nonexisting connection ${connectionId} on board ${board.id}`)
-            }
+            const existingConnections = board.connections.filter((c) => ids.has(c.id))
 
             return [
-                { ...board, connections: board.connections.filter((c) => c !== existingConnection) },
-                { action: "connection.add", boardId: event.boardId, connection: existingConnection },
+                { ...board, connections: board.connections.filter((c) => !ids.has(c.id)) },
+                { action: "connection.add", boardId: event.boardId, connection: existingConnections },
             ]
         }
         case "board.rename":

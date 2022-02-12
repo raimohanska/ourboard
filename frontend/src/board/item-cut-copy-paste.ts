@@ -16,7 +16,7 @@ import {
     getEndPointItemId,
 } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus, getSelectedIds } from "./board-focus"
+import { BoardFocus, getSelectedItemIds } from "./board-focus"
 import { Dispatch } from "../store/board-store"
 import { YELLOW } from "../../../common/src/colors"
 import { sanitizeHTML } from "../components/sanitizeHTML"
@@ -30,7 +30,7 @@ export type ItemsAndConnections = {
 }
 
 export function findSelectedItems(currentFocus: BoardFocus, currentBoard: Board): ItemsAndConnections {
-    const selectedIds = getSelectedIds(currentFocus)
+    const selectedIds = getSelectedItemIds(currentFocus)
     const items = findItemsRecursively([...selectedIds], currentBoard)
     const recursiveIds = new Set(items.map((i) => i.id))
     const connections = currentBoard.connections.filter((c) => {

@@ -12,7 +12,7 @@ import { CursorsStore } from "../store/cursors-store"
 import { UserSessionState } from "../store/user-session-store"
 import { boardCoordinateHelper } from "./board-coordinates"
 import { boardDragHandler } from "./board-drag"
-import { BoardFocus, getSelectedIds, getSelectedItem, getSelectedItems } from "./board-focus"
+import { BoardFocus, getSelectedItemIds, getSelectedItem, getSelectedItems } from "./board-focus"
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { BoardToolLayer } from "./BoardToolLayer"
 import { ConnectionsView } from "./ConnectionsView"
@@ -81,8 +81,8 @@ export const BoardView = ({
 
     let previousFocus: BoardFocus | null = null
     focus.forEach((f) => {
-        const previousIDs = previousFocus && getSelectedIds(previousFocus)
-        const itemIds = [...getSelectedIds(f)].filter((id) => !previousIDs || !previousIDs.has(id))
+        const previousIDs = previousFocus && getSelectedItemIds(previousFocus)
+        const itemIds = [...getSelectedItemIds(f)].filter((id) => !previousIDs || !previousIDs.has(id))
         previousFocus = f
         if (itemIds.length > 0) {
             dispatch({ action: "item.front", boardId: board.get().id, itemIds })

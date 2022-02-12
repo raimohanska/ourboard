@@ -2,7 +2,7 @@ import * as L from "lonna"
 import { Board, Item } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus, getSelectedIds } from "./board-focus"
+import { BoardFocus, getSelectedItemIds } from "./board-focus"
 import { Coordinates } from "../../../common/src/geometry"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
@@ -29,7 +29,7 @@ export function onBoardItemDrag(
     let dragStartPositions: Record<string, Item>
     let currentPos: { x: number; y: number } | null = null
 
-    const dragEnabled = onlyWhenSelected ? L.view(focus, (f) => getSelectedIds(f).has(id)) : L.constant(true)
+    const dragEnabled = onlyWhenSelected ? L.view(focus, (f) => getSelectedItemIds(f).has(id)) : L.constant(true)
 
     const onDragStart = (e: DragEvent) => {
         const f = focus.get()

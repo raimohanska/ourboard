@@ -1,4 +1,5 @@
 import { componentScope, Fragment, h, ListView } from "harmaja"
+import { isArray } from "lodash"
 import * as L from "lonna"
 import prettyMs from "pretty-ms"
 import { boardReducer } from "../../../common/src/board-reducer"
@@ -18,7 +19,7 @@ import {
 import { Checkbox } from "../components/components"
 import { HistoryIcon } from "../components/Icons"
 import { Dispatch } from "../store/board-store"
-import { BoardFocus, getSelectedIds } from "./board-focus"
+import { BoardFocus, getSelectedItemIds } from "./board-focus"
 
 type ParsedHistoryEntry = {
     timestamp: ISOTimeStamp
@@ -104,7 +105,7 @@ export const HistoryView = ({
     }
 
     function focusHistory(history: ParsedHistoryEntry[], focus: BoardFocus) {
-        const selectedIds = getSelectedIds(focus)
+        const selectedIds = getSelectedItemIds(focus)
         if (selectedIds.size === 0) {
             return history
         }
@@ -145,22 +146,31 @@ export const HistoryView = ({
         const itemIds = getItemIds(event)
         switch (event.action) {
             case "connection.add":
-            case "connection.delete":
-            case "connection.modify": {
-                const kind =
-                    event.action === "connection.add"
-                        ? "added"
-                        : event.action === "connection.delete"
-                        ? "deleted"
-                        : "changed"
-
-                const id = "connectionId" in event ? event.connectionId : event.connection.id
+                const kind = "added"
+                const ids = (isArray(event.connection) ? event.connection : [event.connection]).map((c) => c.id)
                 return {
                     timestamp,
                     user,
-                    itemIds: [id],
+                    itemIds: ids,
                     kind,
-                    actionText: `${kind} connection ${id}`,
+                    actionText: `${kind} connection ${ids.join(", ")}`,
+                }
+            case "connection.delete":
+            case "connection.modify": {
+                const kind = event.action === "connection.delete" ? "deleted" : "changed"
+
+                const ids =
+                    event.action === "connection.delete"
+                        ? typeof event.connectionId === "string"
+                            ? [event.connectionId]
+                            : [...event.connectionId]
+                        : [event.connection.id]
+                return {
+                    timestamp,
+                    user,
+                    itemIds: ids,
+                    kind,
+                    actionText: `${kind} connection ${ids.join(", ")}`,
                 }
             }
             case "item.add": {

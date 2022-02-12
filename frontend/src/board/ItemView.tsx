@@ -17,7 +17,7 @@ import { HTMLEditableSpan } from "../components/HTMLEditableSpan"
 import { Dispatch } from "../store/board-store"
 import { autoFontSize } from "./autoFontSize"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus, getSelectedIds } from "./board-focus"
+import { BoardFocus, getSelectedItemIds } from "./board-focus"
 import { contrastingColor } from "./contrasting-color"
 import { DragBorder } from "./DragBorder"
 import { itemDragToMove } from "./item-dragmove"
@@ -137,7 +137,7 @@ export const ItemView = ({
             dispatch({ action: "item.update", boardId: board.get().id, items: [{ ...item.get(), text }] }),
         )
         const showCoords = false
-        const focused = L.view(focus, (f) => getSelectedIds(f).has(id))
+        const focused = L.view(focus, (f) => getSelectedItemIds(f).has(id))
 
         const setEditing = (e: boolean) => {
             dispatch({ action: "item.front", boardId: board.get().id, itemIds: [id] })

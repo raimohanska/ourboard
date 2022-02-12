@@ -80,14 +80,14 @@ export function drawConnectionHandler(
         if (targetExistingItem === item) {
             if (localConnection !== null) {
                 // Remove current connection, because connect-to-self is not allowed at least for now
-                dispatch({ action: "connection.delete", boardId, connectionId: localConnection.id })
+                dispatch({ action: "connection.delete", boardId, connectionId: [localConnection.id] })
                 localConnection = null
             }
         } else {
             if (localConnection === null) {
                 // Start new connection
                 localConnection = newConnection(item)
-                dispatch({ action: "connection.add", boardId, connection: localConnection })
+                dispatch({ action: "connection.add", boardId, connection: [localConnection] })
             } else {
                 // Change current connection endpoint
                 const destinationPoint = targetExistingItem ?? currentBoardCoords
@@ -117,7 +117,9 @@ export function drawConnectionHandler(
     }
 
     const endDrag = () => {
-        focus.set(localConnection ? { status: "connection-selected", id: localConnection.id } : { status: "none" })
+        focus.set(
+            localConnection ? { status: "connection-selected", ids: new Set(localConnection.id) } : { status: "none" },
+        )
         localConnection = null
     }
 

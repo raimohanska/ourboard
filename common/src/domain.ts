@@ -242,9 +242,9 @@ export type ClientToServerRequest =
 export type LoginResponse =
     | { action: "auth.login.response"; success: false }
     | { action: "auth.login.response"; success: true; userId: string }
-export type AddConnection = { action: "connection.add"; boardId: Id; connection: Connection }
+export type AddConnection = { action: "connection.add"; boardId: Id; connection: Connection | Connection[] } // TODO: Singular form is legacy support
 export type ModifyConnection = { action: "connection.modify"; boardId: Id; connection: Connection }
-export type DeleteConnection = { action: "connection.delete"; boardId: Id; connectionId: Id }
+export type DeleteConnection = { action: "connection.delete"; boardId: Id; connectionId: Id | Id[] } // TODO: Singular form is legacy support
 export type AuthLogin = {
     action: "auth.login"
     name: string
