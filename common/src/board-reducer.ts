@@ -24,7 +24,7 @@ import {
 import _, { isArray } from "lodash"
 import { arrayToObject } from "./migration"
 import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
-import { rerouteConnection } from "./connection-utils"
+import { rerouteConnection, resolveEndpoint } from "./connection-utils"
 
 export function boardReducer(
     board: Board,
@@ -166,7 +166,9 @@ export function boardReducer(
                     }),
                     connections:
                         event.connections?.map((c) => {
-                            return { id: c.id, xDiff: -c.xDiff, yDiff: -c.yDiff }
+                            const conn = getConnection(board)(c.id)
+                            const startPoint = resolveEndpoint(conn.from, board)
+                            return { id: c.id, x: startPoint.x, y: startPoint.y }
                         }) || [],
                 },
             ]
@@ -334,10 +336,11 @@ function moveItems(board: Board, event: MoveItem) {
         } else {
             const m = connectionMovesInEvent.find((m) => m.id === connection.id)
             if (m) {
+                const startPoint = resolveEndpoint(connection.from, board)
                 connectionMoves[connection.id] = {
                     ends: "both",
-                    xDiff: m.xDiff,
-                    yDiff: m.yDiff,
+                    xDiff: m.x - startPoint.x,
+                    yDiff: m.y - startPoint.y,
                 }
             }
         }

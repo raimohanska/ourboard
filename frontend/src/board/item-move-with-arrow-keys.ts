@@ -1,5 +1,5 @@
 import * as L from "lonna"
-import { connectionRect } from "../../../common/src/connection-utils"
+import { connectionRect, resolveEndpoint } from "../../../common/src/connection-utils"
 import { Board, BOARD_ITEM_BORDER_MARGIN } from "../../../common/src/domain"
 import { Rect } from "../../../common/src/geometry"
 import { Dispatch } from "../store/board-store"
@@ -46,7 +46,8 @@ export function itemMoveWithArrowKeysHandler(board: L.Property<Board>, dispatch:
                     const movedRect = moveItem(currentBoard, rect, e.key, e.shiftKey, e.altKey)
                     const xDiff = movedRect.x - rect.x
                     const yDiff = movedRect.y - rect.y
-                    return { id: connection.id, xDiff, yDiff }
+                    const startPoint = resolveEndpoint(connection.from, currentBoard)
+                    return { id: connection.id, x: startPoint.x + xDiff, y: startPoint.y + yDiff }
                 })
                 dispatch({
                     action: "item.move",

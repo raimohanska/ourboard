@@ -263,7 +263,7 @@ export type MoveItem = {
     action: "item.move"
     boardId: Id
     items: { id: Id; x: number; y: number; containerId?: Id | undefined }[]
-    connections: { id: Id; xDiff: number; yDiff: number }[] | null // TODO: null is for legacy support
+    connections: { id: Id; x: number; y: number }[] | null // Coords for start point. TODO: null is for legacy support
 }
 export type IncreaseItemFont = { action: "item.font.increase"; boardId: Id; itemIds: Id[] }
 export type DecreaseItemFont = { action: "item.font.decrease"; boardId: Id; itemIds: Id[] }
