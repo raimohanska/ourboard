@@ -92,6 +92,8 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
 }
 
 function everyItemMatches(evt: MoveItem | UpdateItem, evt2: MoveItem | UpdateItem) {
+    if (evt.action === "item.move" && evt.connections?.length) return false
+    if (evt2.action === "item.move" && evt2.connections?.length) return false
     return (
         evt.items.length === evt2.items.length &&
         (evt.items as Item[]) /* TODO no assertion */
