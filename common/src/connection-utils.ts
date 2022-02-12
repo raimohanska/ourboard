@@ -32,11 +32,7 @@ export function findNearestAttachmentLocationForConnectionNode(
     reference: Point | Item,
 ): AttachmentLocation {
     if (!isItem(i)) return { side: "none", point: i }
-    const options: ItemAttachmentLocation[] = Object.entries(findAttachmentLocations(i)).map(([side, point]) => ({
-        side: side as AttachmentSide,
-        point,
-        item: i,
-    }))
+    const options: ItemAttachmentLocation[] = findItemAttachmentLocations(i)
     return _.minBy(options, (p) => distance(p.point, middlePoint(reference)))!
 }
 
@@ -50,22 +46,28 @@ function middlePoint(i: Point | Item) {
     return i
 }
 
-function findAttachmentLocations(i: Item): Record<AttachmentSide, Point> {
-    const margin = 0.1
-    function p(x: number, y: number) {
-        return { x, y }
-    }
-    const options = {
-        top: p(i.x + i.width / 2, i.y - margin),
-        left: p(i.x - margin, i.y + i.height / 2),
-        right: p(i.x + i.width + margin, i.y + i.height / 2),
-        bottom: p(i.x + i.width / 2, i.y + i.height + margin),
-    }
-    return options
+const sides: AttachmentSide[] = ["top", "left", "bottom", "right"]
+
+function findItemAttachmentLocations(i: Item): ItemAttachmentLocation[] {
+    return sides.map((side) => findAttachmentLocation(i, side))
+}
+
+function p(x: number, y: number) {
+    return { x, y }
 }
 
 export function findAttachmentLocation(i: Item, side: AttachmentSide): ItemAttachmentLocation {
-    return { side, point: findAttachmentLocations(i)[side], item: i }
+    const margin = 0.1
+    switch (side) {
+        case "top":
+            return { item: i, side, point: p(i.x + i.width / 2, i.y - margin) }
+        case "left":
+            return { item: i, side, point: p(i.x - margin, i.y + i.height / 2) }
+        case "right":
+            return { item: i, side, point: p(i.x + i.width + margin, i.y + i.height / 2) }
+        case "bottom":
+            return { item: i, side, point: p(i.x + i.width / 2, i.y + i.height + margin) }
+    }
 }
 
 function findMidpoint(fromCoords: AttachmentLocation, toCoords: AttachmentLocation) {
@@ -111,8 +113,8 @@ export function rerouteConnection(c: Connection, b: Board): Connection {
     const resolvedFrom = resolveEndpoint(c.from, b)
     const resolvedTo = resolveEndpoint(c.to, b)
 
-    const from = findNearestAttachmentLocationForConnectionNode(resolvedFrom, resolvedTo)
-    const to = findNearestAttachmentLocationForConnectionNode(resolvedTo, from.point)
+    const to = findNearestAttachmentLocationForConnectionNode(resolvedTo, resolvedFrom)
+    const from = findNearestAttachmentLocationForConnectionNode(resolvedFrom, to.point)
 
     const withNewMidPoint = {
         ...c,
