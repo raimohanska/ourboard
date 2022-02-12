@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { Board, BOARD_ITEM_BORDER_MARGIN, Item } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { Dispatch } from "../store/board-store"
-import { findSelectedItems } from "./item-cut-copy-paste"
+import { findSelectedItemsAndConnections } from "./item-cut-copy-paste"
 import { installKeyboardShortcut } from "./keyboard-shortcuts"
 
 function updatePosition(board: Board, item: Item, dx: number, dy: number): Item {
@@ -35,7 +35,7 @@ export function itemMoveWithArrowKeysHandler(board: L.Property<Board>, dispatch:
         (e) => ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key),
         (e) => {
             const currentBoard = board.get()
-            const itemsAndConnections = findSelectedItems(focus.get(), currentBoard)
+            const itemsAndConnections = findSelectedItemsAndConnections(focus.get(), currentBoard)
             if (itemsAndConnections.items.length > 0 || itemsAndConnections.connections.length > 0) {
                 const movedItems = itemsAndConnections.items.map((item) =>
                     moveItem(currentBoard, item, e.key, e.shiftKey, e.altKey),

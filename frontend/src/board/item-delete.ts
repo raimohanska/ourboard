@@ -8,13 +8,9 @@ export function itemDeleteHandler(boardId: Id, dispatch: Dispatch, focus: L.Prop
     installKeyboardShortcut(plainKey("Delete", "Backspace"), () => {
         const f = focus.get()
         const connectionIds = [...getSelectedConnectionIds(focus.get())]
-        if (connectionIds.length) {
-            dispatch({ action: "connection.delete", connectionId: connectionIds, boardId }) // TODO: make a new combined delete action
-        }
-
         const itemIds = [...getSelectedItemIds(focus.get())]
-        if (itemIds.length) {
-            dispatch({ action: "item.delete", boardId, itemIds })
+        if (itemIds.length || connectionIds.length) {
+            dispatch({ action: "item.delete", boardId, itemIds, connectionIds })
         }
     })
 }

@@ -138,7 +138,7 @@ export type Video = ItemProperties & { type: typeof ITEM_TYPES.VIDEO; assetId: s
 export type Container = TextItemProperties & { type: typeof ITEM_TYPES.CONTAINER; color: Color }
 
 export type Point = { x: number; y: number }
-function Point(x: number, y: number) {
+export function Point(x: number, y: number) {
     return { x, y }
 }
 export const isPoint = (u: unknown): u is Point => typeof u === "object" && !!u && "x" in u && "y" in u
@@ -267,7 +267,7 @@ export type MoveItem = {
 export type IncreaseItemFont = { action: "item.font.increase"; boardId: Id; itemIds: Id[] }
 export type DecreaseItemFont = { action: "item.font.decrease"; boardId: Id; itemIds: Id[] }
 export type BringItemToFront = { action: "item.front"; boardId: Id; itemIds: Id[] }
-export type DeleteItem = { action: "item.delete"; boardId: Id; itemIds: Id[] }
+export type DeleteItem = { action: "item.delete"; boardId: Id; itemIds: Id[]; connectionIds: Id[] | null } // TODO: null is legacy support
 export type BootstrapBoard = { action: "item.bootstrap"; boardId: Id } & BoardContents
 export type LockItem = { action: "item.lock"; boardId: Id; itemId: Id }
 export type UnlockItem = { action: "item.unlock"; boardId: Id; itemId: Id }

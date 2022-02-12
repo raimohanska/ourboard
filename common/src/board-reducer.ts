@@ -116,7 +116,7 @@ export function boardReducer(
 
             return [
                 { ...boardWithAddedItems, connections: [...board.connections, ...connectionsToAdd] },
-                { action: "item.delete", boardId: board.id, itemIds: event.items.map((i) => i.id) },
+                { action: "item.delete", boardId: board.id, itemIds: event.items.map((i) => i.id), connectionIds: [] },
             ]
         case "item.font.increase":
             return [
@@ -166,17 +166,18 @@ export function boardReducer(
                 },
             ]
         case "item.delete": {
-            const idsToDelete = findItemIdsRecursively(event.itemIds, board)
-
+            const itemIdsToDelete = findItemIdsRecursively(event.itemIds, board)
+            const connectionIdsToDelete = new Set(event.connectionIds || [])
             const [connectionsToKeep, connectionsDeleted] = _.partition(
                 board.connections,
                 (c) =>
-                    (!isItemEndPoint(c.from) || !idsToDelete.has(getEndPointItemId(c.from))) &&
-                    (!isItemEndPoint(c.to) || !idsToDelete.has(getEndPointItemId(c.to))),
+                    !connectionIdsToDelete.has(c.id) &&
+                    (!isItemEndPoint(c.from) || !itemIdsToDelete.has(getEndPointItemId(c.from))) &&
+                    (!isItemEndPoint(c.to) || !itemIdsToDelete.has(getEndPointItemId(c.to))),
             )
 
             const updatedItems = { ...board.items }
-            idsToDelete.forEach((id) => {
+            itemIdsToDelete.forEach((id) => {
                 delete updatedItems[id]
             })
             return [
@@ -188,7 +189,7 @@ export function boardReducer(
                 {
                     action: "item.add",
                     boardId: board.id,
-                    items: Array.from(idsToDelete).map(getItem(board)),
+                    items: Array.from(itemIdsToDelete).map(getItem(board)),
                     connections: connectionsDeleted,
                 },
             ]
