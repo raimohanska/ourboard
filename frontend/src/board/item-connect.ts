@@ -151,7 +151,6 @@ export function existingConnectionHandler(
         _.throttle(() => {
             const b = board.get()
             const connection = b.connections.find((c) => c.id === connectionId)!
-            const items = b.items
             const coords = coordinateHelper.currentBoardCoordinates.get()
             if (type === "to") {
                 const hitsItem = findTarget(b, connection.from, coords, connection)
@@ -192,7 +191,7 @@ function findTarget(
 
     return Object.values(items)
         .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i)) // match coordinates
-        .filter((i) => i.type !== "container" || isNearBorder(currentPos, i))
+        .filter((i) => isConnectionAttachmentPoint(currentPos, i))
         .filter((i) => !isItem(resolved) || !isConnected(b, i, resolved, currentConnection))
         .sort((a, b) => (isContainedBy(items, a)(b) ? 1 : -1)) // most innermost first (containers last)
         .find((i) => !fromItem || !isContainedBy(items, i)(fromItem)) // does not contain the "from" item
@@ -210,7 +209,8 @@ function isEndPointRelated(i: Item, c: ConnectionEndPoint) {
     return isItemEndPoint(c) && getEndPointItemId(c) === i.id
 }
 
-function isNearBorder(point: Point, item: Item) {
+export function isConnectionAttachmentPoint(point: Point, item: Item) {
+    if (item.type !== "container") return true
     const center = centerPoint(item)
     const factor = 0.9
     return (

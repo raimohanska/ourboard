@@ -4,7 +4,7 @@ import { emptySet, toggleInSet } from "../../../common/src/sets"
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "./board-focus"
-import { startConnecting } from "./item-connect"
+import { isConnectionAttachmentPoint, startConnecting } from "./item-connect"
 import { ToolController } from "./tool-selection"
 
 export function itemSelectionHandler(
@@ -32,7 +32,11 @@ export function itemSelectionHandler(
         const tool = toolController.tool.get()
         if (tool === "connect") {
             const item = board.get().items[id]
-            startConnecting(board, coordinateHelper, dispatch, toolController, focus, item)
+            const point = coordinateHelper.currentBoardCoordinates.get()
+            const from = isConnectionAttachmentPoint(point, item)
+                ? item
+                : coordinateHelper.currentBoardCoordinates.get()
+            startConnecting(board, coordinateHelper, dispatch, toolController, focus, from)
             e.stopPropagation()
         } else if (e.shiftKey && (f.status === "selected" || f.status === "editing")) {
             focus.set({

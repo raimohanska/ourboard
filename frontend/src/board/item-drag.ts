@@ -1,5 +1,5 @@
 import * as L from "lonna"
-import { Board, Connection, getConnection, Item } from "../../../common/src/domain"
+import { Board, Connection, getConnection, Item, Point } from "../../../common/src/domain"
 import { getItem } from "../../../common/src/domain"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedItemIds } from "./board-focus"
@@ -19,7 +19,9 @@ export function onBoardItemDrag(
     coordinateHelper: BoardCoordinateHelper,
     onlyWhenSelected: boolean,
     doWhileDragging: (
+        // TODO: this abstraction is leaking
         b: Board,
+        dragStartPosition: Point,
         items: { current: Item; dragStartPosition: Item }[],
         connections: { current: Connection; dragStartPosition: Connection }[],
         xDiff: number,
@@ -84,7 +86,11 @@ export function onBoardItemDrag(
             if (!current || !dragStartPosition) throw Error("Connection not found: " + id)
             return { current, dragStartPosition }
         })
-        doWhileDragging(b, items, connections, xDiff, yDiff)
+        const dragStartBoardPos = coordinateHelper.pageToBoardCoordinates({
+            x: dragStart!.pageX,
+            y: dragStart!.pageY,
+        })
+        doWhileDragging(b, dragStartBoardPos, items, connections, xDiff, yDiff)
     }
 
     const onDragEnd = (e: DragEvent) => {
