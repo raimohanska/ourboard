@@ -37,6 +37,7 @@ import { synchronizeFocusWithServer } from "./synchronize-focus-with-server"
 import { ToolController } from "./tool-selection"
 import { BoardViewHeader } from "./toolbars/BoardViewHeader"
 import { VideoView } from "./VideoView"
+import { startConnecting } from "./item-connect"
 
 const emptyNote = newNote("")
 
@@ -153,7 +154,18 @@ export const BoardView = ({
             onAdd(f.item)
         } else {
             if (e.target === boardElement.get()) {
-                focus.set({ status: "none" })
+                if (tool.get() === "connect") {
+                    startConnecting(
+                        board,
+                        coordinateHelper,
+                        dispatch,
+                        toolController,
+                        focus,
+                        coordinateHelper.currentBoardCoordinates.get(),
+                    )
+                } else {
+                    focus.set({ status: "none" })
+                }
             }
         }
     }

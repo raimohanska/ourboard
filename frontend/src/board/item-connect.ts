@@ -34,7 +34,7 @@ export function startConnecting(
     dispatch: Dispatch,
     toolController: ToolController,
     focus: L.Atom<BoardFocus>,
-    item: Item,
+    from: Item | Point,
 ) {
     const h = currentConnectionHandler.get()
     if (h) {
@@ -43,11 +43,12 @@ export function startConnecting(
         const h = drawConnectionHandler(board, coordinateHelper, focus, dispatch)
         currentConnectionHandler.set(h)
         focus.set({ status: "connection-adding" })
-        h.whileDragging(item, coordinateHelper.currentBoardCoordinates.get())
         const toWatch = [currentConnectionHandler, toolController.tool, focus] as L.Property<any>[]
         const stop = L.merge(toWatch.map((p) => p.pipe(L.changes))).pipe(L.take(1, globalScope))
+
+        h.whileDragging(from, coordinateHelper.currentBoardCoordinates.get())
         coordinateHelper.currentBoardCoordinates.pipe(L.takeUntil(stop)).forEach((pos) => {
-            h.whileDragging(item, pos)
+            h.whileDragging(from, pos)
         })
         stop.forEach(endConnection)
     }
@@ -72,11 +73,13 @@ export function drawConnectionHandler(
 ) {
     let localConnection: Connection | null = null
 
-    function whileDragging(item: Item, currentBoardCoords: Point) {
+    function whileDragging(from: Item | Point, currentBoardCoords: Point) {
         const b = board.get()
         const boardId = b.id
+        const startPoint: ConnectionEndPoint = isItem(from) ? from.id : from
+        const item = isItem(from) ? from : null
 
-        const targetExistingItem = findTarget(b, item, currentBoardCoords, localConnection)
+        const targetExistingItem = findTarget(b, startPoint, currentBoardCoords, localConnection)
 
         if (targetExistingItem === item) {
             if (localConnection !== null) {
@@ -87,7 +90,7 @@ export function drawConnectionHandler(
         } else {
             if (localConnection === null) {
                 // Start new connection
-                localConnection = newConnection(item)
+                localConnection = newConnection(startPoint)
                 dispatch({ action: "connection.add", boardId, connection: [localConnection] })
             } else {
                 // Change current connection endpoint
@@ -108,10 +111,10 @@ export function drawConnectionHandler(
         }
     }
 
-    function newConnection(from: Item): Connection {
+    function newConnection(from: ConnectionEndPoint): Connection {
         return {
             id: uuid.v4(),
-            from: from.id,
+            from: from,
             controlPoints: [],
             to: coordinateHelper.currentBoardCoordinates.get(),
         }

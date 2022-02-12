@@ -150,7 +150,7 @@ export const BoardToolLayer = ({
                 const text =
                     f.status === "connection-adding"
                         ? "Finish by clicking on target"
-                        : "Click on an item to make a connection"
+                        : "Click on an item or location to make a connection"
 
                 const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
                     position: "absolute",
