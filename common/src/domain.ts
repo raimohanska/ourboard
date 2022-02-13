@@ -242,6 +242,7 @@ export type ClientToServerRequest =
     | AuthLogout
     | Ping
 
+// TODO: The "legacy support" TODOs here should be resolved by always migrating events upon deserialization
 export type LoginResponse =
     | { action: "auth.login.response"; success: false }
     | { action: "auth.login.response"; success: true; userId: string }
