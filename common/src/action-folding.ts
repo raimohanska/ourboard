@@ -15,6 +15,7 @@ import {
 } from "./domain"
 import { boardReducer } from "./board-reducer"
 import { getItem } from "./domain"
+import * as _ from "lodash"
 
 type FoldOptions = {
     foldAddUpdate: boolean
@@ -87,6 +88,9 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
         if (b.action === a.action && b.boardId === a.boardId && b.itemId === a.itemId) return b
     } else if (a.action === "connection.modify" && b.action === "connection.modify") {
         if (a.boardId === b.boardId && a.connection.id === b.connection.id) return b
+    } else if (a.action === "connection.modify" && b.action === "connection.delete") {
+        if (_.isEqual(typeof b.connectionId === "string" ? [b.connectionId] : b.connectionId, [a.connection.id]))
+            return b
     }
     return null
 }
@@ -100,7 +104,10 @@ function everyMovedItemMatches(evt: MoveItem, evt2: MoveItem) {
 }
 
 function arrayIdMatch<T extends { id: string }>(a: T[], b: T[]) {
-    return a.length === b.length && a.every((it, ind) => b[ind].id === it.id)
+    return _.isEqual(
+        a.map((x) => x.id),
+        b.map((x) => x.id),
+    )
 }
 
 function everyItemIdMatches(evt: BringItemToFront, evt2: BringItemToFront) {
