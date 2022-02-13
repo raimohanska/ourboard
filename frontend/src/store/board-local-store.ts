@@ -1,7 +1,7 @@
-import { UIEvent, BoardWithHistory, Id, Board, BoardHistoryEntry } from "../../../common/src/domain"
-import { migrateBoard } from "../../../common/src/migration"
 import * as localForage from "localforage"
 import _ from "lodash"
+import { Board, BoardHistoryEntry, Id } from "../../../common/src/domain"
+import { migrateEvent } from "../../../common/src/migration"
 
 export type LocalStorageBoard = {
     serverShadow: Board
@@ -21,7 +21,7 @@ async function getInitialBoardState(boardId: Id) {
     return activeBoardState
 }
 
-async function getStoredState(localStorageKey: string) {
+async function getStoredState(localStorageKey: string): Promise<LocalStorageBoard | undefined> {
     try {
         const stringState = await localForage.getItem<string>(localStorageKey)
         const state = JSON.parse(stringState!) as LocalStorageBoard
@@ -29,7 +29,9 @@ async function getStoredState(localStorageKey: string) {
             return undefined
         }
         return {
-            ...state, // future migration code here
+            ...state,
+            queue: state.queue.map(migrateEvent),
+            serverHistory: state.serverHistory.map(migrateEvent),
         }
     } catch (e) {
         console.error(`Fetching local state ${localStorageKey} from IndexedDB failed`, e)

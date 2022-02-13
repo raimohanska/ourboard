@@ -1,3 +1,5 @@
+import { isArray } from "lodash"
+import { toArray } from "./arrays"
 import { resolveEndpoint } from "./connection-utils"
 import { Board, BoardHistoryEntry, Container, defaultBoardSize, Id, Item, Serial } from "./domain"
 
@@ -78,4 +80,29 @@ function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<strin
     }
 
     return fixedItem
+}
+
+export function migrateEvent(event: BoardHistoryEntry): BoardHistoryEntry {
+    if (event.action === "connection.add") {
+        if (!isArray(event.connections)) {
+            return { ...event, connections: toArray((event as any).connection) }
+        }
+    } else if (event.action === "connection.modify") {
+        if (!isArray(event.connections)) {
+            return { ...event, connections: toArray((event as any).connection) }
+        }
+    } else if (event.action === "connection.delete") {
+        if (!isArray(event.connectionIds)) {
+            return { ...event, connectionIds: toArray((event as any).connectionId) }
+        }
+    } else if (event.action === "item.move") {
+        if (!event.connections) {
+            return { ...event, connections: [] }
+        }
+    } else if (event.action === "item.delete") {
+        if (!event.connectionIds) {
+            return { ...event, connectionIds: [] }
+        }
+    }
+    return event
 }

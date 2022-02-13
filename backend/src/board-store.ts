@@ -1,18 +1,10 @@
 import { PoolClient } from "pg"
 import QueryStream from "pg-query-stream"
-import { boardReducer } from "../../common/src/board-reducer"
-import {
-    Board,
-    BoardAccessPolicy,
-    BoardHistoryEntry,
-    exampleBoard,
-    Id,
-    isBoardEmpty,
-    Serial,
-} from "../../common/src/domain"
-import { migrateBoard, mkBootStrapEvent } from "../../common/src/migration"
-import { inTransaction, withDBClient } from "./db"
 import * as uuid from "uuid"
+import { boardReducer } from "../../common/src/board-reducer"
+import { Board, BoardAccessPolicy, BoardHistoryEntry, Id, isBoardEmpty, Serial } from "../../common/src/domain"
+import { migrateBoard, migrateEvent, mkBootStrapEvent } from "../../common/src/migration"
+import { inTransaction, withDBClient } from "./db"
 
 export type BoardAndAccessTokens = {
     board: Board
@@ -156,7 +148,7 @@ function streamingBoardEventsQuery(text: string, values: any[], client: PoolClie
                     throw Error(`Unexpected DB row value ${chunk}`)
                 }
 
-                cb(chunk)
+                cb(chunk.map(migrateEvent))
             } catch (error) {
                 console.error(error)
                 stream.destroy()
@@ -291,7 +283,7 @@ export async function getBoardHistoryBundles(client: PoolClient, id: Id): Promis
             `SELECT board_id, last_serial, events FROM board_event WHERE board_id=$1 ORDER BY last_serial`,
             [id],
         )
-    ).rows
+    ).rows.map(migrateBundle)
 }
 
 export async function getBoardHistoryBundlesWithLastSerialsBetween(
@@ -305,7 +297,11 @@ export async function getBoardHistoryBundlesWithLastSerialsBetween(
             `SELECT board_id, last_serial, events FROM board_event WHERE board_id=$1 AND last_serial >= $2 AND last_serial <= $3 ORDER BY last_serial`,
             [id, lsMin, lsMax],
         )
-    ).rows
+    ).rows.map(migrateBundle)
+}
+
+function migrateBundle(b: BoardHistoryBundle): BoardHistoryBundle {
+    return { ...b, events: { ...b.events, events: b.events.events.map(migrateEvent) } }
 }
 
 export type BoardHistoryBundleMeta = {

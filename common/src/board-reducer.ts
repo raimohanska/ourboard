@@ -39,7 +39,7 @@ export function boardReducer(
     }
     switch (event.action) {
         case "connection.add": {
-            const connections = toArray(event.connection)
+            const connections = event.connections
 
             for (let connection of connections) {
                 validateConnection(board, connection)
@@ -51,11 +51,11 @@ export function boardReducer(
 
             return [
                 { ...board, connections: [...board.connections, ...connections] },
-                { action: "connection.delete", boardId: event.boardId, connectionId: connections.map((c) => c.id) },
+                { action: "connection.delete", boardId: event.boardId, connectionIds: connections.map((c) => c.id) },
             ]
         }
         case "connection.modify": {
-            const connections = toArray(event.connection)
+            const connections = event.connections
 
             const existingConnections = connections.map((r) => {
                 validateConnection(board, r)
@@ -74,17 +74,17 @@ export function boardReducer(
                         return replacement ? replacement : c
                     }),
                 },
-                { action: "connection.modify", boardId: event.boardId, connection: existingConnections },
+                { action: "connection.modify", boardId: event.boardId, connections: existingConnections },
             ]
         }
         case "connection.delete": {
-            const ids = new Set(typeof event.connectionId === "string" ? [event.connectionId] : event.connectionId)
+            const ids = new Set(event.connectionIds)
 
             const existingConnections = board.connections.filter((c) => ids.has(c.id))
 
             return [
                 { ...board, connections: board.connections.filter((c) => !ids.has(c.id)) },
-                { action: "connection.add", boardId: event.boardId, connection: existingConnections },
+                { action: "connection.add", boardId: event.boardId, connections: existingConnections },
             ]
         }
         case "board.rename":
@@ -173,17 +173,16 @@ export function boardReducer(
                         const item = getItem(board)(i.id)
                         return { id: i.id, x: item.x, y: item.y, containerId: item.containerId }
                     }),
-                    connections:
-                        event.connections?.map((c) => {
-                            const conn = getConnection(board)(c.id)
-                            const startPoint = resolveEndpoint(conn.from, board)
-                            return { id: c.id, x: startPoint.x, y: startPoint.y }
-                        }) || [],
+                    connections: event.connections.map((c) => {
+                        const conn = getConnection(board)(c.id)
+                        const startPoint = resolveEndpoint(conn.from, board)
+                        return { id: c.id, x: startPoint.x, y: startPoint.y }
+                    }),
                 },
             ]
         case "item.delete": {
             const itemIdsToDelete = findItemIdsRecursively(event.itemIds, board)
-            const connectionIdsToDelete = new Set(event.connectionIds || [])
+            const connectionIdsToDelete = new Set(event.connectionIds)
             const [connectionsToKeep, connectionsDeleted] = partition(
                 board.connections,
                 (c) =>

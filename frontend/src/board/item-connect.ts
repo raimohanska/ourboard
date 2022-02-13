@@ -85,14 +85,14 @@ export function drawConnectionHandler(
         if (targetExistingItem === item) {
             if (localConnection !== null) {
                 // Remove current connection, because connect-to-self is not allowed at least for now
-                dispatch({ action: "connection.delete", boardId, connectionId: [localConnection.id] })
+                dispatch({ action: "connection.delete", boardId, connectionIds: [localConnection.id] })
                 localConnection = null
             }
         } else {
             if (localConnection === null) {
                 // Start new connection
                 localConnection = newConnection(startPoint)
-                dispatch({ action: "connection.add", boardId, connection: [localConnection] })
+                dispatch({ action: "connection.add", boardId, connections: [localConnection] })
             } else {
                 // Change current connection endpoint
                 const destinationPoint = targetExistingItem ?? currentBoardCoords
@@ -107,7 +107,7 @@ export function drawConnectionHandler(
                     b,
                 )
 
-                dispatch({ action: "connection.modify", boardId: b.id, connection: [localConnection] })
+                dispatch({ action: "connection.modify", boardId: b.id, connections: [localConnection] })
             }
         }
     }
@@ -158,7 +158,7 @@ export function existingConnectionHandler(
                 dispatch({
                     action: "connection.modify",
                     boardId: b.id,
-                    connection: [rerouteConnection({ ...connection, to }, b)],
+                    connections: [rerouteConnection({ ...connection, to }, b)],
                 })
             } else if (type === "from") {
                 const hitsItem = findTarget(b, connection.to, coords, connection)
@@ -166,13 +166,13 @@ export function existingConnectionHandler(
                 dispatch({
                     action: "connection.modify",
                     boardId: b.id,
-                    connection: [rerouteConnection({ ...connection, from }, b)],
+                    connections: [rerouteConnection({ ...connection, from }, b)],
                 })
             } else {
                 dispatch({
                     action: "connection.modify",
                     boardId: b.id,
-                    connection: [rerouteByNewControlPoints(connection, [coords], b)],
+                    connections: [rerouteByNewControlPoints(connection, [coords], b)],
                 })
             }
         }, 20),

@@ -83,15 +83,15 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
     } else if (a.action === "item.lock" || a.action === "item.unlock") {
         if (b.action === a.action && b.boardId === a.boardId && b.itemId === a.itemId) return b
     } else if (a.action === "connection.modify" && b.action === "connection.modify") {
-        if (arrayIdMatch(a.connection, b.connection)) return b
+        if (arrayIdMatch(a.connections, b.connections)) return b
     } else if (a.action === "connection.modify" && b.action === "connection.delete") {
-        if (arrayEquals(b.connectionId, idsOf(a.connection))) return b
+        if (arrayEquals(b.connectionIds, idsOf(a.connections))) return b
     }
     return null
 }
 
 function everyMovedItemMatches(evt: MoveItem, evt2: MoveItem) {
-    return arrayIdMatch(evt.items, evt2.items) && arrayIdMatch(evt.connections || [], evt2.connections || [])
+    return arrayIdMatch(evt.items, evt2.items) && arrayIdMatch(evt.connections, evt2.connections)
 }
 
 export function addOrReplaceEvent<E extends AppEvent>(event: E, q: E[]): E[] {

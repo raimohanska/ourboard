@@ -1,5 +1,15 @@
-import { Board, ConnectionEndPoint, defaultBoardSize, exampleBoard } from "./domain"
-import { arrayToObject, migrateBoard } from "./migration"
+import {
+    AddConnection,
+    Board,
+    ConnectionEndPoint,
+    defaultBoardSize,
+    DeleteConnection,
+    DeleteItem,
+    exampleBoard,
+    ModifyConnection,
+    MoveItem,
+} from "./domain"
+import { arrayToObject, migrateBoard, migrateEvent } from "./migration"
 
 describe("Migration", () => {
     describe("Migrate board", () => {
@@ -74,6 +84,86 @@ describe("Migration", () => {
             const b: Board = { ...exampleBoard, connections: [borkenConn] }
 
             expect(migrateBoard(b)).toEqual(exampleBoard)
+        })
+    })
+    describe("Migrate event", () => {
+        const headers = {
+            user: { userType: "unidentified", nickname: "asdf" },
+            timestamp: new Date().toISOString(),
+            boardId: "",
+        }
+        it("connection.add", () => {
+            const connection = { from: "a", to: "b", controlPoints: [], id: "c" }
+            expect(
+                (migrateEvent({
+                    ...headers,
+                    action: "connection.add",
+                    connection,
+                } as any) as AddConnection).connections,
+            ).toEqual([connection])
+            expect(
+                (migrateEvent({
+                    ...headers,
+                    action: "connection.add",
+                    connection: [connection],
+                } as any) as AddConnection).connections,
+            ).toEqual([connection])
+        })
+
+        it("connection.modify", () => {
+            const connection = { from: "a", to: "b", controlPoints: [], id: "c" }
+            expect(
+                (migrateEvent({
+                    ...headers,
+                    action: "connection.modify",
+                    connection,
+                } as any) as ModifyConnection).connections,
+            ).toEqual([connection])
+            expect(
+                (migrateEvent({
+                    ...headers,
+                    action: "connection.modify",
+                    connection: [connection],
+                } as any) as ModifyConnection).connections,
+            ).toEqual([connection])
+        })
+
+        it("connection.delete", () => {
+            const connectionId = "c"
+            expect(
+                (migrateEvent({
+                    ...headers,
+                    action: "connection.delete",
+                    connectionId,
+                } as any) as DeleteConnection).connectionIds,
+            ).toEqual([connectionId])
+            expect(
+                (migrateEvent({
+                    ...headers,
+                    action: "connection.delete",
+                    connectionId: [connectionId],
+                } as any) as DeleteConnection).connectionIds,
+            ).toEqual([connectionId])
+        })
+
+        it("item.move", () => {
+            expect(
+                (migrateEvent({
+                    ...headers,
+                    action: "item.move",
+                    items: [],
+                } as any) as MoveItem).connections,
+            ).toEqual([])
+        })
+
+        it("item.delete", () => {
+            expect(
+                (migrateEvent({
+                    ...headers,
+                    action: "item.delete",
+                    itemIds: [],
+                } as any) as DeleteItem).connectionIds,
+            ).toEqual([])
         })
     })
 })

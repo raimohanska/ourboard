@@ -242,13 +242,12 @@ export type ClientToServerRequest =
     | AuthLogout
     | Ping
 
-// TODO: The "legacy support" TODOs here should be resolved by always migrating events upon deserialization
 export type LoginResponse =
     | { action: "auth.login.response"; success: false }
     | { action: "auth.login.response"; success: true; userId: string }
-export type AddConnection = { action: "connection.add"; boardId: Id; connection: Connection | Connection[] } // TODO: Singular form is legacy support
-export type ModifyConnection = { action: "connection.modify"; boardId: Id; connection: Connection | Connection[] } // TODO: Singular form is legacy support
-export type DeleteConnection = { action: "connection.delete"; boardId: Id; connectionId: Id | Id[] } // TODO: Singular form is legacy support
+export type AddConnection = { action: "connection.add"; boardId: Id; connections: Connection[] }
+export type ModifyConnection = { action: "connection.modify"; boardId: Id; connections: Connection[] }
+export type DeleteConnection = { action: "connection.delete"; boardId: Id; connectionIds: Id[] }
 export type AuthLogin = {
     action: "auth.login"
     name: string
@@ -264,12 +263,12 @@ export type MoveItem = {
     action: "item.move"
     boardId: Id
     items: { id: Id; x: number; y: number; containerId?: Id | undefined }[]
-    connections: { id: Id; x: number; y: number }[] | null // Coords for start point. TODO: null is for legacy support
+    connections: { id: Id; x: number; y: number }[] // Coordinates are for connection start point.
 }
 export type IncreaseItemFont = { action: "item.font.increase"; boardId: Id; itemIds: Id[] }
 export type DecreaseItemFont = { action: "item.font.decrease"; boardId: Id; itemIds: Id[] }
 export type BringItemToFront = { action: "item.front"; boardId: Id; itemIds: Id[] }
-export type DeleteItem = { action: "item.delete"; boardId: Id; itemIds: Id[]; connectionIds: Id[] | null } // TODO: null is legacy support
+export type DeleteItem = { action: "item.delete"; boardId: Id; itemIds: Id[]; connectionIds: Id[] }
 export type BootstrapBoard = { action: "item.bootstrap"; boardId: Id } & BoardContents
 export type LockItem = { action: "item.lock"; boardId: Id; itemId: Id }
 export type UnlockItem = { action: "item.unlock"; boardId: Id; itemId: Id }

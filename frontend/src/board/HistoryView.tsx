@@ -149,26 +149,26 @@ export const HistoryView = ({
                 return {
                     timestamp,
                     user,
-                    itemIds: idsOf(event.connection),
+                    itemIds: idsOf(event.connections),
                     kind: "added",
-                    actionText: `added connection ${idsOf(event.connection).join(", ")}`,
+                    actionText: `added connection ${idsOf(event.connections).join(", ")}`,
                 }
             case "connection.delete":
                 return {
                     timestamp,
                     user,
-                    itemIds: toArray(event.connectionId),
+                    itemIds: event.connectionIds,
                     kind: "deleted",
-                    actionText: `deleted connection ${toArray(event.connectionId).join(", ")}`,
+                    actionText: `deleted connection ${event.connectionIds.join(", ")}`,
                 }
 
             case "connection.modify": {
                 return {
                     timestamp,
                     user,
-                    itemIds: idsOf(event.connection),
+                    itemIds: idsOf(event.connections),
                     kind: "changed",
-                    actionText: `changed connection ${idsOf(event.connection).join(", ")}`,
+                    actionText: `changed connection ${idsOf(event.connections).join(", ")}`,
                 }
             }
             case "item.add": {

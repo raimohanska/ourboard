@@ -1,8 +1,7 @@
 require("dotenv").config()
-import { withDBClient } from "../db"
-import { compactBoardHistory } from "../compact-history"
 import { findAllBoards } from "../board-store"
-import { getEnv } from "../env"
+import { compactBoardHistory } from "../compact-history"
+import { withDBClient } from "../db"
 
 const BOARD_ID = process.env.BOARD_ID || null
 
