@@ -1,30 +1,30 @@
-import { Rect, equalRect } from "./geometry"
+import { partition } from "lodash"
+import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
+import { toArray } from "./arrays"
+import { rerouteConnection, resolveEndpoint } from "./connection-utils"
 import {
-    AppEvent,
     Board,
-    Id,
-    Item,
-    getItem,
+    Connection,
+    ConnectionEndPoint,
     findItem,
     findItemIdsRecursively,
-    isBoardHistoryEntry,
-    PersistableBoardItemEvent,
-    isTextItem,
-    TextItem,
-    Connection,
-    isContainedBy,
-    MoveItem,
-    ConnectionEndPoint,
-    Point,
-    isContainer,
-    getEndPointItemId,
-    isItemEndPoint,
     getConnection,
+    getEndPointItemId,
+    getItem,
+    Id,
+    isBoardHistoryEntry,
+    isContainedBy,
+    isContainer,
+    isItemEndPoint,
+    isTextItem,
+    Item,
+    MoveItem,
+    PersistableBoardItemEvent,
+    Point,
+    TextItem,
 } from "./domain"
-import _, { isArray } from "lodash"
+import { equalRect, Rect } from "./geometry"
 import { arrayToObject } from "./migration"
-import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
-import { rerouteConnection, resolveEndpoint } from "./connection-utils"
 
 export function boardReducer(
     board: Board,
@@ -39,7 +39,7 @@ export function boardReducer(
     }
     switch (event.action) {
         case "connection.add": {
-            const connections = isArray(event.connection) ? event.connection : [event.connection]
+            const connections = toArray(event.connection)
 
             for (let connection of connections) {
                 validateConnection(board, connection)
@@ -55,17 +55,26 @@ export function boardReducer(
             ]
         }
         case "connection.modify": {
-            const { connection } = event
-            validateConnection(board, connection)
+            const connections = toArray(event.connection)
 
-            const existingConnection = board.connections.find((c) => c.id === connection.id)
-            if (!existingConnection) {
-                throw Error(`Trying to modify nonexisting connection ${connection.id} on board ${board.id}`)
-            }
+            const existingConnections = connections.map((r) => {
+                validateConnection(board, r)
+                const existingConnection = board.connections.find((c) => c.id === r.id)
+                if (!existingConnection) {
+                    throw Error(`Trying to modify nonexisting connection ${r.id} on board ${board.id}`)
+                }
+                return existingConnection
+            })
 
             return [
-                { ...board, connections: board.connections.map((c) => (c === existingConnection ? connection : c)) },
-                { action: "connection.modify", boardId: event.boardId, connection: existingConnection },
+                {
+                    ...board,
+                    connections: board.connections.map((c) => {
+                        const replacement = connections.find((r) => r.id === c.id)
+                        return replacement ? replacement : c
+                    }),
+                },
+                { action: "connection.modify", boardId: event.boardId, connection: existingConnections },
             ]
         }
         case "connection.delete": {
@@ -175,7 +184,7 @@ export function boardReducer(
         case "item.delete": {
             const itemIdsToDelete = findItemIdsRecursively(event.itemIds, board)
             const connectionIdsToDelete = new Set(event.connectionIds || [])
-            const [connectionsToKeep, connectionsDeleted] = _.partition(
+            const [connectionsToKeep, connectionsDeleted] = partition(
                 board.connections,
                 (c) =>
                     !connectionIdsToDelete.has(c.id) &&

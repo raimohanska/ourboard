@@ -1,21 +1,18 @@
+import { arrayEquals, arrayIdMatch, idsOf } from "./arrays"
+import { boardReducer } from "./board-reducer"
 import {
     actionNamespaceIs,
     AppEvent,
     BoardHistoryEntry,
-    BringItemToFront,
-    newBoard,
     CURSOR_POSITIONS_ACTION_TYPE,
+    getItem,
     getItemIds,
     isBoardHistoryEntry,
     isPersistableBoardItemEvent,
     isSameUser,
-    Item,
     MoveItem,
-    UpdateItem,
+    newBoard,
 } from "./domain"
-import { boardReducer } from "./board-reducer"
-import { getItem } from "./domain"
-import * as _ from "lodash"
 
 type FoldOptions = {
     foldAddUpdate: boolean
@@ -78,39 +75,23 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
             return b
         }
     } else if (a.action === "item.front") {
-        if (b.action === "item.front" && b.boardId === a.boardId && everyItemIdMatches(b, a)) return b
+        if (b.action === "item.front" && b.boardId === a.boardId && arrayEquals(b.itemIds, a.itemIds)) return b
     } else if (a.action === "item.move") {
         if (b.action === "item.move" && b.boardId === a.boardId && everyMovedItemMatches(b, a)) return b
     } else if (a.action === "item.update") {
-        if (b.action === "item.update" && b.boardId === a.boardId && everyItemMatches(b, a)) return b
+        if (b.action === "item.update" && b.boardId === a.boardId && arrayIdMatch(b.items, a.items)) return b
     } else if (a.action === "item.lock" || a.action === "item.unlock") {
         if (b.action === a.action && b.boardId === a.boardId && b.itemId === a.itemId) return b
     } else if (a.action === "connection.modify" && b.action === "connection.modify") {
-        if (a.boardId === b.boardId && a.connection.id === b.connection.id) return b
+        if (arrayIdMatch(a.connection, b.connection)) return b
     } else if (a.action === "connection.modify" && b.action === "connection.delete") {
-        if (_.isEqual(typeof b.connectionId === "string" ? [b.connectionId] : b.connectionId, [a.connection.id]))
-            return b
+        if (arrayEquals(b.connectionId, idsOf(a.connection))) return b
     }
     return null
 }
 
-function everyItemMatches(evt: UpdateItem, evt2: UpdateItem) {
-    return arrayIdMatch(evt.items, evt2.items)
-}
-
 function everyMovedItemMatches(evt: MoveItem, evt2: MoveItem) {
     return arrayIdMatch(evt.items, evt2.items) && arrayIdMatch(evt.connections || [], evt2.connections || [])
-}
-
-function arrayIdMatch<T extends { id: string }>(a: T[], b: T[]) {
-    return _.isEqual(
-        a.map((x) => x.id),
-        b.map((x) => x.id),
-    )
-}
-
-function everyItemIdMatches(evt: BringItemToFront, evt2: BringItemToFront) {
-    return evt.itemIds.length === evt2.itemIds.length && evt.itemIds.every((it, ind) => evt2.itemIds[ind] === it)
 }
 
 export function addOrReplaceEvent<E extends AppEvent>(event: E, q: E[]): E[] {

@@ -1,7 +1,7 @@
 import { componentScope, Fragment, h, ListView } from "harmaja"
-import { isArray } from "lodash"
 import * as L from "lonna"
 import prettyMs from "pretty-ms"
+import { idsOf, toArray } from "../../../common/src/arrays"
 import { boardReducer } from "../../../common/src/board-reducer"
 import {
     Board,
@@ -146,31 +146,29 @@ export const HistoryView = ({
         const itemIds = getItemIds(event)
         switch (event.action) {
             case "connection.add":
-                const kind = "added"
-                const ids = (isArray(event.connection) ? event.connection : [event.connection]).map((c) => c.id)
                 return {
                     timestamp,
                     user,
-                    itemIds: ids,
-                    kind,
-                    actionText: `${kind} connection ${ids.join(", ")}`,
+                    itemIds: idsOf(event.connection),
+                    kind: "added",
+                    actionText: `added connection ${idsOf(event.connection).join(", ")}`,
                 }
             case "connection.delete":
-            case "connection.modify": {
-                const kind = event.action === "connection.delete" ? "deleted" : "changed"
-
-                const ids =
-                    event.action === "connection.delete"
-                        ? typeof event.connectionId === "string"
-                            ? [event.connectionId]
-                            : [...event.connectionId]
-                        : [event.connection.id]
                 return {
                     timestamp,
                     user,
-                    itemIds: ids,
-                    kind,
-                    actionText: `${kind} connection ${ids.join(", ")}`,
+                    itemIds: toArray(event.connectionId),
+                    kind: "deleted",
+                    actionText: `deleted connection ${toArray(event.connectionId).join(", ")}`,
+                }
+
+            case "connection.modify": {
+                return {
+                    timestamp,
+                    user,
+                    itemIds: idsOf(event.connection),
+                    kind: "changed",
+                    actionText: `changed connection ${idsOf(event.connection).join(", ")}`,
                 }
             }
             case "item.add": {

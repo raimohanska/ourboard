@@ -107,7 +107,7 @@ export function drawConnectionHandler(
                     b,
                 )
 
-                dispatch({ action: "connection.modify", boardId: b.id, connection: localConnection })
+                dispatch({ action: "connection.modify", boardId: b.id, connection: [localConnection] })
             }
         }
     }
@@ -158,7 +158,7 @@ export function existingConnectionHandler(
                 dispatch({
                     action: "connection.modify",
                     boardId: b.id,
-                    connection: rerouteConnection({ ...connection, to }, b),
+                    connection: [rerouteConnection({ ...connection, to }, b)],
                 })
             } else if (type === "from") {
                 const hitsItem = findTarget(b, connection.to, coords, connection)
@@ -166,13 +166,13 @@ export function existingConnectionHandler(
                 dispatch({
                     action: "connection.modify",
                     boardId: b.id,
-                    connection: rerouteConnection({ ...connection, from }, b),
+                    connection: [rerouteConnection({ ...connection, from }, b)],
                 })
             } else {
                 dispatch({
                     action: "connection.modify",
                     boardId: b.id,
-                    connection: rerouteByNewControlPoints(connection, [coords], b),
+                    connection: [rerouteByNewControlPoints(connection, [coords], b)],
                 })
             }
         }, 20),
