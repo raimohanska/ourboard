@@ -1,7 +1,7 @@
 import * as localForage from "localforage"
-import _ from "lodash"
+import { throttle } from "lodash"
 import { Board, BoardHistoryEntry, Id } from "../../../common/src/domain"
-import { migrateEvent } from "../../../common/src/migration"
+import { migrateBoard, migrateEvent } from "../../../common/src/migration"
 
 export type LocalStorageBoard = {
     serverShadow: Board
@@ -29,7 +29,7 @@ async function getStoredState(localStorageKey: string): Promise<LocalStorageBoar
             return undefined
         }
         return {
-            ...state,
+            serverShadow: migrateBoard(state.serverShadow),
             queue: state.queue.map(migrateEvent),
             serverHistory: state.serverHistory.map(migrateEvent),
         }
@@ -50,7 +50,7 @@ async function storeBoardState(newState: LocalStorageBoard): Promise<void> {
     storeThrottled(activeBoardState)
 }
 
-const storeThrottled = _.throttle(
+const storeThrottled = throttle(
     (newState: LocalStorageBoard) => {
         try {
             localForage.setItem(getStorageKey(newState.serverShadow.id), JSON.stringify(newState))

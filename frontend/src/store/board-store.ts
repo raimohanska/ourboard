@@ -28,7 +28,7 @@ import {
     UIEvent,
     UserSessionInfo,
 } from "../../../common/src/domain"
-import { migrateBoard, mkBootStrapEvent } from "../../../common/src/migration"
+import { mkBootStrapEvent } from "../../../common/src/migration"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
@@ -450,9 +450,6 @@ export function BoardStore(
         console.log("Board id", boardId)
         if (boardId) {
             storedInitialState = await localStore.getInitialBoardState(boardId)
-            if (storedInitialState) {
-                storedInitialState.serverShadow = migrateBoard(storedInitialState.serverShadow)
-            }
         }
         dispatch({ action: "ui.board.join.request", boardId })
         checkReadyToJoin()
