@@ -1,5 +1,5 @@
 import { isArray } from "lodash"
-import { toArray } from "./arrays"
+import { arrayToRecordById, toArray } from "./arrays"
 import { resolveEndpoint } from "./connection-utils"
 import { Board, BoardHistoryEntry, Container, defaultBoardSize, Id, Item, Serial } from "./domain"
 
@@ -13,14 +13,6 @@ export function mkBootStrapEvent(boardId: Id, snapshot: Board, serial: Serial = 
         user: { nickname: "admin", userType: "system" },
         serial,
     } as BoardHistoryEntry
-}
-
-export function arrayToObject<T, K extends keyof T>(key: K, arr: T[]) {
-    return arr.reduce((acc: Record<string, T>, elem: T) => {
-        const k = String(elem[key])
-        acc[k] = elem
-        return acc
-    }, {} as Record<string, T>)
 }
 
 export function migrateBoard(origBoard: Board) {
@@ -56,7 +48,7 @@ export function migrateBoard(origBoard: Board) {
         return true
     })
 
-    return { ...board, connections, width, height, items: arrayToObject("id", items) }
+    return { ...board, connections, width, height, items: arrayToRecordById(items) }
 }
 
 function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {

@@ -1,3 +1,4 @@
+import { arrayToRecordById } from "./arrays"
 import {
     AddConnection,
     Board,
@@ -9,7 +10,7 @@ import {
     ModifyConnection,
     MoveItem,
 } from "./domain"
-import { arrayToObject, migrateBoard, migrateEvent } from "./migration"
+import { migrateBoard, migrateEvent } from "./migration"
 
 describe("Migration", () => {
     describe("Migrate board", () => {
@@ -69,7 +70,7 @@ describe("Migration", () => {
                 ...legacyBoard,
                 ...defaultBoardSize,
                 connections: [],
-                items: arrayToObject("id", [
+                items: arrayToRecordById([
                     { ...containedNoteWithNoType, type: "note", containerId: "d", z: 0 },
                     { ...containedNote2, containerId: "d", z: 0 },
                     { ...unContainedNoteWithNoDimensions, width: 5, height: 5, z: 0 },

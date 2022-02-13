@@ -16,3 +16,10 @@ export function idsOf<T extends { id: string }>(a: T[] | T): string[] {
 export function arrayEquals<T>(a: T[] | T, b: T[] | T) {
     return isEqual(toArray(a), toArray(b))
 }
+
+export function arrayToRecordById<T extends { id: string }>(arr: T[]): Record<string, T> {
+    return arr.reduce((acc: Record<string, T>, elem: T) => {
+        acc[elem.id] = elem
+        return acc
+    }, {} as Record<string, T>)
+}

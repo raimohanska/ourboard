@@ -1,8 +1,8 @@
 import _ from "lodash"
 import * as uuid from "uuid"
 import * as t from "io-ts"
-import { arrayToObject } from "./migration"
 import { LIGHT_BLUE, PINK, RED, YELLOW } from "./colors"
+import { arrayToRecordById } from "./arrays"
 
 export type Id = string
 export type ISOTimeStamp = string
@@ -328,7 +328,7 @@ export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE; p: 
 export const exampleBoard: Board = {
     id: "default",
     name: "Test Board",
-    items: arrayToObject("id", [
+    items: arrayToRecordById([
         newNote("Hello", PINK, 10, 5),
         newNote("World", LIGHT_BLUE, 20, 10),
         newNote("Welcome", RED, 5, 14),

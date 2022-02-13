@@ -1,6 +1,6 @@
 import { partition } from "lodash"
 import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
-import { toArray } from "./arrays"
+import { arrayToRecordById } from "./arrays"
 import { rerouteConnection, resolveEndpoint } from "./connection-utils"
 import {
     Board,
@@ -24,7 +24,6 @@ import {
     TextItem,
 } from "./domain"
 import { equalRect, Rect } from "./geometry"
-import { arrayToObject } from "./migration"
 
 export function boardReducer(
     board: Board,
@@ -102,7 +101,7 @@ export function boardReducer(
                 if (
                     item.containerId &&
                     !findItem(board)(item.containerId) &&
-                    !findItem(arrayToObject("id", event.items))(item.containerId)
+                    !findItem(arrayToRecordById(event.items))(item.containerId)
                 ) {
                     // Add item but don't try to assign to a non-existing container
                     acc[item.id] = { ...item, containerId: undefined }
@@ -289,7 +288,7 @@ function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[
 }
 
 function updateItems(current: Record<Id, Item>, updateList: Item[]): Record<Id, Item> {
-    const updated = arrayToObject("id", updateList)
+    const updated = arrayToRecordById(updateList)
     const result = { ...current, ...updated }
     updateList.filter(isContainer).forEach((container) => {
         const previous = current[container.id]
