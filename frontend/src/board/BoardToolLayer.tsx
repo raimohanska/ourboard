@@ -4,7 +4,7 @@ import { AccessLevel, Board, canWrite, Item, Note } from "../../../common/src/do
 import { BoardStore, Dispatch } from "../store/board-store"
 import { UserSessionState } from "../store/user-session-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus } from "./board-focus"
+import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "./board-focus"
 import { BoardZoom } from "./board-scroll-and-zoom"
 import { BoardViewMessage } from "./BoardViewMessage"
 import * as G from "../../../common/src/geometry"
@@ -180,7 +180,7 @@ type DeleteProps = {
 }
 
 const DeleteIcon = ({ focus, board, dispatch }: DeleteProps) => {
-    const enabled = L.view(focus, (f) => f.status === "editing" || f.status === "selected")
+    const enabled = L.view(focus, (f) => getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0)
     return (
         <span
             className={L.view(enabled, (e) => (e ? "tool icon" : "tool icon disabled"))}
