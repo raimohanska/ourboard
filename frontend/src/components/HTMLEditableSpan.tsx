@@ -2,6 +2,7 @@ import * as H from "harmaja"
 import * as L from "lonna"
 import { componentScope, h } from "harmaja"
 import { isURL, sanitizeHTML, createLinkHTML } from "./sanitizeHTML"
+import { IS_TOUCHSCREEN } from "../board/touchScreen"
 
 export type EditableSpanProps = {
     value: L.Atom<string>
@@ -24,7 +25,10 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
         if (editing) {
             setTimeout(() => {
                 editableElement.get()!.focus()
-                document.execCommand("selectAll", false)
+                if (!IS_TOUCHSCREEN) {
+                    // On iPhone at least the selectAll command prevent the keyboard from showing up
+                    document.execCommand("selectAll", false)
+                }
             }, 1)
         } else {
             clearSelection()
