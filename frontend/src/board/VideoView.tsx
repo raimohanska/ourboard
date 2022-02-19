@@ -32,7 +32,7 @@ export const VideoView = ({
     dispatch: Dispatch
     assets: AssetStore
 }) => {
-    const { selected, onClick } = itemSelectionHandler(
+    const { selected, onClick, onTouchStart } = itemSelectionHandler(
         id,
         "video",
         focus,
@@ -46,6 +46,7 @@ export const VideoView = ({
         <span
             className="video"
             onClick={onClick}
+            onTouchStart={onTouchStart}
             ref={itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch, false) as any}
             style={L.view(
                 video,

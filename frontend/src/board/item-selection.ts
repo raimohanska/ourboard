@@ -26,7 +26,7 @@ export function itemSelectionHandler(
 
     const selected = L.view(itemFocus, (s) => s !== "none")
 
-    function onClick(e: JSX.MouseEvent) {
+    function onClick(e: JSX.MouseEvent | JSX.TouchEvent) {
         const f = focus.get()
         const selectedIds = getSelectedItemIds(f)
         const tool = toolController.tool.get()
@@ -57,5 +57,6 @@ export function itemSelectionHandler(
         itemFocus,
         selected,
         onClick,
+        onTouchStart: onClick
     }
 }

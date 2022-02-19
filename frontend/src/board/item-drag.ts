@@ -52,10 +52,6 @@ export function onBoardItemDrag(
 
     const dragEnabled = onlyWhenSelected ? L.view(focus, (f) => getSelectedItemIds(f).has(id)) : L.constant(true)
 
-    const onTouchStart = (e: TouchEvent) => {
-        e.preventDefault()
-        startDrag(touch2Drag(e))
-    }
     const onDragStart = (e: DragEvent) => {
         e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
         startDrag(e)
@@ -80,6 +76,11 @@ export function onBoardItemDrag(
     const onTouchMove = (e: TouchEvent) => {
         const d = touch2Drag(e)
         e.preventDefault()
+        const f = focus.get()
+        if (f.status !== "dragging") {
+            startDrag(touch2Drag(e))
+        }
+
         coordinateHelper.currentPageCoordinates.set({x: d.pageX, y: d.pageY})        
         drag(d)
     }
@@ -155,14 +156,12 @@ export function onBoardItemDrag(
             elem.addEventListener("dragstart", onDragStart)
             elem.addEventListener("drag", onDrag)
             elem.addEventListener("dragend", onDragEnd)
-            elem.addEventListener("touchstart", onTouchStart)
             elem.addEventListener("touchmove", onTouchMove)
             elem.addEventListener("touchend", onTouchEnd)
         } else {
             elem.removeEventListener("dragstart", onDragStart)
             elem.removeEventListener("drag", onDrag)
             elem.removeEventListener("dragend", onDragEnd)
-            elem.removeEventListener("touchstart", onTouchStart)
             elem.removeEventListener("touchmove", onTouchMove)
             elem.removeEventListener("touchend", onTouchEnd)
         }
