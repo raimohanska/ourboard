@@ -4,7 +4,7 @@ import { AccessLevel, Board, canWrite, Item, Note } from "../../../common/src/do
 import { BoardStore, Dispatch } from "../store/board-store"
 import { UserSessionState } from "../store/user-session-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus } from "./board-focus"
+import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "./board-focus"
 import { BoardZoom } from "./board-scroll-and-zoom"
 import { BoardViewMessage } from "./BoardViewMessage"
 import * as G from "../../../common/src/geometry"
@@ -17,6 +17,8 @@ import { PaletteView } from "./toolbars/PaletteView"
 import { ToolSelector } from "./toolbars/ToolSelector"
 import { UndoRedo } from "./toolbars/UndoRedo"
 import { ZoomControls } from "./toolbars/ZoomControls"
+import { dispatchDeletion } from "./item-delete"
+import { IS_TOUCHSCREEN } from "./touchScreen"
 
 export const BoardToolLayer = ({
     boardStore,
@@ -121,6 +123,7 @@ export const BoardToolLayer = ({
             >
                 <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
                 <ToolSelector {...{ toolController }} />
+                {IS_TOUCHSCREEN && <DeleteIcon {...{ focus, dispatch, board }} />}
             </div>
             <div className="undo-redo-toolbar board-tool">
                 <UndoRedo {...{ dispatch, boardStore }} />
@@ -162,10 +165,34 @@ export const BoardToolLayer = ({
                 }))
                 return (
                     <span className="item-adding" style={style}>
-                        {text} 
+                        {text}
                     </span>
                 )
             })}
         </div>
+    )
+}
+
+type DeleteProps = {
+    focus: L.Atom<BoardFocus>
+    board: L.Property<Board>
+    dispatch: Dispatch
+}
+
+const DeleteIcon = ({ focus, board, dispatch }: DeleteProps) => {
+    const enabled = L.view(focus, (f) => getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0)
+    return (
+        <span
+            className={L.view(enabled, (e) => (e ? "tool icon" : "tool icon disabled"))}
+            title="Delete selected item(s)"
+            onMouseDown={() => dispatchDeletion(board.get().id, focus.get(), dispatch)}
+        >
+            <svg viewBox="0 0 24 24">
+                <path
+                    fill="currentColor"
+                    d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"
+                />
+            </svg>
+        </span>
     )
 }

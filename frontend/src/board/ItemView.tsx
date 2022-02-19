@@ -59,7 +59,7 @@ export const ItemView = ({
         element.set(el)
     }
 
-    const { itemFocus, selected, onClick } = itemSelectionHandler(
+    const { itemFocus, selected, onClick, onTouchStart } = itemSelectionHandler(
         id,
         type,
         focus,
@@ -93,6 +93,7 @@ export const ItemView = ({
             data-itemid={id}
             draggable={L.view(itemFocus, (f) => f !== "editing")}
             onClick={onClick}
+            onTouchStart={onTouchStart}
             className={L.view(
                 selected,
                 L.view(item, getItemBackground),

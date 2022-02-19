@@ -536,6 +536,9 @@
 
             .tool {
                 margin: 0.5em 0;
+                .touch & {
+                    font-size: 2em !important;
+                }
             }
 
             .new-item {

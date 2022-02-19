@@ -31,7 +31,7 @@ export const ImageView = ({
     dispatch: Dispatch
     assets: AssetStore
 }) => {
-    const { selected, onClick } = itemSelectionHandler(
+    const { selected, onClick, onTouchStart } = itemSelectionHandler(
         id,
         "image",
         focus,
@@ -45,6 +45,7 @@ export const ImageView = ({
         <span
             className="image"
             onClick={onClick}
+            onTouchStart={onTouchStart}
             ref={itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch, false) as any}
             style={L.view(
                 image,

@@ -1,7 +1,8 @@
 import * as H from "harmaja"
 import * as L from "lonna"
-import { componentScope, h, HarmajaOutput, Fragment } from "harmaja"
+import { componentScope, h } from "harmaja"
 import { isURL, sanitizeHTML, createLinkHTML } from "./sanitizeHTML"
+import { IS_TOUCHSCREEN } from "../board/touchScreen"
 
 export type EditableSpanProps = {
     value: L.Atom<string>
@@ -24,7 +25,10 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
         if (editing) {
             setTimeout(() => {
                 editableElement.get()!.focus()
-                document.execCommand("selectAll", false)
+                if (!IS_TOUCHSCREEN) {
+                    // On iPhone at least the selectAll command prevent the keyboard from showing up
+                    document.execCommand("selectAll", false)
+                }
             }, 1)
         } else {
             clearSelection()
@@ -95,6 +99,13 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
         document.execCommand("insertHTML", false, sanitized)
     }
 
+    const onTouch = (e: JSX.TouchEvent) => {
+        if (!editingThis.get()) {
+            editingThis.set(true)
+        }
+        e.stopPropagation()
+    }
+
     return (
         <span style={{ cursor: "pointer" }}>
             <span
@@ -108,6 +119,9 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
                 onKeyDown={onKeyDown}
                 onInput={onInput}
                 onPaste={onPaste}
+                onTouchStart={onTouch}
+                onTouchEnd={onTouch}
+                onTouchCancel={onTouch}
                 onDoubleClick={(e) => {
                     e.stopPropagation()
                     e.preventDefault()

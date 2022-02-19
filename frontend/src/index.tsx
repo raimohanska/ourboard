@@ -1,21 +1,20 @@
 import * as H from "harmaja"
-import * as L from "lonna"
 import { h } from "harmaja"
-
+import _ from "lodash"
+import * as L from "lonna"
+import { RecentBoardAttributes } from "../../common/src/domain"
 import "./app.scss"
-import { UserSessionStore } from "./store/user-session-store"
+import { BoardNavigation } from "./board-navigation"
 import { BoardView } from "./board/BoardView"
+import { IS_TOUCHSCREEN } from "./board/touchScreen"
 import { DashboardView } from "./dashboard/DashboardView"
 import { assetStore } from "./store/asset-store"
+import boardLocalStore from "./store/board-local-store"
+import { BoardState, BoardStore } from "./store/board-store"
+import { CursorsStore } from "./store/cursors-store"
 import { RecentBoards } from "./store/recent-boards"
 import { BrowserSideServerConnection } from "./store/server-connection"
-import { BoardState, BoardStore } from "./store/board-store"
-import _ from "lodash"
-import { BoardNavigation } from "./board-navigation"
-import { RecentBoardAttributes } from "../../common/src/domain"
-import { CursorsStore } from "./store/cursors-store"
-import boardLocalStore from "./store/board-local-store"
-import { ReactiveRouter } from "harmaja-router"
+import { UserSessionStore } from "./store/user-session-store"
 
 const App = () => {
     const { boardId, page } = BoardNavigation()
@@ -38,7 +37,7 @@ const App = () => {
         .forEach(recentBoards.storeRecentBoard)
 
     return (
-        <div>
+        <div className={IS_TOUCHSCREEN ? " touch" : ""}>
             {L.view(page, (page) => {
                 switch (page.page) {
                     case "Board":

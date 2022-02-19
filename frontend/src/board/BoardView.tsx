@@ -135,6 +135,7 @@ export const BoardView = ({
         })
 
     onClickOutside(boardElement, () => {
+        console.log("OUT")
         focus.set(noFocus)
     })
 
