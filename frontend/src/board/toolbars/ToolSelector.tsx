@@ -3,11 +3,13 @@ import * as L from "lonna"
 import { Color } from "../../../../common/src/domain"
 import { Tool, ToolController } from "../tool-selection"
 import { black, selectedColor } from "../../components/UIColors"
+import { IS_TOUCHSCREEN } from "../touchScreen"
 
 export const ToolSelector = ({ toolController }: { toolController: ToolController }) => {
     const tool = toolController.tool
     return (
         <>
+            { !IS_TOUCHSCREEN && <>
             <ToolIcon
                 {...{
                     name: "select",
@@ -20,7 +22,6 @@ export const ToolSelector = ({ toolController }: { toolController: ToolControlle
                     ),
                 }}
             />
-
             <ToolIcon
                 {...{
                     name: "pan",
@@ -35,7 +36,7 @@ export const ToolSelector = ({ toolController }: { toolController: ToolControlle
                         </svg>
                     ),
                 }}
-            />
+            /></>}
             <ToolIcon
                 {...{
                     name: "connect",
