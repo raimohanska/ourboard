@@ -16,7 +16,6 @@ import { RecentBoards } from "./store/recent-boards"
 import { BrowserSideServerConnection } from "./store/server-connection"
 import { UserSessionStore } from "./store/user-session-store"
 
-
 const App = () => {
     const { boardId, page } = BoardNavigation()
     const connection = BrowserSideServerConnection()
@@ -38,7 +37,7 @@ const App = () => {
         .forEach(recentBoards.storeRecentBoard)
 
     return (
-        <div className={IS_TOUCHSCREEN ? " touch" :""}>
+        <div className={IS_TOUCHSCREEN ? " touch" : ""}>
             {L.view(page, (page) => {
                 switch (page.page) {
                     case "Board":

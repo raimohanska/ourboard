@@ -122,7 +122,6 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
                 onTouchStart={onTouch}
                 onTouchEnd={onTouch}
                 onTouchCancel={onTouch}
-
                 onDoubleClick={(e) => {
                     e.stopPropagation()
                     e.preventDefault()

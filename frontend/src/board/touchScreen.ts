@@ -1,1 +1,1 @@
-export const IS_TOUCHSCREEN = ( 'ontouchstart' in window )
+export const IS_TOUCHSCREEN = "ontouchstart" in window

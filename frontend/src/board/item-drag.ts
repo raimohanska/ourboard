@@ -29,19 +29,19 @@ export function onBoardItemDrag(
     ) => void,
     doOnDrop?: (b: Board, current: Item[]) => void,
 ) {
-    type Drag = { pageX: number, pageY: number, preventDefault: () => void, stopPropagation: () => void }
+    type Drag = { pageX: number; pageY: number; preventDefault: () => void; stopPropagation: () => void }
     type DragEnd = { stopPropagation: () => void }
-    
+
     const touch2Drag = (e: TouchEvent): Drag => {
-        return { 
-            pageX: e.touches[0].pageX, 
-            pageY: e.touches[0].pageY,    
-            stopPropagation: () => e.stopPropagation(),         
-            preventDefault: () => e.preventDefault()
+        return {
+            pageX: e.touches[0].pageX,
+            pageY: e.touches[0].pageY,
+            stopPropagation: () => e.stopPropagation(),
+            preventDefault: () => e.preventDefault(),
         }
     }
     const touch2DragEnd = (e: TouchEvent): DragEnd => {
-        return { 
+        return {
             stopPropagation: () => {},
         }
     }
@@ -57,7 +57,7 @@ export function onBoardItemDrag(
         startDrag(e)
     }
     const startDrag = (e: Drag) => {
-        e.stopPropagation()        
+        e.stopPropagation()
         const f = focus.get()
         if (f.status === "dragging") {
             if (!f.itemIds.has(id)) {
@@ -81,10 +81,10 @@ export function onBoardItemDrag(
             startDrag(touch2Drag(e))
         }
 
-        coordinateHelper.currentPageCoordinates.set({x: d.pageX, y: d.pageY})        
+        coordinateHelper.currentPageCoordinates.set({ x: d.pageX, y: d.pageY })
         drag(d)
     }
-    const onDrag = (e: DragEvent) => {        
+    const onDrag = (e: DragEvent) => {
         drag(e)
     }
 
@@ -133,7 +133,7 @@ export function onBoardItemDrag(
         dragEnd(touch2DragEnd(e))
     }
     const onDragEnd = (e: DragEvent) => {
-       dragEnd(e)
+        dragEnd(e)
     }
     const dragEnd = (e: DragEnd) => {
         e.stopPropagation()
