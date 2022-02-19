@@ -1,6 +1,6 @@
 import * as H from "harmaja"
 import * as L from "lonna"
-import { componentScope, h, HarmajaOutput, Fragment } from "harmaja"
+import { componentScope, h } from "harmaja"
 import { isURL, sanitizeHTML, createLinkHTML } from "./sanitizeHTML"
 
 export type EditableSpanProps = {
@@ -95,6 +95,13 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
         document.execCommand("insertHTML", false, sanitized)
     }
 
+    const onTouch = (e: JSX.TouchEvent) => {
+        if (!editingThis.get()) {
+            editingThis.set(true)
+        }
+        e.stopPropagation()
+    }
+
     return (
         <span style={{ cursor: "pointer" }}>
             <span
@@ -108,6 +115,10 @@ export const HTMLEditableSpan = (props: EditableSpanProps) => {
                 onKeyDown={onKeyDown}
                 onInput={onInput}
                 onPaste={onPaste}
+                onTouchStart={onTouch}
+                onTouchEnd={onTouch}
+                onTouchCancel={onTouch}
+
                 onDoubleClick={(e) => {
                     e.stopPropagation()
                     e.preventDefault()
