@@ -29,16 +29,40 @@ export function onBoardItemDrag(
     ) => void,
     doOnDrop?: (b: Board, current: Item[]) => void,
 ) {
-    let dragStart: DragEvent | null = null
+    type Drag = { pageX: number, pageY: number, preventDefault: () => void, stopPropagation: () => void }
+    type DragEnd = { stopPropagation: () => void }
+    
+    const touch2Drag = (e: TouchEvent): Drag => {
+        return { 
+            pageX: e.touches[0].pageX, 
+            pageY: e.touches[0].pageY,    
+            stopPropagation: () => e.stopPropagation(),         
+            preventDefault: () => e.preventDefault()
+        }
+    }
+    const touch2DragEnd = (e: TouchEvent): DragEnd => {
+        return { 
+            stopPropagation: () => {},
+        }
+    }
+
+    let dragStart: Drag | null = null
     let dragStartPositions: Board
     let currentPos: { x: number; y: number } | null = null
 
     const dragEnabled = onlyWhenSelected ? L.view(focus, (f) => getSelectedItemIds(f).has(id)) : L.constant(true)
 
+    const onTouchStart = (e: TouchEvent) => {
+        e.preventDefault()
+        startDrag(touch2Drag(e))
+    }
     const onDragStart = (e: DragEvent) => {
-        const f = focus.get()
-        e.stopPropagation()
         e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
+        startDrag(e)
+    }
+    const startDrag = (e: Drag) => {
+        e.stopPropagation()        
+        const f = focus.get()
         if (f.status === "dragging") {
             if (!f.itemIds.has(id)) {
                 focus.set({ status: "dragging", itemIds: new Set([id]), connectionIds: emptySet() })
@@ -53,7 +77,17 @@ export function onBoardItemDrag(
         dragStartPositions = board.get()
     }
 
-    const onDrag = (e: DragEvent) => {
+    const onTouchMove = (e: TouchEvent) => {
+        const d = touch2Drag(e)
+        e.preventDefault()
+        coordinateHelper.currentPageCoordinates.set({x: d.pageX, y: d.pageY})        
+        drag(d)
+    }
+    const onDrag = (e: DragEvent) => {        
+        drag(e)
+    }
+
+    const drag = (e: Drag) => {
         e.stopPropagation()
         const f = focus.get()
         if (f.status !== "dragging") {
@@ -93,7 +127,14 @@ export function onBoardItemDrag(
         doWhileDragging(b, dragStartBoardPos, items, connections, xDiff, yDiff)
     }
 
+    const onTouchEnd = (e: TouchEvent) => {
+        e.preventDefault()
+        dragEnd(touch2DragEnd(e))
+    }
     const onDragEnd = (e: DragEvent) => {
+       dragEnd(e)
+    }
+    const dragEnd = (e: DragEnd) => {
         e.stopPropagation()
         focus.modify((f) => {
             if (f.status !== "dragging") {
@@ -114,10 +155,16 @@ export function onBoardItemDrag(
             elem.addEventListener("dragstart", onDragStart)
             elem.addEventListener("drag", onDrag)
             elem.addEventListener("dragend", onDragEnd)
+            elem.addEventListener("touchstart", onTouchStart)
+            elem.addEventListener("touchmove", onTouchMove)
+            elem.addEventListener("touchend", onTouchEnd)
         } else {
             elem.removeEventListener("dragstart", onDragStart)
             elem.removeEventListener("drag", onDrag)
             elem.removeEventListener("dragend", onDragEnd)
+            elem.removeEventListener("touchstart", onTouchStart)
+            elem.removeEventListener("touchmove", onTouchMove)
+            elem.removeEventListener("touchend", onTouchEnd)
         }
     })
 }
