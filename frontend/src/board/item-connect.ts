@@ -95,8 +95,6 @@ export function drawConnectionHandler(
                 dispatch({ action: "connection.add", boardId, connections: [localConnection] })
             } else {
                 // Change current connection endpoint
-                const destinationPoint = targetExistingItem ?? currentBoardCoords
-
                 // console.log({ item, midpoint, to: targetExistingItem ?? currentPos })
 
                 localConnection = rerouteConnection(
@@ -110,14 +108,14 @@ export function drawConnectionHandler(
                 dispatch({ action: "connection.modify", boardId: b.id, connections: [localConnection] })
             }
         }
-    }
 
-    function newConnection(from: ConnectionEndPoint): Connection {
-        return {
-            id: uuid.v4(),
-            from: from,
-            controlPoints: [],
-            to: coordinateHelper.currentBoardCoordinates.get(),
+        function newConnection(from: ConnectionEndPoint): Connection {
+            return rerouteConnection({
+                id: uuid.v4(),
+                from: from,
+                controlPoints: [],
+                to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
+            }, b)
         }
     }
 
