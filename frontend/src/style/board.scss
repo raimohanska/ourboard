@@ -169,8 +169,12 @@
                 display: block;
                 width: 10px;
                 height: 10px;
+                .touch & {
+                    width: max(0.8rem, min(1.5rem, 1em));
+                    height: max(0.8rem, min(1.5rem, 1em));
+                }
                 background: white;
-                border-radius: 2px;
+                border-radius: 20%;
                 border: 1px solid #cccccc;
                 $corner-offset: -7px;
 
