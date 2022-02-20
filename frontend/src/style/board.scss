@@ -121,7 +121,7 @@
 
     > .content-container {
         flex-grow: 1;
-        height: 99%;
+        height: 80%;
         position: relative;
         > .scroll-container {
             height: 100%;
@@ -611,11 +611,10 @@
             position: absolute;
             font-size: 1.2em;
             left: 1em;
-            bottom: 1em;
+            bottom: 1.5em;
             padding-bottom: 0.2em;
             .touch & {
                 font-size: 2em;
-                bottom: 2em;
             }
         }
 
