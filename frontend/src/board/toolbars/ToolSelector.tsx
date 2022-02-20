@@ -10,7 +10,6 @@ export const ToolSelector = ({ toolController }: { toolController: ToolControlle
     return (
         <>
             {!IS_TOUCHSCREEN && (
-                <>
                     <ToolIcon
                         {...{
                             name: "select",
@@ -23,6 +22,7 @@ export const ToolSelector = ({ toolController }: { toolController: ToolControlle
                             ),
                         }}
                     />
+            )}
                     <ToolIcon
                         {...{
                             name: "pan",
@@ -38,8 +38,6 @@ export const ToolSelector = ({ toolController }: { toolController: ToolControlle
                             ),
                         }}
                     />
-                </>
-            )}
             <ToolIcon
                 {...{
                     name: "connect",
