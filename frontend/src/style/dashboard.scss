@@ -65,11 +65,12 @@
     }
 
     .recent-boards {
-        h2 {
-            a {
-                margin-left: 1ch;
-                font-size: 0.6em;
-            }
+        h2 a.edit {
+            margin-left: 1ch;
+            font-size: 0.6em;
+        }
+        &.filtered h2 a.edit {
+            display: none;
         }
         .search {
             input {
