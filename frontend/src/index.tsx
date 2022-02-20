@@ -37,7 +37,7 @@ const App = () => {
         .forEach(recentBoards.storeRecentBoard)
 
     return (
-        <div className={IS_TOUCHSCREEN ? " touch" : ""}>
+        <div className={IS_TOUCHSCREEN ? "touch" : "notouch"}>
             {L.view(page, (page) => {
                 switch (page.page) {
                     case "Board":

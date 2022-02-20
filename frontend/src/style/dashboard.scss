@@ -65,6 +65,12 @@
     }
 
     .recent-boards {
+        h2 {
+            a {
+                margin-left: 1ch;
+                font-size: 0.6em;
+            }
+        }
         .search {
             input {
                 outline: none;
@@ -77,7 +83,7 @@
             visibility: hidden;
             text-decoration: none;
         }
-        li:hover {
+        .notouch & li:hover, &.edit li {
             .remove {
                 visibility: visible;
             }
