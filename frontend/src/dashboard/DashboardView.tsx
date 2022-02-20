@@ -60,7 +60,7 @@ export const DashboardView = ({
                     <div>
                         <div className="user-content">
                             <RecentBoardsView
-                                {...{ recentBoards, dispatch, sessionState, boardName, eventsFromServer }}
+                                {...{ recentBoards, boardName }}
                             />
                         </div>
                     </div>
@@ -73,16 +73,11 @@ export const DashboardView = ({
 
 const RecentBoardsView = ({
     recentBoards,
-    dispatch,
-    sessionState,
     boardName,
 }: {
     recentBoards: RecentBoards
-    sessionState: L.Property<UserSessionState>
-    dispatch: Dispatch
     boardName: L.Atom<string>
 }) => {
-    const navigator = getNavigator<Routes>()
     const defaultLimit = 25
     const filter = boardName
 
