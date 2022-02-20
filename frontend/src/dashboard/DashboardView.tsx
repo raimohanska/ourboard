@@ -34,7 +34,8 @@ export const DashboardView = ({
                         OurBoard
                     </h1>
                     <p>
-                        Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online&nbsp;whiteboard.
+                        Free and <a href="https://github.com/raimohanska/r-board">open-source</a>{" "}
+                        online&nbsp;whiteboard.
                     </p>
                 </header>
                 <div className="user-info">
@@ -59,9 +60,7 @@ export const DashboardView = ({
                     <CreateBoard {...{ dispatch, sessionState, boardName, recentBoards, eventsFromServer }} />
                     <div>
                         <div className="user-content">
-                            <RecentBoardsView
-                                {...{ recentBoards, boardName }}
-                            />
+                            <RecentBoardsView {...{ recentBoards, boardName }} />
                         </div>
                     </div>
                     <Welcome {...{ recentBoards, dispatch, eventsFromServer, sessionState }} />
@@ -71,13 +70,7 @@ export const DashboardView = ({
     )
 }
 
-const RecentBoardsView = ({
-    recentBoards,
-    boardName,
-}: {
-    recentBoards: RecentBoards
-    boardName: L.Atom<string>
-}) => {
+const RecentBoardsView = ({ recentBoards, boardName }: { recentBoards: RecentBoards; boardName: L.Atom<string> }) => {
     const defaultLimit = 25
     const filter = boardName
 

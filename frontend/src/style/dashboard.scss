@@ -116,14 +116,15 @@
                 input {
                     width: 100%;
                 }
-                button, input {
+                button,
+                input {
                     font-size: 1.2em;
                     margin: 0;
-                }                
+                }
                 button {
                     margin-top: 0.5em;
                     height: 1.8em;
-                    
+
                     transition: all 0.3s;
                     &:disabled {
                         margin-top: 0;
