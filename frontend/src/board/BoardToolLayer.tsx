@@ -135,17 +135,24 @@ export const BoardToolLayer = ({
 
             {L.view(focus, (f) => {
                 if (f.status !== "adding") return null
-                const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
-                    position: "absolute",
-                    left: `${p.x - 20}px`,
-                    top: `${p.y - 20}px`,
-                    pointerEvents: "none",
-                }))
-                return (
-                    <span className="item-adding" style={style}>
+                if (IS_TOUCHSCREEN) {
+                    return <span className="tool-instruction">
+                        {"Click on the board to place new item"}
                         {f.element}
                     </span>
-                )
+                } else {
+                    const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
+                        position: "absolute",
+                        left: `${p.x - 20}px`,
+                        top: `${p.y - 20}px`,
+                        pointerEvents: "none",
+                    }))
+                    return (
+                        <span className="mouse-cursor-message" style={style}>
+                            {f.element}
+                        </span>
+                    )
+                }                
             })}
 
             {L.view(focus, tool, (f, t) => {
@@ -154,20 +161,25 @@ export const BoardToolLayer = ({
                     f.status === "connection-adding"
                         ? "Finish by clicking on target"
                         : "Click on an item or location to make a connection"
-
-                const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
-                    position: "absolute",
-                    left: `${p.x}px`,
-                    top: `${p.y + 20}px`,
-                    fontSize: "0.8rem",
-                    pointerEvents: "none",
-                    color: "#000000aa",
-                }))
-                return (
-                    <span className="item-adding" style={style}>
+                if (IS_TOUCHSCREEN) {
+                    return <span className="tool-instruction">
                         {text}
-                    </span>
-                )
+                    </span>;
+                } else {
+                    const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
+                        position: "absolute",
+                        left: `${p.x}px`,
+                        top: `${p.y + 20}px`,
+                        fontSize: "0.8rem",
+                        pointerEvents: "none",
+                        color: "#000000aa",
+                    }))
+                    return (
+                        <span className="mouse-cursor-message" style={style}>
+                            {text}
+                        </span>
+                    )    
+                }
             })}
         </div>
     )

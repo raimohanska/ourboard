@@ -565,6 +565,26 @@
             }
         }
 
+        .tool-instruction {
+            pointer-events: none;
+            position: absolute;
+            top: 6em;
+            left: 1em;
+            right: 1em;
+            padding: 1em;
+            border-radius: 0.5em;
+            text-align: center;
+            color: #555555;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            svg {
+                margin-left: 1em;
+                opacity: 0.3;
+            }
+        }
+
         .undo-redo-toolbar {
             @extend .toolbar;
             position: absolute;
