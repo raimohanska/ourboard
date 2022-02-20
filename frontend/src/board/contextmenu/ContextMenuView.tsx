@@ -66,7 +66,7 @@ export const ContextMenuView = ({
             style: {
                 left: alignRight ? undefined : `max(${minX}em, ${vr.x}em)`,
                 right: alignRight ? `calc(100% - min(${maxX}em, ${vr.x + vr.width}em))` : undefined,
-                top: topOfItem ? minY + "em" : `calc(${maxY}em + 4rem)`,
+                top: topOfItem ? `${minY}em` : `${maxY}em`,
             },
             className: cn + (topOfItem ? " item-top" : " item-bottom"),
         }

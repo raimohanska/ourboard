@@ -387,11 +387,13 @@
 
         > * {
             font-size: 1rem;
+            .touch & {
+                font-size: 1.7rem;
+            }
         }
 
         .context-menu {
             padding: 0.5em;
-            margin-top: -2.5em;
             border: 1px solid #cccccc;
             border-radius: 2px;
             background: white;
@@ -402,11 +404,28 @@
             grid-column-gap: 0.5em;
             grid-row-gap: 0.5em;
             grid-auto-flow: column;
-            margin-top: -3em;
+
             cursor: pointer;
 
             .icon-group {
                 grid-auto-flow: column;
+            }
+        }
+
+        &.item-bottom {
+            .context-menu {
+                margin-top: 0.5em;
+            }
+            .submenu {
+                top: 2.8em;
+            }
+        }
+        &.item-top {
+            .context-menu {
+                margin-top: -2.5em;
+            }
+            .submenu {
+                bottom: 2.7em;
             }
         }
 
@@ -437,7 +456,6 @@
             display: flex;
             position: absolute;
             align-items: flex-start;
-            top: -0.8em;
             left: 0;
             margin: 0;
 
@@ -461,13 +479,6 @@
                 .icon-group {
                     grid-auto-flow: column;
                 }
-            }
-        }
-
-        &.item-top {
-            .submenu {
-                bottom: 3.1em;
-                top: initial;
             }
         }
     }
