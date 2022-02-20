@@ -2,6 +2,9 @@
     width: 100%;
     height: calc(100vh - 2em);
     font-size: max(min(4vw, 3vh, 20px), 100%);
+    .touch & {
+        font-size: max(min(4vw, 3vh, 20px), 100%, 16px);
+    }
     display: flex;
     flex-direction: column;
     &:not(.ready) {
