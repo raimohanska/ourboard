@@ -136,10 +136,12 @@ export const BoardToolLayer = ({
             {L.view(focus, (f) => {
                 if (f.status !== "adding") return null
                 if (IS_TOUCHSCREEN) {
-                    return <span className="tool-instruction">
-                        {"Click on the board to place new item"}
-                        {f.element}
-                    </span>
+                    return (
+                        <span className="tool-instruction">
+                            {"Click on the board to place new item"}
+                            {f.element}
+                        </span>
+                    )
                 } else {
                     const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
                         position: "absolute",
@@ -152,7 +154,7 @@ export const BoardToolLayer = ({
                             {f.element}
                         </span>
                     )
-                }                
+                }
             })}
 
             {L.view(focus, tool, (f, t) => {
@@ -162,9 +164,7 @@ export const BoardToolLayer = ({
                         ? "Finish by clicking on target"
                         : "Click on an item or location to make a connection"
                 if (IS_TOUCHSCREEN) {
-                    return <span className="tool-instruction">
-                        {text}
-                    </span>;
+                    return <span className="tool-instruction">{text}</span>
                 } else {
                     const style = L.view(coordinateHelper.currentBoardViewPortCoordinates, (p) => ({
                         position: "absolute",
@@ -178,7 +178,7 @@ export const BoardToolLayer = ({
                         <span className="mouse-cursor-message" style={style}>
                             {text}
                         </span>
-                    )    
+                    )
                 }
             })}
         </div>

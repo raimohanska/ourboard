@@ -141,7 +141,6 @@ export const ItemView = ({
         const showCoords = false
         const focused = L.view(focus, (f) => getSelectedItemIds(f).has(id))
 
-        
         const setEditing = (e: boolean) => {
             if (toolController.tool.get() === "connect") return // Don't switch to editing in middle of connecting
             dispatch({ action: "item.front", boardId: board.get().id, itemIds: [id] })

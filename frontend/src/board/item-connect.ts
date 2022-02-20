@@ -86,7 +86,8 @@ export function newConnectionCreator(
         if (targetExistingItem === item) {
             if (localConnection !== null) {
                 // Remove current connection, because connect-to-self is not allowed at least for now
-                if (!IS_TOUCHSCREEN) dispatch({ action: "connection.delete", boardId, connectionIds: [localConnection.id] })
+                if (!IS_TOUCHSCREEN)
+                    dispatch({ action: "connection.delete", boardId, connectionIds: [localConnection.id] })
                 localConnection = null
             }
         } else {
@@ -106,17 +107,21 @@ export function newConnectionCreator(
                     b,
                 )
 
-                if (!IS_TOUCHSCREEN) dispatch({ action: "connection.modify", boardId: b.id, connections: [localConnection] })
+                if (!IS_TOUCHSCREEN)
+                    dispatch({ action: "connection.modify", boardId: b.id, connections: [localConnection] })
             }
         }
 
         function newConnection(from: ConnectionEndPoint): Connection {
-            return rerouteConnection({
-                id: uuid.v4(),
-                from: from,
-                controlPoints: [],
-                to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
-            }, b)
+            return rerouteConnection(
+                {
+                    id: uuid.v4(),
+                    from: from,
+                    controlPoints: [],
+                    to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
+                },
+                b,
+            )
         }
     }
 
@@ -128,10 +133,9 @@ export function newConnectionCreator(
                 dispatch({ action: "connection.add", boardId: board.get().id, connections: [addedConnection] })
             }
             focus.set({ status: "selected", itemIds: emptySet(), connectionIds: new Set(addedConnection.id) })
-    
         } else {
             focus.set(noFocus)
-        }        
+        }
     }
 
     return {
