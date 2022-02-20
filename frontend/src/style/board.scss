@@ -538,6 +538,9 @@
                 padding: 0.5em 1em 0.2em;
                 flex-direction: row;
                 top: 4rem;
+                .touch & {
+                    top: 4em;
+                }
                 left: 50%;
                 transform: translateX(-50%);
             }
@@ -596,7 +599,8 @@
             bottom: 1em;
             padding-bottom: 0.2em;
             .touch & {
-                bottom: 3em;
+                font-size: 2em;
+                bottom: 2em;
             }
         }
 
