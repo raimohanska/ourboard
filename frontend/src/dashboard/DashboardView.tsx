@@ -6,6 +6,7 @@ import * as uuid from "uuid"
 import { BoardAccessPolicy, EventFromServer, exampleBoard, RecentBoard } from "../../../common/src/domain"
 import { BOARD_PATH, createBoardAndNavigate, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
+import { IS_TOUCHSCREEN } from "../board/touchScreen"
 import { BoardAccessPolicyEditor } from "../components/BoardAccessPolicyEditor"
 import { TextInput } from "../components/components"
 import { signIn, signOut } from "../google-auth"
@@ -33,7 +34,7 @@ export const DashboardView = ({
                         OurBoard
                     </h1>
                     <p>
-                        Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online whiteboard.
+                        Free and <a href="https://github.com/raimohanska/r-board">open-source</a> online&nbsp;whiteboard.
                     </p>
                 </header>
                 <div className="user-info">
@@ -288,7 +289,7 @@ const CreateBoard = ({
         <form onSubmit={onSubmit} className="create-board">
             <h2>{L.view(hasRecentBoards, (has) => (has ? "Find or create a board" : "Create a board"))}</h2>
             <div className="input-and-button">
-                <TextInput value={boardName} autoFocus={true} placeholder="Enter board name" />
+                <TextInput value={boardName} autoFocus={!IS_TOUCHSCREEN} placeholder="Enter board name" />
                 <button id="create-board-button" data-test="create-board-submit" type="submit" disabled={disabled}>
                     Create
                 </button>
