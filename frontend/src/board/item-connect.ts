@@ -21,6 +21,7 @@ import { BoardFocus, noFocus } from "./board-focus"
 import { centerPoint, containedBy } from "../../../common/src/geometry"
 import { ToolController } from "./tool-selection"
 import { emptySet } from "../../../common/src/sets"
+import { IS_TOUCHSCREEN } from "./touchScreen"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -85,14 +86,14 @@ export function newConnectionCreator(
         if (targetExistingItem === item) {
             if (localConnection !== null) {
                 // Remove current connection, because connect-to-self is not allowed at least for now
-                dispatch({ action: "connection.delete", boardId, connectionIds: [localConnection.id] })
+                if (!IS_TOUCHSCREEN) dispatch({ action: "connection.delete", boardId, connectionIds: [localConnection.id] })
                 localConnection = null
             }
         } else {
             if (localConnection === null) {
                 // Start new connection
                 localConnection = newConnection(startPoint)
-                dispatch({ action: "connection.add", boardId, connections: [localConnection] })
+                if (!IS_TOUCHSCREEN) dispatch({ action: "connection.add", boardId, connections: [localConnection] })
             } else {
                 // Change current connection endpoint
                 // console.log({ item, midpoint, to: targetExistingItem ?? currentPos })
@@ -105,7 +106,7 @@ export function newConnectionCreator(
                     b,
                 )
 
-                dispatch({ action: "connection.modify", boardId: b.id, connections: [localConnection] })
+                if (!IS_TOUCHSCREEN) dispatch({ action: "connection.modify", boardId: b.id, connections: [localConnection] })
             }
         }
 
@@ -120,12 +121,17 @@ export function newConnectionCreator(
     }
 
     const endDrag = () => {
-        focus.set(
-            localConnection
-                ? { status: "selected", itemIds: emptySet(), connectionIds: new Set(localConnection.id) }
-                : noFocus,
-        )
-        localConnection = null
+        if (localConnection) {
+            const addedConnection = localConnection
+            localConnection = null
+            if (IS_TOUCHSCREEN) {
+                dispatch({ action: "connection.add", boardId: board.get().id, connections: [addedConnection] })
+            }
+            focus.set({ status: "selected", itemIds: emptySet(), connectionIds: new Set(addedConnection.id) })
+    
+        } else {
+            focus.set(noFocus)
+        }        
     }
 
     return {
