@@ -12,13 +12,13 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
     })
     const minimapAspectRatio = L.view(minimapDimensions, board, (mm, b) => mm.width / b.width)
     const minimapStyle = L.view(minimapDimensions, (d) => ({ width: d.width + "px", height: d.height + "px" }))
-    
+
     const viewAreaStyle = L.view(viewRect, minimapDimensions, board, (vr, mm, b) => {
         return {
             width: `${(vr.width * mm.width) / b.width}px`,
             height: `${(vr.height * mm.height) / b.height}px`,
             left: `${Math.max(0, (vr.x * mm.width) / b.width)}px`,
-            top:`${ Math.max(0, (vr.y * mm.height) / b.height)}px`,
+            top: `${Math.max(0, (vr.y * mm.height) / b.height)}px`,
         }
     })
     let startDrag: JSX.DragEvent | null = null
@@ -27,7 +27,7 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
         startDrag = null
     }
     function onDragStart(e: JSX.DragEvent) {
-        startDrag = e;
+        startDrag = e
         startViewRect = viewRect.get()
         e.dataTransfer?.setDragImage(DND_GHOST_HIDING_IMAGE, 0, 0)
     }
@@ -36,7 +36,7 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
             const xDiff = e.clientX - startDrag.clientX
             const yDiff = e.clientY - startDrag.clientY
             const ar = minimapAspectRatio.get()
-            const newRect = {...startViewRect, x: startViewRect.x + xDiff / ar, y: startViewRect.y + yDiff / ar}
+            const newRect = { ...startViewRect, x: startViewRect.x + xDiff / ar, y: startViewRect.y + yDiff / ar }
             viewRect.set(newRect)
         }
     }
@@ -46,12 +46,11 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
         const ar = minimapAspectRatio.get()
         const x = (e.clientX - elementArea.x) / ar
         const y = (e.clientY - elementArea.y) / ar
-        viewRect.modify(rect => ({
+        viewRect.modify((rect) => ({
             ...rect,
-            x: x - rect.width / 2, 
-            y: y - rect.height / 2
+            x: x - rect.width / 2,
+            y: y - rect.height / 2,
         }))
-
     }
     return (
         <div className="minimap" style={minimapStyle} onDragOver={onDragOver} onClick={onClick}>
@@ -61,7 +60,13 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
                     renderObservable={renderItem}
                     getKey={(i) => i.id}
                 />
-                <div className="viewarea" draggable={true} onDragStart={onDragStart} onDragEnd={onDragEnd} style={viewAreaStyle} />
+                <div
+                    className="viewarea"
+                    draggable={true}
+                    onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
+                    style={viewAreaStyle}
+                />
             </div>
         </div>
     )

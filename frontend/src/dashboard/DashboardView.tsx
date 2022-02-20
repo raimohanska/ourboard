@@ -73,7 +73,7 @@ export const DashboardView = ({
 const RecentBoardsView = ({ recentBoards, boardName }: { recentBoards: RecentBoards; boardName: L.Atom<string> }) => {
     const defaultLimit = 25
     const filter = boardName
-    const filtered = L.view(filter, f => !!f)
+    const filtered = L.view(filter, (f) => !!f)
     const edit = L.atom(false)
     const limit = localStorageAtom("recentBoards.limit", defaultLimit)
 
@@ -99,14 +99,22 @@ const RecentBoardsView = ({ recentBoards, boardName }: { recentBoards: RecentBoa
                 (recent) => recent.length === 0,
                 (empty) =>
                     empty ? null : (
-                        <div className={L.view(edit, filtered, (e, f) => `recent-boards${e ? " edit": ""}${f ? " filtered": ""}`)}>
+                        <div
+                            className={L.view(
+                                edit,
+                                filtered,
+                                (e, f) => `recent-boards${e ? " edit" : ""}${f ? " filtered" : ""}`,
+                            )}
+                        >
                             <h2>
                                 {L.view(filter, (f) =>
                                     f === "" ? "Your recent boards" : "Found in your recent boards",
                                 )}
-                                {
-                                    IS_TOUCHSCREEN && <a className="edit" onClick={() => edit.modify(e => !e)}>{L.view(edit, e => e ? "done" : "edit")}</a>
-                                }
+                                {IS_TOUCHSCREEN && (
+                                    <a className="edit" onClick={() => edit.modify((e) => !e)}>
+                                        {L.view(edit, (e) => (e ? "done" : "edit"))}
+                                    </a>
+                                )}
                             </h2>
                             <ul>
                                 <ListView

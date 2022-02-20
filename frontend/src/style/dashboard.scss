@@ -84,7 +84,8 @@
             visibility: hidden;
             text-decoration: none;
         }
-        .notouch & li:hover, &.edit li {
+        .notouch & li:hover,
+        &.edit li {
             .remove {
                 visibility: visible;
             }

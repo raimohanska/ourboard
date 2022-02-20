@@ -188,7 +188,7 @@ export const BoardToolLayer = ({
                 }
             })}
 
-            {L.view(showTouchNotice, show => {
+            {L.view(showTouchNotice, (show) => {
                 if (!show) return null
                 return <span className="tool-instruction">{"Click on menu to add items"}</span>
             })}
@@ -228,6 +228,6 @@ function stayTrueFor(trigger: L.EventStream<any>, delay: number, scope: L.Scope)
 function awaiting(first: L.EventStream<any>, second: L.EventStream<any>, scope: L.Scope): L.Property<boolean> {
     return L.merge(
         L.view(first, () => true),
-        L.view(second, () => false)
+        L.view(second, () => false),
     ).pipe(L.toProperty(false, scope))
 }

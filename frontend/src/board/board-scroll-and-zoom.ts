@@ -88,15 +88,15 @@ export function boardScrollAndZoomHandler(
     )
 
     // NOTE: viewRect only supports panning, i.e. setting a viewRect with different size doesn't have an effect
-    const viewRect = L.atom(viewRectProp, newRect => {
+    const viewRect = L.atom(viewRectProp, (newRect) => {
         const boardRect = boardElement.get()?.getBoundingClientRect()!
         const viewRect = scrollElement.get()?.getBoundingClientRect()!
         const scrollX = viewRect.x - boardRect.x
         const scrollY = viewRect.y - boardRect.y
-        
+
         const newX = coordinateHelper.emToBoardPx(newRect.x)
         const newY = coordinateHelper.emToBoardPx(newRect.y)
-        
+
         scrollElement.get()!.scrollLeft = newX
         scrollElement.get()!.scrollTop = newY
     })
