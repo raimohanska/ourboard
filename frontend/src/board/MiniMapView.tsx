@@ -40,9 +40,22 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
             viewRect.set(newRect)
         }
     }
+    const contentElement = L.atom<HTMLDivElement | null>(null)
+    function onClick(e: JSX.MouseEvent) {
+        const elementArea = contentElement.get()!.getBoundingClientRect()
+        const ar = minimapAspectRatio.get()
+        const x = (e.clientX - elementArea.x) / ar
+        const y = (e.clientY - elementArea.y) / ar
+        viewRect.modify(rect => ({
+            ...rect,
+            x: x - rect.width / 2, 
+            y: y - rect.height / 2
+        }))
+
+    }
     return (
-        <div className="minimap" style={minimapStyle} onDragOver={onDragOver}>
-            <div className="content" >
+        <div className="minimap" style={minimapStyle} onDragOver={onDragOver} onClick={onClick}>
+            <div className="content" ref={contentElement.set}>
                 <ListView
                     observable={L.view(L.view(board, "items"), Object.values)}
                     renderObservable={renderItem}
