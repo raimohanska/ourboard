@@ -45,7 +45,7 @@ export const BoardToolLayer = ({
     onAdd: (i: Item) => void
     toolController: ToolController
     dispatch: Dispatch
-    viewRect: L.Property<G.Rect>
+    viewRect: L.Atom<G.Rect>
     zoom: L.Atom<BoardZoom>
     focus: L.Atom<BoardFocus>
 }) => {

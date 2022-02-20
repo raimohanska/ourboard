@@ -69,7 +69,7 @@ export function boardScrollAndZoomHandler(
         L.changes(zoom),
     )
 
-    const viewRect = changes.pipe(
+    const viewRectProp = changes.pipe(
         L.throttle(0, componentScope()), // without the throttle/delay the rects below are not set correctly yet
         L.toStatelessProperty(() => {
             const boardRect = boardElement.get()?.getBoundingClientRect()
@@ -86,6 +86,20 @@ export function boardScrollAndZoomHandler(
         }),
         L.cached(componentScope()),
     )
+
+    // NOTE: viewRect only supports panning, i.e. setting a viewRect with different size doesn't have an effect
+    const viewRect = L.atom(viewRectProp, newRect => {
+        const boardRect = boardElement.get()?.getBoundingClientRect()!
+        const viewRect = scrollElement.get()?.getBoundingClientRect()!
+        const scrollX = viewRect.x - boardRect.x
+        const scrollY = viewRect.y - boardRect.y
+        
+        const newX = coordinateHelper.emToBoardPx(newRect.x)
+        const newY = coordinateHelper.emToBoardPx(newRect.y)
+        
+        scrollElement.get()!.scrollLeft = newX
+        scrollElement.get()!.scrollTop = newY
+    })
 
     function wheelZoomHandler(event: WheelEvent) {
         const ctrlOrCmd = event.ctrlKey || event.metaKey
