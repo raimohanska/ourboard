@@ -41,7 +41,7 @@ export function startConnecting(
     if (h) {
         endConnection()
     } else {
-        const h = drawConnectionHandler(board, coordinateHelper, focus, dispatch)
+        const h = newConnectionCreator(board, coordinateHelper, focus, dispatch)
         currentConnectionHandler.set(h)
         focus.set({ status: "connection-adding" })
         const toWatch = [currentConnectionHandler, toolController.tool, focus] as L.Property<any>[]
@@ -64,9 +64,9 @@ export function startConnecting(
     }
 }
 
-type ConnectionHandler = ReturnType<typeof drawConnectionHandler>
+type ConnectionHandler = ReturnType<typeof newConnectionCreator>
 
-export function drawConnectionHandler(
+export function newConnectionCreator(
     board: L.Property<Board>,
     coordinateHelper: BoardCoordinateHelper,
     focus: L.Atom<BoardFocus>,

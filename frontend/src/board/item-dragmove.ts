@@ -5,7 +5,7 @@ import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainer } from "./item-setcontainer"
 import { Dispatch } from "../store/board-store"
-import { drawConnectionHandler, isConnectionAttachmentPoint } from "./item-connect"
+import { newConnectionCreator, isConnectionAttachmentPoint } from "./item-connect"
 import { Tool, ToolController } from "./tool-selection"
 import { connectionRect } from "../../../common/src/connection-utils"
 
@@ -18,7 +18,7 @@ export function itemDragToMove(
     dispatch: Dispatch,
     onlyWhenSelected: boolean,
 ) {
-    const connector = drawConnectionHandler(board, coordinateHelper, focus, dispatch)
+    const connector = newConnectionCreator(board, coordinateHelper, focus, dispatch)
     return (elem: HTMLElement) =>
         onBoardItemDrag(
             elem,

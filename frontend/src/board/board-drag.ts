@@ -8,7 +8,7 @@ import { emptySet } from "../../../common/src/sets"
 import { Dispatch } from "../store/server-connection"
 import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
 import { isAnythingSelected, BoardFocus, getSelectedItemIds, noFocus, getSelectedConnectionIds } from "./board-focus"
-import { drawConnectionHandler } from "./item-connect"
+import { newConnectionCreator } from "./item-connect"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { ToolController } from "./tool-selection"
 
@@ -41,7 +41,7 @@ export function boardDragHandler({
     })
     const tool = toolController.tool
 
-    const connector = drawConnectionHandler(board, coordinateHelper, focus, dispatch)
+    const connector = newConnectionCreator(board, coordinateHelper, focus, dispatch)
 
     const dragAction = L.atom<DragAction>({ action: "none" })
 
