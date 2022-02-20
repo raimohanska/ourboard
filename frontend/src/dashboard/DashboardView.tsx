@@ -90,7 +90,7 @@ const RecentBoardsView = ({
     const sort = localStorageAtom<"recent-first" | "alphabetical">("recentBoards.sort", "recent-first")
 
     const matchingBoards = L.view(recentBoards.recentboards, filter, (bs, f) =>
-        bs.filter((b) => b.name.toLowerCase().includes(f)),
+        bs.filter((b) => b.name.toLowerCase().includes(f.toLowerCase())),
     )
     const boardsToShow = L.view(matchingBoards, limit, sort, filter, (bs, l, s, f) =>
         R.pipe(
