@@ -512,6 +512,11 @@
                 text-decoration: none;
                 color: $black;
             }
+            .touch & {
+                top: -3.1em;
+                border: none;
+                box-shadow: none;
+            }
         }
         .main-toolbar {
             @extend .toolbar;
@@ -567,6 +572,9 @@
             left: 1em;
             bottom: 1em;
             padding-bottom: 0.2em;
+            .touch & {
+                bottom: 3em;
+            }
         }
 
         .zoom-toolbar {
@@ -575,6 +583,9 @@
             right: 1rem;
             bottom: 1rem;
             padding: 0.5em;
+            .touch & {
+                display: none;
+            }
         }
 
         .minimap {
@@ -590,6 +601,9 @@
             pointer-events: none;
             padding-bottom: 3rem;
             min-width: 6rem;
+            .touch & {
+                display: none;
+            }
             .content {
                 position: relative;
                 .viewarea {
