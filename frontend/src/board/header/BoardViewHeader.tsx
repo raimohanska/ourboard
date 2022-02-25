@@ -9,6 +9,7 @@ import { Dispatch, sessionState2UserInfo } from "../../store/board-store"
 import { UserSessionState, defaultAccessPolicy } from "../../store/user-session-store"
 import * as uuid from "uuid"
 import { BoardAccessPolicyEditor } from "../../components/BoardAccessPolicyEditor"
+import { BackToAllBoardsLink } from "../toolbars/BackToAllBoardsLink"
 
 export function BoardViewHeader({
     board,
@@ -43,7 +44,9 @@ export function BoardViewHeader({
 
     return (
         <header>
-            <span className="logo-area" />
+            <span className="logo-area">
+                <BackToAllBoardsLink />
+            </span>
             {L.view(
                 board,
                 (b) => !!b,

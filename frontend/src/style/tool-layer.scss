@@ -43,10 +43,7 @@
                 color: $black;
             }
             @media (max-width: 700px) {
-                position: fixed;
-                top: 0.35em;
-                border: none;
-                box-shadow: none;
+                display: none;
             }
         }
         .main-toolbar {

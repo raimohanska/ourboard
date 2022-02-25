@@ -25,6 +25,22 @@
         width: 33.3%;
     }
 
+    .logo-area {
+        a {
+            display: none;
+            @media (max-width: 700px) {
+                display: flex;
+                align-items: center;
+                .icon {
+                    vertical-align: top;
+                    margin-right: 0.5em;
+                }
+                text-decoration: none;
+                color: $black;
+            }
+        }
+    }
+
     > #board-name {
         display: flex;
         align-items: center;
