@@ -1,7 +1,7 @@
 import { partition } from "lodash"
 import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
 import { arrayToRecordById } from "./arrays"
-import { connectionRect, rerouteConnection, resolveEndpoint } from "./connection-utils"
+import { connectionRect, isFullyContainedConnection, rerouteConnection, resolveEndpoint } from "./connection-utils"
 import {
     Board,
     Connection,
@@ -187,18 +187,22 @@ export function boardReducer(
         case "item.delete": {
             const itemIdsToDelete = findItemIdsRecursively(event.itemIds, board)
             const connectionIdsToDelete = new Set(event.connectionIds)
+            const updatedItems = { ...board.items }
+            itemIdsToDelete.forEach((id) => {
+                delete updatedItems[id]
+            })
+
             const [connectionsToKeep, connectionsDeleted] = partition(
                 board.connections,
                 (c) =>
                     !connectionIdsToDelete.has(c.id) &&
                     (!isItemEndPoint(c.from) || !itemIdsToDelete.has(getEndPointItemId(c.from))) &&
-                    (!isItemEndPoint(c.to) || !itemIdsToDelete.has(getEndPointItemId(c.to))),
+                    (!isItemEndPoint(c.to) || !itemIdsToDelete.has(getEndPointItemId(c.to))) &&
+                    ![...itemIdsToDelete].some((itemId) =>
+                        isFullyContainedConnection(c, getItem(board)(itemId), board),
+                    ),
             )
 
-            const updatedItems = { ...board.items }
-            itemIdsToDelete.forEach((id) => {
-                delete updatedItems[id]
-            })
             return [
                 {
                     ...board,
@@ -418,9 +422,7 @@ function findConnectionMove(
     if (!move && !hasItemEndPoints) {
         for (let itemId in moves) {
             const item = items[itemId]
-            const start = resolveEndpoint(connection.from, items)
-            const end = resolveEndpoint(connection.to, items)
-            if (containedBy(start, item) && containedBy(end, item)) {
+            if (isFullyContainedConnection(connection, item, items)) {
                 // Boths ends contained within a moved item -> move along
                 move = moves[itemId]
             }

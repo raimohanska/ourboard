@@ -14,7 +14,7 @@ import {
     ItemAttachmentLocation,
     Point,
 } from "./domain"
-import { centerPoint, Rect, subtract } from "./geometry"
+import { centerPoint, containedBy, Rect, subtract } from "./geometry"
 import { getAngleDeg, Vector2 } from "./vector2"
 
 export function resolveEndpoint(e: Point | Item | ConnectionEndPoint, b: Board | Record<string, Item>): Point | Item {
@@ -180,4 +180,10 @@ export const connectionRect = (b: Board | Record<string, Item>) => (c: Connectio
     const width = maxX - minX
     const height = maxY - minY
     return { x, y, width, height }
+}
+
+export function isFullyContainedConnection(connection: Connection, item: Item, context: Record<string, Item> | Board) {
+    const start = resolveEndpoint(connection.from, context)
+    const end = resolveEndpoint(connection.to, context)
+    return containedBy(start, item) && containedBy(end, item)
 }
