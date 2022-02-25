@@ -26,7 +26,9 @@
     }
 
     > #board-name {
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         margin-left: 0.5em;
         margin-left: 1rem;
         small {
@@ -35,6 +37,9 @@
             padding: 1px 0.5em;
             font-size: 0.6em;
             vertical-align: middle;
+        }
+        a svg {
+            height: 1em;
         }
         a:not(:first-of-type) svg {
             margin-left: 0.21em;
