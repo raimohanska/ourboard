@@ -1,4 +1,5 @@
 #root.board-container header {
+    white-space: nowrap;
     border-bottom: 2px solid #e7e8e8;
     font-size: 0.8em;
     z-index: $z-index-menu;
@@ -9,7 +10,6 @@
     color: $black;
 
     span[contenteditable] {
-        white-space: nowrap;
         border: 2px solid transparent;
         padding: 0.3rem 0.6rem;
         &[contenteditable="false"]:hover,
