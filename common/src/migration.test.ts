@@ -1,6 +1,7 @@
 import { arrayToRecordById } from "./arrays"
 import {
     AddConnection,
+    AddItem,
     Board,
     ConnectionEndPoint,
     defaultBoardSize,
@@ -164,6 +165,16 @@ describe("Migration", () => {
                     action: "item.delete",
                     itemIds: [],
                 } as any) as DeleteItem).connectionIds,
+            ).toEqual([])
+        })
+
+        it("item.add", () => {
+            expect(
+                (migrateEvent({
+                    ...headers,
+                    action: "item.add",
+                    items: [],
+                } as any) as AddItem).connections,
             ).toEqual([])
         })
     })

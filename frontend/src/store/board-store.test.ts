@@ -24,6 +24,7 @@ const addItem1: BoardHistoryEntry = {
     action: "item.add",
     boardId: board0.id,
     items: [item1],
+    connections: [],
     serial: 1,
     ...otherUserEventAttributes,
 }
@@ -50,7 +51,7 @@ describe("Board Store", () => {
         const [store, serverEvents] = await initBoardStore({ serverSideBoard: board0 })
 
         // 1. Event applied locally, serverShadow and serial unchanged
-        store.dispatch({ action: "item.add", boardId: board0.id, items: [item1] })
+        store.dispatch({ action: "item.add", boardId: board0.id, items: [item1], connections: [] })
         expect(store.state.get().board).toEqual({ ...board0, serial: 0, items: { [item1.id]: item1 } })
         expect(store.state.get().serverShadow).toEqual(board0)
 
@@ -63,7 +64,7 @@ describe("Board Store", () => {
     it("Rebases local event when remote event arrives before ack", async () => {
         const [store, serverEvents] = await initBoardStore({ serverSideBoard: board1 })
         // 1. Event applied locally, serverShadow and serial unchanged
-        store.dispatch({ action: "item.add", boardId: board0.id, items: [item2] })
+        store.dispatch({ action: "item.add", boardId: board0.id, items: [item2], connections: [] })
         expect(store.state.get().board).toEqual(board2)
         expect(store.state.get().serverShadow).toEqual(board1)
         expect(store.state.get().queue.length).toEqual(0)
@@ -128,6 +129,7 @@ describe("With stored local state", () => {
                     action: "item.add",
                     boardId: board0.id,
                     items: [item2],
+                    connections: [],
                     serial: 2,
                     ...otherUserEventAttributes,
                 },

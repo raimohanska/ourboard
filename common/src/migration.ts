@@ -95,6 +95,10 @@ export function migrateEvent(event: BoardHistoryEntry): BoardHistoryEntry {
         if (!event.connectionIds) {
             return { ...event, connectionIds: [] }
         }
+    } else if (event.action === "item.add") {
+        if (!event.connections) {
+            return { ...event, connections: [] }
+        }
     }
     return event
 }

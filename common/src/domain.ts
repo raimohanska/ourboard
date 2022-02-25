@@ -257,7 +257,7 @@ export type AuthLogin = {
 }
 export type AuthLogout = { action: "auth.logout" }
 export type Ping = { action: "ping" }
-export type AddItem = { action: "item.add"; boardId: Id; items: Item[]; connections?: Connection[] }
+export type AddItem = { action: "item.add"; boardId: Id; items: Item[]; connections: Connection[] }
 export type UpdateItem = { action: "item.update"; boardId: Id; items: Item[] }
 export type MoveItem = {
     action: "item.move"

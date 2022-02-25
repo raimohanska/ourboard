@@ -105,7 +105,7 @@ export function addItem(
     if (itemId) itemAttributes = { ...itemAttributes, id: itemId }
 
     const item: Note = { ...newNote(text, color || YELLOW), ...itemAttributes }
-    const appEvent: AppEvent = { action: "item.add", boardId: board.board.id, items: [item] }
+    const appEvent: AppEvent = { action: "item.add", boardId: board.board.id, items: [item], connections: [] }
     dispatchSystemAppEvent(board, appEvent)
 }
 

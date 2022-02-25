@@ -177,7 +177,7 @@ export function cutCopyPasteHandler(
                         } else {
                             toCreate = [newNote(sanitized, YELLOW, currentCenter.x, currentCenter.y)]
                         }
-                        dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate })
+                        dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate, connections: [] })
                     } else if (e.clipboardData) {
                         console.log(
                             "Unsupported data from clipboard.",

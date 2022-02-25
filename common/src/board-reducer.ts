@@ -125,7 +125,12 @@ export function boardReducer(
 
             return [
                 { ...boardWithAddedItems, connections: [...board.connections, ...connectionsToAdd] },
-                { action: "item.delete", boardId: board.id, itemIds: event.items.map((i) => i.id), connectionIds: [] },
+                {
+                    action: "item.delete",
+                    boardId: board.id,
+                    itemIds: event.items.map((i) => i.id),
+                    connectionIds: [],
+                },
             ]
         case "item.font.increase":
             return [
