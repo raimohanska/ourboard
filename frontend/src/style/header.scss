@@ -1,3 +1,8 @@
+#root.board-container.not-found header {
+    #board-info {
+        visibility: hidden;
+    }
+}
 #root.board-container header {
     white-space: nowrap;
     border-bottom: 2px solid #e7e8e8;
