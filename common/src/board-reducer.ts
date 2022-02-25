@@ -129,7 +129,7 @@ export function boardReducer(
                     action: "item.delete",
                     boardId: board.id,
                     itemIds: event.items.map((i) => i.id),
-                    connectionIds: [],
+                    connectionIds: event.connections.map((c) => c.id),
                 },
             ]
         case "item.font.increase":
