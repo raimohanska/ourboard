@@ -1,9 +1,8 @@
 import { h, ListView } from "harmaja"
 import * as L from "lonna"
-import _ from "lodash"
-import { Board, Item } from "../../../common/src/domain"
-import { Rect } from "../../../common/src/geometry"
-import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
+import { Board, Item } from "../../../../common/src/domain"
+import { Rect } from "../../../../common/src/geometry"
+import { DND_GHOST_HIDING_IMAGE } from "../item-drag"
 
 export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board: L.Property<Board> }) => {
     const minimapWidthPx = 125
