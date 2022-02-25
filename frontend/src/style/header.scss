@@ -21,9 +21,8 @@
         &[contenteditable="false"]:hover,
         &:focus {
             border: 2px solid #2f80edd9;
-        }
-        &:focus {
             outline: none;
+            font-size: 1rem;
         }
     }
 
@@ -69,14 +68,8 @@
         }
     }
 
-    .logo-area,
-    .user-info {
-        @media (max-width: 1200px) {
-            font-size: 0.8rem;
-        }
-        @media (max-width: 700px) {
-            font-size: 0.6rem;
-        }
+    @media (max-width: 1024px) {
+        font-size: 0.8rem;
     }
 
     .user-info {
