@@ -23,6 +23,8 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                 (status) => {
                     switch (status) {
                         case "logging-in-server":
+                        case "logging-in-local":
+                            return null
                         case "logged-in":
                             return (
                                 <span className="name-and-link">

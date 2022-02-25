@@ -60,12 +60,12 @@
         &.logging-in-server {
             @extend .disabled-interaction;
         }
-        @media (max-width: 700px) {
-            &.logged-in {
-                .name {
-                    display: none;
-                }
+        &.logged-in {
+            .name {
+                display: none;
             }
+        }
+        @media (max-width: 700px) {
             &.logged-out {
                 .name {
                     font-size: 0.6em;
