@@ -1,10 +1,10 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { canLogin, UserSessionState, LoggingInServer } from "../store/user-session-store"
-import { EditableSpan } from "./EditableSpan"
-import { signIn, signOut } from "../google-auth"
-import { Dispatch } from "../store/board-store"
-import { UserIcon } from "./Icons"
+import { canLogin, UserSessionState, LoggingInServer } from "../../store/user-session-store"
+import { EditableSpan } from "../../components/EditableSpan"
+import { signIn, signOut } from "../../google-auth"
+import { Dispatch } from "../../store/board-store"
+import { UserIcon } from "../../components/Icons"
 
 export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessionState>; dispatch: Dispatch }) => {
     const pictureURL = L.view(state, (s) => (s.status === "logged-in" ? s.picture : undefined))
