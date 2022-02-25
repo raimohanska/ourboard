@@ -8,7 +8,8 @@
     border-bottom: 2px solid #e7e8e8;
     font-size: 0.8em;
     z-index: $z-index-menu;
-    padding: 0.8em;
+    padding: 0 0.8em;
+    height: 3em;
     width: 100%;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -85,11 +86,12 @@
         padding-left: 1em;
         .icon {
             margin-right: 0.5em;
+            display: inline-flex;
             img {
-                max-height: 1em;
                 border-radius: 50%;
             }
         }
+
         a.login,
         a.logout {
             margin-left: 0.8em;
@@ -102,6 +104,10 @@
         &.logged-in {
             .name {
                 display: none;
+            }
+            .icon {
+                height: 2.5em;
+                width: 2em;
             }
         }
         @media (max-width: 700px) {
