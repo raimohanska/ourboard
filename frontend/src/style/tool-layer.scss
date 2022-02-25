@@ -1,0 +1,253 @@
+#root.board-container {
+    > .content-container > .tool-layer {
+        margin: 0;
+        z-index: $z-index-menu;
+        position: absolute;
+        pointer-events: none;
+        width: 100%;
+        height: 100%;
+        top: 0;
+
+        > * {
+            pointer-events: all;
+        }
+
+        &.read-only {
+            .main-toolbar,
+            .undo-redo-toolbar {
+                display: none;
+            }
+        }
+
+        .toolbar {
+            border: 2px solid $off-board-color;
+            box-shadow: 0px 2px 6px 0px #00263a0f;
+            display: inline-block;
+            background: white;
+            padding: 0.5em;
+            border-radius: 6px;
+        }
+
+        .navigation-toolbar {
+            @extend .toolbar;
+            position: absolute;
+            left: 1em;
+            top: 1em;
+            font-size: 0.8em;
+            a {
+                .icon {
+                    vertical-align: top;
+                    margin-right: 0.5em;
+                }
+                text-decoration: none;
+                color: $black;
+            }
+            .touch & {
+                top: -3.1em;
+                border: none;
+                box-shadow: none;
+            }
+        }
+        .main-toolbar {
+            @extend .toolbar;
+            position: fixed;
+            display: flex;
+            align-items: center;
+
+            &.vertical {
+                padding: 0.5em 0.8em 0.2em 0.5em;
+                flex-direction: column;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            &.horizontal {
+                padding: 0.5em 1em 0.2em;
+                flex-direction: row;
+                top: 4rem;
+                .touch & {
+                    top: 4em;
+                }
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .tool {
+                margin: 0.5em 0;
+                .touch & {
+                    font-size: 2em !important;
+                }
+            }
+
+            .new-item {
+                display: inline-flex;
+                flex-direction: column;
+                position: relative;
+                margin: 0.2em 0.8em;
+                .text {
+                    margin-top: 1.5rem;
+                    font-size: 0.8rem;
+                    text-align: center;
+                }
+                .icon {
+                    cursor: pointer;
+                    height: 2rem;
+                    width: 2rem;
+                    margin: 0;
+                }
+            }
+        }
+
+        .tool-instruction {
+            pointer-events: none;
+            position: absolute;
+            top: 6em;
+            left: 1em;
+            right: 1em;
+            padding: 1em;
+            border-radius: 0.5em;
+            text-align: center;
+            color: #555555;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            svg {
+                margin-left: 1em;
+                opacity: 0.3;
+            }
+        }
+
+        .undo-redo-toolbar {
+            @extend .toolbar;
+            position: absolute;
+            font-size: 1.2em;
+            left: 1em;
+            bottom: 1.5em;
+            padding-bottom: 0.2em;
+            .touch & {
+                font-size: 2em;
+            }
+        }
+
+        .zoom-toolbar {
+            position: absolute;
+            font-size: 1.5em;
+            right: 1rem;
+            bottom: 1rem;
+            padding: 0.5em;
+            .touch & {
+                display: none;
+            }
+        }
+
+        .minimap {
+            @extend .toolbar;
+            font-size: 1vw;
+            display: inline-block;
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: white;
+            border: 0.3em solid #eeeeee88;
+            box-sizing: content-box;
+            padding-bottom: 3rem;
+            min-width: 6rem;
+            .touch & {
+                display: none;
+            }
+            .content {
+                position: relative;
+                .viewarea {
+                    display: inline-block;
+                    position: absolute;
+                    border: 1px solid $black;
+                }
+                .item {
+                    display: inline-block;
+                    position: absolute;
+                    background: $link-color;
+                    border: 2px solid $link-color;
+                    &.container {
+                        opacity: 0.5;
+                    }
+                }
+            }
+        }
+
+        .icon {
+            &:not(:first-child) {
+                margin-left: 0.5em;
+            }
+            cursor: pointer;
+            position: relative;
+        }
+
+        .board-status-message {
+            height: 100%;
+            width: 100%;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            pointer-events: none;
+            > div {
+                pointer-events: all;
+                max-width: 80%;
+            }
+        }
+    }
+
+    > .content-container > .tool-layer > .history {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1em;
+        }
+        > .history-icon-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        z-index: $z-index-menu;
+        min-width: 1rem;
+        &:not(.expanded) {
+            pointer-events: none;
+            .icon {
+                pointer-events: all;
+            }
+        }
+        &.expanded {
+            background: white;
+            border-left: 1px solid #cccccc;
+        }
+        > .selection {
+            margin-bottom: 1em;
+            font-size: 0.8em;
+        }
+        > .icon {
+            cursor: pointer;
+        }
+        .scroll-container {
+            overflow-y: auto;
+            table {
+                tr {
+                    vertical-align: top;
+                    .timestamp {
+                        min-width: 5em;
+                    }
+                    .action {
+                        min-width: 8em;
+                    }
+                }
+            }
+        }
+    }
+}
