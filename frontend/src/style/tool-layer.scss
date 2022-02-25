@@ -70,32 +70,44 @@
                 }
                 left: 50%;
                 transform: translateX(-50%);
-            }
-
-            .tool {
-                margin: 0.5em 0;
-                .touch & {
-                    font-size: 2em !important;
+                .new-item,
+                .tool {
+                    &:not(:first-child) {
+                        margin-left: 1.5em;
+                    }
                 }
             }
 
-            .new-item {
+            .new-item,
+            .tool {
                 display: inline-flex;
                 flex-direction: column;
+                align-items: center;
                 position: relative;
-                margin: 0.5em 0.8em 0.2em;
+                margin: 0.5em 0 0.2em;
+                max-width: 2rem; // Prevent growing with text
                 .text {
-                    margin-top: 0.5rem;
+                    margin: 0;
                     font-size: 0.8rem;
                     text-align: center;
                 }
                 .icon {
+                    width: 2rem;
                     cursor: pointer;
                     margin: 0;
+                    height: 3rem;
+                }
+            }
+
+            .tool {
+                .icon {
+                }
+            }
+
+            .new-item {
+                .icon svg {
                     margin-top: -0.5em; // The plus sign is out of bounds
                     margin-right: -0.5em;
-                    width: 3rem;
-                    height: initial;
                 }
             }
         }

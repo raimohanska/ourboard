@@ -4,6 +4,7 @@ import { Color } from "../../../../common/src/domain"
 import { Tool, ToolController } from "../tool-selection"
 import { black, selectedColor } from "../../components/UIColors"
 import { IS_TOUCHSCREEN } from "../touchScreen"
+import { capitalize } from "lodash"
 
 export const ToolSelector = ({ toolController }: { toolController: ToolController }) => {
     const tool = toolController.tool
@@ -88,11 +89,12 @@ const ToolIcon = ({
 }) => {
     return (
         <span
-            className={L.view(currentTool, (s) => (s === name ? "tool icon active" : "tool icon"))}
+            className={L.view(currentTool, (s) => (s === name ? "tool active" : "tool"))}
             title={tooltip}
             onClick={() => currentTool.set(name)}
         >
-            {L.view(currentTool, (s) => svg(s === name ? selectedColor : black))}
+            <span className="icon">{L.view(currentTool, (s) => svg(s === name ? selectedColor : black))}</span>
+            <span className="text">{capitalize(name)}</span>
         </span>
     )
 }
