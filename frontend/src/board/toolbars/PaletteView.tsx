@@ -23,7 +23,7 @@ export const PaletteView = ({
 
 export const NewText = ({ addItem: onAdd, focus }: { addItem: (i: Item) => void; focus: L.Atom<BoardFocus> }) => {
     const svg = () => (
-        <svg width="44" height="49" viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="36" cy="8.5" r="8" fill="#2F80ED" />
             <path
                 d="M38.5309 8.816V8.002H36.4079V5.879H35.5939V8.002H33.4709V8.816H35.5939V10.939H36.4079V8.816H38.5309Z"
@@ -71,7 +71,7 @@ export const NewNote = ({
 
     const noteColor = color
     const svg = () => (
-        <svg width="44" height="49" viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
                 d="M0 9.5C0 8.94771 0.447715 8.5 1 8.5H39C39.5523 8.5 40 8.94772 40 9.5V32.1073C40 32.3597 39.9045 32.6028 39.7328 32.7878L33.5 39.5L25.296 48.1866C25.1071 48.3866 24.8441 48.5 24.569 48.5H1C0.447716 48.5 0 48.0523 0 47.5V9.5Z"
                 fill={noteColor}
@@ -99,7 +99,7 @@ export const NewNote = ({
 
 export const NewContainer = ({ addItem: onAdd, focus }: { addItem: (i: Item) => void; focus: L.Atom<BoardFocus> }) => {
     const svg = () => (
-        <svg width="44" height="49" viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
                 d="M0.5 9.5C0.5 9.22386 0.723857 9 1 9H39C39.2761 9 39.5 9.22386 39.5 9.5V32.5V47.5C39.5 47.7761 39.2761 48 39 48H25H1C0.723858 48 0.5 47.7761 0.5 47.5V9.5Z"
                 fill="white"

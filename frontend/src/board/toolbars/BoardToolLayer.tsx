@@ -96,7 +96,7 @@ export const BoardToolLayer = ({
                         pointerEvents: "none",
                     }))
                     return (
-                        <span className="mouse-cursor-message" style={style}>
+                        <span className="mouse-cursor-message adding-item" style={style}>
                             {f.element}
                         </span>
                     )
