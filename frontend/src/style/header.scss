@@ -44,8 +44,8 @@
     .user-info {
         display: flex;
         justify-content: flex-end;
+        align-items: center;
         .icon {
-            margin-right: 0.5em;
             img {
                 max-height: 1em;
                 border-radius: 50%;
@@ -59,6 +59,18 @@
         &.logging-in-local,
         &.logging-in-server {
             @extend .disabled-interaction;
+        }
+        @media (max-width: 700px) {
+            &.logged-in {
+                .name {
+                    display: none;
+                }
+            }
+            &.logged-out {
+                .name {
+                    font-size: 0.6em;
+                }
+            }
         }
     }
     > * {

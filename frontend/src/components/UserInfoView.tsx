@@ -25,8 +25,8 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                         case "logging-in-server":
                         case "logged-in":
                             return (
-                                <span>
-                                    {L.view(state, (s) => (s as LoggingInServer).name)}
+                                <span className="name-and-link">
+                                    <span className="name">{L.view(state, (s) => (s as LoggingInServer).name)}</span>
                                     <a className="login" onClick={signOut}>
                                         Sign out
                                     </a>
@@ -34,8 +34,10 @@ export const UserInfoView = ({ state, dispatch }: { state: L.Property<UserSessio
                             )
                         default:
                             return (
-                                <span>
-                                    <NicknameEditor {...{ state, dispatch }} />
+                                <span className="name-and-link">
+                                    <span className="name">
+                                        <NicknameEditor {...{ state, dispatch }} />
+                                    </span>
                                     {L.view(
                                         state,
                                         canLogin,
