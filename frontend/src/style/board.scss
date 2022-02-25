@@ -63,6 +63,7 @@
         color: $black;
 
         span[contenteditable] {
+            white-space: nowrap;
             border: 2px solid transparent;
             padding: 0.3rem 0.6rem;
             &[contenteditable="false"]:hover,
