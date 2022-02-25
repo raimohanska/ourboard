@@ -1,7 +1,7 @@
 import { partition } from "lodash"
 import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
 import { arrayToRecordById } from "./arrays"
-import { rerouteConnection, resolveEndpoint } from "./connection-utils"
+import { connectionRect, rerouteConnection, resolveEndpoint } from "./connection-utils"
 import {
     Board,
     Connection,
@@ -342,7 +342,7 @@ function moveItems(board: Board, event: MoveItem) {
 
     const connectionMoves: Record<Id, ConnectionMove> = {}
     for (let connection of board.connections) {
-        const move = findConnectionMove(connection, itemMoves)
+        const move = findConnectionMove(connection, itemMoves, itemsOnBoard)
         if (move) {
             connectionMoves[connection.id] = move
         } else {
@@ -394,18 +394,35 @@ type Move = { xDiff: number; yDiff: number }
 type ItemMove = Move & { containerChanged: boolean; containerId: Id | undefined }
 type ConnectionMove = (Move & { ends: "both" }) | { ends: "one" }
 
-function findConnectionMove(connection: Connection, moves: Record<Id, Move>): ConnectionMove | null {
+function findConnectionMove(
+    connection: Connection,
+    moves: Record<Id, Move>,
+    items: Record<string, Item>,
+): ConnectionMove | null {
     const endPoints = [connection.to, connection.from]
     let move: Move | null = null
     let partial = false
+    let hasItemEndPoints = false
     for (let endPoint of endPoints) {
         if (isItemEndPoint(endPoint)) {
+            hasItemEndPoints = true
             const itemId = getEndPointItemId(endPoint)
             if (moves[itemId]) {
                 move = moves[itemId]
             } else {
                 // linked to item not being moved -> maybe a partial move
                 partial = true
+            }
+        }
+    }
+    if (!move && !hasItemEndPoints) {
+        for (let itemId in moves) {
+            const item = items[itemId]
+            const start = resolveEndpoint(connection.from, items)
+            const end = resolveEndpoint(connection.to, items)
+            if (containedBy(start, item) && containedBy(end, item)) {
+                // Boths ends contained within a moved item -> move along
+                move = moves[itemId]
             }
         }
     }
