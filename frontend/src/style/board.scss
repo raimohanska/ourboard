@@ -10,7 +10,7 @@
     &:not(.ready) {
         header .controls,
         > .content-container > .scroll-container > .border-container > .board,
-        header .board-name,
+        header #board-info,
         .tool-layer {
             .board-tool,
             > .history {

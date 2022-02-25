@@ -53,16 +53,18 @@ export function BoardViewHeader({
                 (b) =>
                     b && (
                         <>
-                            <span data-test="board-name" id="board-name">
-                                {L.view(accessLevel, (l) =>
-                                    l === "read-only" ? (
-                                        <span>
-                                            {nameAtom} <small>read-only</small>
-                                        </span>
-                                    ) : (
-                                        <EditableSpan value={nameAtom} editingThis={editingAtom} />
-                                    ),
-                                )}
+                            <span data-test="board-name" id="board-info">
+                                <span id="board-name">
+                                    {L.view(accessLevel, (l) =>
+                                        l === "read-only" ? (
+                                            <span>
+                                                {nameAtom} <small>read-only</small>
+                                            </span>
+                                        ) : (
+                                            <EditableSpan value={nameAtom} editingThis={editingAtom} />
+                                        ),
+                                    )}
+                                </span>
                                 <ForkButton onClick={makeCopy} />
                                 <ShareButton
                                     onClick={() =>

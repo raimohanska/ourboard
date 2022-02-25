@@ -5,14 +5,13 @@
     z-index: $z-index-menu;
     padding: 0.8em;
     width: 100%;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     background: #fffffff8;
     color: $black;
 
     span[contenteditable] {
         border: 2px solid transparent;
-        padding: 0.3rem 0.6rem;
         &[contenteditable="false"]:hover,
         &:focus {
             border: 2px solid #2f80edd9;
@@ -22,14 +21,9 @@
         }
     }
 
-    > * {
-        width: 33.3%;
-        @media (max-width: 700px) {
-            width: initial;
-        }
-    }
-
     .logo-area {
+        display: flex;
+        align-items: center;
         a {
             display: none;
             @media (max-width: 700px) {
@@ -45,12 +39,15 @@
         }
     }
 
-    > #board-name {
+    > #board-info {
         display: flex;
         align-items: center;
         justify-content: center;
         margin-left: 0.5em;
         margin-left: 1rem;
+        #board-name {
+            margin-right: 0.5em;
+        }
         small {
             color: gray;
             border-radius: 0.5em;
@@ -66,10 +63,21 @@
         }
     }
 
+    .logo-area,
+    .user-info {
+        @media (max-width: 1200px) {
+            font-size: 0.8rem;
+        }
+        @media (max-width: 700px) {
+            font-size: 0.6rem;
+        }
+    }
+
     .user-info {
         display: flex;
         justify-content: flex-end;
         align-items: center;
+        padding-left: 1em;
         .icon {
             img {
                 max-height: 1em;
@@ -79,7 +87,7 @@
         a.login,
         a.logout {
             margin-left: 0.8em;
-            font-size: 0.6em;
+            font-size: 0.6rem;
         }
         &.logging-in-local,
         &.logging-in-server {
@@ -96,14 +104,6 @@
                 .icon {
                     display: none;
                 }
-            }
-            .name {
-                font-size: 0.8em;
-            }
-        }
-        @media (max-width: 700px) {
-            .name {
-                font-size: 0.6em;
             }
         }
     }
