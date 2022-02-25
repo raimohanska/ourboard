@@ -70,12 +70,6 @@
                 }
                 left: 50%;
                 transform: translateX(-50%);
-                .new-item,
-                .tool {
-                    &:not(:first-child) {
-                        margin-left: 1.5em;
-                    }
-                }
             }
 
             .new-item,
@@ -84,23 +78,26 @@
                 flex-direction: column;
                 align-items: center;
                 position: relative;
-                margin: 0.5em 0 0.2em;
-                max-width: 2rem; // Prevent growing with text
+                margin: 0 0.5rem 0.2em;
                 .text {
                     margin: 0;
                     font-size: 0.8rem;
                     text-align: center;
                 }
                 .icon {
-                    width: 2rem;
+                    width: 3rem;
                     cursor: pointer;
                     margin: 0;
-                    height: 3rem;
+                    height: 4rem;
+                    padding: 1rem 0.5rem;
                 }
             }
 
             .tool {
-                .icon {
+                &.active {
+                    .icon {
+                        background: #f4f4f6;
+                    }
                 }
             }
 

@@ -93,7 +93,7 @@ const ToolIcon = ({
             title={tooltip}
             onClick={() => currentTool.set(name)}
         >
-            <span className="icon">{L.view(currentTool, (s) => svg(s === name ? selectedColor : black))}</span>
+            <span className="icon">{L.view(currentTool, (s) => svg(black))}</span>
             <span className="text">{capitalize(name)}</span>
         </span>
     )

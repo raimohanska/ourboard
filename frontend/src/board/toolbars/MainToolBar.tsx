@@ -118,11 +118,11 @@ const DeleteIcon = ({ focus, board, dispatch }: DeleteProps) => {
     const enabled = L.view(focus, (f) => getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0)
     return (
         <span
-            className={L.view(enabled, (e) => (e ? "tool" : "tool disabled"))}
+            className="tool"
             title="Delete selected item(s)"
             onMouseDown={() => dispatchDeletion(board.get().id, focus.get(), dispatch)}
         >
-            <span className="icon">
+            <span className={L.view(enabled, (e) => (e ? "icon" : "icon disabled"))}>
                 <svg viewBox="0 0 24 24">
                     <path
                         fill="currentColor"
