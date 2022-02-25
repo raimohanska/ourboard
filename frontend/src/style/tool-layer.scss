@@ -42,8 +42,9 @@
                 text-decoration: none;
                 color: $black;
             }
-            .touch & {
-                top: -3.1em;
+            @media (max-width: 700px) {
+                position: fixed;
+                top: 0.5em;
                 border: none;
                 box-shadow: none;
             }
