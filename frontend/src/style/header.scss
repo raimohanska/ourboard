@@ -6,6 +6,7 @@
     padding: 0.8em;
     width: 100%;
     display: flex;
+    justify-content: space-between;
     background: #fffffff8;
     color: $black;
 
@@ -23,6 +24,9 @@
 
     > * {
         width: 33.3%;
+        @media (max-width: 700px) {
+            width: initial;
+        }
     }
 
     .logo-area {
@@ -86,11 +90,20 @@
                 display: none;
             }
         }
-        @media (max-width: 700px) {
-            &.logged-out {
-                .name {
-                    font-size: 0.6em;
+        @media (max-width: 1000px) {
+            &.logged-out,
+            &.anonymous {
+                .icon {
+                    display: none;
                 }
+            }
+            .name {
+                font-size: 0.8em;
+            }
+        }
+        @media (max-width: 700px) {
+            .name {
+                font-size: 0.6em;
             }
         }
     }
