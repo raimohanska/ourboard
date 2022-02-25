@@ -22,7 +22,7 @@ import { YELLOW } from "../../../common/src/colors"
 import { sanitizeHTML } from "../components/sanitizeHTML"
 import * as G from "../../../common/src/geometry"
 import { emptySet } from "../../../common/src/sets"
-import { connectionRect, resolveEndpoint } from "../../../common/src/connection-utils"
+import { connectionRect, isFullyContainedConnection, resolveEndpoint } from "../../../common/src/connection-utils"
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
@@ -44,7 +44,12 @@ export function findSelectedItemsAndConnections(currentFocus: BoardFocus, curren
             // Include connections between these items and connections that have one end
             // in these items and the other end not connected.
             const ids = connectedIds(c)
-            return ids.length > 0 && !ids.some((id) => !recursiveIds.has(id))
+            if (ids.length > 0 && !ids.some((id) => !recursiveIds.has(id))) {
+                return true
+            }
+            if (items.some((item) => isFullyContainedConnection(c, item, currentBoard))) {
+                return true
+            }
         })
         .map((c) => ({
             ...c,
