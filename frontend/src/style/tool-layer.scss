@@ -83,17 +83,19 @@
                 display: inline-flex;
                 flex-direction: column;
                 position: relative;
-                margin: 0.2em 0.8em;
+                margin: 0.5em 0.8em 0.2em;
                 .text {
-                    margin-top: 1.5rem;
+                    margin-top: 0.5rem;
                     font-size: 0.8rem;
                     text-align: center;
                 }
                 .icon {
                     cursor: pointer;
-                    height: 2rem;
-                    width: 2rem;
                     margin: 0;
+                    margin-top: -0.5em; // The plus sign is out of bounds
+                    margin-right: -0.5em;
+                    width: 3rem;
+                    height: initial;
                 }
             }
         }
