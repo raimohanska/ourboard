@@ -111,6 +111,7 @@ async function addItems(boardId: Id, firstSerial: Serial, lastSerial: Serial, sa
         action: "item.add",
         boardId,
         items: [],
+        connections: [],
         timestamp: new Date().toISOString(),
         user,
         serial,
