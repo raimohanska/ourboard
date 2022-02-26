@@ -92,6 +92,7 @@ export function makeCopies(
             to: translateEndpoint(c.to),
             controlPoints: c.controlPoints.map(translateEndpoint) as Point[],
             id: uuid.v4(),
+            containerId: c.containerId && oldToNewId[c.containerId],
         }
     })
 
