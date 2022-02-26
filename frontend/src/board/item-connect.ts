@@ -156,12 +156,13 @@ export function existingConnectionHandler(
     endNode.addEventListener("drag", (e) => e.stopPropagation())
     endNode.addEventListener(
         "drag",
-        _.throttle(() => {
+        _.throttle((e: DragEvent) => {
+            const preventAttach = e.shiftKey || e.altKey || e.ctrlKey || e.metaKey
             const b = board.get()
             const connection = b.connections.find((c) => c.id === connectionId)!
             const coords = coordinateHelper.currentBoardCoordinates.get()
             if (type === "to") {
-                const hitsItem = findTarget(b, connection.from, coords, connection)
+                const hitsItem = !preventAttach && findTarget(b, connection.from, coords, connection)
                 const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
                 dispatch({
                     action: "connection.modify",
@@ -169,7 +170,7 @@ export function existingConnectionHandler(
                     connections: [rerouteConnection({ ...connection, to }, b)],
                 })
             } else if (type === "from") {
-                const hitsItem = findTarget(b, connection.to, coords, connection)
+                const hitsItem = !preventAttach && findTarget(b, connection.to, coords, connection)
                 const from = hitsItem && hitsItem.id !== connection.to ? hitsItem.id : coords
                 dispatch({
                     action: "connection.modify",
@@ -183,7 +184,7 @@ export function existingConnectionHandler(
                     connections: [rerouteByNewControlPoints(connection, [coords], b)],
                 })
             }
-        }, 20),
+        }, 20) as any,
     )
 }
 
