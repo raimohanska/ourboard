@@ -49,6 +49,7 @@ function createTester(nickname: string, boardId: string) {
                         action: "item.add",
                         boardId,
                         items: [note],
+                        connections: [],
                     })
                 }
                 if (Math.random() < editsPerInterval) {
