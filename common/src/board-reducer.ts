@@ -1,7 +1,7 @@
 import { partition } from "lodash"
 import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
 import { arrayToRecordById } from "./arrays"
-import { connectionRect, isFullyContainedConnection, rerouteConnection, resolveEndpoint } from "./connection-utils"
+import { isFullyContainedConnection, rerouteConnection, resolveEndpoint } from "./connection-utils"
 import {
     Board,
     Connection,
