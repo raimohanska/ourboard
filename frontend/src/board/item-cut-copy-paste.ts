@@ -1,28 +1,28 @@
 import _ from "lodash"
 import * as L from "lonna"
 import * as uuid from "uuid"
+import { YELLOW } from "../../../common/src/colors"
+import { connectionRect, resolveEndpoint } from "../../../common/src/connection-utils"
 import {
     Board,
-    Item,
+    BOARD_ITEM_BORDER_MARGIN,
     Connection,
-    Id,
-    Point,
+    ConnectionEndPoint,
     findItemsRecursively,
+    getEndPointItemId,
+    Id,
+    isItemEndPoint,
+    Item,
     newNote,
     newText,
-    ConnectionEndPoint,
-    BOARD_ITEM_BORDER_MARGIN,
-    isItemEndPoint,
-    getEndPointItemId,
+    Point,
 } from "../../../common/src/domain"
-import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "./board-focus"
-import { Dispatch } from "../store/board-store"
-import { YELLOW } from "../../../common/src/colors"
-import { sanitizeHTML } from "../components/sanitizeHTML"
 import * as G from "../../../common/src/geometry"
 import { emptySet } from "../../../common/src/sets"
-import { connectionRect, isFullyContainedConnection, resolveEndpoint } from "../../../common/src/connection-utils"
+import { sanitizeHTML } from "../components/sanitizeHTML"
+import { Dispatch } from "../store/board-store"
+import { BoardCoordinateHelper } from "./board-coordinates"
+import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "./board-focus"
 
 const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 
@@ -35,7 +35,7 @@ export function findSelectedItemsAndConnections(currentFocus: BoardFocus, curren
     const selectedItemIds = getSelectedItemIds(currentFocus)
     const selectedConnectionIds = getSelectedConnectionIds(currentFocus)
     const items = findItemsRecursively([...selectedItemIds], currentBoard)
-    const recursiveIds = new Set(items.map((i) => i.id))
+    const recursiveItemIds = new Set(items.map((i) => i.id))
     const connections = currentBoard.connections
         .filter((c) => {
             if (selectedConnectionIds.has(c.id)) {
@@ -44,17 +44,17 @@ export function findSelectedItemsAndConnections(currentFocus: BoardFocus, curren
             // Include connections between these items and connections that have one end
             // in these items and the other end not connected.
             const ids = connectedIds(c)
-            if (ids.length > 0 && !ids.some((id) => !recursiveIds.has(id))) {
+            if (ids.length > 0 && !ids.some((id) => !recursiveItemIds.has(id))) {
                 return true
             }
-            if (items.some((item) => isFullyContainedConnection(c, item, currentBoard))) {
+            if (c.containerId && recursiveItemIds.has(c.containerId)) {
                 return true
             }
         })
         .map((c) => ({
             ...c,
-            from: detachEndPointIfItemNotFound(c.from, recursiveIds, currentBoard),
-            to: detachEndPointIfItemNotFound(c.to, recursiveIds, currentBoard),
+            from: detachEndPointIfItemNotFound(c.from, recursiveItemIds, currentBoard),
+            to: detachEndPointIfItemNotFound(c.to, recursiveItemIds, currentBoard),
         }))
     return { items, connections }
 }

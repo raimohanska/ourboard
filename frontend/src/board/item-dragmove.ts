@@ -3,7 +3,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { Board, BOARD_ITEM_BORDER_MARGIN, Connection, isItemEndPoint, Item, Point } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
-import { maybeChangeContainer } from "./item-setcontainer"
+import { maybeChangeContainerForItem } from "./item-setcontainer"
 import { Dispatch } from "../store/board-store"
 import { newConnectionCreator, isConnectionAttachmentPoint } from "./item-connect"
 import { Tool, ToolController } from "./tool-selection"
@@ -52,7 +52,7 @@ export function itemDragToMove(
                             Math.max(dragStartPosition.y + yDiff, margin),
                             b.height - current.height - margin,
                         )
-                        const container = maybeChangeContainer(current, b.items)
+                        const container = maybeChangeContainerForItem(current, b.items)
                         return { id: current.id, x, y, containerId: container ? container.id : undefined }
                     })
 

@@ -1,7 +1,7 @@
 import { partition } from "lodash"
-import { maybeChangeContainer } from "../../frontend/src/board/item-setcontainer"
+import { maybeChangeContainerForItem } from "../../frontend/src/board/item-setcontainer"
 import { arrayToRecordById } from "./arrays"
-import { isFullyContainedConnection, rerouteConnection, resolveEndpoint } from "./connection-utils"
+import { rerouteConnection, resolveEndpoint } from "./connection-utils"
 import {
     Board,
     Connection,
@@ -196,11 +196,9 @@ export function boardReducer(
                 board.connections,
                 (c) =>
                     !connectionIdsToDelete.has(c.id) &&
+                    !(c.containerId && itemIdsToDelete.has(c.containerId)) &&
                     (!isItemEndPoint(c.from) || !itemIdsToDelete.has(getEndPointItemId(c.from))) &&
-                    (!isItemEndPoint(c.to) || !itemIdsToDelete.has(getEndPointItemId(c.to))) &&
-                    ![...itemIdsToDelete].some((itemId) =>
-                        isFullyContainedConnection(c, getItem(board)(itemId), board),
-                    ),
+                    (!isItemEndPoint(c.to) || !itemIdsToDelete.has(getEndPointItemId(c.to))),
             )
 
             return [
@@ -310,7 +308,7 @@ function updateItems(current: Record<Id, Item>, updateList: Item[]): Record<Id, 
                         containedBy(i, container), // Check all items inside the new bounds
                 )
                 .forEach((item) => {
-                    const newContainer = maybeChangeContainer(item, result)
+                    const newContainer = maybeChangeContainerForItem(item, result)
                     if (newContainer?.id !== item.containerId) {
                         result[item.id] = { ...item, containerId: newContainer ? newContainer.id : undefined }
                     }
@@ -419,14 +417,8 @@ function findConnectionMove(
             }
         }
     }
-    if (!move && !hasItemEndPoints) {
-        for (let itemId in moves) {
-            const item = items[itemId]
-            if (isFullyContainedConnection(connection, item, items)) {
-                // Boths ends contained within a moved item -> move along
-                move = moves[itemId]
-            }
-        }
+    if (!move && !hasItemEndPoints && connection.containerId) {
+        move = moves[connection.containerId]
     }
     if (!move) return null
     if (partial) return { ends: "one" }

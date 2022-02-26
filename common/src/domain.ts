@@ -147,6 +147,7 @@ export type Connection = {
     from: ConnectionEndPoint
     controlPoints: Point[]
     to: ConnectionEndPoint
+    containerId?: string
 }
 export type ConnectionEndPoint = Point | ConnectionEndPointToItem
 export type ConnectionEndPointToItem = Id | ConectionEndPointDirectedToItem

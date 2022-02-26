@@ -1,4 +1,5 @@
 import * as _ from "lodash"
+import { maybeChangeContainerForConnection } from "../../frontend/src/board/item-setcontainer"
 import {
     AttachmentLocation,
     AttachmentSide,
@@ -134,13 +135,16 @@ export function rerouteConnection(c: Connection, b: Board): Connection {
     const from = findNearestAttachmentLocationForConnectionNode(resolvedFrom, to.point)
     to = findNearestAttachmentLocationForConnectionNode(resolvedTo, from.point)
 
-    const withNewMidPoint = {
+    const rerouted: Connection = {
         ...c,
         from: attachmentLocation2EndPoint(from),
         to: attachmentLocation2EndPoint(to),
         controlPoints: [findMidpoint(from, to)],
     }
-    return withNewMidPoint
+
+    const container = maybeChangeContainerForConnection(rerouted, b.items)
+
+    return { ...rerouted, containerId: container ? container.id : undefined }
 }
 
 function rerouteEndPoint(e: ConnectionEndPoint, from: ConnectionEndPoint, b: Board) {
@@ -185,5 +189,5 @@ export const connectionRect = (b: Board | Record<string, Item>) => (c: Connectio
 export function isFullyContainedConnection(connection: Connection, item: Item, context: Record<string, Item> | Board) {
     const start = resolveEndpoint(connection.from, context)
     const end = resolveEndpoint(connection.to, context)
-    return containedBy(start, item) && containedBy(end, item)
+    return !isItem(start) && !isItem(end) && containedBy(start, item) && containedBy(end, item)
 }
