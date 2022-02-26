@@ -194,13 +194,17 @@ function findTarget(
     currentConnection: Connection | null,
 ) {
     const items = b.items
-    const resolved = resolveEndpoint(from, items)
-    const fromItem = isItem(resolved) ? resolved : null
+    const resolvedFromPoint = resolveEndpoint(from, items)
+    const fromItem = isItem(resolvedFromPoint) ? resolvedFromPoint : null
 
     return Object.values(items)
         .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i)) // match coordinates
         .filter((i) => isConnectionAttachmentPoint(currentPos, i))
-        .filter((i) => !isItem(resolved) || !isConnected(b, i, resolved, currentConnection))
+        .filter((i) =>
+            isItem(resolvedFromPoint)
+                ? !isConnected(b, i, resolvedFromPoint, currentConnection)
+                : !containedBy(resolvedFromPoint, i),
+        )
         .sort((a, b) => (isContainedBy(items, a)(b) ? 1 : -1)) // most innermost first (containers last)
         .find((i) => !fromItem || !isContainedBy(items, i)(fromItem)) // does not contain the "from" item
 }
