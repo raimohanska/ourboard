@@ -84,7 +84,7 @@ export function BoardViewHeader({
                         </>
                     ),
             )}
-            <UserInfoView state={sessionState} dispatch={dispatch} />
+            <UserInfoView state={sessionState} dispatch={dispatch} modalContent={modalContent} />
         </header>
     )
 }

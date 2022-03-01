@@ -78,39 +78,27 @@
         align-items: center;
         padding-left: 1em;
         .icon {
+            cursor: pointer;
             margin-right: 0.5em;
             display: inline-flex;
             img {
                 border-radius: 50%;
             }
+            svg {
+                width: 100%;
+            }
         }
 
-        a.login,
-        a.logout {
-            margin-left: 0.8em;
-            font-size: 0.6rem;
-        }
         &.logging-in-local,
         &.logging-in-server {
             @extend .disabled-interaction;
         }
         &.logged-in {
-            .name {
-                display: none;
-            }
             .icon {
-                height: 2.5em;
+                height: 2em;
                 width: 2em;
             }
-        }
-        @media (max-width: 700px) {
-            &.logged-out,
-            &.anonymous {
-                .icon {
-                    display: none;
-                }
-            }
-        }
+        }        
     }
     > * {
         color: $black;
