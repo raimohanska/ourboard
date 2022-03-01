@@ -6,10 +6,18 @@ import { signIn, signOut } from "../../google-auth"
 import { Dispatch } from "../../store/board-store"
 import { canLogin, LoggingInServer, UserSessionState } from "../../store/user-session-store"
 
-export const UserInfoModal = ({ state, dispatch, dismiss }: { state: L.Property<UserSessionState>; dispatch: Dispatch, dismiss: () => void }) => {
+export const UserInfoModal = ({
+    state,
+    dispatch,
+    dismiss,
+}: {
+    state: L.Property<UserSessionState>
+    dispatch: Dispatch
+    dismiss: () => void
+}) => {
     const pictureURL = L.view(state, (s) => (s.status === "logged-in" ? s.picture : undefined))
     return (
-        <span className="user-info">            
+        <span className="user-info">
             <h2>Welcome to OurBoard</h2>
             {L.view(
                 state,
@@ -23,12 +31,17 @@ export const UserInfoModal = ({ state, dispatch, dismiss }: { state: L.Property<
                             return (
                                 <div className="logged-in">
                                     <p>
-                                        You're signed in as <span className="name">{L.view(state, (s) => (s as LoggingInServer).name)}</span>.                                        
-                                    </p>                                
+                                        You're signed in as{" "}
+                                        <span className="name">
+                                            {L.view(state, (s) => (s as LoggingInServer).name)}
+                                        </span>
+                                        .
+                                    </p>
                                     <p>
                                         <a className="login" onClick={signOut}>
                                             Sign out
-                                        </a> to access the board anonymously.
+                                        </a>{" "}
+                                        to access the board anonymously.
                                     </p>
                                 </div>
                             )
@@ -45,9 +58,11 @@ export const UserInfoModal = ({ state, dispatch, dismiss }: { state: L.Property<
                                         (show) =>
                                             show && (
                                                 <p className="sign-in">
-                                                    Or <a className="login" onClick={signIn}>
+                                                    Or{" "}
+                                                    <a className="login" onClick={signIn}>
                                                         sign in
-                                                    </a> using your Google account.
+                                                    </a>{" "}
+                                                    using your Google account.
                                                 </p>
                                             ),
                                     )}
@@ -57,7 +72,7 @@ export const UserInfoModal = ({ state, dispatch, dismiss }: { state: L.Property<
                 },
             )}
             <p>
-                <button onClick={dismiss}>Done</button>                
+                <button onClick={dismiss}>Done</button>
             </p>
         </span>
     )
