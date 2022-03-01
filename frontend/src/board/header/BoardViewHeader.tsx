@@ -1,15 +1,15 @@
-import { h, Fragment } from "harmaja"
+import { Fragment, h } from "harmaja"
 import { getNavigator } from "harmaja-router"
 import * as L from "lonna"
-import { AccessLevel, Board, checkBoardAccess, EventFromServer } from "../../../../common/src/domain"
+import * as uuid from "uuid"
+import { AccessLevel, Board, EventFromServer } from "../../../../common/src/domain"
 import { createBoardAndNavigate, Routes } from "../../board-navigation"
 import { EditableSpan } from "../../components/EditableSpan"
-import { UserInfoView } from "./UserInfoView"
-import { Dispatch, sessionState2UserInfo } from "../../store/board-store"
-import { UserSessionState, defaultAccessPolicy } from "../../store/user-session-store"
-import * as uuid from "uuid"
-import { BoardAccessPolicyEditor } from "../../components/BoardAccessPolicyEditor"
+import { Dispatch } from "../../store/board-store"
+import { defaultAccessPolicy, UserSessionState } from "../../store/user-session-store"
 import { BackToAllBoardsLink } from "../toolbars/BackToAllBoardsLink"
+import { SharingModalDialog } from "./SharingModalDialog"
+import { UserInfoView } from "./UserInfoView"
 
 export function BoardViewHeader({
     board,
@@ -86,73 +86,6 @@ export function BoardViewHeader({
             )}
             <UserInfoView state={sessionState} dispatch={dispatch} />
         </header>
-    )
-}
-
-const SharingModalDialog = ({
-    board,
-    sessionState,
-    dismiss,
-    dispatch,
-}: {
-    board: L.Property<Board>
-    sessionState: L.Property<UserSessionState>
-    dismiss: () => void
-    dispatch: Dispatch
-}) => {
-    const originalAccessPolicy = board.get().accessPolicy
-    const accessPolicy = L.atom(originalAccessPolicy)
-
-    const copied = L.atom(false)
-    function copyToClipboard() {
-        navigator.clipboard.writeText(document.location.toString())
-        copied.set(true)
-        setTimeout(() => copied.set(false), 3000)
-    }
-    function saveChanges() {
-        dispatch({ action: "board.setAccessPolicy", boardId: board.get().id, accessPolicy: accessPolicy.get()! })
-        dismiss()
-    }
-    const adminAccess = L.view(
-        sessionState,
-        (s) => checkBoardAccess(originalAccessPolicy, sessionState2UserInfo(s)) === "admin",
-    )
-
-    return (
-        <span className="sharing">
-            <h2>Sharing</h2>
-            <button onClick={copyToClipboard}>Copy board link</button>
-            {L.view(copied, (c) => (c ? <span className="copied">Copied to clipboard.</span> : null))}
-            {L.view(sessionState, adminAccess, (s, admin) =>
-                s.status === "logged-in" && admin ? (
-                    <>
-                        <h2>Manage board permissions</h2>
-                        <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />
-                        <p>
-                            <button
-                                onClick={saveChanges}
-                                disabled={L.view(accessPolicy, (ap) => ap === originalAccessPolicy)}
-                            >
-                                Save changes
-                            </button>
-                        </p>
-                    </>
-                ) : originalAccessPolicy ? (
-                    <>
-                        <h2>Board permissions</h2>
-                        <p>You don't have the privileges to change board permissions</p>
-                    </>
-                ) : (
-                    <>
-                        <h2>Board permissions</h2>
-                        <p>
-                            Anonymous boards are accessible to anyone with the link. To control board permissions,
-                            create a new board when logged in.
-                        </p>
-                    </>
-                ),
-            )}
-        </span>
     )
 }
 
