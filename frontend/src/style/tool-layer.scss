@@ -74,6 +74,9 @@
                 align-items: center;
                 position: relative;
                 margin: 0 0.2em 0.2em;
+                .touch & {
+                    margin: 0 0.1em 0.2em;
+                }
                 .text {
                     margin: 0;
                     margin-top: 0.5em;
@@ -133,7 +136,7 @@
             bottom: 1.5em;
             padding-bottom: 0.2em;
             .touch & {
-                font-size: 2em;
+                display: none;
             }
         }
 
