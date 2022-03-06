@@ -18,6 +18,10 @@
     background: #fffffff8;
     color: $black;
 
+    @media (max-width: $narrow-screen-breakpoint) {
+       border-bottom: none;
+    }
+
     span[contenteditable] {
         border: 2px solid transparent;
         &[contenteditable="false"]:hover,
@@ -33,7 +37,7 @@
         align-items: center;
         a {
             display: none;
-            @media (max-width: 700px) {
+            @media (max-width: $narrow-screen-breakpoint) {
                 display: flex;
                 align-items: center;
                 .icon {

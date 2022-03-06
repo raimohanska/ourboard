@@ -42,7 +42,7 @@
                 text-decoration: none;
                 color: $black;
             }
-            @media (max-width: 700px) {
+            @media (max-width: $narrow-screen-breakpoint) {
                 display: none;
             }
         }
@@ -65,6 +65,14 @@
                 top: 3rem;
                 left: 50%;
                 transform: translateX(-50%);
+                @media (max-width: $narrow-screen-breakpoint) {
+                    top: $header-height;
+                    width: 100%;
+                    justify-content: center;
+                    height: $fixed-toolbar-height;
+                    border-radius: 0;
+                    border: none;
+                }
             }
 
             .new-item,

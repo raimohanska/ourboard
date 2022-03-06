@@ -53,6 +53,9 @@
         height: 80%;
         position: relative;
         margin-top: $header-height;
+        @media (max-width: $narrow-screen-breakpoint) {
+            margin-top: $header-height + $fixed-toolbar-height;
+        }
         > .scroll-container {
             height: 100%;
             overflow: auto;
