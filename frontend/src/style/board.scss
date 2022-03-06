@@ -52,6 +52,7 @@
         flex-grow: 1;
         height: 80%;
         position: relative;
+        margin-top: $header-height;
         > .scroll-container {
             height: 100%;
             overflow: auto;

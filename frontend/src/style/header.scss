@@ -11,7 +11,7 @@
     font-size: 0.8em;
     z-index: $z-index-menu;
     padding: 0 0.8em;
-    height: 3em;
+    height: $header-height;
     width: 100%;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
