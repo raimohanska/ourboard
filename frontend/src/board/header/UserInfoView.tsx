@@ -24,6 +24,7 @@ export const UserInfoView = ({
             L.changes,
             L.filter((l) => l > 1),
             L.takeUntil(L.later(5000, null)),
+            L.take(1),
             L.applyScope(componentScope()),
         )
         .forEach(() => {
