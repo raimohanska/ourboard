@@ -82,7 +82,7 @@
                 align-items: center;
                 position: relative;
                 margin: 0 0.2em 0.2em;
-                .touch & {
+                @media (max-width: $narrow-screen-breakpoint) {
                     margin: 0 0.1em 0.2em;
                 }
                 .text {
@@ -105,6 +105,18 @@
                     .icon {
                         background: #f4f4f6;
                     }
+                }
+            }
+
+            .tool.undo, .tool.redo {                
+                @media (min-width: $non-narrow-screen-breakpoint) {
+                    display: none;
+                }
+            }
+
+            .tool.redo {
+                @media (max-width: 500px) {
+                    display: none;
                 }
             }
 
@@ -143,7 +155,7 @@
             left: 1em;
             bottom: 1.5em;
             padding-bottom: 0.2em;
-            .touch & {
+            @media (max-width: $narrow-screen-breakpoint) {
                 display: none;
             }
         }
@@ -171,7 +183,7 @@
             box-sizing: content-box;
             padding-bottom: 3rem;
             min-width: 6rem;
-            .touch & {
+            @media (max-width: $narrow-screen-breakpoint) {
                 display: none;
             }
             .content {

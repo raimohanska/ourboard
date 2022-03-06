@@ -2,7 +2,7 @@ import { h } from "harmaja"
 import * as L from "lonna"
 import { Board, Item, Note } from "../../../../common/src/domain"
 import * as G from "../../../../common/src/geometry"
-import { UndoIcon } from "../../components/Icons"
+import { RedoIcon, UndoIcon } from "../../components/Icons"
 import { BoardStore } from "../../store/board-store"
 import { Dispatch } from "../../store/server-connection"
 import { BoardCoordinateHelper } from "../board-coordinates"
@@ -107,8 +107,9 @@ export const MainToolBar = ({
         >
             <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
             <ToolSelector {...{ toolController }} />
-            {IS_TOUCHSCREEN && <DeleteIcon {...{ focus, dispatch, board }} />}
-            {IS_TOUCHSCREEN && <UndoToolIcon {...{ boardStore, dispatch }} />}
+            {<DeleteIcon {...{ focus, dispatch, board }} />}
+            {<UndoToolIcon {...{ boardStore, dispatch }} />}
+            {<RedoToolIcon {...{ boardStore, dispatch }} />}
         </div>
     )
 }
@@ -119,11 +120,22 @@ type UndoProps = {
 }
 const UndoToolIcon = ({ dispatch, boardStore }: UndoProps) => {
     return (
-        <span className="tool" title="Undo" onMouseDown={() => dispatch({ action: "ui.undo" })}>
+        <span className="tool undo" title="Undo" onMouseDown={() => dispatch({ action: "ui.undo" })}>
             <span className="icon">
                 <UndoIcon enabled={boardStore.canUndo} />
             </span>
             <span className="text">Undo</span>
+        </span>
+    )
+}
+
+const RedoToolIcon = ({ dispatch, boardStore }: UndoProps) => {
+    return (
+        <span className="tool redo" title="Redo" onMouseDown={() => dispatch({ action: "ui.redo" })}>
+            <span className="icon">
+                <RedoIcon enabled={boardStore.canRedo} />
+            </span>
+            <span className="text">Redo</span>
         </span>
     )
 }
