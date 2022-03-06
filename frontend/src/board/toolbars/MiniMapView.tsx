@@ -3,6 +3,7 @@ import * as L from "lonna"
 import { Board, Item } from "../../../../common/src/domain"
 import { Rect } from "../../../../common/src/geometry"
 import { DND_GHOST_HIDING_IMAGE } from "../item-drag"
+import { getSingleTouch, isSingleTouch, onSingleTouch } from "../touchScreen"
 
 export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board: L.Property<Board> }) => {
     const minimapWidthPx = 125
@@ -40,7 +41,7 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
         }
     }
     const contentElement = L.atom<HTMLDivElement | null>(null)
-    function onClick(e: JSX.MouseEvent) {
+    function onClick(e: JSX.MouseEvent | Touch) {
         const elementArea = contentElement.get()!.getBoundingClientRect()
         const ar = minimapAspectRatio.get()
         const x = (e.clientX - elementArea.x) / ar
@@ -51,8 +52,22 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
             y: y - rect.height / 2,
         }))
     }
+
+    function onTouchStart(e: JSX.TouchEvent) {
+        e.preventDefault()
+        onSingleTouch(e, touch => onClick(touch))
+    }
+    function onTouchMove(e: JSX.TouchEvent) {
+        e.preventDefault()
+        onSingleTouch(e, touch => onClick(touch))
+    }
+    function onTouchEnd(e: JSX.TouchEvent) {
+        e.preventDefault()
+        onSingleTouch(e, touch => onClick(touch))
+    }
+
     return (
-        <div className="minimap" style={minimapStyle} onDragOver={onDragOver} onClick={onClick}>
+        <div className="minimap" style={minimapStyle} onDragOver={onDragOver} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onClick={onClick}>
             <div className="content" ref={contentElement.set}>
                 <ListView
                     observable={L.view(L.view(board, "items"), Object.values)}
