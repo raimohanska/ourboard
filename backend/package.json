@@ -52,7 +52,7 @@
     "watch": "tsc-watch --onSuccess \"node --enable-source-maps .\" --preserveWatchOutput",
     "apidocs": "typera-openapi --prettify src/api-routes.ts",
     "apidocs:dev": "nodemon --watch src/api-routes.ts --exec 'yarn apidocs'",
-    "check-sources": "yarn apidocs --check"
+    "lint": "yarn apidocs --check"
   },
   "engines": {
     "node": ">=14"

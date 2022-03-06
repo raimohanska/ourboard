@@ -15,4 +15,4 @@ jobs:
             - name: Install dependencies
               run: yarn install --frozen-lockfile
             - name: Check code formatting & generated files
-              run: yarn check-sources
+              run: yarn lint
