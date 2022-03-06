@@ -6,6 +6,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "./board-focus"
 import { isConnectionAttachmentPoint, startConnecting } from "./item-connect"
 import { ToolController } from "./tool-selection"
+import { isSingleTouch } from "./touchScreen"
 
 export function itemSelectionHandler(
     id: string,
@@ -26,6 +27,11 @@ export function itemSelectionHandler(
 
     const selected = L.view(itemFocus, (s) => s !== "none")
 
+    function onTouchStart(e: JSX.TouchEvent) {
+        if (isSingleTouch(e)) {
+            onClick(e)
+        }
+    }
     function onClick(e: JSX.MouseEvent | JSX.TouchEvent) {
         const f = focus.get()
         const selectedIds = getSelectedItemIds(f)
@@ -57,6 +63,6 @@ export function itemSelectionHandler(
         itemFocus,
         selected,
         onClick,
-        onTouchStart: onClick,
+        onTouchStart: onTouchStart,
     }
 }

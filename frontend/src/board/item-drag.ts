@@ -1,10 +1,9 @@
 import * as L from "lonna"
-import { Board, Connection, getConnection, Item, Point } from "../../../common/src/domain"
-import { getItem } from "../../../common/src/domain"
+import { Board, Connection, getConnection, getItem, Item, Point } from "../../../common/src/domain"
+import { emptySet } from "../../../common/src/sets"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedItemIds } from "./board-focus"
-import { Coordinates } from "../../../common/src/geometry"
-import { emptySet } from "../../../common/src/sets"
+import { isSingleTouch } from "./touchScreen"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -74,15 +73,17 @@ export function onBoardItemDrag(
     }
 
     const onTouchMove = (e: TouchEvent) => {
-        const d = touch2Drag(e)
         e.preventDefault()
-        const f = focus.get()
-        if (f.status !== "dragging") {
-            startDrag(touch2Drag(e))
-        }
+        if (isSingleTouch(e)) {
+            const d = touch2Drag(e)
+            const f = focus.get()
+            if (f.status !== "dragging") {
+                startDrag(touch2Drag(e))
+            }
 
-        coordinateHelper.currentPageCoordinates.set({ x: d.pageX, y: d.pageY })
-        drag(d)
+            coordinateHelper.currentPageCoordinates.set({ x: d.pageX, y: d.pageY })
+            drag(d)
+        }
     }
     const onDrag = (e: DragEvent) => {
         drag(e)
@@ -130,7 +131,9 @@ export function onBoardItemDrag(
 
     const onTouchEnd = (e: TouchEvent) => {
         e.preventDefault()
-        dragEnd(touch2DragEnd(e))
+        if (isSingleTouch(e)) {
+            dragEnd(touch2DragEnd(e))
+        }
     }
     const onDragEnd = (e: DragEvent) => {
         dragEnd(e)

@@ -4,13 +4,13 @@ import * as L from "lonna"
 import { connectionRect } from "../../../common/src/connection-utils"
 import { Board, Point } from "../../../common/src/domain"
 import { containedBy, overlaps, Rect, rectFromPoints } from "../../../common/src/geometry"
-import { emptySet } from "../../../common/src/sets"
 import { Dispatch } from "../store/server-connection"
 import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
-import { isAnythingSelected, BoardFocus, getSelectedItemIds, noFocus, getSelectedConnectionIds } from "./board-focus"
+import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds, isAnythingSelected, noFocus } from "./board-focus"
 import { newConnectionCreator } from "./item-connect"
 import { DND_GHOST_HIDING_IMAGE } from "./item-drag"
 import { ToolController } from "./tool-selection"
+import { onSingleTouch } from "./touchScreen"
 
 export type DragAction =
     | { action: "select"; selectedAtStart: BoardFocus }
@@ -148,6 +148,30 @@ export function boardDragHandler({
                 current.set(null)
             }
         }
+
+        let touchStart: Touch | null = null
+        function preventDefaultTouch(e: TouchEvent) {
+            if (e.target === boardElem.get()) {
+                e.preventDefault()
+            }
+        }
+        const onTouch = (e: TouchEvent) => {
+            preventDefaultTouch(e)            
+            onSingleTouch(e, touch => {
+                if (touchStart) {
+                    const xDiff = touchStart.pageX - touch.pageX
+                    const yDiff = touchStart.pageY - touch.pageY
+                    const s = document.querySelector(".scroll-container")!
+                    s.scrollBy(xDiff, yDiff)
+                }
+                touchStart = touch
+            })
+        }
+        el.addEventListener("touchmove", onTouch)
+        el.addEventListener("touchend", e => {
+            preventDefaultTouch(e)
+            touchStart = null
+        })
     })
 
     return {

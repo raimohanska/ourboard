@@ -147,7 +147,7 @@ export const BoardView = ({
         toolController,
     )
 
-    function onClick(e: JSX.MouseEvent) {
+    function onClick(e: JSX.UIEvent) {
         const f = focus.get()
         if (f.status === "connection-adding") {
             toolController.useDefaultTool()
@@ -256,6 +256,7 @@ export const BoardView = ({
                             draggable={isFirefox ? L.view(focus, (f) => f.status !== "editing") : true}
                             ref={boardElement.set}
                             onClick={onClick}
+                            onTouchEnd={onClick}
                         >
                             <ListView observable={items} renderObservable={renderItem} getKey={(i) => i.id} />
 

@@ -1,8 +1,9 @@
 import { componentScope } from "harmaja"
-import * as L from "lonna"
 import * as _ from "lodash"
-import { add, Coordinates, subtract, origin, multiply } from "../../../common/src/geometry"
+import * as L from "lonna"
+import { add, Coordinates, origin, subtract } from "../../../common/src/geometry"
 import { BoardZoom } from "./board-scroll-and-zoom"
+import { onSingleTouch } from "./touchScreen"
 
 const newCoordinates = (x: number, y: number): Coordinates => {
     return { x, y }
@@ -124,6 +125,12 @@ export function boardCoordinateHelper(
                 { leading: true, trailing: true },
             ),
         )
+        container.addEventListener("touchstart", e => {
+            onSingleTouch(e, touch => currentPageCoordinates.set({ x: touch.pageX, y: touch.pageY }))
+        })
+        container.addEventListener("touchmove", e => {
+            onSingleTouch(e, touch => currentPageCoordinates.set({ x: touch.pageX, y: touch.pageY }))
+        })
     })
 
     function scrollCursorToBoardCoordinates(coords: Coordinates) {
