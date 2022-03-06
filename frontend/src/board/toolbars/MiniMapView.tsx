@@ -3,7 +3,7 @@ import * as L from "lonna"
 import { Board, Item } from "../../../../common/src/domain"
 import { Rect } from "../../../../common/src/geometry"
 import { DND_GHOST_HIDING_IMAGE } from "../item-drag"
-import { getSingleTouch, isSingleTouch, onSingleTouch } from "../touchScreen"
+import { onSingleTouch } from "../touchScreen"
 
 export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board: L.Property<Board> }) => {
     const minimapWidthPx = 125
