@@ -2,16 +2,17 @@ import { Fragment, h } from "harmaja"
 import { getNavigator } from "harmaja-router"
 import * as L from "lonna"
 import * as uuid from "uuid"
-import { AccessLevel, Board, EventFromServer } from "../../../../common/src/domain"
+import { AccessLevel, Board, EventFromServer, UserSessionInfo } from "../../../../common/src/domain"
 import { createBoardAndNavigate, Routes } from "../../board-navigation"
 import { EditableSpan } from "../../components/EditableSpan"
-import { Dispatch } from "../../store/board-store"
+import { BoardState, Dispatch } from "../../store/board-store"
 import { defaultAccessPolicy, UserSessionState } from "../../store/user-session-store"
 import { BackToAllBoardsLink } from "../toolbars/BackToAllBoardsLink"
 import { SharingModalDialog } from "./SharingModalDialog"
 import { UserInfoView } from "./UserInfoView"
 
 export function BoardViewHeader({
+    usersOnBoard,
     board,
     accessLevel,
     sessionState,
@@ -19,6 +20,7 @@ export function BoardViewHeader({
     modalContent,
     eventsFromServer,
 }: {
+    usersOnBoard: L.Property<UserSessionInfo[]>
     board: L.Property<Board>
     accessLevel: L.Property<AccessLevel>
     sessionState: L.Property<UserSessionState>
@@ -28,7 +30,7 @@ export function BoardViewHeader({
 }) {
     const editingAtom = L.atom(false)
     const nameAtom = L.atom(
-        L.view(board, (board) => board?.name || ""),
+        L.view(board, (board) => board.name || ""),
         (newName) => dispatch({ action: "board.rename", boardId: board.get()!.id, name: newName }),
     )
     const navigator = getNavigator<Routes>()
@@ -84,7 +86,12 @@ export function BoardViewHeader({
                         </>
                     ),
             )}
-            <UserInfoView state={sessionState} dispatch={dispatch} modalContent={modalContent} />
+            <UserInfoView
+                state={sessionState}
+                usersOnBoard={usersOnBoard}
+                dispatch={dispatch}
+                modalContent={modalContent}
+            />
         </header>
     )
 }

@@ -1,20 +1,36 @@
-import { h } from "harmaja"
+import { componentScope, h } from "harmaja"
 import * as L from "lonna"
+import { UserSessionInfo } from "../../../../common/src/domain"
 import { UserIcon } from "../../components/Icons"
-import { Dispatch } from "../../store/board-store"
+import { BoardState, Dispatch } from "../../store/board-store"
 import { UserSessionState } from "../../store/user-session-store"
 import { UserInfoModal } from "./UserInfoModal"
 
 export const UserInfoView = ({
     state,
     dispatch,
+    usersOnBoard,
     modalContent,
 }: {
     state: L.Property<UserSessionState>
+    usersOnBoard: L.Property<UserSessionInfo[]>
     dispatch: Dispatch
     modalContent: L.Atom<any>
 }) => {
     const pictureURL = L.view(state, (s) => (s.status === "logged-in" ? s.picture : undefined))
+    usersOnBoard
+        .pipe(
+            L.map((users) => users.length),
+            L.changes,
+            L.filter((l) => l > 1),
+            L.takeUntil(L.later(5000, null)),
+            L.applyScope(componentScope()),
+        )
+        .forEach(() => {
+            if (!state.get().nicknameSetByUser) {
+                showDialog()
+            }
+        })
 
     function dismiss() {
         modalContent.set(null)

@@ -244,6 +244,7 @@ export const BoardView = ({
             <BoardViewHeader
                 {...{
                     board,
+                    usersOnBoard: L.view(boardState, "users"),
                     sessionState,
                     dispatch,
                     accessLevel,

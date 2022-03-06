@@ -173,6 +173,7 @@ async function initBoardStore({
         status: "logging-in-local",
         sessionId: "",
         nickname: "",
+        nicknameSetByUser: false,
     })
 
     const connection = {
@@ -205,7 +206,13 @@ async function initBoardStore({
 
     await waitForBackgroundJobs()
 
-    sessionInfo.set({ status: "anonymous", nickname: "", sessionId: "", loginSupported: false })
+    sessionInfo.set({
+        status: "anonymous",
+        nickname: "",
+        nicknameSetByUser: false,
+        sessionId: "",
+        loginSupported: false,
+    })
 
     await waitForBackgroundJobs()
 

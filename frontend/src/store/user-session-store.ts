@@ -17,6 +17,7 @@ export type StateId = UserSessionState["status"]
 export type BaseSessionState = {
     sessionId: Id | null
     nickname: string | undefined
+    nicknameSetByUser: boolean
 }
 
 export type Anonymous = BaseSessionState & {
@@ -78,13 +79,18 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 return { ...state, sessionId: event.sessionId, nickname: state.nickname || event.nickname }
             } else if (event.action === "nickname.set") {
                 const nickname = storeNickName(event.nickname)
-                return { ...state, nickname }
+                return { ...state, nickname, nicknameSetByUser: true }
             } else if (event.action === "auth.login.response") {
                 if (!event.success) {
                     const retries = getRetries(state)
                     if (retries >= 2) {
                         console.error("Login validation failed after retries, giving up.")
-                        return { status: "login-failed", nickname: state.nickname, sessionId: state.sessionId }
+                        return {
+                            status: "login-failed",
+                            nickname: state.nickname,
+                            nicknameSetByUser: state.nicknameSetByUser,
+                            sessionId: state.sessionId,
+                        }
                     } else {
                         console.log("Server denied login - refreshing token...")
                         refreshUserInfo()
@@ -105,6 +111,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 return {
                     status: "anonymous",
                     nickname: state.nickname,
+                    nicknameSetByUser: state.nicknameSetByUser,
                     sessionId: state.sessionId,
                     loginSupported: false,
                 }
@@ -118,19 +125,22 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                     status: "logged-out",
                     sessionId: state.sessionId,
                     nickname: state.nickname,
+                    nicknameSetByUser: state.nicknameSetByUser,
                 }
             } else if (event.status === "in-progress") {
                 return {
                     status: "logging-in-local",
                     sessionId: state.sessionId,
                     nickname: state.nickname,
+                    nicknameSetByUser: state.nicknameSetByUser,
                 }
-            } else {
+            } else if (event.status === "signed-in") {
                 const { status, ...googleUser } = event
                 const newStatus = {
                     status: "logging-in-server",
                     sessionId: state.sessionId,
                     nickname: googleUser.name,
+                    nicknameSetByUser: true,
                     ...googleUser,
                     retries: getRetries(state) + 1,
                 } as const
@@ -138,6 +148,8 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                     sendLoginAndNickname(newStatus)
                 }
                 return newStatus
+            } else {
+                throw Error("Unknown status " + JSON.stringify(event))
             }
         }
     }
@@ -173,12 +185,14 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                   status: "anonymous",
                   sessionId: null,
                   nickname: localStorage.nickname || undefined,
+                  nicknameSetByUser: !!localStorage.nickname,
                   loginSupported: false,
               }
             : {
                   status: "logging-in-local",
                   sessionId: null,
                   nickname: localStorage.nickname || undefined,
+                  nicknameSetByUser: !!localStorage.nickname,
               }
 
     const sessionState = L.merge(
