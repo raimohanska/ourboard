@@ -125,11 +125,11 @@ export function boardCoordinateHelper(
                 { leading: true, trailing: true },
             ),
         )
-        container.addEventListener("touchstart", e => {
-            onSingleTouch(e, touch => currentPageCoordinates.set({ x: touch.pageX, y: touch.pageY }))
+        container.addEventListener("touchstart", (e) => {
+            onSingleTouch(e, (touch) => currentPageCoordinates.set({ x: touch.pageX, y: touch.pageY }))
         })
-        container.addEventListener("touchmove", e => {
-            onSingleTouch(e, touch => currentPageCoordinates.set({ x: touch.pageX, y: touch.pageY }))
+        container.addEventListener("touchmove", (e) => {
+            onSingleTouch(e, (touch) => currentPageCoordinates.set({ x: touch.pageX, y: touch.pageY }))
         })
     })
 

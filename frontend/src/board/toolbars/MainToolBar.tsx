@@ -25,7 +25,7 @@ export const MainToolBar = ({
     dispatch,
     board,
     onTouchMoveStart,
-    boardStore
+    boardStore,
 }: {
     coordinateHelper: BoardCoordinateHelper
     latestNote: L.Property<Note>
@@ -113,15 +113,19 @@ export const MainToolBar = ({
     )
 }
 
-type UndoProps = { 
-    dispatch: Dispatch; 
-    boardStore: BoardStore 
+type UndoProps = {
+    dispatch: Dispatch
+    boardStore: BoardStore
 }
 const UndoToolIcon = ({ dispatch, boardStore }: UndoProps) => {
-    return <span className="tool" title="Undo" onMouseDown={() => dispatch({ action: "ui.undo" })}>
-        <span className="icon"><UndoIcon enabled={boardStore.canUndo} /></span>
-        <span className="text">Undo</span>
-    </span>
+    return (
+        <span className="tool" title="Undo" onMouseDown={() => dispatch({ action: "ui.undo" })}>
+            <span className="icon">
+                <UndoIcon enabled={boardStore.canUndo} />
+            </span>
+            <span className="text">Undo</span>
+        </span>
+    )
 }
 
 type DeleteProps = {

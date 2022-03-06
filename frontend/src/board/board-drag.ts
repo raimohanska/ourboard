@@ -156,8 +156,8 @@ export function boardDragHandler({
             }
         }
         const onTouch = (e: TouchEvent) => {
-            preventDefaultTouch(e)            
-            onSingleTouch(e, touch => {
+            preventDefaultTouch(e)
+            onSingleTouch(e, (touch) => {
                 if (touchStart) {
                     const xDiff = touchStart.pageX - touch.pageX
                     const yDiff = touchStart.pageY - touch.pageY
@@ -168,7 +168,7 @@ export function boardDragHandler({
             })
         }
         el.addEventListener("touchmove", onTouch)
-        el.addEventListener("touchend", e => {
+        el.addEventListener("touchend", (e) => {
             preventDefaultTouch(e)
             touchStart = null
         })

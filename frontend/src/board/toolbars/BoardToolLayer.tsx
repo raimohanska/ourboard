@@ -69,7 +69,7 @@ export const BoardToolLayer = ({
                     onAdd,
                     onTouchMoveStart: touchMoveStart.push,
                     toolController,
-                    boardStore
+                    boardStore,
                 }}
             />
             <div className="undo-redo-toolbar board-tool">
