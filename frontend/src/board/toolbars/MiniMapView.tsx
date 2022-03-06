@@ -55,19 +55,27 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
 
     function onTouchStart(e: JSX.TouchEvent) {
         e.preventDefault()
-        onSingleTouch(e, touch => onClick(touch))
+        onSingleTouch(e, (touch) => onClick(touch))
     }
     function onTouchMove(e: JSX.TouchEvent) {
         e.preventDefault()
-        onSingleTouch(e, touch => onClick(touch))
+        onSingleTouch(e, (touch) => onClick(touch))
     }
     function onTouchEnd(e: JSX.TouchEvent) {
         e.preventDefault()
-        onSingleTouch(e, touch => onClick(touch))
+        onSingleTouch(e, (touch) => onClick(touch))
     }
 
     return (
-        <div className="minimap" style={minimapStyle} onDragOver={onDragOver} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onClick={onClick}>
+        <div
+            className="minimap"
+            style={minimapStyle}
+            onDragOver={onDragOver}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            onClick={onClick}
+        >
             <div className="content" ref={contentElement.set}>
                 <ListView
                     observable={L.view(L.view(board, "items"), Object.values)}

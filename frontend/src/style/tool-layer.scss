@@ -108,7 +108,8 @@
                 }
             }
 
-            .tool.undo, .tool.redo {                
+            .tool.undo,
+            .tool.redo {
                 @media (min-width: $non-narrow-screen-breakpoint) {
                     display: none;
                 }
