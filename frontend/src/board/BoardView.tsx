@@ -230,6 +230,11 @@ export const BoardView = ({
     const selectedItems = L.view(board, focus, (b, f) => getSelectedItems(b)(f))
     const modalContent = L.atom<any>(null)
 
+    L.interval(100, null, componentScope()).forEach(() => {
+        if ((window.scrollY !== 0 || window.scrollX !== 0) && focus.get().status !== "editing") {
+            window.scrollTo(0, 0) // Reset scroll position when not editing. At least iOS seems to need this. It's vital that our scroll pos stays at origin.
+        }
+    })
     return (
         <div id="root" className={className}>
             <ModalContainer content={modalContent} />
