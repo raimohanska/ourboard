@@ -90,7 +90,7 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
                         }
                         template = { ...found.board, accessPolicy: undefined }
                     } else {
-                        console.error(`Template ${payload.templateId}${aliased ? `(${templateId})` : ""} not found`)
+                        console.error(`Template ${payload.templateId}${aliased ? `(${templateId})` : ""} not found`)
                     }
                 }
                 const board = { ...defaultBoardSize, items: {}, connections: [], ...template, ...payload, serial: 0 }
