@@ -231,27 +231,39 @@ Copy the result string, navigate to your localhost site and paste the same value
 
 ## Hosting
 
-You should be able to host your own OurBoard instance pretty easily. Some environment variables to set:
+### Heroku
+
+You should be able to host your own OurBoard instance pretty easily in Heroku. This repository should be runnable as-is, 
+provided you set up some environment variables, which are listed below.
+
+### Other options
+
+No other options beside Heroku are available out-of-the-box, but the application is rather simple. Running `yarn build` will build it and `yarn run` will run it. When building for production, some of the environment variables need to be present (see `esbuild.js`) though, so that the client can use Google Login.
+
+### Environment variables
 
 ```
-DATABASE_URL:          [Postgres database URL]
-DATABASE_SSL_ENABLED:  [Use SSL for database connection (optional; default = false)]
-DOMAIN:                [your domain name]
-REDIRECT_URL:          https://www.ourboard.io/
-WS_HOST_DEFAULT:       [your domain name]
-WS_HOST_LOCAL:         [your domain name]
-WS_PROTOCOL:           [wss for secure, ws for non-secure]
+DATABASE_URL          Postgres database URL. In Heroku, you can just add the PostgreSQL add on and this variable will be correctly set. The free one will get you started.
+DATABASE_SSL_ENABLED  Use `true` to use SSL for database connection. Recommended.
+REDIRECT_URL          Put your OurBoard application root URL here, if you want the server to redirect all requests that don't have the x-forwarded-proto=https header. For example: https://www.ourboard.io/.
+WS_HOST_DEFAULT       Your domain name here, used for routing websocket connections
+WS_HOST_LOCAL         Your domain name here as well
+WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Always use wss.
+BOARD_ALIAS_tutorial  Board identifier for the "tutorial" board that will be cloned for new users. Allows you to create a custom tutorial board. For example, the value `782d4942-a438-44c9-ad5f-3187cc1d0a63` is used in ourboard.io, and this points to a publicly readable, but privately editable board
 ```
 
-AWS environment variables, needed for hosting board assets on AWS S3, otherwise hosted in file system.
+AWS environment variables, needed for hosting board assets on AWS S3. If these are missing, all uploaded
+assests (images, videos) will be stored in the local filesystem, which is a viable solution only if you have
+a persistent file system with backups.
 
 ```
-AWS_ACCESS_KEY_ID
-AWS_ASSETS_BUCKET_URL
-AWS_SECRET_ACCESS_KEY
+AWS_ACCESS_KEY_ID       AWS access key ID
+AWS_SECRET_ACCESS_KEY   Secret access key
+AWS_ASSETS_BUCKET_URL   URL to the AWS bucket. For example https://r-board-assets.s3.eu-north-1.amazonaws.com
 ```
 
-Google Authentication environment variables, needed if you want to enable Google auth.
+Google Authentication environment variables, needed if you want to enable Google auth. Currently there are no
+other authentication alternatives, so it's either Google or anonymous access.
 
 ```
 GOOGLE_API_KEY
