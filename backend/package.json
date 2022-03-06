@@ -50,7 +50,7 @@
     "dev": "npm-run-all --parallel watch apidocs:dev",
     "build": "tsc",
     "watch": "tsc-watch --onSuccess \"node --enable-source-maps .\" --preserveWatchOutput",
-    "apidocs": "typera-openapi --prettify src/api-routes.ts",
+    "apidocs": "typera-openapi --prettify src/api/api-routes.ts",
     "apidocs:dev": "nodemon --watch src/api-routes.ts --exec 'yarn apidocs'",
     "lint": "yarn apidocs --check"
   },
