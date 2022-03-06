@@ -4,6 +4,8 @@
     }
 }
 #root.board-container header {
+    position: fixed;
+    top: 0;
     white-space: nowrap;
     border-bottom: 2px solid #e7e8e8;
     font-size: 0.8em;
