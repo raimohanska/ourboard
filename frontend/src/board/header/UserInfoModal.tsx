@@ -49,7 +49,7 @@ export const UserInfoModal = ({
                             return (
                                 <div className="anonymous">
                                     <p className="nickname">
-                                        <span>Select nickname:</span>
+                                        <span>Select nickname to be shown to others</span>
                                         <NicknameEditor {...{ state, dispatch }} />
                                     </p>
                                     {L.view(
