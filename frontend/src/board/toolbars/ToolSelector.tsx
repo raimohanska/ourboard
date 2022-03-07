@@ -87,11 +87,13 @@ const ToolIcon = ({
     currentTool: L.Atom<Tool>
     svg: (c: Color) => HarmajaChild
 }) => {
+    const selectTool = () => currentTool.set(name)
     return (
         <span
             className={L.view(currentTool, (s) => (s === name ? "tool active" : "tool") + " " + name)}
             title={tooltip}
-            onClick={() => currentTool.set(name)}
+            onClick={selectTool}
+            onTouchStart={selectTool}
         >
             <span className="icon">{L.view(currentTool, (s) => svg(black))}</span>
             <span className="text">{capitalize(name)}</span>

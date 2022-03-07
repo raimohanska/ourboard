@@ -87,6 +87,9 @@ export const MainToolBar = ({
         e.preventDefault()
         onTouchMoveStart()
     }
+    const onTouchStart = (e: JSX.TouchEvent) => {
+        e.preventDefault()
+    }
     const toolbarStyle = L.view(toolbarPosition, (p) => ({
         top: p.y || undefined,
         left: p.x || undefined,
@@ -104,6 +107,7 @@ export const MainToolBar = ({
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             onTouchMove={onTouchMove}
+            onTouchStart={onTouchStart}            
         >
             <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
             <ToolSelector {...{ toolController }} />
@@ -119,8 +123,9 @@ type UndoProps = {
     boardStore: BoardStore
 }
 const UndoToolIcon = ({ dispatch, boardStore }: UndoProps) => {
+    const undo = () => dispatch({ action: "ui.undo" })
     return (
-        <span className="tool undo" title="Undo" onMouseDown={() => dispatch({ action: "ui.undo" })}>
+        <span className="tool undo" title="Undo" onMouseDown={undo} onTouchStart={undo}>
             <span className="icon">
                 <UndoIcon enabled={boardStore.canUndo} />
             </span>
@@ -130,8 +135,9 @@ const UndoToolIcon = ({ dispatch, boardStore }: UndoProps) => {
 }
 
 const RedoToolIcon = ({ dispatch, boardStore }: UndoProps) => {
+    const redo = () => dispatch({ action: "ui.redo" })
     return (
-        <span className="tool redo" title="Redo" onMouseDown={() => dispatch({ action: "ui.redo" })}>
+        <span className="tool redo" title="Redo" onMouseDown={redo}>
             <span className="icon">
                 <RedoIcon enabled={boardStore.canRedo} />
             </span>
@@ -148,11 +154,13 @@ type DeleteProps = {
 
 const DeleteIcon = ({ focus, board, dispatch }: DeleteProps) => {
     const enabled = L.view(focus, (f) => getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0)
+    const deleteItem = () => dispatchDeletion(board.get().id, focus.get(), dispatch)
     return (
         <span
             className="tool"
             title="Delete selected item(s)"
-            onMouseDown={() => dispatchDeletion(board.get().id, focus.get(), dispatch)}
+            onMouseDown={deleteItem}
+            onTouchStart={deleteItem}
         >
             <span className={L.view(enabled, (e) => (e ? "icon" : "icon disabled"))}>
                 <svg viewBox="0 0 24 24">

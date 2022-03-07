@@ -142,7 +142,7 @@ export const NewItem = ({
     svg: () => HarmajaChild
     addItem: (i: Item) => void
 }) => {
-    const startAdd = (e: JSX.MouseEvent) => {
+    const startAdd = (e: JSX.UIEvent) => {
         focus.set({ status: "adding", element: svg(), item: createItem() })
         e.preventDefault()
         e.stopPropagation()
@@ -151,7 +151,7 @@ export const NewItem = ({
         addItem(createItem())
     }
     return (
-        <span className={`new-item ${type}`} onClick={startAdd}>
+        <span className={`new-item ${type}`} onClick={startAdd} onTouchStart={startAdd}>
             <span
                 className="icon"
                 data-test={`palette-new-${type}`}
