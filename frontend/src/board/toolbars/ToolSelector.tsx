@@ -89,7 +89,7 @@ const ToolIcon = ({
 }) => {
     return (
         <span
-            className={L.view(currentTool, (s) => (s === name ? "tool active" : "tool"))}
+            className={L.view(currentTool, (s) => (s === name ? "tool active" : "tool") + " " + name)}
             title={tooltip}
             onClick={() => currentTool.set(name)}
         >

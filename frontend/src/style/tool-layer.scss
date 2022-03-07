@@ -113,11 +113,54 @@
                 @media (min-width: $non-narrow-screen-breakpoint) {
                     display: none;
                 }
+                .notouch & {
+                    @media (max-width: 422px) {
+                        display: none;
+                    }
+                }
+                .touch & {
+                    @media (max-width: 374px) {
+                        display: none;
+                    }
+                }
             }
 
             .tool.redo {
-                @media (max-width: 500px) {
-                    display: none;
+                .notouch & {
+                    @media (max-width: 500px) {
+                        display: none;
+                    }
+                }
+                .touch & {
+                    @media (max-width: 554px) {
+                        display: none;
+                    }
+                }
+            }
+
+            .new-item.container {
+                .notouch & {
+                    @media (max-width: 374px) {
+                        display: none;
+                    }
+                }
+                .touch & {
+                    @media (max-width: 326px) {
+                        display: none;
+                    }
+                }
+            }
+
+            .new-item.text {
+                .notouch & {
+                    @media (max-width: 326px) {
+                        display: none;
+                    }
+                }
+                .touch & {
+                    @media (max-width: 278px) {
+                        display: none;
+                    }
                 }
             }
 
