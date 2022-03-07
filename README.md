@@ -233,7 +233,7 @@ Copy the result string, navigate to your localhost site and paste the same value
 
 ### Heroku
 
-You should be able to host your own OurBoard instance pretty easily in Heroku. This repository should be runnable as-is, 
+You should be able to host your own OurBoard instance pretty easily in Heroku. This repository should be runnable as-is,
 provided you set up some environment variables, which are listed below.
 
 ### Other options
