@@ -1,10 +1,10 @@
-import { h, Fragment, HarmajaChild } from "harmaja"
+import { Fragment, h, HarmajaChild } from "harmaja"
+import { capitalize } from "lodash"
 import * as L from "lonna"
 import { Color } from "../../../../common/src/domain"
+import { black } from "../../components/UIColors"
 import { Tool, ToolController } from "../tool-selection"
-import { black, selectedColor } from "../../components/UIColors"
 import { IS_TOUCHSCREEN } from "../touchScreen"
-import { capitalize } from "lodash"
 
 export const ToolSelector = ({ toolController }: { toolController: ToolController }) => {
     const tool = toolController.tool
