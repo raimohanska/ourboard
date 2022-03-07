@@ -107,7 +107,7 @@ export const MainToolBar = ({
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             onTouchMove={onTouchMove}
-            onTouchStart={onTouchStart}            
+            onTouchStart={onTouchStart}
         >
             <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
             <ToolSelector {...{ toolController }} />
@@ -156,12 +156,7 @@ const DeleteIcon = ({ focus, board, dispatch }: DeleteProps) => {
     const enabled = L.view(focus, (f) => getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0)
     const deleteItem = () => dispatchDeletion(board.get().id, focus.get(), dispatch)
     return (
-        <span
-            className="tool"
-            title="Delete selected item(s)"
-            onMouseDown={deleteItem}
-            onTouchStart={deleteItem}
-        >
+        <span className="tool" title="Delete selected item(s)" onMouseDown={deleteItem} onTouchStart={deleteItem}>
             <span className={L.view(enabled, (e) => (e ? "icon" : "icon disabled"))}>
                 <svg viewBox="0 0 24 24">
                     <path
