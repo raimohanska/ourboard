@@ -1,4 +1,4 @@
-import { componentScope, h } from "harmaja"
+import { h } from "harmaja"
 import * as L from "lonna"
 import { AccessLevel, Board, canWrite, Item, Note } from "../../../../common/src/domain"
 import * as G from "../../../../common/src/geometry"
@@ -46,7 +46,6 @@ export const BoardToolLayer = ({
     focus: L.Atom<BoardFocus>
 }) => {
     const touchMoveStart = L.bus<void>()
-    const showTouchNotice = stayTrueFor(touchMoveStart, 1000, componentScope())
     const boardState = boardStore.state
     const boardAccessStatus = L.view(boardState, (s) => s.status)
     const tool = toolController.tool
@@ -128,23 +127,6 @@ export const BoardToolLayer = ({
                     )
                 }
             })}
-
-            {L.view(showTouchNotice, (show) => {
-                if (!show) return null
-                return <span className="tool-instruction">{"Click on menu to add items"}</span>
-            })}
         </div>
     )
-}
-
-function stayTrueFor(trigger: L.EventStream<any>, delay: number, scope: L.Scope): L.Property<boolean> {
-    const delayed = trigger.pipe(L.debounce(delay, scope))
-    return awaiting(trigger, delayed, scope)
-}
-
-function awaiting(first: L.EventStream<any>, second: L.EventStream<any>, scope: L.Scope): L.Property<boolean> {
-    return L.merge(
-        L.view(first, () => true),
-        L.view(second, () => false),
-    ).pipe(L.toProperty(false, scope))
 }
