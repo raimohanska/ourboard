@@ -1,8 +1,7 @@
 import { localStorageAtom } from "./local-storage-atom"
 import * as L from "lonna"
-import { componentScope } from "harmaja"
 
-export type Tool = "pan" | "select" | "connect"
+export type Tool = "pan" | "select" | "connect" | "note" | "container" | "text"
 export type ControlSettings = {
     tool: Tool
     defaultTool?: Tool

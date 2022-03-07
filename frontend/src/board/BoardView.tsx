@@ -94,13 +94,12 @@ export const BoardView = ({
                 latestNoteId.set(item.id)
             }
         }
-        if (tool.get() === "connect") {
-            toolController.useDefaultTool()
-        }
     })
 
-    tool.pipe(L.changes).forEach(() => {
-        focus.modify((f) => (f.status === "selected" ? f : noFocus))
+    tool.pipe(L.changes).forEach((tool) => {
+        if (tool !== "note" && tool !== "container" && tool !== "text" && focus.get().status === "adding") {
+            focus.set(noFocus)
+        }
     })
 
     const doOnUnmount: Function[] = []

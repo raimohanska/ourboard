@@ -109,7 +109,7 @@ export const MainToolBar = ({
             onTouchMove={onTouchMove}
             onTouchStart={onTouchStart}
         >
-            <PaletteView {...{ latestNote, addItem: onAdd, focus }} />
+            <PaletteView {...{ latestNote, addItem: onAdd, focus, tool: toolController.tool }} />
             <ToolSelector {...{ toolController }} />
             {<DeleteIcon {...{ focus, dispatch, board }} />}
             {<UndoToolIcon {...{ boardStore, dispatch }} />}

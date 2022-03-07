@@ -2,26 +2,37 @@ import { h, Fragment, HarmajaChild } from "harmaja"
 import * as L from "lonna"
 import { Item, newContainer, newSimilarNote, newText, Note } from "../../../../common/src/domain"
 import { BoardFocus } from "../board-focus"
+import { Tool } from "../tool-selection"
 
 export const PaletteView = ({
     latestNote,
     addItem,
     focus,
+    tool,
 }: {
     latestNote: L.Property<Note>
     addItem: (item: Item) => void
     focus: L.Atom<BoardFocus>
+    tool: L.Atom<Tool>
 }) => {
     return (
         <>
-            <NewNote {...{ addItem, latestNote, focus }} />
-            <NewContainer {...{ addItem, focus }} />
-            <NewText {...{ addItem, focus }} />
+            <NewNote {...{ addItem, latestNote, focus, tool }} />
+            <NewContainer {...{ addItem, focus, tool }} />
+            <NewText {...{ addItem, focus, tool }} />
         </>
     )
 }
 
-export const NewText = ({ addItem: onAdd, focus }: { addItem: (i: Item) => void; focus: L.Atom<BoardFocus> }) => {
+export const NewText = ({
+    addItem: onAdd,
+    focus,
+    tool,
+}: {
+    addItem: (i: Item) => void
+    focus: L.Atom<BoardFocus>
+    tool: L.Atom<Tool>
+}) => {
     const svg = () => (
         <svg viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="36" cy="8.5" r="8" fill="#2F80ED" />
@@ -44,6 +55,7 @@ export const NewText = ({ addItem: onAdd, focus }: { addItem: (i: Item) => void;
             focus={focus}
             createItem={newText}
             addItem={onAdd}
+            tool={tool}
         />
     )
 }
@@ -61,10 +73,12 @@ export const NewNote = ({
     latestNote,
     addItem: onAdd,
     focus,
+    tool,
 }: {
     latestNote: L.Property<Note>
     addItem: (i: Item) => void
     focus: L.Atom<BoardFocus>
+    tool: L.Atom<Tool>
 }) => {
     const color = L.view(latestNote, "color")
     const cornerColor = L.view(color, (c) => lightenDarkenColor(c, -20))
@@ -93,11 +107,20 @@ export const NewNote = ({
             focus={focus}
             createItem={() => newSimilarNote(latestNote.get())}
             addItem={onAdd}
+            tool={tool}
         />
     )
 }
 
-export const NewContainer = ({ addItem: onAdd, focus }: { addItem: (i: Item) => void; focus: L.Atom<BoardFocus> }) => {
+export const NewContainer = ({
+    addItem: onAdd,
+    focus,
+    tool,
+}: {
+    addItem: (i: Item) => void
+    focus: L.Atom<BoardFocus>
+    tool: L.Atom<Tool>
+}) => {
     const svg = () => (
         <svg viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -121,6 +144,7 @@ export const NewContainer = ({ addItem: onAdd, focus }: { addItem: (i: Item) => 
             focus={focus}
             createItem={newContainer}
             addItem={onAdd}
+            tool={tool}
         />
     )
 }
@@ -133,17 +157,20 @@ export const NewItem = ({
     focus,
     svg,
     addItem,
+    tool,
 }: {
-    type: string
+    type: "note" | "container" | "text"
     title: string
     tooltip: string
     createItem: () => Item
     focus: L.Atom<BoardFocus>
     svg: () => HarmajaChild
     addItem: (i: Item) => void
+    tool: L.Atom<Tool>
 }) => {
     const startAdd = (e: JSX.UIEvent) => {
         focus.set({ status: "adding", element: svg(), item: createItem() })
+        tool.set(type)
         e.preventDefault()
         e.stopPropagation()
     }
@@ -151,7 +178,11 @@ export const NewItem = ({
         addItem(createItem())
     }
     return (
-        <span className={`new-item ${type}`} onClick={startAdd} onTouchStart={startAdd}>
+        <span
+            className={L.view(tool, (t) => `new-item ${type} ${t === type ? "active" : ""}`)}
+            onClick={startAdd}
+            onTouchStart={startAdd}
+        >
             <span
                 className="icon"
                 data-test={`palette-new-${type}`}
