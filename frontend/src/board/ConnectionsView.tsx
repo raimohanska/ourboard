@@ -146,7 +146,7 @@ export const ConnectionsView = ({
         selected: boolean
     }
     function ConnectionNode(key: string, cNode: L.Property<ConnectionNodeProps>) {
-        function onRef(el: Element) {
+        function onRef(el: HTMLDivElement) {
             const { id, type } = cNode.get()
             existingConnectionHandler(el, id, type, coordinateHelper, board, dispatch)
         }

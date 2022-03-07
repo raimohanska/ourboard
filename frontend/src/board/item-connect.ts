@@ -21,7 +21,7 @@ import { BoardFocus, noFocus } from "./board-focus"
 import { centerPoint, containedBy } from "../../../common/src/geometry"
 import { ToolController } from "./tool-selection"
 import { emptySet } from "../../../common/src/sets"
-import { IS_TOUCHSCREEN } from "./touchScreen"
+import { IS_TOUCHSCREEN, onSingleTouch } from "./touchScreen"
 
 export const DND_GHOST_HIDING_IMAGE = new Image()
 // https://png-pixel.com/
@@ -146,7 +146,7 @@ export function newConnectionCreator(
 }
 
 export function existingConnectionHandler(
-    endNode: Element,
+    endNode: HTMLElement,
     connectionId: string,
     type: "from" | "to" | "control",
     coordinateHelper: BoardCoordinateHelper,
@@ -158,34 +158,47 @@ export function existingConnectionHandler(
         "drag",
         _.throttle((e: DragEvent) => {
             const preventAttach = e.shiftKey || e.altKey || e.ctrlKey || e.metaKey
-            const b = board.get()
-            const connection = b.connections.find((c) => c.id === connectionId)!
-            const coords = coordinateHelper.currentBoardCoordinates.get()
-            if (type === "to") {
-                const hitsItem = !preventAttach && findTarget(b, connection.from, coords, connection)
-                const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
-                dispatch({
-                    action: "connection.modify",
-                    boardId: b.id,
-                    connections: [rerouteConnection({ ...connection, to }, b)],
-                })
-            } else if (type === "from") {
-                const hitsItem = !preventAttach && findTarget(b, connection.to, coords, connection)
-                const from = hitsItem && hitsItem.id !== connection.to ? hitsItem.id : coords
-                dispatch({
-                    action: "connection.modify",
-                    boardId: b.id,
-                    connections: [rerouteConnection({ ...connection, from }, b)],
-                })
-            } else {
-                dispatch({
-                    action: "connection.modify",
-                    boardId: b.id,
-                    connections: [rerouteByNewControlPoints(connection, [coords], b)],
-                })
-            }
+            modifyConnection(preventAttach)
         }, 20) as any,
     )
+
+    endNode.addEventListener("touchmove", (e: TouchEvent) => {
+        onSingleTouch(e, (touch) => {
+            e.preventDefault()
+            e.stopPropagation()
+            coordinateHelper.currentPageCoordinates.set({ x: touch.pageX, y: touch.pageY })
+            modifyConnection(false)
+        })
+    })
+
+    function modifyConnection(preventAttach: boolean) {
+        const b = board.get()
+        const connection = b.connections.find((c) => c.id === connectionId)!
+        const coords = coordinateHelper.currentBoardCoordinates.get()
+        if (type === "to") {
+            const hitsItem = !preventAttach && findTarget(b, connection.from, coords, connection)
+            const to = hitsItem && hitsItem.id !== connection.from ? hitsItem.id : coords
+            dispatch({
+                action: "connection.modify",
+                boardId: b.id,
+                connections: [rerouteConnection({ ...connection, to }, b)],
+            })
+        } else if (type === "from") {
+            const hitsItem = !preventAttach && findTarget(b, connection.to, coords, connection)
+            const from = hitsItem && hitsItem.id !== connection.to ? hitsItem.id : coords
+            dispatch({
+                action: "connection.modify",
+                boardId: b.id,
+                connections: [rerouteConnection({ ...connection, from }, b)],
+            })
+        } else {
+            dispatch({
+                action: "connection.modify",
+                boardId: b.id,
+                connections: [rerouteByNewControlPoints(connection, [coords], b)],
+            })
+        }
+    }
 }
 
 function findTarget(
