@@ -80,6 +80,7 @@ export const BoardView = ({
     const focus = synchronizeFocusWithServer(board, locks, sessionId, dispatch)
     const coordinateHelper = boardCoordinateHelper(containerElement, scrollElement, boardElement, zoom)
     const toolController = ToolController()
+    const tool = toolController.tool
 
     let previousFocus: BoardFocus | null = null
     focus.forEach((f) => {
@@ -93,6 +94,13 @@ export const BoardView = ({
                 latestNoteId.set(item.id)
             }
         }
+        if (tool.get() === "connect") {
+            toolController.useDefaultTool()
+        }
+    })
+
+    tool.pipe(L.changes).forEach(() => {
+        focus.modify((f) => (f.status === "selected" ? f : noFocus))
     })
 
     const doOnUnmount: Function[] = []
@@ -189,8 +197,6 @@ export const BoardView = ({
     coordinateHelper.currentBoardCoordinates.pipe(L.throttle(30)).forEach((position) => {
         dispatch({ action: "cursor.move", position, boardId })
     })
-
-    const tool = toolController.tool
 
     const { selectionRect } = boardDragHandler({
         ...{
