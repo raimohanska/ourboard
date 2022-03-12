@@ -68,8 +68,6 @@ export const ContextMenuView = ({
         }
     })
 
-    styleAndClass.log()
-
     const submenu = L.atom<SubMenuCreator | null>(null)
     L.view(
         focusedItems,

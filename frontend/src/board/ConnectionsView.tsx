@@ -6,6 +6,7 @@ import {
     AttachmentLocation,
     Board,
     ConnectionEndPoint,
+    ConnectionEndStyle,
     isDirectedItemEndPoint,
     isPoint,
     Item,
@@ -74,13 +75,14 @@ export const ConnectionsView = ({
     // nodes and render them as regular HTML elements
     const connectionNodes = L.view(connectionsWithItemsPopulated, (cs) =>
         cs.flatMap((c) => [
-            { id: c.id, type: "from" as const, node: c.from, selected: c.selected },
-            { id: c.id, type: "to" as const, node: c.to, selected: c.selected },
+            { id: c.id, type: "from" as const, node: c.from, selected: c.selected, style: c.fromStyle },
+            { id: c.id, type: "to" as const, node: c.to, selected: c.selected, style: c.toStyle },
             ...c.controlPoints.map((cp) => ({
                 id: c.id,
                 type: "control" as const,
                 node: { point: cp, side: "none" as const },
                 selected: c.selected,
+                style: "black-dot" as const
             })),
         ]),
     )
@@ -143,6 +145,7 @@ export const ConnectionsView = ({
         id: string
         node: AttachmentLocation
         type: "to" | "from" | "control"
+        style: ConnectionEndStyle
         selected: boolean
     }
     function ConnectionNode(key: string, cNode: L.Property<ConnectionNodeProps>) {
@@ -154,13 +157,13 @@ export const ConnectionsView = ({
         const id = L.view(cNode, (cn) => `connection-${cn.id}-${cn.type}`)
 
         const angle = L.view(cNode, (cn) => {
-            if (cn.type !== "to") return null
+            if (cn.style !== "arrow" || cn.type === "control") return null
             const conn = connectionsWithItemsPopulated.get().find((c) => c.id === cn.id)
             if (!conn?.controlPoints.length) {
                 return null
             }
-
-            const bez = bezierCurveFromPoints(conn.from.point, conn.controlPoints[0], conn.to.point)
+            const [thisEnd, otherEnd] = cn.type === "from" ? [conn.from, conn.to] : [conn.to, conn.from]
+            const bez = bezierCurveFromPoints(otherEnd.point, conn.controlPoints[0], thisEnd.point)
             const derivative = bez.derivative(1) // tangent vector at the very end of the curve
             const angleInDegrees =
                 ((Math.atan2(derivative.y, derivative.x) - Math.atan2(0, Math.abs(derivative.x))) * 180) / Math.PI
@@ -199,9 +202,7 @@ export const ConnectionsView = ({
                 <div
                     id={id}
                     className={L.view(cNode, (cn) => {
-                        let cls = "connection-node "
-
-                        cls += `${cn.type}-node `
+                        let cls = `connection-node ${cn.type}-node ${cn.style}-style `
 
                         if (cn.selected) cls += "highlight "
 

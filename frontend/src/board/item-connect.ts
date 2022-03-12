@@ -119,6 +119,8 @@ export function newConnectionCreator(
                     from: from,
                     controlPoints: [],
                     to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
+                    fromStyle: "none",
+                    toStyle: "arrow"
                 },
                 b,
             )

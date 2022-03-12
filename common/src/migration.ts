@@ -1,7 +1,7 @@
 import { isArray } from "lodash"
 import { arrayToRecordById, toArray } from "./arrays"
 import { resolveEndpoint } from "./connection-utils"
-import { Board, BoardHistoryEntry, Container, defaultBoardSize, Id, Item, Serial } from "./domain"
+import { Board, BoardHistoryEntry, Container, Connection, defaultBoardSize, Id, Item, Serial } from "./domain"
 
 export function mkBootStrapEvent(boardId: Id, snapshot: Board, serial: Serial = 1) {
     return {
@@ -46,9 +46,14 @@ export function migrateBoard(origBoard: Board) {
             return false
         }
         return true
-    })
+    }).map(migrateConnection)
 
     return { ...board, connections, width, height, items: arrayToRecordById(items) }
+}
+
+function migrateConnection(c: Connection): Connection {
+    if (c.fromStyle && c.toStyle) return c
+    return { ...c, fromStyle: "white-dot", toStyle: "arrow" }
 }
 
 function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {
