@@ -15,9 +15,9 @@
     input {
         color: $black;
         background-color: white;
-        border:none;
+        border: none;
         padding: 3px 6px;
-        border-radius: 6px
+        border-radius: 6px;
     }
 
     button {
@@ -33,7 +33,7 @@
     ::placeholder {
         color: $ukraineBlue;
         opacity: 0.5;
-      }
+    }
 
     .content {
         max-width: min(30em, 100vw);

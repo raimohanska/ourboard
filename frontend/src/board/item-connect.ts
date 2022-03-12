@@ -117,10 +117,10 @@ export function newConnectionCreator(
                 {
                     id: uuid.v4(),
                     from: from,
-                    controlPoints: [{x: 0, y: 0}],
+                    controlPoints: [{ x: 0, y: 0 }],
                     to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
                     fromStyle: "none",
-                    toStyle: "arrow"
+                    toStyle: "arrow",
                 },
                 b,
             )

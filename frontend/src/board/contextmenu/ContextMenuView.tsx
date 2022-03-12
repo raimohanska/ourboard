@@ -13,7 +13,7 @@ import { resolveEndpoint } from "../../../../common/src/connection-utils"
 import { connectionEndsMenu } from "./connection-ends"
 
 export type SubmenuProps = {
-    focusedItems: L.Property<{ items: Item[], connections: Connection[] }>
+    focusedItems: L.Property<{ items: Item[]; connections: Connection[] }>
     board: L.Property<Board>
     dispatch: Dispatch
     submenu: L.Atom<SubMenuCreator | null>
@@ -43,7 +43,8 @@ export const ContextMenuView = ({
     viewRect: L.Property<Rect>
 }) => {
     const focusedItems = L.view(focus, board, (f, b) => {
-        if (f.status === "dragging" || f.status === "connection-adding" || f.status === "adding") return { items: [], connections: []}
+        if (f.status === "dragging" || f.status === "connection-adding" || f.status === "adding")
+            return { items: [], connections: [] }
         return { items: getSelectedItems(b)(f), connections: getSelectedConnections(b)(f) }
     })
 
@@ -86,7 +87,7 @@ export const ContextMenuView = ({
         colorsAndShapesMenu(props),
         fontSizesMenu(props),
         areaTilingMenu(props),
-        connectionEndsMenu(props)
+        connectionEndsMenu(props),
     ]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
     const captureEvents = (e: JSX.MouseEvent) => {

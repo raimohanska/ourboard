@@ -37,16 +37,18 @@ export function migrateBoard(origBoard: Board) {
         }
     }
 
-    const connections = (board.connections ?? []).filter((c) => {
-        try {
-            resolveEndpoint(c.from, board)
-            resolveEndpoint(c.to, board)
-        } catch (e) {
-            console.error(`Error resolving connection ${JSON.stringify(c)}`)
-            return false
-        }
-        return true
-    }).map(migrateConnection)
+    const connections = (board.connections ?? [])
+        .filter((c) => {
+            try {
+                resolveEndpoint(c.from, board)
+                resolveEndpoint(c.to, board)
+            } catch (e) {
+                console.error(`Error resolving connection ${JSON.stringify(c)}`)
+                return false
+            }
+            return true
+        })
+        .map(migrateConnection)
 
     return { ...board, connections, width, height, items: arrayToRecordById(items) }
 }

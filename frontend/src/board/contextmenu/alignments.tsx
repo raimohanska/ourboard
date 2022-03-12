@@ -73,8 +73,8 @@ function moveFocusedItems(
 
     let sumOfPreviousSizes = 0
     const updatedItems = focusedItems
-        .get().items
-        .sort((item1, item2) => item1[axis] - item2[axis])
+        .get()
+        .items.sort((item1, item2) => item1[axis] - item2[axis])
         .map((item, index) => {
             const newItem = {
                 ...item,

@@ -82,7 +82,7 @@ export const ConnectionsView = ({
                 type: "control" as const,
                 node: { point: cp, side: "none" as const },
                 selected: c.selected,
-                style: "black-dot" as const
+                style: "black-dot" as const,
             })),
         ]),
     )
@@ -163,7 +163,11 @@ export const ConnectionsView = ({
                 return null
             }
             const [thisEnd, otherEnd] = cn.type === "from" ? [conn.from, conn.to] : [conn.to, conn.from]
-            const bez = bezierCurveFromPoints(otherEnd.point, getControlPoint(otherEnd.point, thisEnd.point, conn.controlPoints), thisEnd.point)
+            const bez = bezierCurveFromPoints(
+                otherEnd.point,
+                getControlPoint(otherEnd.point, thisEnd.point, conn.controlPoints),
+                thisEnd.point,
+            )
             const derivative = bez.derivative(1) // tangent vector at the very end of the curve
             const angleInDegrees =
                 ((Math.atan2(derivative.y, derivative.x) - Math.atan2(0, Math.abs(derivative.x))) * 180) / Math.PI

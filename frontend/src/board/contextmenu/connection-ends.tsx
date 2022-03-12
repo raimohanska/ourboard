@@ -12,7 +12,7 @@ function nextStyle(style: ConnectionEndStyle) {
 
 export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const connections = L.view(focusedItems, (items) => items.connections)
-    const singleConnection = L.view(connections, (connections) => connections.length === 1 ? connections[0] : null)
+    const singleConnection = L.view(connections, (connections) => (connections.length === 1 ? connections[0] : null))
     return L.view(singleConnection, (connection) => {
         if (!connection) return []
         return !connection
@@ -21,24 +21,46 @@ export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuPro
                   <div className="connection-ends icon-group">
                       <span
                           className={`icon`}
-                          onClick={() => dispatch({ action: "connection.modify", boardId: board.get().id, connections: [{...connection, fromStyle: nextStyle(connection.fromStyle)}] })}
+                          onClick={() =>
+                              dispatch({
+                                  action: "connection.modify",
+                                  boardId: board.get().id,
+                                  connections: [{ ...connection, fromStyle: nextStyle(connection.fromStyle) }],
+                              })
+                          }
                       >
-                         &lt;
+                          &lt;
                       </span>
                       <span
                           className={`icon`}
-                          onClick={() => dispatch({ action: "connection.modify", boardId: board.get().id, connections: [
-                              connection.controlPoints.length ?
-                              {...connection, controlPoints: [] } : rerouteConnection({...connection, controlPoints: [{x:0, y:0}]}, board.get())
-                        ] })}
+                          onClick={() =>
+                              dispatch({
+                                  action: "connection.modify",
+                                  boardId: board.get().id,
+                                  connections: [
+                                      connection.controlPoints.length
+                                          ? { ...connection, controlPoints: [] }
+                                          : rerouteConnection(
+                                                { ...connection, controlPoints: [{ x: 0, y: 0 }] },
+                                                board.get(),
+                                            ),
+                                  ],
+                              })
+                          }
                       >
-                         o
+                          o
                       </span>
                       <span
                           className={`icon`}
-                          onClick={() => dispatch({ action: "connection.modify", boardId: board.get().id, connections: [{...connection, toStyle: nextStyle(connection.toStyle)}] })}
+                          onClick={() =>
+                              dispatch({
+                                  action: "connection.modify",
+                                  boardId: board.get().id,
+                                  connections: [{ ...connection, toStyle: nextStyle(connection.toStyle) }],
+                              })
+                          }
                       >
-                         &gt;
+                          &gt;
                       </span>
                   </div>,
               ]
