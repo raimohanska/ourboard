@@ -1,9 +1,39 @@
 #root.dashboard {
-    background-color: #f4f4f6;
+    $ukraineBlue: #327fcc;
+    $ukraineYellow: #ffcc00;
+    background-color: #ffcc00c7;
+    color: $ukraineBlue;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     font-size: 16px;
+
+    h1 {
+        color: $ukraineBlue;
+    }
+
+    input {
+        color: $black;
+        background-color: white;
+        border:none;
+        padding: 3px 6px;
+        border-radius: 6px
+    }
+
+    button {
+        color: $ukraineBlue;
+        background-color: $ukraineYellow;
+        border-color: $ukraineYellow;
+        &:disabled {
+            background-color: #0099ee;
+            border-color: #0099ee;
+        }
+    }
+
+    ::placeholder {
+        color: $ukraineBlue;
+        opacity: 0.5;
+      }
 
     .content {
         max-width: min(30em, 100vw);
@@ -14,6 +44,7 @@
     }
     a {
         text-decoration: none;
+        color: $ukraineBlue;
     }
     header {
         display: flex;
@@ -42,11 +73,12 @@
     }
     main {
         padding: 2em;
-        background: white;
+        background: $ukraineBlue;
+        color: white;
         border-radius: 11px;
-    }
-    a {
-        color: $orange;
+        a {
+            color: white;
+        }
     }
     ul {
         list-style-type: none;
