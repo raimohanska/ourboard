@@ -10,6 +10,7 @@ import { areaTilingMenu } from "./areaTiling"
 import { colorsAndShapesMenu } from "./colorsAndShapes"
 import { fontSizesMenu } from "./fontSizes"
 import { connectionRect } from "../../../../common/src/connection-utils"
+import { connectionEndsMenu } from "./connection-ends"
 
 export type SubmenuProps = {
     focusedItems: L.Property<{ items: Item[], connections: Connection[] }>
@@ -19,6 +20,12 @@ export type SubmenuProps = {
 }
 
 export type SubMenuCreator = (props: SubmenuProps) => HarmajaOutput
+
+export const connectionPos = (b: Board | Record<string, Item>) => (c: Connection): Rect => {
+    if (c.controlPoints.length === 0) return connectionRect(b)(c)
+    const p = c.controlPoints[0]
+    return { ...p, width: 0, height: 0 }
+}
 
 export const ContextMenuView = ({
     dispatch,
@@ -38,13 +45,13 @@ export const ContextMenuView = ({
 
     const styleAndClass = L.view(focusedItems, viewRect, (items, vr) => {
         const cn = "context-menu-positioner"
-        if (items.items.length === 0) {
+        if (items.items.length === 0 && items.connections.length === 0) {
             return {
                 style: null,
                 className: cn,
             }
         }
-        const rects = [...items.items, ...items.connections.map(connectionRect(board.get()))]
+        const rects = [...items.items, ...items.connections.map(connectionPos(board.get()))]
         const minY = _.min(rects.map((i) => i.y)) || 0
         const minX = _.min(rects.map((i) => i.x)) || 0
         const maxY = _.max(rects.map((i) => i.y + i.height)) || 0
@@ -61,6 +68,8 @@ export const ContextMenuView = ({
         }
     })
 
+    styleAndClass.log()
+
     const submenu = L.atom<SubMenuCreator | null>(null)
     L.view(
         focusedItems,
@@ -75,9 +84,9 @@ export const ContextMenuView = ({
         colorsAndShapesMenu(props),
         fontSizesMenu(props),
         areaTilingMenu(props),
+        connectionEndsMenu(props)
     ]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
-
     const captureEvents = (e: JSX.MouseEvent) => {
         e.stopPropagation()
     }

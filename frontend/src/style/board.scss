@@ -385,6 +385,14 @@
             }
         }
 
+        .connection-ends {
+            .icon {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
         .submenu {
             padding: 0.5em;
             border: 1px solid #cccccc;
