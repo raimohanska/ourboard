@@ -159,11 +159,11 @@ export const ConnectionsView = ({
         const angle = L.view(cNode, (cn) => {
             if (cn.style !== "arrow" || cn.type === "control") return null
             const conn = connectionsWithItemsPopulated.get().find((c) => c.id === cn.id)
-            if (!conn?.controlPoints.length) {
+            if (!conn) {
                 return null
             }
             const [thisEnd, otherEnd] = cn.type === "from" ? [conn.from, conn.to] : [conn.to, conn.from]
-            const bez = bezierCurveFromPoints(otherEnd.point, conn.controlPoints[0], thisEnd.point)
+            const bez = bezierCurveFromPoints(otherEnd.point, getControlPoint(otherEnd.point, thisEnd.point, conn.controlPoints), thisEnd.point)
             const derivative = bez.derivative(1) // tangent vector at the very end of the curve
             const angleInDegrees =
                 ((Math.atan2(derivative.y, derivative.x) - Math.atan2(0, Math.abs(derivative.x))) * 180) / Math.PI
@@ -224,20 +224,10 @@ import { findNearestAttachmentLocationForConnectionNode, resolveEndpoint } from 
 import { emptySet, toggleInSet } from "../../../common/src/sets"
 
 function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
-    if (!controlPoints || !controlPoints.length) {
-        // fallback if no control points, just create a curve with a hardcoded offset
-        const midpointX = (to.x + from.x) * 0.5
-        const midpointY = (to.y + from.y) * 0.5
-
-        // angle of perpendicular to line:
-        const theta = Math.atan2(to.y - from.y, to.x - from.x) - Math.PI / 2
-
-        // distance of control point from mid-point of line:
-        const offset = 30
-
-        // location of control point:
-        const controlPoint = { x: midpointX + offset * Math.cos(theta), y: midpointY + offset * Math.sin(theta) }
-        return "M" + from.x + " " + from.y + " Q " + controlPoint.x + " " + controlPoint.y + " " + to.x + " " + to.y
+    if (!controlPoints.length) {
+        // fallback if no control points: straight line
+        const midPoint = getControlPoint(from, to, controlPoints)
+        return "M" + from.x + " " + from.y + " Q " + midPoint.x + " " + midPoint.y + " " + to.x + " " + to.y
     } else {
         const peakPointOfCurve = controlPoints[0]
         const bez = bezierCurveFromPoints(from, peakPointOfCurve, to)
@@ -249,6 +239,12 @@ function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
                 "",
             )
     }
+}
+
+function getControlPoint(from: Point, to: Point, controlPoints: Point[]) {
+    if (controlPoints.length > 0) return controlPoints[0]
+    // fallback if no control points: midpoint
+    return { x: (to.x + from.x) * 0.5, y: (to.y + from.y) * 0.5 }
 }
 
 function bezierCurveFromPoints(from: Point, middle: Point, to: Point): any {

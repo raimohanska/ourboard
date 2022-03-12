@@ -1,5 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
+import { rerouteConnection } from "../../../../common/src/connection-utils"
 import { ConnectionEndStyle } from "../../../../common/src/domain"
 import { SubmenuProps } from "./ContextMenuView"
 
@@ -23,6 +24,15 @@ export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuPro
                           onClick={() => dispatch({ action: "connection.modify", boardId: board.get().id, connections: [{...connection, fromStyle: nextStyle(connection.fromStyle)}] })}
                       >
                          &lt;
+                      </span>
+                      <span
+                          className={`icon`}
+                          onClick={() => dispatch({ action: "connection.modify", boardId: board.get().id, connections: [
+                              connection.controlPoints.length ?
+                              {...connection, controlPoints: [] } : rerouteConnection({...connection, controlPoints: [{x:0, y:0}]}, board.get())
+                        ] })}
+                      >
+                         o
                       </span>
                       <span
                           className={`icon`}

@@ -139,7 +139,7 @@ export function rerouteConnection(c: Connection, b: Board): Connection {
         ...c,
         from: attachmentLocation2EndPoint(from),
         to: attachmentLocation2EndPoint(to),
-        controlPoints: [findMidpoint(from, to)],
+        controlPoints: c.controlPoints.length ? [findMidpoint(from, to)] : [],
     }
 
     const container = maybeChangeContainerForConnection(rerouted, b.items)
