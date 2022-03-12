@@ -54,8 +54,8 @@ export function migrateBoard(origBoard: Board) {
 }
 
 function migrateConnection(c: Connection): Connection {
-    if (c.fromStyle && c.toStyle) return c
-    return { ...c, fromStyle: "white-dot", toStyle: "arrow" }
+    if (c.fromStyle && c.toStyle && c.pointStyle) return c
+    return { ...c, fromStyle: "white-dot", toStyle: "arrow", pointStyle: "black-dot" }
 }
 
 function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {

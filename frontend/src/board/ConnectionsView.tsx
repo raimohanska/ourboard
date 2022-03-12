@@ -82,7 +82,7 @@ export const ConnectionsView = ({
                 type: "control" as const,
                 node: { point: cp, side: "none" as const },
                 selected: c.selected,
-                style: "black-dot" as const,
+                style: c.pointStyle,
             })),
         ]),
     )

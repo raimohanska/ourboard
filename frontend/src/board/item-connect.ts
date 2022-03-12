@@ -121,6 +121,7 @@ export function newConnectionCreator(
                     to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
                     fromStyle: "none",
                     toStyle: "arrow",
+                    pointStyle: "black-dot",
                 },
                 b,
             )

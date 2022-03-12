@@ -151,6 +151,7 @@ export type Connection = {
     containerId?: string
     fromStyle: ConnectionEndStyle
     toStyle: ConnectionEndStyle
+    pointStyle: "none" | "black-dot"
 }
 export type ConnectionEndPoint = Point | ConnectionEndPointToItem
 export type ConnectionEndPointToItem = Id | ConectionEndPointDirectedToItem

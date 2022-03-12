@@ -38,12 +38,18 @@ export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuPro
                                   action: "connection.modify",
                                   boardId: board.get().id,
                                   connections: [
-                                      connection.controlPoints.length
-                                          ? { ...connection, controlPoints: [] }
-                                          : rerouteConnection(
-                                                { ...connection, controlPoints: [{ x: 0, y: 0 }] },
+                                      connection.controlPoints.length === 0
+                                          ? rerouteConnection(
+                                                {
+                                                    ...connection,
+                                                    controlPoints: [{ x: 0, y: 0 }],
+                                                    pointStyle: "black-dot",
+                                                },
                                                 board.get(),
-                                            ),
+                                            )
+                                          : connection.pointStyle === "black-dot"
+                                          ? { ...connection, pointStyle: "none" }
+                                          : { ...connection, controlPoints: [] },
                                   ],
                               })
                           }

@@ -83,17 +83,44 @@ describe("Migration", () => {
         it("Removes broken connections", () => {
             const borkenEndpoint: ConnectionEndPoint = { id: "asdf", side: "bottom" }
 
-            const b: Board = { ...exampleBoard, connections: [{ from: borkenEndpoint, to: borkenEndpoint, id: "asfdoi", controlPoints: [], fromStyle: "none", toStyle: "none" }] }
+            const b: Board = {
+                ...exampleBoard,
+                connections: [
+                    {
+                        from: borkenEndpoint,
+                        to: borkenEndpoint,
+                        id: "asfdoi",
+                        controlPoints: [],
+                        fromStyle: "none",
+                        toStyle: "none",
+                        pointStyle: "none",
+                    },
+                ],
+            }
 
             expect(migrateBoard(b)).toEqual(exampleBoard)
         })
 
         it("Sets connection end styles", () => {
-            const b: Board = { ...exampleBoard, connections: [{ from: {x:0, y:0}, to: {x:0, y:0}, id: "asfdoi", controlPoints: []} as any] }
+            const b: Board = {
+                ...exampleBoard,
+                connections: [{ from: { x: 0, y: 0 }, to: { x: 0, y: 0 }, id: "asfdoi", controlPoints: [] } as any],
+            }
 
-            expect(migrateBoard(b)).toEqual({...exampleBoard, connections: [
-                { from: {x:0, y:0}, to: {x:0, y:0}, id: "asfdoi", controlPoints: [], fromStyle: "white-dot", toStyle: "arrow" } as Connection
-            ]})
+            expect(migrateBoard(b)).toEqual({
+                ...exampleBoard,
+                connections: [
+                    {
+                        from: { x: 0, y: 0 },
+                        to: { x: 0, y: 0 },
+                        id: "asfdoi",
+                        controlPoints: [],
+                        fromStyle: "white-dot",
+                        toStyle: "arrow",
+                        pointStyle: "black-dot",
+                    } as Connection,
+                ],
+            })
         })
     })
     describe("Migrate event", () => {
