@@ -21,8 +21,8 @@ const createSubMenuByAxis = (axis: Axis) => (props: SubmenuProps) => {
 
 export function alignmentsMenu(axis: Axis, props: SubmenuProps) {
     // TODO duplication
-    const hasItemsToAlign = L.view(props.focusedItems, (items) => items.length > 1)
-    const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.length > 2)
+    const hasItemsToAlign = L.view(props.focusedItems, (items) => items.items.length > 1)
+    const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.items.length > 2)
     const createSubmenu = createSubMenuByAxis(axis)
     return L.combine(hasItemsToAlign, hasItemsToDistribute, (hasItemsToAlign, hasItemsToDistribute) => {
         return !hasItemsToAlign && !hasItemsToDistribute
@@ -66,14 +66,14 @@ function moveFocusedItems(
 ) {
     const b = board.get()
 
-    const itemsToMove = focusedItems.get()
+    const itemsToMove = focusedItems.get().items
     const min = _.min(itemsToMove.map((i) => i[axis])) || 0
     const max = _.max(itemsToMove.map((i) => i[axis] + getItemSize(i, axis))) || 0
     const totalSumOfSizes = _.sum(itemsToMove.map((i) => getItemSize(i, axis), 0))
 
     let sumOfPreviousSizes = 0
     const updatedItems = focusedItems
-        .get()
+        .get().items
         .sort((item1, item2) => item1[axis] - item2[axis])
         .map((item, index) => {
             const newItem = {
@@ -96,8 +96,8 @@ function moveFocusedItems(
 }
 
 export function alignmentsSubMenu(axis: Axis, props: SubmenuProps) {
-    const hasItemsToAlign = L.view(props.focusedItems, (items) => items.length > 1)
-    const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.length > 2)
+    const hasItemsToAlign = L.view(props.focusedItems, (items) => items.items.length > 1)
+    const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.items.length > 2)
 
     const getMinCoordinate: GetCoordinate = (_, min) => min
 

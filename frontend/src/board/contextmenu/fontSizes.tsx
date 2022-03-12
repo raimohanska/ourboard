@@ -5,7 +5,7 @@ import { DecreaseFontSizeIcon, IncreaseFontSizeIcon } from "../../components/Ico
 import { SubmenuProps } from "./ContextMenuView"
 
 export function fontSizesMenu({ board, focusedItems, dispatch }: SubmenuProps) {
-    const textItems = L.view(focusedItems, (items) => items.filter(isTextItem))
+    const textItems = L.view(focusedItems, (items) => items.items.filter(isTextItem))
     const anyText = L.view(textItems, (items) => items.length > 0)
 
     return L.view(anyText, (any) =>

@@ -16,7 +16,7 @@ function createSubMenu(props: SubmenuProps) {
 }
 
 export function colorsAndShapesMenu(props: SubmenuProps) {
-    const coloredItems = L.view(props.focusedItems, (items) => items.filter(isColoredItem))
+    const coloredItems = L.view(props.focusedItems, (items) => items.items.filter(isColoredItem))
     const representativeColoredItem: L.Property<ColoredItem | null> = L.view(coloredItems, (items) => items[0] || null)
     return L.view(representativeColoredItem, (item) => {
         if (!item) return []

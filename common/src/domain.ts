@@ -444,7 +444,7 @@ export function isContainer(i: Item): i is Container {
     return i.type === "container"
 }
 
-export function isItem(i: Point): i is Item {
+export function isItem(i: Item | Point | Connection): i is Item {
     return "type" in i
 }
 
@@ -515,6 +515,12 @@ export const findItem = (boardOrItems: Board | Record<string, Item>) => (id: Id)
     const item = items[id]
     return item || null
 }
+
+export const findConnection = (board: Board) => (id: Id) => {
+    const conn = board.connections.find((c) => c.id === id)    
+    return conn || null
+}
+
 
 export function findItemIdsRecursively(ids: Id[], board: Board): Set<Id> {
     const recursiveIds = new Set<Id>()

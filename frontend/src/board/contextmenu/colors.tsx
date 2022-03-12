@@ -5,7 +5,7 @@ import { Color, isColoredItem } from "../../../../common/src/domain"
 import { SubmenuProps } from "./ContextMenuView"
 
 export function colorsSubMenu({ board, focusedItems, dispatch }: SubmenuProps) {
-    const coloredItems = L.view(focusedItems, (items) => items.filter(isColoredItem))
+    const coloredItems = L.view(focusedItems, (items) => items.items.filter(isColoredItem))
     const anyColored = L.view(coloredItems, (items) => items.length > 0)
 
     return L.view(anyColored, (anyColored) => {
