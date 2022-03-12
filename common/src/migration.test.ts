@@ -81,9 +81,8 @@ describe("Migration", () => {
         })
         it("Removes broken connections", () => {
             const borkenEndpoint: ConnectionEndPoint = { id: "asdf", side: "bottom" }
-            const borkenConn = { from: borkenEndpoint, to: borkenEndpoint, id: "asfdoi", controlPoints: [] }
 
-            const b: Board = { ...exampleBoard, connections: [borkenConn] }
+            const b: Board = { ...exampleBoard, connections: [{ from: borkenEndpoint, to: borkenEndpoint, id: "asfdoi", controlPoints: [], fromStyle: "none", toStyle: "none" }] }
 
             expect(migrateBoard(b)).toEqual(exampleBoard)
         })
