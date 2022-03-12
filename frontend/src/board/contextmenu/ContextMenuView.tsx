@@ -31,20 +31,6 @@ export const ContextMenuView = ({
     focus: L.Property<BoardFocus>
     viewRect: L.Property<Rect>
 }) => {
-    function itemIdsForContextMenu(f: BoardFocus): Id[] {
-        switch (f.status) {
-            case "none":
-            case "adding":
-            case "connection-adding":
-            case "dragging":
-                return []
-            case "editing":
-                return [f.itemId]
-            case "selected":
-                return [...f.itemIds] // TODO: consider connections for context menu
-        }
-    }
-
     const focusedItems = L.view(focus, board, (f, b) => {
         if (f.status === "dragging" || f.status === "connection-adding" || f.status === "adding") return { items: [], connections: []}
         return { items: getSelectedItems(b)(f), connections: getSelectedConnections(b)(f) }
