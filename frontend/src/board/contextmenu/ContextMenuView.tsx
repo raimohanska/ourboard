@@ -31,6 +31,42 @@ export const connectionPos = (b: Board | Record<string, Item>) => (c: Connection
     return { ...p, width: 0, height: 0 }
 }
 
+type ItemsAndConnections = { items: Item[]; connections: Connection[] }
+type Bounds = { minX: number; maxX: number; minY: number; maxY: number } | null
+
+const getSelectionBounds = (items: ItemsAndConnections, b: Board): Bounds => {
+    if (items.items.length === 0 && items.connections.length === 0) {
+        return null
+    }
+    const rects = [...items.items, ...items.connections.map(connectionPos(b))]
+    const minY = _.min(rects.map((i) => i.y)) || 0
+    const minX = _.min(rects.map((i) => i.x)) || 0
+    const maxY = _.max(rects.map((i) => i.y + i.height)) || 0
+    const maxX = _.max(rects.map((i) => i.x + i.width)) || 0
+    return { minX, maxX, minY, maxY }
+}
+
+const getStyleAndClass = (bounds: Bounds) => (vr: Rect) => {
+    const cn = "context-menu-positioner"
+    if (bounds === null) {
+        return {
+            style: null,
+            className: cn,
+        }
+    }
+    const { minX, maxX, minY, maxY } = bounds
+    const alignRight = minX > vr.x + vr.width / 2
+    const topOfItem = minY - vr.y > vr.height / 3
+    return {
+        style: {
+            left: alignRight ? undefined : `max(${minX}em, ${vr.x}em)`,
+            right: alignRight ? `calc(100% - min(${maxX}em, ${vr.x + vr.width}em))` : undefined,
+            top: topOfItem ? `${minY}em` : `${maxY}em`,
+        },
+        className: cn + (topOfItem ? " item-top" : " item-bottom"),
+    }
+}
+
 export const ContextMenuView = ({
     dispatch,
     board,
@@ -46,31 +82,6 @@ export const ContextMenuView = ({
         if (f.status === "dragging" || f.status === "connection-adding" || f.status === "adding")
             return { items: [], connections: [] }
         return { items: getSelectedItems(b)(f), connections: getSelectedConnections(b)(f) }
-    })
-
-    const styleAndClass = L.view(focusedItems, viewRect, (items, vr) => {
-        const cn = "context-menu-positioner"
-        if (items.items.length === 0 && items.connections.length === 0) {
-            return {
-                style: null,
-                className: cn,
-            }
-        }
-        const rects = [...items.items, ...items.connections.map(connectionPos(board.get()))]
-        const minY = _.min(rects.map((i) => i.y)) || 0
-        const minX = _.min(rects.map((i) => i.x)) || 0
-        const maxY = _.max(rects.map((i) => i.y + i.height)) || 0
-        const maxX = _.max(rects.map((i) => i.x + i.width)) || 0
-        const alignRight = minX > vr.x + vr.width / 2
-        const topOfItem = minY - vr.y > vr.height / 3
-        return {
-            style: {
-                left: alignRight ? undefined : `max(${minX}em, ${vr.x}em)`,
-                right: alignRight ? `calc(100% - min(${maxX}em, ${vr.x + vr.width}em))` : undefined,
-                top: topOfItem ? `${minY}em` : `${maxY}em`,
-            },
-            className: cn + (topOfItem ? " item-top" : " item-bottom"),
-        }
     })
 
     const submenu = L.atom<SubMenuCreator | null>(null)
@@ -96,8 +107,12 @@ export const ContextMenuView = ({
     return L.view(
         activeWidgets,
         (ws) => ws.length === 0,
-        (hide) =>
-            hide ? null : (
+        (hide) => {
+            if (hide) return null
+            const bounds = L.view(focus, () => getSelectionBounds(focusedItems.get(), board.get()))
+            const styleAndClass = L.view(viewRect, bounds, (vr, b) => getStyleAndClass(b)(vr))
+
+            return (
                 <div
                     className={L.view(styleAndClass, "className")}
                     style={L.view(styleAndClass, "style")}
@@ -109,6 +124,7 @@ export const ContextMenuView = ({
                     </div>
                     {L.view(submenu, (show) => (show ? show(props) : null))}
                 </div>
-            ),
+            )
+        },
     )
 }
