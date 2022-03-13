@@ -115,7 +115,7 @@ describe("Migration", () => {
                         to: { x: 0, y: 0 },
                         id: "asfdoi",
                         controlPoints: [],
-                        fromStyle: "white-dot",
+                        fromStyle: "black-dot",
                         toStyle: "arrow",
                         pointStyle: "black-dot",
                     } as Connection,

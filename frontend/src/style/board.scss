@@ -444,24 +444,6 @@
         cursor: pointer;
         position: absolute;
 
-        &.white-dot-style {
-            background: white;
-            border-radius: 50%;
-            border: 1px solid #cccccc;
-            $corner-offset: -7px;
-            width: max(0.4em, 6px);
-            height: max(0.4em, 6px);
-
-            .board:not(.connect) & {
-                &.highlight,
-                &:hover {
-                    width: max(0.4em, 10px);
-                    height: max(0.4em, 10px);
-                    border: 2px solid $link-color;
-                }
-            }
-        }
-
         &.black-dot-style {
             background: $connection-color;
             border-radius: 50%;

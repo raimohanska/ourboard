@@ -4,7 +4,7 @@ import { rerouteConnection } from "../../../../common/src/connection-utils"
 import { ConnectionEndStyle } from "../../../../common/src/domain"
 import { SubmenuProps } from "./ContextMenuView"
 
-const styles: ConnectionEndStyle[] = ["arrow", "white-dot", "black-dot", "none"]
+const styles: ConnectionEndStyle[] = ["arrow", "black-dot", "none"]
 function nextStyle(style: ConnectionEndStyle) {
     const i = styles.indexOf(style)
     return styles[(i + 1) % styles.length]

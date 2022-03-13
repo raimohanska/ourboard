@@ -142,7 +142,7 @@ export function Point(x: number, y: number) {
     return { x, y }
 }
 export const isPoint = (u: unknown): u is Point => typeof u === "object" && !!u && "x" in u && "y" in u
-export type ConnectionEndStyle = "none" | "arrow" | "white-dot" | "black-dot"
+export type ConnectionEndStyle = "none" | "arrow" | "black-dot"
 export type Connection = {
     id: Id
     from: ConnectionEndPoint
