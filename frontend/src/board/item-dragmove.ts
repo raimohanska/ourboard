@@ -15,10 +15,11 @@ export function itemDragToMove(
     focus: L.Atom<BoardFocus>,
     toolController: ToolController,
     coordinateHelper: BoardCoordinateHelper,
+    latestConnection: L.Property<Connection | null>,
     dispatch: Dispatch,
     onlyWhenSelected: boolean,
 ) {
-    const connector = newConnectionCreator(board, coordinateHelper, focus, dispatch)
+    const connector = newConnectionCreator(board, focus, latestConnection, dispatch)
     return (elem: HTMLElement) =>
         onBoardItemDrag(
             elem,

@@ -1,7 +1,18 @@
 import * as H from "harmaja"
 import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
-import { Board, canWrite, findItem, Id, Image, Item, newNote, Note, Video } from "../../../common/src/domain"
+import {
+    Board,
+    canWrite,
+    findConnection,
+    findItem,
+    Id,
+    Image,
+    Item,
+    newNote,
+    Note,
+    Video,
+} from "../../../common/src/domain"
 import { isFirefox } from "../components/browser"
 import { ModalContainer } from "../components/ModalContainer"
 import { onClickOutside } from "../components/onClickOutside"
@@ -12,7 +23,14 @@ import { CursorsStore } from "../store/cursors-store"
 import { UserSessionState } from "../store/user-session-store"
 import { boardCoordinateHelper } from "./board-coordinates"
 import { boardDragHandler } from "./board-drag"
-import { BoardFocus, getSelectedItemIds, getSelectedItem, getSelectedItems, noFocus } from "./board-focus"
+import {
+    BoardFocus,
+    getSelectedItemIds,
+    getSelectedItem,
+    getSelectedItems,
+    noFocus,
+    getSelectedConnectionIds,
+} from "./board-focus"
 import { boardScrollAndZoomHandler } from "./board-scroll-and-zoom"
 import { BoardToolLayer } from "./toolbars/BoardToolLayer"
 import { ConnectionsView } from "./ConnectionsView"
@@ -77,6 +95,10 @@ export const BoardView = ({
         const note = id ? findItem(b)(id) : null
         return (note as Note) || emptyNote
     })
+    const latestConnectionId = L.atom<Id | null>(null)
+    const latestConnection = L.view(latestConnectionId, board, (id, b) => {
+        return id ? findConnection(b)(id) : null
+    })
     const focus = synchronizeFocusWithServer(board, locks, sessionId, dispatch)
     const coordinateHelper = boardCoordinateHelper(containerElement, scrollElement, boardElement, zoom)
     const toolController = ToolController()
@@ -93,6 +115,10 @@ export const BoardView = ({
             if (item && item.type === "note") {
                 latestNoteId.set(item.id)
             }
+        }
+        const connectionId = [...getSelectedConnectionIds(f)][0]
+        if (connectionId) {
+            latestConnectionId.set(connectionId)
         }
     })
 
@@ -166,6 +192,7 @@ export const BoardView = ({
                     startConnecting(
                         board,
                         coordinateHelper,
+                        latestConnection,
                         dispatch,
                         toolController,
                         focus,
@@ -202,6 +229,7 @@ export const BoardView = ({
             board,
             boardElem: boardElement,
             coordinateHelper,
+            latestConnection,
             focus,
             toolController,
             dispatch,
@@ -333,6 +361,7 @@ export const BoardView = ({
                                 isLocked,
                                 focus,
                                 coordinateHelper,
+                                latestConnection,
                                 dispatch,
                                 toolController,
                                 accessLevel,
@@ -351,6 +380,7 @@ export const BoardView = ({
                                 focus,
                                 toolController,
                                 coordinateHelper,
+                                latestConnection,
                                 dispatch,
                             }}
                         />
@@ -367,6 +397,7 @@ export const BoardView = ({
                                 focus,
                                 toolController,
                                 coordinateHelper,
+                                latestConnection,
                                 dispatch,
                             }}
                         />

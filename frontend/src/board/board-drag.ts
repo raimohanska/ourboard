@@ -2,7 +2,7 @@ import { componentScope } from "harmaja"
 import * as _ from "lodash"
 import * as L from "lonna"
 import { connectionRect } from "../../../common/src/connection-utils"
-import { Board, Point } from "../../../common/src/domain"
+import { Board, Connection, Point } from "../../../common/src/domain"
 import { containedBy, overlaps, Rect, rectFromPoints } from "../../../common/src/geometry"
 import { Dispatch } from "../store/server-connection"
 import { BoardCoordinateHelper, BoardCoordinates } from "./board-coordinates"
@@ -21,6 +21,7 @@ export type DragAction =
 export function boardDragHandler({
     boardElem,
     coordinateHelper,
+    latestConnection,
     board,
     toolController,
     focus,
@@ -28,6 +29,7 @@ export function boardDragHandler({
 }: {
     boardElem: L.Property<HTMLElement | null>
     coordinateHelper: BoardCoordinateHelper
+    latestConnection: L.Property<Connection | null>
     board: L.Property<Board>
     toolController: ToolController
     focus: L.Atom<BoardFocus>
@@ -41,7 +43,7 @@ export function boardDragHandler({
     })
     const tool = toolController.tool
 
-    const connector = newConnectionCreator(board, coordinateHelper, focus, dispatch)
+    const connector = newConnectionCreator(board, focus, latestConnection, dispatch)
 
     const dragAction = L.atom<DragAction>({ action: "none" })
 
