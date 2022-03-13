@@ -434,6 +434,10 @@
             stroke-width: max(0.1em, 1.5px);
             stroke-linecap: round;
             fill: transparent;
+
+            &.selected {
+                stroke: $link-color;
+            }
         }
     }
 
@@ -451,17 +455,7 @@
             width: max(0.3em, 6px);
             height: max(0.3em, 6px);
             &.highlight {
-                width: max(0.4em, 10px);
-                height: max(0.4em, 10px);
-                border: 2px solid $link-color;
-            }
-
-            .board:not(.connect) & {
-                &.highlight,
-                &:hover {
-                    background: white;
-                    border: 2px solid $link-color;
-                }
+                background: $link-color;
             }
         }
 
@@ -475,13 +469,10 @@
             border-left: max(0.6em, 8px) solid $connection-color;
             border-bottom: max(0.2em, 3px) solid transparent;
 
-            .board:not(.connect) & {
-                &.highlight,
-                &:hover {
-                    border-top: max(0.3em, 4.5px) solid transparent;
-                    border-left: max(0.8em, 12px) solid $link-color;
-                    border-bottom: max(0.3em, 4.5px) solid transparent;
-                }
+            &.highlight {
+                border-top: max(0.3em, 4.5px) solid transparent;
+                border-left: max(0.9em, 12px) solid $link-color;
+                border-bottom: max(0.3em, 4.5px) solid transparent;
             }
         }
     }
