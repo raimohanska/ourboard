@@ -2,6 +2,16 @@ import { h } from "harmaja"
 import * as L from "lonna"
 import { rerouteConnection } from "../../../../common/src/connection-utils"
 import { ConnectionEndStyle } from "../../../../common/src/domain"
+import {
+    ConnectionCenterCurveDotIcon,
+    ConnectionCenterCurveIcon,
+    ConnectionCenterLineIcon,
+    ConnectionEndLineIcon,
+    ConnectionLeftArrowIcon,
+    ConnectionLeftDotIcon,
+    ConnectionRightArrowIcon,
+    ConnectionRightDotIcon,
+} from "../../components/Icons"
 import { SubmenuProps } from "./ContextMenuView"
 
 const styles: ConnectionEndStyle[] = ["arrow", "black-dot", "none"]
@@ -29,7 +39,13 @@ export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuPro
                               })
                           }
                       >
-                          &lt;
+                          {connection.fromStyle === "arrow" ? (
+                              <ConnectionLeftArrowIcon />
+                          ) : connection.fromStyle === "black-dot" ? (
+                              <ConnectionLeftDotIcon />
+                          ) : (
+                              <ConnectionEndLineIcon />
+                          )}
                       </span>
                       <span
                           className={`icon`}
@@ -54,7 +70,13 @@ export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuPro
                               })
                           }
                       >
-                          o
+                          {connection.controlPoints.length === 0 ? (
+                              <ConnectionCenterLineIcon />
+                          ) : connection.pointStyle === "black-dot" ? (
+                              <ConnectionCenterCurveDotIcon />
+                          ) : (
+                              <ConnectionCenterCurveIcon />
+                          )}
                       </span>
                       <span
                           className={`icon`}
@@ -66,7 +88,13 @@ export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuPro
                               })
                           }
                       >
-                          &gt;
+                          {connection.toStyle === "arrow" ? (
+                              <ConnectionRightArrowIcon />
+                          ) : connection.toStyle === "black-dot" ? (
+                              <ConnectionRightDotIcon />
+                          ) : (
+                              <ConnectionEndLineIcon />
+                          )}
                       </span>
                   </div>,
               ]

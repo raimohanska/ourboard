@@ -131,7 +131,10 @@ export const ConnectionsView = ({
                         )
                         return (
                             <g>
-                                <path className={L.view(conn, c => c.selected ? "connection selected" : "connection")} d={curve}></path>
+                                <path
+                                    className={L.view(conn, (c) => (c.selected ? "connection selected" : "connection"))}
+                                    d={curve}
+                                ></path>
                             </g>
                         )
                     }}
