@@ -1,5 +1,5 @@
 import * as L from "lonna"
-import { Board, ItemType } from "../../../common/src/domain"
+import { Board, Connection, ItemType } from "../../../common/src/domain"
 import { emptySet, toggleInSet } from "../../../common/src/sets"
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
@@ -15,6 +15,7 @@ export function itemSelectionHandler(
     toolController: ToolController,
     board: L.Property<Board>,
     coordinateHelper: BoardCoordinateHelper,
+    latestConnection: L.Property<Connection | null>,
     dispatch: Dispatch,
 ) {
     const itemFocus = L.view(focus, (f) => {
@@ -42,7 +43,7 @@ export function itemSelectionHandler(
             const from = isConnectionAttachmentPoint(point, item)
                 ? item
                 : coordinateHelper.currentBoardCoordinates.get()
-            startConnecting(board, coordinateHelper, dispatch, toolController, focus, from)
+            startConnecting(board, coordinateHelper, latestConnection, dispatch, toolController, focus, from)
             e.stopPropagation()
         } else if (e.shiftKey && (f.status === "selected" || f.status === "editing")) {
             focus.set({

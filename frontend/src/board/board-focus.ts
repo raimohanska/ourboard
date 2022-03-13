@@ -1,5 +1,5 @@
 import { HarmajaChild } from "harmaja"
-import { Board, findItem, Id, Item } from "../../../common/src/domain"
+import { Board, Connection, findConnection, findItem, Id, Item } from "../../../common/src/domain"
 import { difference, emptySet } from "../../../common/src/sets"
 
 export type BoardFocus =
@@ -39,6 +39,10 @@ export function getSelectedConnectionIds(f: BoardFocus): Set<Id> {
 
 export const getSelectedItems = (b: Board) => (f: BoardFocus): Item[] => {
     return [...getSelectedItemIds(f)].flatMap((id) => findItem(b)(id) || [])
+}
+
+export const getSelectedConnections = (b: Board) => (f: BoardFocus): Connection[] => {
+    return [...getSelectedConnectionIds(f)].flatMap((id) => findConnection(b)(id) || [])
 }
 
 export const getSelectedItem = (b: Board) => (f: BoardFocus): Item | null => {

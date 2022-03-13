@@ -245,3 +245,116 @@ export const UserIcon = () => (
         />
     </svg>
 )
+
+export const ConnectionLeftArrowIcon = () => (
+    <svg width="30" height="12" viewBox="0 0 30 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M-1.90735e-06 6L10 11.7735V0.226497L-1.90735e-06 6ZM30 5L9 5V7L30 7V5Z" fill="black" />
+    </svg>
+)
+
+export const ConnectionCenterLineIcon = () => (
+    <svg width="36" height="2" viewBox="0 0 36 2" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line y1="1" x2="36" y2="1" stroke="black" stroke-width="2" />
+    </svg>
+)
+
+export const ConnectionRightArrowIcon = () => (
+    <svg width="30" height="12" viewBox="0 0 30 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30 6L20 0.226497V11.7735L30 6ZM0 7L21 7V5L0 5L0 7Z" fill="black" />
+    </svg>
+)
+
+export const ConnectionEndLineIcon = () => (
+    <svg width="30" height="2" viewBox="0 0 30 2" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line y1="1" x2="30" y2="1" stroke="black" stroke-width="2" />
+    </svg>
+)
+
+export const ConnectionLeftDotIcon = () => (
+    <svg width="30" height="8" viewBox="0 0 30 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="3" y1="4" x2="30" y2="4" stroke="black" stroke-width="2" />
+        <circle cx="4" cy="4" r="4" fill="#00263A" />
+    </svg>
+)
+
+export const ConnectionRightDotIcon = () => (
+    <svg width="30" height="8" viewBox="0 0 30 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="27" y1="4" y2="4" stroke="black" stroke-width="2" />
+        <circle cx="26" cy="4" r="4" transform="rotate(-180 26 4)" fill="#00263A" />
+    </svg>
+)
+
+export const ConnectionCenterCurveIcon = () => (
+    <svg width="46" height="26" viewBox="0 0 46 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g filter="url(#filter0_d_4_616)">
+            <path
+                d="M5.07492 8.4044C4.61425 11.5105 17.3143 24.2626 23.054 8.24941C28.7936 -7.76379 41.033 8.09442 41.033 8.09442"
+                stroke="black"
+                stroke-width="2"
+            />
+        </g>
+        <defs>
+            <filter
+                id="filter0_d_4_616"
+                x="0.0625"
+                y="0.0914307"
+                width="45.7617"
+                height="25.0645"
+                filterUnits="userSpaceOnUse"
+                color-interpolation-filters="sRGB"
+            >
+                <feFlood flood-opacity="0" result="BackgroundImageFix" />
+                <feColorMatrix
+                    in="SourceAlpha"
+                    type="matrix"
+                    values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                    result="hardAlpha"
+                />
+                <feOffset dy="4" />
+                <feGaussianBlur stdDeviation="2" />
+                <feComposite in2="hardAlpha" operator="out" />
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
+                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_4_616" />
+                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_4_616" result="shape" />
+            </filter>
+        </defs>
+    </svg>
+)
+
+export const ConnectionCenterCurveDotIcon = () => (
+    <svg width="46" height="26" viewBox="0 0 46 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g filter="url(#filter0_d_7_49)">
+            <path
+                d="M5.07492 8.4044C4.61425 11.5105 17.3143 24.2626 23.054 8.24941C28.7936 -7.76379 41.033 8.09442 41.033 8.09442"
+                stroke="black"
+                stroke-width="2"
+            />
+        </g>
+        <circle cx="23" cy="9" r="4" fill="#00263A" />
+        <defs>
+            <filter
+                id="filter0_d_7_49"
+                x="0.0625"
+                y="0.0915527"
+                width="45.7617"
+                height="25.0642"
+                filterUnits="userSpaceOnUse"
+                color-interpolation-filters="sRGB"
+            >
+                <feFlood flood-opacity="0" result="BackgroundImageFix" />
+                <feColorMatrix
+                    in="SourceAlpha"
+                    type="matrix"
+                    values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                    result="hardAlpha"
+                />
+                <feOffset dy="4" />
+                <feGaussianBlur stdDeviation="2" />
+                <feComposite in2="hardAlpha" operator="out" />
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
+                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_7_49" />
+                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_7_49" result="shape" />
+            </filter>
+        </defs>
+    </svg>
+)

@@ -22,7 +22,7 @@ export function getShapeIcon(item: Item): ShapeIcon {
 }
 
 export function shapesMenu({ board, focusedItems, dispatch }: SubmenuProps) {
-    const shapedItems = L.view(focusedItems, (items) => items.filter(isShapedItem))
+    const shapedItems = L.view(focusedItems, (items) => items.items.filter(isShapedItem))
     const anyShaped = L.view(shapedItems, (items) => items.length > 0)
     const currentShape = L.view(shapedItems, (items) =>
         _.uniq(items.map((item) => item.shape)).length > 1 ? undefined : items[0]?.shape,

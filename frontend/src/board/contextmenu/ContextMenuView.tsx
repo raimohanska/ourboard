@@ -1,23 +1,71 @@
 import { h, HarmajaOutput, ListView } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
-import { Board, findItem, Id, Item } from "../../../../common/src/domain"
+import { Board, Connection, findItem, Id, Item } from "../../../../common/src/domain"
 import { Dispatch } from "../../store/board-store"
-import { BoardFocus } from "../board-focus"
+import { BoardFocus, getSelectedConnections, getSelectedItems } from "../board-focus"
 import { Rect } from "../../../../common/src/geometry"
 import { alignmentsMenu } from "./alignments"
 import { areaTilingMenu } from "./areaTiling"
 import { colorsAndShapesMenu } from "./colorsAndShapes"
 import { fontSizesMenu } from "./fontSizes"
+import { resolveEndpoint } from "../../../../common/src/connection-utils"
+import { connectionEndsMenu } from "./connection-ends"
 
 export type SubmenuProps = {
-    focusedItems: L.Property<Item[]>
+    focusedItems: L.Property<{ items: Item[]; connections: Connection[] }>
     board: L.Property<Board>
     dispatch: Dispatch
     submenu: L.Atom<SubMenuCreator | null>
 }
 
 export type SubMenuCreator = (props: SubmenuProps) => HarmajaOutput
+
+export const connectionPos = (b: Board | Record<string, Item>) => (c: Connection): Rect => {
+    if (c.controlPoints.length === 0) {
+        const start = resolveEndpoint(c.from, b)
+        const end = resolveEndpoint(c.to, b)
+        return { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2, width: 0, height: 0 }
+    }
+    const p = c.controlPoints[0]
+    return { ...p, width: 0, height: 0 }
+}
+
+type ItemsAndConnections = { items: Item[]; connections: Connection[] }
+type Bounds = { minX: number; maxX: number; minY: number; maxY: number } | null
+
+const getSelectionBounds = (items: ItemsAndConnections, b: Board): Bounds => {
+    if (items.items.length === 0 && items.connections.length === 0) {
+        return null
+    }
+    const rects = [...items.items, ...items.connections.map(connectionPos(b))]
+    const minY = _.min(rects.map((i) => i.y)) || 0
+    const minX = _.min(rects.map((i) => i.x)) || 0
+    const maxY = _.max(rects.map((i) => i.y + i.height)) || 0
+    const maxX = _.max(rects.map((i) => i.x + i.width)) || 0
+    return { minX, maxX, minY, maxY }
+}
+
+const getStyleAndClass = (bounds: Bounds) => (vr: Rect) => {
+    const cn = "context-menu-positioner"
+    if (bounds === null) {
+        return {
+            style: null,
+            className: cn,
+        }
+    }
+    const { minX, maxX, minY, maxY } = bounds
+    const alignRight = minX > vr.x + vr.width / 2
+    const topOfItem = minY - vr.y > vr.height / 3
+    return {
+        style: {
+            left: alignRight ? undefined : `max(${minX}em, ${vr.x}em)`,
+            right: alignRight ? `calc(100% - min(${maxX}em, ${vr.x + vr.width}em))` : undefined,
+            top: topOfItem ? `${minY}em` : `${maxY}em`,
+        },
+        className: cn + (topOfItem ? " item-top" : " item-bottom"),
+    }
+}
 
 export const ContextMenuView = ({
     dispatch,
@@ -30,52 +78,16 @@ export const ContextMenuView = ({
     focus: L.Property<BoardFocus>
     viewRect: L.Property<Rect>
 }) => {
-    function itemIdsForContextMenu(f: BoardFocus): Id[] {
-        switch (f.status) {
-            case "none":
-            case "adding":
-            case "connection-adding":
-            case "dragging":
-                return []
-            case "editing":
-                return [f.itemId]
-            case "selected":
-                return [...f.itemIds] // TODO: consider connections for context menu
-        }
-    }
-
     const focusedItems = L.view(focus, board, (f, b) => {
-        const itemIds = itemIdsForContextMenu(f)
-        return itemIds.flatMap((id) => findItem(b)(id) || [])
-    })
-
-    const styleAndClass = L.view(focusedItems, viewRect, (items, vr) => {
-        const cn = "context-menu-positioner"
-        if (items.length === 0)
-            return {
-                style: null,
-                className: cn,
-            }
-        const minY = _.min(items.map((i) => i.y)) || 0
-        const minX = _.min(items.map((i) => i.x)) || 0
-        const maxY = _.max(items.map((i) => i.y + i.height)) || 0
-        const maxX = _.max(items.map((i) => i.x + i.width)) || 0
-        const alignRight = minX > vr.x + vr.width / 2
-        const topOfItem = minY - vr.y > vr.height / 3
-        return {
-            style: {
-                left: alignRight ? undefined : `max(${minX}em, ${vr.x}em)`,
-                right: alignRight ? `calc(100% - min(${maxX}em, ${vr.x + vr.width}em))` : undefined,
-                top: topOfItem ? `${minY}em` : `${maxY}em`,
-            },
-            className: cn + (topOfItem ? " item-top" : " item-bottom"),
-        }
+        if (f.status === "dragging" || f.status === "connection-adding" || f.status === "adding")
+            return { items: [], connections: [] }
+        return { items: getSelectedItems(b)(f), connections: getSelectedConnections(b)(f) }
     })
 
     const submenu = L.atom<SubMenuCreator | null>(null)
     L.view(
         focusedItems,
-        (items) => items[0],
+        (items) => items.items[0],
         (i) => i?.id,
     ).forEach(() => submenu.set(null))
 
@@ -86,17 +98,21 @@ export const ContextMenuView = ({
         colorsAndShapesMenu(props),
         fontSizesMenu(props),
         areaTilingMenu(props),
+        connectionEndsMenu(props),
     ]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
-
     const captureEvents = (e: JSX.MouseEvent) => {
         e.stopPropagation()
     }
     return L.view(
         activeWidgets,
         (ws) => ws.length === 0,
-        (hide) =>
-            hide ? null : (
+        (hide) => {
+            if (hide) return null
+            const bounds = L.view(focus, () => getSelectionBounds(focusedItems.get(), board.get()))
+            const styleAndClass = L.view(viewRect, bounds, (vr, b) => getStyleAndClass(b)(vr))
+
+            return (
                 <div
                     className={L.view(styleAndClass, "className")}
                     style={L.view(styleAndClass, "style")}
@@ -108,6 +124,7 @@ export const ContextMenuView = ({
                     </div>
                     {L.view(submenu, (show) => (show ? show(props) : null))}
                 </div>
-            ),
+            )
+        },
     )
 }

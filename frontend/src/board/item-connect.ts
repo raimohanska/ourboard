@@ -33,6 +33,7 @@ let currentConnectionHandler = L.atom<ConnectionHandler | null>(null)
 export function startConnecting(
     board: L.Property<Board>,
     coordinateHelper: BoardCoordinateHelper,
+    latestConnection: L.Property<Connection | null>,
     dispatch: Dispatch,
     toolController: ToolController,
     focus: L.Atom<BoardFocus>,
@@ -42,7 +43,7 @@ export function startConnecting(
     if (h) {
         endConnection()
     } else {
-        const h = newConnectionCreator(board, coordinateHelper, focus, dispatch)
+        const h = newConnectionCreator(board, focus, latestConnection, dispatch)
         currentConnectionHandler.set(h)
         focus.set({ status: "connection-adding" })
         const toWatch = [currentConnectionHandler, toolController.tool, focus] as L.Property<any>[]
@@ -69,8 +70,8 @@ type ConnectionHandler = ReturnType<typeof newConnectionCreator>
 
 export function newConnectionCreator(
     board: L.Property<Board>,
-    coordinateHelper: BoardCoordinateHelper,
     focus: L.Atom<BoardFocus>,
+    latestConnection: L.Property<Connection | null>,
     dispatch: Dispatch,
 ) {
     let localConnection: Connection | null = null
@@ -113,12 +114,16 @@ export function newConnectionCreator(
         }
 
         function newConnection(from: ConnectionEndPoint): Connection {
+            const l = latestConnection.get()
             return rerouteConnection(
                 {
                     id: uuid.v4(),
                     from: from,
-                    controlPoints: [],
+                    controlPoints: l && l.controlPoints.length === 0 ? [] : [{ x: 0, y: 0 }],
                     to: targetExistingItem ? targetExistingItem.id : currentBoardCoords,
+                    fromStyle: (l && l.fromStyle) ?? "none",
+                    toStyle: (l && l.toStyle) ?? "arrow",
+                    pointStyle: (l && l.pointStyle) ?? "black-dot",
                 },
                 b,
             )

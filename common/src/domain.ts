@@ -142,12 +142,16 @@ export function Point(x: number, y: number) {
     return { x, y }
 }
 export const isPoint = (u: unknown): u is Point => typeof u === "object" && !!u && "x" in u && "y" in u
+export type ConnectionEndStyle = "none" | "arrow" | "black-dot"
 export type Connection = {
     id: Id
     from: ConnectionEndPoint
     controlPoints: Point[]
     to: ConnectionEndPoint
     containerId?: string
+    fromStyle: ConnectionEndStyle
+    toStyle: ConnectionEndStyle
+    pointStyle: "none" | "black-dot"
 }
 export type ConnectionEndPoint = Point | ConnectionEndPointToItem
 export type ConnectionEndPointToItem = Id | ConectionEndPointDirectedToItem
@@ -444,7 +448,7 @@ export function isContainer(i: Item): i is Container {
     return i.type === "container"
 }
 
-export function isItem(i: Point): i is Item {
+export function isItem(i: Item | Point | Connection): i is Item {
     return "type" in i
 }
 
@@ -514,6 +518,11 @@ export const findItem = (boardOrItems: Board | Record<string, Item>) => (id: Id)
     const items = getItems(boardOrItems)
     const item = items[id]
     return item || null
+}
+
+export const findConnection = (board: Board) => (id: Id) => {
+    const conn = board.connections.find((c) => c.id === id)
+    return conn || null
 }
 
 export function findItemIdsRecursively(ids: Id[], board: Board): Set<Id> {

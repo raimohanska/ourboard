@@ -9,12 +9,12 @@ import { SubmenuProps } from "./ContextMenuView"
 
 export function areaTilingMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const packables = L.view(focusedItems, (items) => {
-        if (items.length === 1) {
-            if (isContainer(items[0])) return items
+        if (items.items.length === 1) {
+            if (isContainer(items.items[0])) return items.items
         }
-        if (items.length >= 1) {
-            const containerIds = new Set(items.map((i) => i.containerId))
-            if (containerIds.size === 1 && [...containerIds][0]) return items
+        if (items.items.length >= 1) {
+            const containerIds = new Set(items.items.map((i) => i.containerId))
+            if (containerIds.size === 1 && [...containerIds][0]) return items.items
         }
         return []
     })

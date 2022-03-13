@@ -6,6 +6,7 @@ import {
     AttachmentLocation,
     Board,
     ConnectionEndPoint,
+    ConnectionEndStyle,
     isDirectedItemEndPoint,
     isPoint,
     Item,
@@ -74,13 +75,14 @@ export const ConnectionsView = ({
     // nodes and render them as regular HTML elements
     const connectionNodes = L.view(connectionsWithItemsPopulated, (cs) =>
         cs.flatMap((c) => [
-            { id: c.id, type: "from" as const, node: c.from, selected: c.selected },
-            { id: c.id, type: "to" as const, node: c.to, selected: c.selected },
+            { id: c.id, type: "from" as const, node: c.from, selected: c.selected, style: c.fromStyle },
+            { id: c.id, type: "to" as const, node: c.to, selected: c.selected, style: c.toStyle },
             ...c.controlPoints.map((cp) => ({
                 id: c.id,
                 type: "control" as const,
                 node: { point: cp, side: "none" as const },
                 selected: c.selected,
+                style: c.pointStyle,
             })),
         ]),
     )
@@ -103,9 +105,9 @@ export const ConnectionsView = ({
                 getKey={(c) => c.id + c.type}
             />
             <svg className="connections" style={svgElementStyle}>
-                <ListView<RenderableConnection, string>
+                <ListView
                     observable={connectionsWithItemsPopulated}
-                    renderObservable={(key, conn: L.Property<RenderableConnection>) => {
+                    renderObservable={(key, conn) => {
                         const curve = L.combine(
                             L.view(conn, "from"),
                             L.view(conn, "to"),
@@ -129,7 +131,10 @@ export const ConnectionsView = ({
                         )
                         return (
                             <g>
-                                <path className="connection" d={curve}></path>
+                                <path
+                                    className={L.view(conn, (c) => (c.selected ? "connection selected" : "connection"))}
+                                    d={curve}
+                                ></path>
                             </g>
                         )
                     }}
@@ -143,6 +148,7 @@ export const ConnectionsView = ({
         id: string
         node: AttachmentLocation
         type: "to" | "from" | "control"
+        style: ConnectionEndStyle
         selected: boolean
     }
     function ConnectionNode(key: string, cNode: L.Property<ConnectionNodeProps>) {
@@ -154,13 +160,17 @@ export const ConnectionsView = ({
         const id = L.view(cNode, (cn) => `connection-${cn.id}-${cn.type}`)
 
         const angle = L.view(cNode, (cn) => {
-            if (cn.type !== "to") return null
+            if (cn.style !== "arrow" || cn.type === "control") return null
             const conn = connectionsWithItemsPopulated.get().find((c) => c.id === cn.id)
-            if (!conn?.controlPoints.length) {
+            if (!conn) {
                 return null
             }
-
-            const bez = bezierCurveFromPoints(conn.from.point, conn.controlPoints[0], conn.to.point)
+            const [thisEnd, otherEnd] = cn.type === "from" ? [conn.from, conn.to] : [conn.to, conn.from]
+            const bez = bezierCurveFromPoints(
+                otherEnd.point,
+                getControlPoint(otherEnd.point, thisEnd.point, conn.controlPoints),
+                thisEnd.point,
+            )
             const derivative = bez.derivative(1) // tangent vector at the very end of the curve
             const angleInDegrees =
                 ((Math.atan2(derivative.y, derivative.x) - Math.atan2(0, Math.abs(derivative.x))) * 180) / Math.PI
@@ -199,9 +209,7 @@ export const ConnectionsView = ({
                 <div
                     id={id}
                     className={L.view(cNode, (cn) => {
-                        let cls = "connection-node "
-
-                        cls += `${cn.type}-node `
+                        let cls = `connection-node ${cn.type}-node ${cn.style}-style `
 
                         if (cn.selected) cls += "highlight "
 
@@ -223,20 +231,10 @@ import { findNearestAttachmentLocationForConnectionNode, resolveEndpoint } from 
 import { emptySet, toggleInSet } from "../../../common/src/sets"
 
 function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
-    if (!controlPoints || !controlPoints.length) {
-        // fallback if no control points, just create a curve with a hardcoded offset
-        const midpointX = (to.x + from.x) * 0.5
-        const midpointY = (to.y + from.y) * 0.5
-
-        // angle of perpendicular to line:
-        const theta = Math.atan2(to.y - from.y, to.x - from.x) - Math.PI / 2
-
-        // distance of control point from mid-point of line:
-        const offset = 30
-
-        // location of control point:
-        const controlPoint = { x: midpointX + offset * Math.cos(theta), y: midpointY + offset * Math.sin(theta) }
-        return "M" + from.x + " " + from.y + " Q " + controlPoint.x + " " + controlPoint.y + " " + to.x + " " + to.y
+    if (!controlPoints.length) {
+        // fallback if no control points: straight line
+        const midPoint = getControlPoint(from, to, controlPoints)
+        return "M" + from.x + " " + from.y + " Q " + midPoint.x + " " + midPoint.y + " " + to.x + " " + to.y
     } else {
         const peakPointOfCurve = controlPoints[0]
         const bez = bezierCurveFromPoints(from, peakPointOfCurve, to)
@@ -248,6 +246,12 @@ function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
                 "",
             )
     }
+}
+
+function getControlPoint(from: Point, to: Point, controlPoints: Point[]) {
+    if (controlPoints.length > 0) return controlPoints[0]
+    // fallback if no control points: midpoint
+    return { x: (to.x + from.x) * 0.5, y: (to.y + from.y) * 0.5 }
 }
 
 function bezierCurveFromPoints(from: Point, middle: Point, to: Point): any {

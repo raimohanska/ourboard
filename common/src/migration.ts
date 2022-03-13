@@ -1,7 +1,7 @@
 import { isArray } from "lodash"
 import { arrayToRecordById, toArray } from "./arrays"
 import { resolveEndpoint } from "./connection-utils"
-import { Board, BoardHistoryEntry, Container, defaultBoardSize, Id, Item, Serial } from "./domain"
+import { Board, BoardHistoryEntry, Container, Connection, defaultBoardSize, Id, Item, Serial } from "./domain"
 
 export function mkBootStrapEvent(boardId: Id, snapshot: Board, serial: Serial = 1) {
     return {
@@ -37,18 +37,25 @@ export function migrateBoard(origBoard: Board) {
         }
     }
 
-    const connections = (board.connections ?? []).filter((c) => {
-        try {
-            resolveEndpoint(c.from, board)
-            resolveEndpoint(c.to, board)
-        } catch (e) {
-            console.error(`Error resolving connection ${JSON.stringify(c)}`)
-            return false
-        }
-        return true
-    })
+    const connections = (board.connections ?? [])
+        .filter((c) => {
+            try {
+                resolveEndpoint(c.from, board)
+                resolveEndpoint(c.to, board)
+            } catch (e) {
+                console.error(`Error resolving connection ${JSON.stringify(c)}`)
+                return false
+            }
+            return true
+        })
+        .map(migrateConnection)
 
     return { ...board, connections, width, height, items: arrayToRecordById(items) }
+}
+
+function migrateConnection(c: Connection): Connection {
+    if (c.fromStyle && c.fromStyle !== ("white-dot" as any) && c.toStyle && c.pointStyle) return c
+    return { ...c, fromStyle: "black-dot", toStyle: "arrow", pointStyle: "black-dot" }
 }
 
 function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {

@@ -385,6 +385,14 @@
             }
         }
 
+        .connection-ends {
+            .icon {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
         .submenu {
             padding: 0.5em;
             border: 1px solid #cccccc;
@@ -426,57 +434,32 @@
             stroke-width: max(0.1em, 1.5px);
             stroke-linecap: round;
             fill: transparent;
+
+            &.selected {
+                stroke: $link-color;
+            }
         }
     }
 
     .connection-node {
-        @extend .dropshadow-shallow;
         display: block;
         width: max(0.4em, 6px);
         height: max(0.4em, 6px);
         cursor: pointer;
         position: absolute;
 
-        &.from-node {
-            background: white;
-            border-radius: 50%;
-            border: 1px solid #cccccc;
-            $corner-offset: -7px;
-            width: max(0.4em, 6px);
-            height: max(0.4em, 6px);
-
-            .board:not(.connect) & {
-                &.highlight,
-                &:hover {
-                    width: max(0.4em, 10px);
-                    height: max(0.4em, 10px);
-                    border: 2px solid $link-color;
-                }
-            }
-        }
-
-        &.control-node {
+        &.black-dot-style {
             background: $connection-color;
             border-radius: 50%;
             $corner-offset: -7px;
             width: max(0.3em, 6px);
             height: max(0.3em, 6px);
             &.highlight {
-                width: max(0.4em, 10px);
-                height: max(0.4em, 10px);
-                border: 2px solid $link-color;
-            }
-
-            .board:not(.connect) & {
-                &.highlight,
-                &:hover {
-                    background: white;
-                    border: 2px solid $link-color;
-                }
+                background: $link-color;
             }
         }
 
-        &.to-node {
+        &.arrow-style {
             box-shadow: none;
             background: transparent;
 
@@ -486,13 +469,10 @@
             border-left: max(0.6em, 8px) solid $connection-color;
             border-bottom: max(0.2em, 3px) solid transparent;
 
-            .board:not(.connect) & {
-                &.highlight,
-                &:hover {
-                    border-top: max(0.3em, 4.5px) solid transparent;
-                    border-left: max(0.8em, 12px) solid $link-color;
-                    border-bottom: max(0.3em, 4.5px) solid transparent;
-                }
+            &.highlight {
+                border-top: max(0.3em, 4.5px) solid transparent;
+                border-left: max(0.9em, 12px) solid $link-color;
+                border-bottom: max(0.3em, 4.5px) solid transparent;
             }
         }
     }

@@ -5,6 +5,7 @@ import {
     Board,
     BoardHistoryEntry,
     canWrite,
+    Connection,
     getItemBackground,
     getItemIds,
     getItemShape,
@@ -36,6 +37,7 @@ export const ItemView = ({
     isLocked,
     focus,
     coordinateHelper,
+    latestConnection,
     dispatch,
     toolController,
 }: {
@@ -48,14 +50,23 @@ export const ItemView = ({
     isLocked: L.Property<boolean>
     focus: L.Atom<BoardFocus>
     coordinateHelper: BoardCoordinateHelper
+    latestConnection: L.Property<Connection | null>
     dispatch: Dispatch
     toolController: ToolController
 }) => {
-    const itemHistory = findItemHistory(history.get(), id) // Purposefully fixing to the first snapshot of history instead of reacting to changes. Would be a performance disaster most likely.
     const element = L.atom<HTMLElement | null>(null)
 
     const ref = (el: HTMLElement) => {
-        itemDragToMove(id, board, focus, toolController, coordinateHelper, dispatch, type === "container")(el)
+        itemDragToMove(
+            id,
+            board,
+            focus,
+            toolController,
+            coordinateHelper,
+            latestConnection,
+            dispatch,
+            type === "container",
+        )(el)
         element.set(el)
     }
 
@@ -66,6 +77,7 @@ export const ItemView = ({
         toolController,
         board,
         coordinateHelper,
+        latestConnection,
         dispatch,
     )
 
@@ -129,7 +141,7 @@ export const ItemView = ({
             {L.view(isLocked, (l) => l && <span className="lock">🔒</span>)}
 
             {type === "container" && (
-                <DragBorder {...{ id, board, toolController, coordinateHelper, focus, dispatch }} />
+                <DragBorder {...{ id, board, toolController, coordinateHelper, latestConnection, focus, dispatch }} />
             )}
         </span>
     )
