@@ -5,7 +5,20 @@
     justify-content: flex-start;
     font-size: 16px;
 
+    .sponsor {
+        position: fixed;
+        bottom: 40px;
+        left: 40px;
+        align-items: center;
+        display: flex;
+        gap: 6px;
+        img {
+            height: 1em;
+        }
+    }
+
     .content {
+        z-index: 2;
         max-width: min(30em, 100vw);
         margin: 4em 1em 0;
         .touch & {
@@ -144,18 +157,6 @@
                 }
             }
         }
-    }
-}
-
-.sponsor {
-    position: fixed;
-    bottom: 40px;
-    left: 40px;
-    align-items: center;
-    display: flex;
-    gap: 6px;
-    img {
-        height: 1em;
     }
 }
 
