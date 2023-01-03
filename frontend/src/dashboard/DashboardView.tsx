@@ -66,6 +66,12 @@ export const DashboardView = ({
                     <Welcome {...{ recentBoards, dispatch, eventsFromServer, sessionState }} />
                 </main>
             </div>
+            <div className="sponsor">
+                Sponsored by{" "}
+                <a href="https://www.reaktor.com">
+                    <img className="logo" src="/img/reaktor-logo.jpg" />
+                </a>
+            </div>
         </div>
     )
 }

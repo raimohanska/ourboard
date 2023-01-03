@@ -147,6 +147,18 @@
     }
 }
 
+.sponsor {
+    position: fixed;
+    bottom: 40px;
+    left: 40px;
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    img {
+        height: 1em;
+    }
+}
+
 .board-access-editor {
     [type="checkbox"] {
         margin-left: 0;
