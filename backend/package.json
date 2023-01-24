@@ -22,6 +22,7 @@
     "express-ws": "^4.0.0",
     "fp-ts": "^2.9.5",
     "google-auth-library": "^7.0.2",
+    "googleapis": "^110.0.0",
     "html-entities": "^2.1.0",
     "io-ts": "^2.2.15",
     "io-ts-types": "^0.5.15",

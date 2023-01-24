@@ -10,6 +10,7 @@ import apiRoutes from "./api/api-routes"
 import { handleBoardEvent } from "./board-event-handler"
 import { getConfig } from "./config"
 import { connectionHandler } from "./connection-handler"
+import { setupGoogleAuth } from "./google-auth"
 import openapiDoc from "./openapi"
 import { createGetSignedPutUrl } from "./storage"
 import { WsWrapper } from "./ws-wrapper"
@@ -84,6 +85,8 @@ export const startExpressServer = (port: number) => {
     app.use(apiRoutes.handler())
 
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiDoc))
+
+    setupGoogleAuth(app)
 
     const signedPutUrl = createGetSignedPutUrl(config.storageBackend)
     ws.app.ws("/socket/lobby", (socket, req) => {
