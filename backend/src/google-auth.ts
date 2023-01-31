@@ -1,8 +1,10 @@
 import { google } from "googleapis"
 import { getEnv } from "./env"
-import { Express } from "express"
+import { Express, Request } from "express"
 import { removeAuthenticatedUser, setAuthenticatedUser } from "./http-session"
 import { GoogleAuthenticatedUser } from "../../common/src/authenticated-user"
+import { IncomingMessage } from "http"
+import Cookies from "cookies"
 
 const googleConfig = {
     clientID: getEnv("GOOGLE_OAUTH_CLIENT_ID"),
@@ -49,27 +51,37 @@ function assertNotNull<T>(x: T | null | undefined): T {
 
 export function setupGoogleAuth(app: Express) {
     app.get("/login", async (req, res) => {
+        new Cookies(req, res).set("returnTo", parseReturnPath(req), {
+            maxAge: 24 * 3600 * 1000,
+            httpOnly: true,
+        }) // Max 24 hours
         res.setHeader("content-type", "text/html")
         res.send(`Signing in...<script>document.location='${googleAuthPageURL()}'</script>`)
     })
 
     app.get("/logout", async (req, res) => {
         removeAuthenticatedUser(req, res)
-        res.redirect("/") // TODO: redirect to requested page
+        res.redirect(parseReturnPath(req))
     })
 
     app.get("/google-callback", async (req, res) => {
         const code = (req.query?.code as string) || ""
-
+        const cookies = new Cookies(req, res)
+        const returnTo = cookies.get("returnTo") || "/"
+        cookies.set("returnTo", "", { maxAge: 0, httpOnly: true })
         console.log("Verifying google auth", code)
         try {
             const userInfo = await getGoogleAccountFromCode(code)
             console.log("Found", userInfo)
             setAuthenticatedUser(req, res, userInfo)
-            res.redirect("/") // TODO: redirect to requested page
+            res.redirect(returnTo)
         } catch (e) {
             console.error(e)
             res.status(500).send("Internal error")
         }
     })
+
+    function parseReturnPath(req: Request) {
+        return (req.query.returnTo as string) || "/"
+    }
 }

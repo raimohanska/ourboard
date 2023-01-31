@@ -34,5 +34,5 @@ export function setAuthenticatedUser(req: IncomingMessage, res: ServerResponse, 
 }
 
 export function removeAuthenticatedUser(req: IncomingMessage, res: ServerResponse) {
-    new Cookies(req, res).set("user", "", { maxAge: 0, httpOnly: true }) // Max 24 hours
+    new Cookies(req, res).set("user", "", { maxAge: 0, httpOnly: true })
 }

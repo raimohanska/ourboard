@@ -77,7 +77,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                         }
                     } else {
                         console.log("Server denied login - redirecting to login")
-                        document.location = "/login" as any
+                        document.location.assign("/login")
                     }
                 } else if (state.status === "logging-in-server") {
                     console.log("Successfully logged in")
