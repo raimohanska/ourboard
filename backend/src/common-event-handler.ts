@@ -14,14 +14,6 @@ import { WsWrapper } from "./ws-wrapper"
 
 export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): Promise<MessageHandlerResult> {
     switch (appEvent.action) {
-        case "auth.login": {
-            console.log("Legacy login rejected")
-            const session = getSession(socket)
-            if (session) {
-                session.sendEvent({ action: "auth.login.response", success: false })
-            }
-            return true
-        }
         case "auth.login.jwt": {
             const user = getAuthenticatedUserFromJWT(appEvent.jwt)
             const session = getSession(socket)

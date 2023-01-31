@@ -225,7 +225,7 @@ export type BoardStateSyncEvent =
     | GotBoardLocks
     | CursorPositions
     | JoinedBoard
-    | AuthLogin
+    | UserLoggedIn
     | AckJoinBoard
     | DeniedJoinBoard
     | UserInfoUpdate
@@ -244,7 +244,7 @@ export type ClientToServerRequest =
     | SetNickname
     | AssetPutUrlRequest
     | AuthJWTLogin
-    | AuthLogin
+    | UserLoggedIn
     | AuthLogout
     | Ping
 
@@ -254,8 +254,8 @@ export type LoginResponse =
 export type AddConnection = { action: "connection.add"; boardId: Id; connections: Connection[] }
 export type ModifyConnection = { action: "connection.modify"; boardId: Id; connections: Connection[] }
 export type DeleteConnection = { action: "connection.delete"; boardId: Id; connectionIds: Id[] }
-export type AuthLogin = {
-    action: "auth.login"
+export type UserLoggedIn = {
+    action: "user.login"
     name: string
     email: string
     picture: string | undefined
