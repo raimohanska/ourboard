@@ -1,33 +1,27 @@
 import {
-    BoardHistoryEntry,
-    CursorPosition,
-    CURSOR_POSITIONS_ACTION_TYPE,
-    UnidentifiedUserInfo,
-    Id,
-    InitBoardDiff,
-    InitBoardNew,
-    ItemLocks,
-    Serial,
-    SetNickname,
+    AccessLevel,
+    AckJoinBoard,
     AuthLogin,
     AuthLogout,
-    UserInfoUpdate,
-    JoinedBoard,
-    AckJoinBoard,
-    AppEvent,
-    UserCursorPosition,
+    BoardHistoryEntry,
+    CURSOR_POSITIONS_ACTION_TYPE,
     EventFromServer,
-    isPersistableBoardItemEvent,
-    isBoardHistoryEntry,
     EventUserInfoAuthenticated,
     getBoardAttributes,
-    AccessLevel,
+    Id,
+    isBoardHistoryEntry,
+    ItemLocks,
+    JoinedBoard,
+    Serial,
     SessionUserInfo,
+    SetNickname,
+    UnidentifiedUserInfo,
+    UserCursorPosition,
+    UserInfoUpdate,
 } from "../../common/src/domain"
-import { getBoard, maybeGetBoard, ServerSideBoardState } from "./board-state"
-import { getBoardHistory, verifyContinuity } from "./board-store"
+import { maybeGetBoard, ServerSideBoardState } from "./board-state"
+import { getBoardHistory } from "./board-store"
 import { randomProfession } from "./professions"
-import { sleep } from "../../common/src/sleep"
 import { getUserIdForEmail } from "./user-store"
 import { StringifyCache, WsWrapper } from "./ws-wrapper"
 

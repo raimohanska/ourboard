@@ -3,7 +3,7 @@ dotenv.config()
 
 import * as Http from "http"
 import { exampleBoard } from "../../common/src/domain"
-import { addBoard, awaitSavingChanges as waitUntilChangesSaved } from "./board-state"
+import { awaitSavingChanges } from "./board-state"
 import { createBoard, fetchBoard } from "./board-store"
 import { initDB } from "./db"
 import { startExpressServer } from "./express-server"
@@ -17,7 +17,7 @@ async function shutdown() {
     if (http) http.close()
     terminateSessions()
     console.log("Shutdown in progress. Waiting for all changes to be saved...")
-    await waitUntilChangesSaved()
+    await awaitSavingChanges()
     console.log("Shutdown complete. Exiting process.")
     process.exit(0)
 }
