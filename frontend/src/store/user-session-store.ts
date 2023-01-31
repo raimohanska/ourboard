@@ -1,9 +1,9 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
-import { AppEvent, BoardAccessPolicy, EventUserInfo, Id, UIEvent } from "../../../common/src/domain"
 import { GoogleAuthenticatedUser } from "../../../common/src/authenticated-user"
-import { ServerConnection } from "./server-connection"
+import { AppEvent, BoardAccessPolicy, Id } from "../../../common/src/domain"
 import { signIn } from "../google-auth"
+import { ServerConnection } from "./server-connection"
 
 export type UserSessionState = Anonymous | LoggingInServer | LoggedIn | LoggedOut | LoginFailedDueToTechnicalProblem
 
@@ -35,7 +35,6 @@ export type LoggingInServer = BaseSessionState &
     GoogleAuthenticatedUser & {
         status: "logging-in-server"
         nickname: string
-        retries: number
     }
 
 export type LoggedIn = BaseSessionState &
@@ -51,10 +50,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
     const eventsReducer = (state: UserSessionState, event: AppEvent | boolean): UserSessionState => {
         if (typeof event === "boolean") {
             // Connected = true, Disconnected = false
-            const newState =
-                state.status === "logged-in"
-                    ? { ...state, status: "logging-in-server" as const, retries: getRetries(state) + 1 }
-                    : state
+            const newState = state.status === "logged-in" ? { ...state, status: "logging-in-server" as const } : state
             if (event === true) {
                 sendLoginAndNickname(newState)
             }
@@ -67,19 +63,8 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 return { ...state, nickname, nicknameSetByUser: true }
             } else if (event.action === "auth.login.response") {
                 if (!event.success) {
-                    const retries = getRetries(state)
-                    if (retries >= 2) {
-                        console.error("Login validation failed after retries, giving up.")
-                        return {
-                            status: "login-failed",
-                            nickname: state.nickname,
-                            nicknameSetByUser: state.nicknameSetByUser,
-                            sessionId: state.sessionId,
-                        }
-                    } else {
-                        console.log("Server denied login - redirecting to login")
-                        signIn()
-                    }
+                    console.log("Server denied login - redirecting back to login screen")
+                    signIn()
                 } else if (state.status === "logging-in-server") {
                     console.log("Successfully logged in")
                     return { ...state, status: "logged-in", userId: event.userId }
@@ -94,13 +79,6 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
         } else {
             return state
         }
-    }
-
-    function getRetries(state: UserSessionState): number {
-        if (state.status === "logging-in-server") {
-            return state.retries
-        }
-        return 0
     }
 
     function sendLoginAndNickname(state: UserSessionState) {
@@ -134,7 +112,6 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
               nickname: localStorage.nickname || undefined,
               nicknameSetByUser: !!localStorage.nickname,
               ...userFromCookie,
-              retries: 0,
           }
 
     const sessionState = L.merge(
