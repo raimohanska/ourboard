@@ -3,6 +3,7 @@ import { globalScope } from "lonna"
 import { AppEvent, BoardAccessPolicy, EventUserInfo, Id, UIEvent } from "../../../common/src/domain"
 import { GoogleAuthenticatedUser } from "../../../common/src/authenticated-user"
 import { ServerConnection } from "./server-connection"
+import { signIn } from "../google-auth"
 
 export type UserSessionState = Anonymous | LoggingInServer | LoggedIn | LoggedOut | LoginFailedDueToTechnicalProblem
 
@@ -77,7 +78,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                         }
                     } else {
                         console.log("Server denied login - redirecting to login")
-                        document.location.assign("/login")
+                        signIn()
                     }
                 } else if (state.status === "logging-in-server") {
                     console.log("Successfully logged in")
