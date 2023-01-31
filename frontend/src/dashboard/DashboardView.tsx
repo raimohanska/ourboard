@@ -258,9 +258,15 @@ const CreateBoardOptions = ({
     accessPolicy: L.Atom<BoardAccessPolicy | undefined>
     sessionState: L.Property<UserSessionState>
 }) => {
-    return L.view(
-        sessionState,
-        (s) => s.status === "logged-in" && <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />,
+    return L.view(sessionState, (s) =>
+        s.status === "logged-in" ? (
+            <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />
+        ) : (
+            <small className="anonymousBoardDisclaimer">
+                Anonymously created boards are accessible to anyone with a link. You may <a onClick={signIn}>sign in</a>{" "}
+                first in order to restrict access to your new board.
+            </small>
+        ),
     )
 }
 
