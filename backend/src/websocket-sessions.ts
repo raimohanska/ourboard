@@ -277,7 +277,6 @@ export async function setVerifiedUserForSession(
             email: event.email,
             name: event.name,
             picture: event.picture,
-            token: "********",
         })
     }
     return session.userInfo

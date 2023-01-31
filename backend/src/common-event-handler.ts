@@ -2,36 +2,22 @@ import { AppEvent, Board, checkBoardAccess, defaultBoardSize } from "../../commo
 import { addBoard } from "./board-state"
 import { fetchBoard } from "./board-store"
 import { MessageHandlerResult } from "./connection-handler"
-import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
-import { getSession, logoutUser, setNicknameForSession, setVerifiedUserForSession } from "./websocket-sessions"
+import { getAuthenticatedUserFromJWT } from "./http-session"
 import {
     associateUserWithBoard,
     dissociateUserWithBoard,
     getUserAssociatedBoards,
     getUserIdForEmail,
 } from "./user-store"
+import { getSession, logoutUser, setNicknameForSession, setVerifiedUserForSession } from "./websocket-sessions"
 import { WsWrapper } from "./ws-wrapper"
-import { getAuthenticatedUserFromJWT } from "./http-session"
 
 export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): Promise<MessageHandlerResult> {
     switch (appEvent.action) {
         case "auth.login": {
-            const success = await verifyGoogleTokenAndUserInfo(appEvent)
-            const userId = await getUserIdForEmail(appEvent.email)
+            console.log("Legacy login rejected")
             const session = getSession(socket)
-            if (session && success) {
-                const userInfo = await setVerifiedUserForSession(appEvent, session)
-                console.log(`${appEvent.name} logged in`)
-                session.sendEvent({ action: "auth.login.response", success, userId })
-                if (session.boardSession) {
-                    await associateUserWithBoard(userId, session.boardSession.boardId)
-                }
-                session.sendEvent({
-                    action: "user.boards",
-                    email: appEvent.email,
-                    boards: await getUserAssociatedBoards(userInfo),
-                })
-            } else if (session) {
+            if (session) {
                 session.sendEvent({ action: "auth.login.response", success: false })
             }
             return true

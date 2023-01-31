@@ -259,7 +259,6 @@ export type AuthLogin = {
     name: string
     email: string
     picture: string | undefined
-    token: string
 }
 export type AuthJWTLogin = {
     action: "auth.login.jwt"
