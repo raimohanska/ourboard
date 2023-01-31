@@ -17,7 +17,7 @@ import {
     PersistableBoardItemEvent,
 } from "../../../common/src/domain"
 import { getBoard, ServerSideBoardState, updateBoards } from "../board-state"
-import { broadcastBoardEvent } from "../sessions"
+import { broadcastBoardEvent } from "../websocket-sessions"
 
 export const route = applyMiddleware(wrapNative(bodyParser.json()))
 export const apiTokenHeader = headers(t.partial({ API_TOKEN: t.string }))

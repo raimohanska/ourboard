@@ -3,7 +3,7 @@ import { addBoard } from "./board-state"
 import { fetchBoard } from "./board-store"
 import { MessageHandlerResult } from "./connection-handler"
 import { verifyGoogleTokenAndUserInfo } from "./google-token-verifier"
-import { getSession, logoutUser, setNicknameForSession, setVerifiedUserForSession } from "./sessions"
+import { getSession, logoutUser, setNicknameForSession, setVerifiedUserForSession } from "./websocket-sessions"
 import {
     associateUserWithBoard,
     dissociateUserWithBoard,

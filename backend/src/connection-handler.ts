@@ -1,7 +1,7 @@
 import { AppEvent, Id, Serial, EventWrapper } from "../../common/src/domain"
 import { getActiveBoards } from "./board-state"
 import { releaseLocksFor } from "./locker"
-import { broadcastCursorPositions, endSession, startSession } from "./sessions"
+import { broadcastCursorPositions, endSession, startSession } from "./websocket-sessions"
 import { WsWrapper } from "./ws-wrapper"
 
 export type ConnectionHandlerParams = Readonly<{

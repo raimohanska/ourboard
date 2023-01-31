@@ -7,7 +7,7 @@ import { awaitSavingChanges } from "./board-state"
 import { createBoard, fetchBoard } from "./board-store"
 import { initDB } from "./db"
 import { startExpressServer } from "./express-server"
-import { terminateSessions } from "./sessions"
+import { terminateSessions } from "./websocket-sessions"
 import { startUWebSocketsServer } from "./uwebsockets-server"
 
 let http: Http.Server | null = null

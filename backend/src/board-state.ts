@@ -2,10 +2,10 @@ import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardCursorPositions, BoardHistoryEntry, Id, ItemLocks, Serial } from "../../common/src/domain"
 import { Locks } from "./locker"
 import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./board-store"
-import { broadcastItemLocks, getBoardSessionCount, getSessionCount } from "./sessions"
+import { broadcastItemLocks, getBoardSessionCount, getSessionCount } from "./websocket-sessions"
 import { compactBoardHistory, quickCompactBoardHistory } from "./compact-history"
 import { sleep } from "../../common/src/sleep"
-import { UserSession } from "./sessions"
+import { UserSession } from "./websocket-sessions"
 // A mutable state object for server side state
 export type ServerSideBoardState = {
     ready: true
