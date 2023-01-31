@@ -25,7 +25,6 @@ export const UserInfoModal = ({
                 (status) => {
                     switch (status) {
                         case "logging-in-server":
-                        case "logging-in-local":
                             return null
                         case "logged-in":
                             return (
@@ -34,8 +33,8 @@ export const UserInfoModal = ({
                                         You're signed in as{" "}
                                         <span className="name">
                                             {L.view(state, (s) => (s as LoggingInServer).name)}
-                                        </span>
-                                        .
+                                        </span>{" "}
+                                        ({L.view(state, (s) => (s as LoggingInServer).email)}).
                                     </p>
                                     <p>
                                         <a className="login" onClick={signOut}>

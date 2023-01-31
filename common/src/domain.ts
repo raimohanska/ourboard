@@ -243,6 +243,7 @@ export type ClientToServerRequest =
     | DissociateBoard
     | SetNickname
     | AssetPutUrlRequest
+    | AuthJWTLogin
     | AuthLogin
     | AuthLogout
     | Ping
@@ -259,6 +260,10 @@ export type AuthLogin = {
     email: string
     picture: string | undefined
     token: string
+}
+export type AuthJWTLogin = {
+    action: "auth.login.jwt"
+    jwt: string
 }
 export type AuthLogout = { action: "auth.logout" }
 export type Ping = { action: "ping" }

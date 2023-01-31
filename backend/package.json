@@ -4,6 +4,7 @@
   "main": "dist/backend/src/server.js",
   "license": "MIT",
   "dependencies": {
+    "@types/cookies": "^0.7.7",
     "@types/date-fns": "^2.6.0",
     "@types/express-ws": "^3.0.0",
     "@types/html-entities": "^1.2.16",
@@ -15,6 +16,7 @@
     "@types/tcp-port-used": "^1.0.0",
     "@types/ws": "^7.4.0",
     "aws-sdk": "^2.778.0",
+    "cookies": "^0.8.0",
     "csv-writer": "^1.6.0",
     "date-fns": "^2.17.0",
     "dotenv": "^8.2.0",

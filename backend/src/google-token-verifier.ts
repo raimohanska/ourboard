@@ -1,6 +1,8 @@
 import { OAuth2Client } from "google-auth-library"
 import { AuthLogin } from "../../common/src/domain"
 
+// TODO: cleanup
+
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || ""
 const client = new OAuth2Client(CLIENT_ID)
 if (!CLIENT_ID) {

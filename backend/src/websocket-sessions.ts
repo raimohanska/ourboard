@@ -1,3 +1,4 @@
+import { GoogleAuthenticatedUser } from "../../common/src/authenticated-user"
 import {
     AccessLevel,
     AckJoinBoard,
@@ -257,7 +258,7 @@ export function setNicknameForSession(event: SetNickname, origin: WsWrapper) {
 }
 
 export async function setVerifiedUserForSession(
-    event: AuthLogin,
+    event: AuthLogin | GoogleAuthenticatedUser,
     session: UserSession,
 ): Promise<EventUserInfoAuthenticated> {
     const userId = await getUserIdForEmail(event.email)
@@ -271,7 +272,13 @@ export async function setVerifiedUserForSession(
     }
     if (session.boardSession) {
         // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
-        sendTo(everyoneElseOnTheSameBoard(session.boardSession.boardId, session), { ...event, token: "********" })
+        sendTo(everyoneElseOnTheSameBoard(session.boardSession.boardId, session), {
+            action: "auth.login",
+            email: event.email,
+            name: event.name,
+            picture: event.picture,
+            token: "********",
+        })
     }
     return session.userInfo
 }

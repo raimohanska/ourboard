@@ -1,6 +1,8 @@
 import { google } from "googleapis"
 import { getEnv } from "./env"
 import { Express } from "express"
+import { removeAuthenticatedUser, setAuthenticatedUser } from "./http-session"
+import { GoogleAuthenticatedUser } from "../../common/src/authenticated-user"
 
 const googleConfig = {
     clientID: getEnv("GOOGLE_OAUTH_CLIENT_ID"),
@@ -19,12 +21,6 @@ function googleAuthPageURL() {
     return googleOAUTH2().generateAuthUrl({
         scope: googleScopes,
     })
-}
-
-export type GoogleAuthenticatedUser = {
-    name: string
-    email: string
-    picture: string
 }
 
 async function getGoogleAccountFromCode(code: string): Promise<GoogleAuthenticatedUser> {
@@ -54,7 +50,12 @@ function assertNotNull<T>(x: T | null | undefined): T {
 export function setupGoogleAuth(app: Express) {
     app.get("/login", async (req, res) => {
         res.setHeader("content-type", "text/html")
-        res.send(`<script>document.location='${googleAuthPageURL()}'</script>`)
+        res.send(`Signing in...<script>document.location='${googleAuthPageURL()}'</script>`)
+    })
+
+    app.get("/logout", async (req, res) => {
+        removeAuthenticatedUser(req, res)
+        res.redirect("/") // TODO: redirect to requested page
     })
 
     app.get("/google-callback", async (req, res) => {
@@ -64,7 +65,8 @@ export function setupGoogleAuth(app: Express) {
         try {
             const userInfo = await getGoogleAccountFromCode(code)
             console.log("Found", userInfo)
-            res.redirect("/")
+            setAuthenticatedUser(req, res, userInfo)
+            res.redirect("/") // TODO: redirect to requested page
         } catch (e) {
             console.error(e)
             res.status(500).send("Internal error")

@@ -1,16 +1,10 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { AppEvent, BoardAccessPolicy, EventUserInfo, Id, UIEvent } from "../../../common/src/domain"
-import { GoogleAuthenticatedUser, GoogleAuthUserInfo, googleUser, signIn, refreshUserInfo } from "../google-auth"
+import { GoogleAuthenticatedUser } from "../../../common/src/authenticated-user"
 import { ServerConnection } from "./server-connection"
 
-export type UserSessionState =
-    | Anonymous
-    | LoggingInLocal
-    | LoggingInServer
-    | LoggedIn
-    | LoggedOut
-    | LoginFailedDueToTechnicalProblem
+export type UserSessionState = Anonymous | LoggingInServer | LoggedIn | LoggedOut | LoginFailedDueToTechnicalProblem
 
 export type StateId = UserSessionState["status"]
 
@@ -34,13 +28,6 @@ export type LoginFailedDueToTechnicalProblem = BaseSessionState & {
 }
 
 /**
- *  Local OAUTH status pending
- **/
-export type LoggingInLocal = BaseSessionState & {
-    status: "logging-in-local"
-}
-
-/**
  *  Locally OAUTH authenticated but auth with server pending
  **/
 export type LoggingInServer = BaseSessionState &
@@ -60,10 +47,7 @@ export type LoggedIn = BaseSessionState &
 export type UserSessionStore = ReturnType<typeof UserSessionStore>
 
 export function UserSessionStore(connection: ServerConnection, localStorage: Storage) {
-    const eventsReducer = (
-        state: UserSessionState,
-        event: AppEvent | GoogleAuthUserInfo | boolean,
-    ): UserSessionState => {
+    const eventsReducer = (state: UserSessionState, event: AppEvent | boolean): UserSessionState => {
         if (typeof event === "boolean") {
             // Connected = true, Disconnected = false
             const newState =
@@ -92,8 +76,8 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                             sessionId: state.sessionId,
                         }
                     } else {
-                        console.log("Server denied login - refreshing token...")
-                        refreshUserInfo()
+                        console.log("Server denied login - redirecting to login")
+                        document.location = "/login" as any
                     }
                 } else if (state.status === "logging-in-server") {
                     console.log("Successfully logged in")
@@ -107,50 +91,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
                 return state
             }
         } else {
-            if (event.status === "not-supported") {
-                return {
-                    status: "anonymous",
-                    nickname: state.nickname,
-                    nicknameSetByUser: state.nicknameSetByUser,
-                    sessionId: state.sessionId,
-                    loginSupported: false,
-                }
-            } else if (event.status === "signed-out") {
-                if (state.status === "logging-in-server" || state.status == "logged-in") {
-                    console.log("Send logout")
-                    connection.send({ action: "auth.logout" })
-                }
-
-                return {
-                    status: "logged-out",
-                    sessionId: state.sessionId,
-                    nickname: state.nickname,
-                    nicknameSetByUser: state.nicknameSetByUser,
-                }
-            } else if (event.status === "in-progress") {
-                return {
-                    status: "logging-in-local",
-                    sessionId: state.sessionId,
-                    nickname: state.nickname,
-                    nicknameSetByUser: state.nicknameSetByUser,
-                }
-            } else if (event.status === "signed-in") {
-                const { status, ...googleUser } = event
-                const newStatus = {
-                    status: "logging-in-server",
-                    sessionId: state.sessionId,
-                    nickname: googleUser.name,
-                    nicknameSetByUser: true,
-                    ...googleUser,
-                    retries: getRetries(state) + 1,
-                } as const
-                if (connection.connected.get()) {
-                    sendLoginAndNickname(newStatus)
-                }
-                return newStatus
-            } else {
-                throw Error("Unknown status " + JSON.stringify(event))
-            }
+            return state
         }
     }
 
@@ -166,11 +107,8 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
             //console.log("Send nick & login")
             connection.send({ action: "nickname.set", nickname: state.name })
             connection.send({
-                action: "auth.login",
-                name: state.name,
-                email: state.email,
-                picture: state.picture,
-                token: state.token,
+                action: "auth.login.jwt",
+                jwt: getUserJWT()!,
             })
         } else if (state.nickname) {
             //console.log("Send nick")
@@ -179,27 +117,29 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
         return state
     }
 
-    const initialState: UserSessionState =
-        googleUser.get().status === "not-supported"
-            ? {
-                  status: "anonymous",
-                  sessionId: null,
-                  nickname: localStorage.nickname || undefined,
-                  nicknameSetByUser: !!localStorage.nickname,
-                  loginSupported: false,
-              }
-            : {
-                  status: "logging-in-local",
-                  sessionId: null,
-                  nickname: localStorage.nickname || undefined,
-                  nicknameSetByUser: !!localStorage.nickname,
-              }
+    const userFromCookie = getAuthenticatedUserFromCookie()
+
+    const initialState: UserSessionState = !userFromCookie
+        ? {
+              status: "anonymous",
+              sessionId: null,
+              nickname: localStorage.nickname || undefined,
+              nicknameSetByUser: !!localStorage.nickname,
+              loginSupported: true,
+          }
+        : {
+              status: "logging-in-server",
+              sessionId: null,
+              nickname: localStorage.nickname || undefined,
+              nicknameSetByUser: !!localStorage.nickname,
+              ...userFromCookie,
+              retries: 0,
+          }
 
     const sessionState = L.merge(
         connection.bufferedServerEvents,
         connection.sentUIEvents,
         connection.connected.pipe(L.changes),
-        googleUser.pipe(L.changes),
     ).pipe(L.scan(initialState, eventsReducer, globalScope))
 
     L.view(sessionState, "status").log("Session status")
@@ -218,6 +158,37 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
     }
 }
 
+// Get / set authenticated user stored in cookies
+
+function getCookie(name: string) {
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) return parts.pop()!.split(";").shift()
+}
+
+function jwtDecode(t: string) {
+    return {
+        header: JSON.parse(window.atob(t.split(".")[0])),
+        payload: JSON.parse(window.atob(t.split(".")[1])),
+    }
+}
+
+function getAuthenticatedUserFromCookie(): GoogleAuthenticatedUser | null {
+    const userCookie = getUserJWT()
+    if (userCookie) {
+        try {
+            return jwtDecode(userCookie).payload as GoogleAuthenticatedUser
+        } catch (e) {
+            console.warn("Token parsing failed", userCookie, e)
+        }
+    }
+    return null
+}
+
+function getUserJWT() {
+    return getCookie("user") ?? null
+}
+
 export function canLogin(state: UserSessionState): boolean {
     if (state.status === "logged-out" || state.status === "login-failed") return true
     if (state.status === "anonymous" && state.loginSupported) return true
@@ -225,7 +196,7 @@ export function canLogin(state: UserSessionState): boolean {
 }
 
 export function isLoginInProgress(state: StateId): boolean {
-    return state === "logging-in-local" || state === "logging-in-server"
+    return state === "logging-in-server"
 }
 
 export function getAuthenticatedUser(state: UserSessionState): GoogleAuthenticatedUser | null {

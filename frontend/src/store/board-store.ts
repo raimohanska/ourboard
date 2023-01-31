@@ -242,7 +242,7 @@ export function BoardStore(
             if (state.status !== "loading") {
                 console.error(`Got board.join.denied while in status ${state.status}`)
             }
-            if (loginStatus === "logging-in-server" || loginStatus === "logging-in-local") {
+            if (loginStatus === "logging-in-server") {
                 console.log(`Access denied to board: login in progress`)
                 return { ...state, status: "denied-temporarily" }
             } else if (event.reason === "not found") {

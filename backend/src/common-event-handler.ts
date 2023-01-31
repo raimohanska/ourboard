@@ -11,6 +11,7 @@ import {
     getUserIdForEmail,
 } from "./user-store"
 import { WsWrapper } from "./ws-wrapper"
+import { getAuthenticatedUserFromJWT } from "./http-session"
 
 export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): Promise<MessageHandlerResult> {
     switch (appEvent.action) {
@@ -28,6 +29,27 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
                 session.sendEvent({
                     action: "user.boards",
                     email: appEvent.email,
+                    boards: await getUserAssociatedBoards(userInfo),
+                })
+            } else if (session) {
+                session.sendEvent({ action: "auth.login.response", success: false })
+            }
+            return true
+        }
+        case "auth.login.jwt": {
+            const user = getAuthenticatedUserFromJWT(appEvent.jwt)
+            const session = getSession(socket)
+            if (session && user !== null) {
+                const userId = await getUserIdForEmail(user.email)
+                const userInfo = await setVerifiedUserForSession(user, session)
+                console.log(`${user.name} logged in`)
+                session.sendEvent({ action: "auth.login.response", success: true, userId })
+                if (session.boardSession) {
+                    await associateUserWithBoard(userId, session.boardSession.boardId)
+                }
+                session.sendEvent({
+                    action: "user.boards",
+                    email: user.email,
                     boards: await getUserAssociatedBoards(userInfo),
                 })
             } else if (session) {

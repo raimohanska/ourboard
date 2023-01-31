@@ -170,10 +170,11 @@ async function initBoardStore({
     let sentEvents: (UIEvent | EventWrapper)[] = []
     const send = (x: UIEvent | EventWrapper) => sentEvents.push(x)
     const sessionInfo = L.atom<UserSessionState>({
-        status: "logging-in-local",
+        status: "anonymous",
         sessionId: "",
         nickname: "",
         nicknameSetByUser: false,
+        loginSupported: true,
     })
 
     const connection = {
