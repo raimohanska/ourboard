@@ -28,9 +28,9 @@ export function getAuthenticatedUserFromJWT(jwt: string): GoogleAuthenticatedUse
 export function setAuthenticatedUser(req: IncomingMessage, res: ServerResponse, userInfo: GoogleAuthenticatedUser) {
     const jwt = JWT.sign(userInfo, secret)
     new Cookies(req, res).set("user", jwt, {
-        maxAge: 24 * 3600 * 1000,
+        maxAge: 365 * 24 * 3600 * 1000,
         httpOnly: false,
-    }) // Max 24 hours
+    }) // Max 365 days expiration
 }
 
 export function removeAuthenticatedUser(req: IncomingMessage, res: ServerResponse) {
