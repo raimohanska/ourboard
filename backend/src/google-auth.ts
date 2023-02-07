@@ -22,6 +22,7 @@ function googleOAUTH2() {
 function googleAuthPageURL() {
     return googleOAUTH2().generateAuthUrl({
         scope: googleScopes,
+        prompt: "select_account",
     })
 }
 
