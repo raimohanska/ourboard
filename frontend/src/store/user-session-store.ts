@@ -4,6 +4,7 @@ import { GoogleAuthenticatedUser } from "../../../common/src/authenticated-user"
 import { AppEvent, BoardAccessPolicy, Id } from "../../../common/src/domain"
 import { signIn } from "../google-auth"
 import { ServerConnection } from "./server-connection"
+import jwtDecode from "jwt-decode"
 
 export type UserSessionState = Anonymous | LoggingInServer | LoggedIn | LoggedOut | LoginFailedDueToTechnicalProblem
 
@@ -144,18 +145,11 @@ function getCookie(name: string) {
     if (parts.length === 2) return parts.pop()!.split(";").shift()
 }
 
-function jwtDecode(t: string) {
-    return {
-        header: JSON.parse(window.atob(t.split(".")[0])),
-        payload: JSON.parse(window.atob(t.split(".")[1])),
-    }
-}
-
 function getAuthenticatedUserFromCookie(): GoogleAuthenticatedUser | null {
     const userCookie = getUserJWT()
     if (userCookie) {
         try {
-            return jwtDecode(userCookie).payload as GoogleAuthenticatedUser
+            return jwtDecode(userCookie) as GoogleAuthenticatedUser
         } catch (e) {
             console.warn("Token parsing failed", userCookie, e)
         }
