@@ -12,6 +12,7 @@ import {
     Color,
     Container,
     EventUserInfo,
+    newISOTimeStamp,
     newNote,
     Note,
     PersistableBoardItemEvent,
@@ -82,7 +83,7 @@ export function getItemAttributesForContainer(container: string | undefined, boa
 
 export function dispatchSystemAppEvent(board: ServerSideBoardState, appEvent: PersistableBoardItemEvent) {
     const user: EventUserInfo = { userType: "system", nickname: "Github webhook" }
-    let historyEntry: BoardHistoryEntry = { ...appEvent, user, timestamp: new Date().toISOString() }
+    let historyEntry: BoardHistoryEntry = { ...appEvent, user, timestamp: newISOTimeStamp() }
     console.log(JSON.stringify(historyEntry))
     // TODO: refactor, this is the same sequence as done in connection-handler for messages from clients
     const serial = updateBoards(board, historyEntry)

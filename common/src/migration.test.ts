@@ -11,6 +11,7 @@ import {
     exampleBoard,
     ModifyConnection,
     MoveItem,
+    newISOTimeStamp,
 } from "./domain"
 import { migrateBoard, migrateEvent } from "./migration"
 
@@ -126,7 +127,7 @@ describe("Migration", () => {
     describe("Migrate event", () => {
         const headers = {
             user: { userType: "unidentified", nickname: "asdf" },
-            timestamp: new Date().toISOString(),
+            timestamp: newISOTimeStamp(),
             boardId: "",
         }
         it("connection.add", () => {

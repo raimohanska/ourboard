@@ -6,6 +6,7 @@ import {
     Id,
     isBoardItemEvent,
     isPersistableBoardItemEvent,
+    newISOTimeStamp,
 } from "../../common/src/domain"
 import { getBoard, maybeGetBoard, updateBoards } from "./board-state"
 import { updateBoard } from "./board-store"
@@ -117,7 +118,7 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
                 let historyEntry: BoardHistoryEntry = {
                     ...appEvent,
                     user: session.userInfo,
-                    timestamp: new Date().toISOString(),
+                    timestamp: newISOTimeStamp(),
                 }
                 try {
                     const serial = updateBoards(state, historyEntry)

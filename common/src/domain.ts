@@ -7,6 +7,10 @@ import { arrayToRecordById } from "./arrays"
 export type Id = string
 export type ISOTimeStamp = string
 
+export function newISOTimeStamp(): ISOTimeStamp {
+    return new Date().toISOString()
+}
+
 export function optional<T extends t.Type<any>>(c: T) {
     return t.union([c, t.undefined, t.null])
 }
@@ -409,10 +413,6 @@ export function newVideo(
     z: number = 0,
 ): Video {
     return { id: uuid.v4(), type: "video", assetId, x, y, width, height, z }
-}
-
-export function getCurrentTime(): ISOTimeStamp {
-    return new Date().toISOString()
 }
 
 export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent =>

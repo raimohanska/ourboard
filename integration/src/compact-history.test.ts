@@ -3,7 +3,7 @@ import _ from "lodash"
 import { createBoard, getBoardHistoryBundleMetas, storeEventHistoryBundle } from "../../backend/src/board-store"
 import { quickCompactBoardHistory } from "../../backend/src/compact-history"
 import { closeConnectionPool, initDB, inTransaction, withDBClient } from "../../backend/src/db"
-import { BoardHistoryEntry, EventUserInfo, Id, newBoard, Serial } from "../../common/src/domain"
+import { BoardHistoryEntry, EventUserInfo, Id, newBoard, newISOTimeStamp, Serial } from "../../common/src/domain"
 type BundleDesc = [Date, Serial, Serial]
 describe("quick compact", () => {
     beforeAll(() => initDB("./backend"))
@@ -112,7 +112,7 @@ async function addItems(boardId: Id, firstSerial: Serial, lastSerial: Serial, sa
         boardId,
         items: [],
         connections: [],
-        timestamp: new Date().toISOString(),
+        timestamp: newISOTimeStamp(),
         user,
         serial,
     }))

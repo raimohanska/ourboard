@@ -1,4 +1,4 @@
-import { Board, Id, RecentBoard, RecentBoardAttributes } from "../../../common/src/domain"
+import { Board, Id, newISOTimeStamp, RecentBoard, RecentBoardAttributes } from "../../../common/src/domain"
 import * as L from "lonna"
 import { ServerConnection } from "./server-connection"
 import { getAuthenticatedUser, UserSessionStore } from "./user-session-store"
@@ -8,7 +8,7 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
 
     function storeRecentBoard(board: RecentBoardAttributes) {
         const userEmail = getAuthenticatedUser(sessionStore.sessionState.get())?.email || null
-        const recentBoard = { name: board.name, id: board.id, opened: new Date().toISOString(), userEmail }
+        const recentBoard = { name: board.name, id: board.id, opened: newISOTimeStamp(), userEmail }
         storeRecentBoardLocally(recentBoard)
     }
 

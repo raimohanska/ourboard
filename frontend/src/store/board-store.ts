@@ -23,6 +23,7 @@ import {
     ItemLocks,
     LocalUIEvent,
     LoginResponse,
+    newISOTimeStamp,
     PersistableBoardItemEvent,
     TransientBoardItemEvent,
     UIEvent,
@@ -78,7 +79,7 @@ export function BoardStore(
         return {
             ...e,
             user,
-            timestamp: new Date().toISOString(),
+            timestamp: newISOTimeStamp(),
         }
     }
 
