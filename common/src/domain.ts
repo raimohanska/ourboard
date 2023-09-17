@@ -629,8 +629,9 @@ export function getAlign(item: TextItem) {
 }
 
 export type HorizontalAlign = "left" | "center" | "right"
-export function getHorizontalAlign(item: TextItem): HorizontalAlign {
-    switch (getAlign(item)) {
+
+export function getHorizontalAlign(align: Align): HorizontalAlign {
+    switch (align) {
         case "TL":
         case "ML":
         case "BL":
@@ -644,11 +645,39 @@ export function getHorizontalAlign(item: TextItem): HorizontalAlign {
         case "BR":
             return "right"
     }
-    console.log("Unknown align", getAlign(item))
+    console.log("Unknown align", align)
     return "center"
 }
+
+export type VerticalAlign = "top" | "middle" | "bottom"
+
+export function getVerticalAlign(align: Align): VerticalAlign {
+    switch (align) {
+        case "TL":
+        case "TC":
+        case "TR":
+            return "top"
+        case "ML":
+        case "MC":
+        case "MR":
+            return "middle"
+        case "BL":
+        case "BC":
+        case "BR":
+            return "bottom"
+    }
+    console.log("Unknown align", align)
+    return "middle"
+}
+
 export function setHorizontalAlign<I extends TextItem>(item: I, a: HorizontalAlign): I {
     const letter = a === "left" ? "L" : a === "center" ? "C" : "R"
     const align = `${getAlign(item)[0]}${letter}`
+    return { ...item, align }
+}
+
+export function setVerticalAlign<I extends TextItem>(item: I, a: VerticalAlign): I {
+    const letter = a === "top" ? "T" : a === "middle" ? "M" : "B"
+    const align = `${letter}${getAlign(item)[1]}`
     return { ...item, align }
 }

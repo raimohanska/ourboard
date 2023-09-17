@@ -6,10 +6,12 @@ import {
     BoardHistoryEntry,
     canWrite,
     Connection,
+    getAlign,
     getHorizontalAlign,
     getItemBackground,
     getItemIds,
     getItemShape,
+    getVerticalAlign,
     Id,
     isTextItem,
     Item,
@@ -124,6 +126,7 @@ export const ItemView = ({
                     position: "absolute",
                     padding: itemPadding(i),
                     justifyContent: getJustifyContent(i),
+                    alignItems: getAlignItems(i),
                     textAlign: getTextAlign(i),
                 }
             })}
@@ -199,7 +202,7 @@ export const ItemView = ({
 
 function getJustifyContent(item: Item) {
     if (isTextItem(item)) {
-        switch (getHorizontalAlign(item)) {
+        switch (getHorizontalAlign(getAlign(item))) {
             case "left":
                 return "flex-start"
             case "center":
@@ -211,9 +214,23 @@ function getJustifyContent(item: Item) {
     return null
 }
 
+function getAlignItems(item: Item) {
+    if (isTextItem(item)) {
+        switch (getVerticalAlign(getAlign(item))) {
+            case "top":
+                return "flex-start"
+            case "middle":
+                return "center"
+            case "bottom":
+                return "flex-end"
+        }
+    }
+    return null
+}
+
 function getTextAlign(item: Item) {
     if (isTextItem(item)) {
-        return getHorizontalAlign(item)
+        return getHorizontalAlign(getAlign(item))
     }
     return null
 }
