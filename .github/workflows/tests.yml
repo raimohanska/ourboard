@@ -40,6 +40,11 @@ jobs:
               run: yarn build
             - name: Run cypress tests
               uses: cypress-io/github-action@v2
+              env:
+                SESSION_SIGNING_SECRET: notsosecretthing
+                GOOGLE_OAUTH_CLIENT_ID: whatever
+                GOOGLE_OAUTH_CLIENT_SECRET: whatever
+                ROOT_URL: http://localhost:1337        
               with:
                   install: false
                   start: yarn start
