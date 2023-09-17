@@ -1,7 +1,7 @@
-import { h, HarmajaOutput } from "harmaja"
+import { h } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
-import { Board, Item } from "../../../../common/src/domain"
+import { Item } from "../../../../common/src/domain"
 import {
     AlignHorizontalCenterIcon,
     AlignHorizontalLeftIcon,
@@ -12,7 +12,6 @@ import {
     HorizontalDistributeIcon,
     VerticalDistributeIcon,
 } from "../../components/Icons"
-import { Dispatch } from "../../store/board-store"
 import { SubmenuProps } from "./ContextMenuView"
 
 const createSubMenuByAxis = (axis: Axis) => (props: SubmenuProps) => {
@@ -138,7 +137,7 @@ export function alignmentsSubMenu(axis: Axis, props: SubmenuProps) {
                           <span
                               className="icon"
                               onClick={() => moveFocusedItems("x", getCenterCoordinate, props)}
-                              title="Align left"
+                              title="Align center"
                           >
                               <AlignHorizontalCenterIcon />
                           </span>
@@ -148,7 +147,7 @@ export function alignmentsSubMenu(axis: Axis, props: SubmenuProps) {
                           <span
                               className="icon"
                               onClick={() => moveFocusedItems("x", getMaxCoordinate, props)}
-                              title="Align left"
+                              title="Align right"
                           >
                               <AlignHorizontalRightIcon />
                           </span>
@@ -180,7 +179,7 @@ export function alignmentsSubMenu(axis: Axis, props: SubmenuProps) {
                       {hasItemsToAlign && (
                           <span
                               className="icon"
-                              title="Align top"
+                              title="Align middle"
                               onClick={() => moveFocusedItems("y", getCenterCoordinate, props)}
                           >
                               <AlignVerticalCenterIcon />
@@ -190,7 +189,7 @@ export function alignmentsSubMenu(axis: Axis, props: SubmenuProps) {
                       {hasItemsToAlign && (
                           <span
                               className="icon"
-                              title="Align top"
+                              title="Align bottom"
                               onClick={() => moveFocusedItems("y", getMaxCoordinate, props)}
                           >
                               <AlignVerticalBottomIcon />

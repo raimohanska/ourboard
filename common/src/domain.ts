@@ -129,7 +129,7 @@ export const ITEM_TYPES = {
     CONTAINER: "container",
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
-export type TextItemProperties = ItemProperties & { text: string; fontSize?: number }
+export type TextItemProperties = ItemProperties & { text: string; fontSize?: number; align?: Align }
 export type NoteShape = "round" | "square" | "rect" | "diamond"
 export type Note = TextItemProperties & {
     type: typeof ITEM_TYPES.NOTE
@@ -620,4 +620,35 @@ export function canRead(a: AccessLevel) {
 
 export function canWrite(a: AccessLevel) {
     return a === "read-write" || a === "admin"
+}
+
+export type Align = "TL" | "TC" | "TR" | "ML" | "MC" | "MR" | "BL" | "BC" | "BR"
+
+export function getAlign(item: TextItem) {
+    return item.align ?? (isNote(item) ? "MC" : "TL")
+}
+
+export type HorizontalAlign = "left" | "center" | "right"
+export function getHorizontalAlign(item: TextItem): HorizontalAlign {
+    switch (getAlign(item)) {
+        case "TL":
+        case "ML":
+        case "BL":
+            return "left"
+        case "TC":
+        case "MC":
+        case "BC":
+            return "center"
+        case "TR":
+        case "MR":
+        case "BR":
+            return "right"
+    }
+    console.log("Unknown align", getAlign(item))
+    return "center"
+}
+export function setHorizontalAlign<I extends TextItem>(item: I, a: HorizontalAlign): I {
+    const letter = a === "left" ? "L" : a === "center" ? "C" : "R"
+    const align = `${getAlign(item)[0]}${letter}`
+    return { ...item, align }
 }

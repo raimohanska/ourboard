@@ -11,6 +11,7 @@ import { colorsAndShapesMenu } from "./colorsAndShapes"
 import { fontSizesMenu } from "./fontSizes"
 import { resolveEndpoint } from "../../../../common/src/connection-utils"
 import { connectionEndsMenu } from "./connection-ends"
+import { textAlignmentsMenu } from "./textAlignments"
 
 export type SubmenuProps = {
     focusedItems: L.Property<{ items: Item[]; connections: Connection[] }>
@@ -97,6 +98,7 @@ export const ContextMenuView = ({
         alignmentsMenu("y", props),
         colorsAndShapesMenu(props),
         fontSizesMenu(props),
+        textAlignmentsMenu(props),
         areaTilingMenu(props),
         connectionEndsMenu(props),
     ]
