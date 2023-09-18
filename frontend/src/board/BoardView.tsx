@@ -6,6 +6,7 @@ import {
     canWrite,
     findConnection,
     findItem,
+    getConnection,
     Id,
     Image,
     Item,
@@ -117,7 +118,7 @@ export const BoardView = ({
             }
         }
         const connectionId = [...getSelectedConnectionIds(f)][0]
-        if (connectionId) {
+        if (connectionId && getConnection(board.get())(connectionId)?.action === "connect") {
             latestConnectionId.set(connectionId)
         }
     })
