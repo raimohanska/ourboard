@@ -1,7 +1,7 @@
 import { localStorageAtom } from "./local-storage-atom"
 import * as L from "lonna"
 
-export type Tool = "pan" | "select" | "connect" | "note" | "container" | "text"
+export type Tool = "pan" | "select" | "connect" | "note" | "container" | "text" | "line"
 export type ControlSettings = {
     tool: Tool
     defaultTool?: Tool

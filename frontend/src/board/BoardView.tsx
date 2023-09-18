@@ -158,6 +158,7 @@ export const BoardView = ({
         },
     )
     installKeyboardShortcut(plainKey("c"), () => toolController.tool.set("connect"))
+    installKeyboardShortcut(plainKey("l"), () => toolController.tool.set("line"))
     L.fromEvent<JSX.KeyboardEvent>(window, "click")
         .pipe(L.applyScope(componentScope()))
         .forEach((event) => {

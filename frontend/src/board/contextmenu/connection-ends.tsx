@@ -22,7 +22,9 @@ function nextStyle(style: ConnectionEndStyle) {
 
 export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const connections = L.view(focusedItems, (items) => items.connections)
-    const singleConnection = L.view(connections, (connections) => (connections.length === 1 ? connections[0] : null))
+    const singleConnection = L.view(connections, (connections) =>
+        connections.length === 1 && connections[0].action === "connect" ? connections[0] : null,
+    )
     return L.view(singleConnection, (connection) => {
         if (!connection) return []
         return !connection

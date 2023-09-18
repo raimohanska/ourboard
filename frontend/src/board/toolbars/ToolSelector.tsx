@@ -74,6 +74,18 @@ export const ToolSelector = ({ toolController }: { toolController: ToolControlle
                     ),
                 }}
             />
+            <ToolIcon
+                {...{
+                    name: "line",
+                    tooltip: "Line tool",
+                    currentTool: tool,
+                    svg: (c) => (
+                        <svg viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M4 11h16v2H4z"></path>
+                        </svg>
+                    ),
+                }}
+            />
         </>
     )
 }

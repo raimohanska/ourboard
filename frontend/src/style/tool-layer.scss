@@ -113,6 +113,12 @@
                 }
             }
 
+            .line {
+                @media (max-width: 500px) {
+                    display: none;
+                }
+            }
+
             .tool.undo,
             .tool.redo {
                 @media (min-width: $non-narrow-screen-breakpoint) {

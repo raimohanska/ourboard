@@ -38,10 +38,10 @@ export function itemDragToMove(
 
                 // TODO: disable multiple selection in connect mode
 
-                if (t === "connect") {
+                if (t === "connect" || t === "line") {
                     const { current, dragStartPosition } = items[0]
                     const from = isConnectionAttachmentPoint(startPos, current) ? current : startPos
-                    connector.whileDragging(from, coordinateHelper.currentBoardCoordinates.get())
+                    connector.whileDragging(from, coordinateHelper.currentBoardCoordinates.get(), t)
                 } else {
                     const margin = BOARD_ITEM_BORDER_MARGIN
                     const movedItems = items.map(({ dragStartPosition, current }) => {

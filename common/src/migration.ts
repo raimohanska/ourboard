@@ -54,8 +54,12 @@ export function migrateBoard(origBoard: Board) {
 }
 
 function migrateConnection(c: Connection): Connection {
-    if (c.fromStyle && c.fromStyle !== ("white-dot" as any) && c.toStyle && c.pointStyle) return c
-    return { ...c, fromStyle: "black-dot", toStyle: "arrow", pointStyle: "black-dot" }
+    c =
+        c.fromStyle && c.fromStyle !== ("white-dot" as any) && c.toStyle && c.pointStyle
+            ? c
+            : { ...c, fromStyle: "black-dot", toStyle: "arrow", pointStyle: "black-dot" }
+    c = c.action !== undefined ? c : { ...c, action: "connect" }
+    return c
 }
 
 function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {

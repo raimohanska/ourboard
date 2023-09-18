@@ -9,12 +9,11 @@ import { BoardCoordinateHelper } from "../board-coordinates"
 import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "../board-focus"
 import { dispatchDeletion } from "../item-delete"
 import { DND_GHOST_HIDING_IMAGE } from "../item-drag"
+import { dispatchDuplication } from "../item-duplicate"
 import { localStorageAtom } from "../local-storage-atom"
 import { ToolController } from "../tool-selection"
-import { IS_TOUCHSCREEN } from "../touchScreen"
 import { PaletteView } from "./PaletteView"
 import { ToolSelector } from "./ToolSelector"
-import { dispatchDuplication } from "../item-duplicate"
 
 export const MainToolBar = ({
     coordinateHelper,

@@ -16,7 +16,7 @@ export type DragAction =
     | { action: "select"; selectedAtStart: BoardFocus }
     | { action: "pan" }
     | { action: "none" }
-    | { action: "connect"; startPos: Point }
+    | { action: "connect" | "line"; startPos: Point }
 
 export function boardDragHandler({
     boardElem,
@@ -58,6 +58,8 @@ export function boardDragHandler({
             current.set(pos)
             if (t === "connect") {
                 dragAction.set({ action: "connect", startPos: pos })
+            } else if (t === "line") {
+                dragAction.set({ action: "line", startPos: pos })
             } else if (!shouldDragSelect) {
                 dragAction.set({ action: "pan" })
             } else {
@@ -113,7 +115,9 @@ export function boardDragHandler({
                                 c.x - s.x,
                             )}px, ${coordinateHelper.emToPagePx(c.y - s.y)}px)`)
                     } else if (da.action === "connect") {
-                        connector.whileDragging(da.startPos, coords)
+                        connector.whileDragging(da.startPos, coords, "connect")
+                    } else if (da.action === "line") {
+                        connector.whileDragging(da.startPos, coords, "line")
                     }
                 },
                 15,
@@ -136,7 +140,7 @@ export function boardDragHandler({
                 const xDiff = coordinateHelper.emToPagePx(startX - x)
                 const yDiff = coordinateHelper.emToPagePx(startY - y)
                 s.scrollBy(xDiff, yDiff)
-            } else if (da.action === "connect") {
+            } else if (da.action === "connect" || da.action === "line") {
                 toolController.useDefaultTool()
                 connector.endDrag()
             }
