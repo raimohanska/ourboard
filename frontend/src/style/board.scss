@@ -194,11 +194,9 @@
             align-items: flex-start;
             justify-content: flex-start;
 
-            &.color-ffffff00,
-            &.color-none {
-                > .shape {
-                    border: none;
-                }
+            > .shape {
+                border: none;
+                box-shadow: none;
             }
         }
 
