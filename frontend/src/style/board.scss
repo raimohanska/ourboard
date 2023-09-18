@@ -336,6 +336,7 @@
     .context-menu-positioner {
         z-index: $z-index-menu;
         position: absolute;
+        pointer-events: none;
 
         > * {
             font-size: 1rem;
@@ -345,6 +346,7 @@
         }
 
         .context-menu {
+            pointer-events: all;
             padding: 0.5em;
             border: 1px solid #cccccc;
             border-radius: 2px;
@@ -366,10 +368,10 @@
 
         &.item-bottom {
             .context-menu {
-                margin-top: 0.5em;
+                margin-top: 0.8em;
             }
             .submenu {
-                top: 2.8em;
+                top: 3.1em;
             }
         }
         &.item-top {
@@ -409,6 +411,7 @@
         }
 
         .submenu {
+            pointer-events: all;
             padding: 0.5em;
             border: 1px solid #cccccc;
             border-radius: 2px;
