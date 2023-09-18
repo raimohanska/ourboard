@@ -14,6 +14,7 @@ import { ToolController } from "../tool-selection"
 import { IS_TOUCHSCREEN } from "../touchScreen"
 import { PaletteView } from "./PaletteView"
 import { ToolSelector } from "./ToolSelector"
+import { dispatchDuplication } from "../item-duplicate"
 
 export const MainToolBar = ({
     coordinateHelper,
@@ -111,9 +112,10 @@ export const MainToolBar = ({
         >
             <PaletteView {...{ latestNote, addItem: onAdd, focus, tool: toolController.tool }} />
             <ToolSelector {...{ toolController }} />
-            {<DeleteIcon {...{ focus, dispatch, board }} />}
-            {<UndoToolIcon {...{ boardStore, dispatch }} />}
-            {<RedoToolIcon {...{ boardStore, dispatch }} />}
+            <DeleteIcon {...{ focus, dispatch, board }} />
+            <DuplicateIcon {...{ focus, dispatch, board }} />
+            <UndoToolIcon {...{ boardStore, dispatch }} />
+            <RedoToolIcon {...{ boardStore, dispatch }} />
         </div>
     )
 }
@@ -166,6 +168,43 @@ const DeleteIcon = ({ focus, board, dispatch }: DeleteProps) => {
                 </svg>
             </span>
             <span className="text">Delete</span>
+        </span>
+    )
+}
+
+const DuplicateIcon = ({ focus, board, dispatch }: DeleteProps) => {
+    const enabled = L.view(focus, (f) => getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0)
+    const duplicateItems = () => dispatchDuplication(focus, board.get(), dispatch)
+    return (
+        <span
+            className="tool duplicate"
+            title="Clone selected item(s)"
+            onMouseDown={duplicateItems}
+            onTouchStart={duplicateItems}
+        >
+            <span className={L.view(enabled, (e) => (e ? "icon" : "icon disabled"))}>
+                <svg viewBox="0 0 22 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <title>Make a copy</title>
+                    <rect
+                        x="6.56582"
+                        y="5.86245"
+                        width="14.0013"
+                        height="14.0013"
+                        rx="1.4"
+                        fill="currentColor"
+                        fill-opacity="0.1"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                    />
+                    <path
+                        d="M3.6805 15.7398H3.18848C2.08391 15.7398 1.18848 14.8444 1.18848 13.7398V3.18433C1.18848 2.07976 2.08391 1.18433 3.18848 1.18433H13.8317C14.9363 1.18433 15.8317 2.07976 15.8317 3.18433V3.76324"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                        stroke-linecap="round"
+                    />
+                </svg>
+            </span>
+            <span className="text">Clone</span>
         </span>
     )
 }

@@ -8,10 +8,13 @@ import { controlKey, installKeyboardShortcut } from "./keyboard-shortcuts"
 
 export function itemDuplicateHandler(board: L.Property<Board>, dispatch: Dispatch, focus: L.Atom<BoardFocus>) {
     installKeyboardShortcut(controlKey("d"), () => {
-        const currentBoard = board.get()
-        const itemsAndConnections = findSelectedItemsAndConnections(focus.get(), currentBoard)
-        const { toCreate, toSelect, connections } = makeCopies(itemsAndConnections, 1, 1)
-        dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate, connections })
-        focus.set({ status: "selected", itemIds: new Set(toSelect.map((it) => it.id)), connectionIds: emptySet() })
+        dispatchDuplication(focus, board.get(), dispatch)
     })
+}
+
+export function dispatchDuplication(focus: L.Atom<BoardFocus>, currentBoard: Board, dispatch: Dispatch) {
+    const itemsAndConnections = findSelectedItemsAndConnections(focus.get(), currentBoard)
+    const { toCreate, toSelect, connections } = makeCopies(itemsAndConnections, 1, 1)
+    dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate, connections })
+    focus.set({ status: "selected", itemIds: new Set(toSelect.map((it) => it.id)), connectionIds: emptySet() })
 }

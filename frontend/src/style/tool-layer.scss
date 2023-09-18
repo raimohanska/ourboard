@@ -105,6 +105,14 @@
                 }
             }
 
+            .duplicate {
+                .notouch & {
+                    @media (max-width: $narrow-screen-breakpoint) {
+                        display: none;
+                    }
+                }
+            }
+
             .tool.undo,
             .tool.redo {
                 @media (min-width: $non-narrow-screen-breakpoint) {
