@@ -136,7 +136,7 @@ export type Note = TextItemProperties & {
     color: Color
     shape: NoteShape | undefined
 }
-export type Text = TextItemProperties & { type: typeof ITEM_TYPES.TEXT }
+export type Text = TextItemProperties & { type: typeof ITEM_TYPES.TEXT; color: Color }
 export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string }
 export type Video = ItemProperties & { type: typeof ITEM_TYPES.VIDEO; assetId: string; src?: string }
 export type Container = TextItemProperties & { type: typeof ITEM_TYPES.CONTAINER; color: Color }
@@ -380,7 +380,7 @@ export function newText(
     height: number = 2,
     z: number = 0,
 ): Text {
-    return { id: uuid.v4(), type: "text", text, x, y, width, height, z }
+    return { id: uuid.v4(), type: "text", text, x, y, width, height, z, color: "none" }
 }
 
 export function newContainer(
@@ -433,7 +433,7 @@ export function isSameUser(a: EventUserInfo, b: EventUserInfo) {
 }
 
 export function isColoredItem(i: Item): i is ColoredItem {
-    return i.type === "note" || i.type === "container"
+    return i.type === "note" || i.type === "container" || i.type === "text"
 }
 
 export function isShapedItem(i: Item): i is ShapedItem {

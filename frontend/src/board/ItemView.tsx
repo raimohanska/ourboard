@@ -131,16 +131,14 @@ export const ItemView = ({
                 }
             })}
         >
-            {type !== "text" && (
-                <span
-                    className={L.view(shape, (s) => "shape " + s)}
-                    style={L.view(item, (i) => {
-                        return {
-                            background: getItemBackground(i),
-                        }
-                    })}
-                />
-            )}
+            <span
+                className={L.view(shape, (s) => "shape " + s)}
+                style={L.view(item, (i) => {
+                    return {
+                        background: getItemBackground(i),
+                    }
+                })}
+            />
 
             {(type === "note" || type === "text" || type === "container") && (
                 <TextView item={item as L.Property<TextItem>} />

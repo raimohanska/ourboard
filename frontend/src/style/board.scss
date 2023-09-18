@@ -156,7 +156,8 @@
                 }
             }
 
-            &.color-ffffff00 {
+            &.color-ffffff00,
+            &.color-none {
                 > .shape {
                     box-shadow: none;
                     border: 1px dashed #00000040;
@@ -192,6 +193,13 @@
             box-shadow: none;
             align-items: flex-start;
             justify-content: flex-start;
+
+            &.color-ffffff00,
+            &.color-none {
+                > .shape {
+                    border: none;
+                }
+            }
         }
 
         .item .editable {

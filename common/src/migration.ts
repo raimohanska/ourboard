@@ -63,6 +63,9 @@ function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<strin
 
     // Force type, width and height for all items
     let fixedItem = { type: type || "note", width: width || 5, height: height || 5, z: z || 0, ...rest } as Item
+    if (fixedItem.type === "text") {
+        fixedItem.color ??= "none"
+    }
     if (fixedItem.type === "container") {
         let container = fixedItem as Container & { items?: string[] }
         // Force container to have text
