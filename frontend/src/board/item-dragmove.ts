@@ -40,7 +40,7 @@ export function itemDragToMove(
 
                 if (t === "connect" || t === "line") {
                     const { current, dragStartPosition } = items[0]
-                    const from = isConnectionAttachmentPoint(startPos, current) ? current : startPos
+                    const from = isConnectionAttachmentPoint(startPos, current) && t === "connect" ? current : startPos
                     connector.whileDragging(from, coordinateHelper.currentBoardCoordinates.get(), t)
                 } else {
                     const margin = BOARD_ITEM_BORDER_MARGIN
