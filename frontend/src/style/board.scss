@@ -195,7 +195,7 @@
             justify-content: flex-start;
 
             > .shape {
-                border: none;
+                border: none !important;
                 box-shadow: none;
             }
         }
