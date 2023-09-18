@@ -83,10 +83,7 @@ export function newConnectionCreator(
         const boardId = b.id
         const startPoint: ConnectionEndPoint = isItem(from) ? from.id : from
         const item = isItem(from) ? from : null
-        const target = findTarget(b, startPoint, currentBoardCoords, localConnection, {
-            allowConnect: action === "connect",
-            allowSnap: action === "line",
-        })
+        const target = findTarget(b, startPoint, currentBoardCoords, localConnection, getFindTargetOptions(action))
 
         if (target === item?.id) {
             if (localConnection !== null) {
@@ -197,10 +194,7 @@ export function existingConnectionHandler(
         const b = board.get()
         const connection = b.connections.find((c) => c.id === connectionId)!
         const coords = coordinateHelper.currentBoardCoordinates.get()
-        const options = {
-            allowConnect: connection.action === "connect" && !preventAttach,
-            allowSnap: connection.action === "line" && !preventAttach,
-        }
+        const options = getFindTargetOptions(connection.action, preventAttach)
         if (type === "to") {
             const target = findTarget(b, connection.from, coords, connection, options)
             const to = target !== connection.from ? target : coords
@@ -227,12 +221,20 @@ export function existingConnectionHandler(
     }
 }
 
+function getFindTargetOptions(action: "line" | "connect", preventAttach = false): FindTargetOptions {
+    return {
+        allowConnect: action === "connect" && !preventAttach,
+        allowSnap: !preventAttach,
+    }
+}
+
+type FindTargetOptions = { allowConnect: boolean; allowSnap: boolean }
 function findTarget(
     b: Board,
     from: Item | ConnectionEndPoint,
     currentPos: Point,
     currentConnection: Connection | null,
-    options: { allowConnect: boolean; allowSnap: boolean },
+    options: FindTargetOptions,
 ): Id | Point {
     const items = b.items
     const resolvedFromPoint = resolveEndpoint(from, items)
@@ -251,7 +253,15 @@ function findTarget(
             .sort((a, b) => (isContainedBy(items, a)(b) ? 1 : -1)) // most innermost first (containers last)
             .find((i) => !fromItem || !isContainedBy(items, i)(fromItem)) // does not contain the "from" item
 
-    return targetItem || currentPos
+    if (targetItem) return targetItem
+    if (!isPoint(from)) return currentPos
+    const xDiff = Math.abs(currentPos.x - from.x)
+    const yDiff = Math.abs(currentPos.y - from.y)
+    if (xDiff === 0 || yDiff === 0) return currentPos
+    const threshold = 0.02
+    if (xDiff / yDiff < threshold) return { x: from.x, y: currentPos.y }
+    if (yDiff / xDiff < threshold) return { x: currentPos.x, y: from.y }
+    return currentPos
 }
 
 function isConnected(b: Board, x: Item, y: Item, connectionToIgnore: Connection | null) {
