@@ -57,7 +57,12 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
             }
             return newState
         } else if ("action" in event) {
-            if (event.action === "board.join.ack") {
+            if (event.action === "server.config") {
+                if (state.status === "anonymous") {
+                    console.log("Enabling auth", state)
+                    return { ...state, loginSupported: event.authSupported }
+                }
+            } else if (event.action === "board.join.ack") {
                 return { ...state, sessionId: event.sessionId, nickname: state.nickname || event.nickname }
             } else if (event.action === "nickname.set") {
                 const nickname = storeNickName(event.nickname)
@@ -105,7 +110,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
               sessionId: null,
               nickname: localStorage.nickname || undefined,
               nicknameSetByUser: !!localStorage.nickname,
-              loginSupported: true,
+              loginSupported: false,
           }
         : {
               status: "logging-in-server",
