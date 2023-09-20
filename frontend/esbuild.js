@@ -75,8 +75,6 @@ async function build() {
         define: {
             "process.env.NODE_ENV": envFallback(process.env.NODE_ENV, `"development"`),
             "process.env.AWS_ASSETS_BUCKET_URL": envFallback(process.env.AWS_ASSETS_BUCKET_URL, null),
-            "process.env.GOOGLE_API_KEY": envFallback(process.env.GOOGLE_API_KEY, null),
-            "process.env.GOOGLE_CLIENT_ID": envFallback(process.env.GOOGLE_CLIENT_ID, null),
         },
     })
 

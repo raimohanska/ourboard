@@ -176,7 +176,7 @@ Returns the full history of given board as JSON.
 
 ## Google Authentication integration
 
-Google authentication is supported. To enable this feature, you'll need to supply `GOOGLE_API_KEY` and `GOOGLE_CLIENT_ID` as environment variables. When running locally, you'll need to place these variables in both `frontend/.env` and `backend/.env`.
+Google authentication is supported. To enable this feature, you'll need to supply `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` as environment variables. When running locally, you'll need to place these variables in both `frontend/.env` and `backend/.env`.
 
 ## Tech stack
 
@@ -253,8 +253,8 @@ BOARD_ALIAS_tutorial  Board identifier for the "tutorial" board that will be clo
 ```
 
 AWS environment variables, needed for hosting board assets on AWS S3. If these are missing, all uploaded
-assests (images, videos) will be stored in the local filesystem, which is a viable solution only if you have
-a persistent file system with backups.
+assests (images, videos) will be stored in the local filesystem (using the path "localfiles"),
+which is a viable solution only if you have a persistent file system with backups.
 
 ```
 AWS_ACCESS_KEY_ID       AWS access key ID
@@ -266,8 +266,8 @@ Google Authentication environment variables, needed if you want to enable Google
 other authentication alternatives, so it's either Google or anonymous access.
 
 ```
-GOOGLE_API_KEY
-GOOGLE_CLIENT_ID
+GOOGLE_OAUTH_CLIENT_ID
+GOOGLE_OAUTH_CLIENT_SECRET
 ```
 
 ## Contribution
