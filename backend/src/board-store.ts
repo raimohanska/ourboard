@@ -52,6 +52,12 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             function updateBoardWithEventChunk(chunk: BoardHistoryEntry[]) {
                 board = chunk.reduce((b, e) => {
                     i++
+                    if (e.action === "board.setAccessPolicy") {
+                        // Don't process access policy event when fetching board
+                        // Access policy may have been changed in the database after the event
+                        // And the database status is considered the master
+                        return b
+                    }
                     return boardReducer(b, e)[0]
                 }, board)
                 historyEventCount += chunk.length
