@@ -22,9 +22,24 @@ export async function getBoardInfo(id: Id): Promise<BoardInfo | null> {
     return result.rows.length === 1 ? (result.rows[0] as BoardInfo) : null
 }
 
+const selectBoardQuery = `
+with allow_lists as (
+	select id, content, public_read, public_write, (
+	  select jsonb_agg(jsonb_build_object('domain', domain, 'access', access, 'email', email)) 
+	  from board_access a
+	  where a.board_id = b.id
+	) as allow_list
+	from board b
+)
+select id,
+    jsonb_set (content - 'accessPolicy', '{accessPolicy}', cast(case when allow_list is null then 'null' else (json_build_object('allowList', allow_list, 'publicRead', public_read, 'publicWrite', public_write)) end as jsonb)) as content
+    from allow_lists
+where id=$1
+`
+
 export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
     return await inTransaction(async (client) => {
-        const result = await client.query("SELECT content FROM board WHERE id=$1", [id])
+        const result = await client.query(selectBoardQuery, [id])
         if (result.rows.length == 0) {
             return null
         } else {
@@ -82,17 +97,42 @@ export async function createBoard(board: Board): Promise<void> {
     await inTransaction(async (client) => {
         const result = await client.query("SELECT id FROM board WHERE id=$1", [board.id])
         if (result.rows.length > 0) throw Error("Board already exists: " + board.id)
-        client.query(`INSERT INTO board(id, name, content) VALUES ($1, $2, $3)`, [
+        await client.query(`INSERT INTO board(id, name, content) VALUES ($1, $2, $3)`, [
             board.id,
             board.name,
             mkSnapshot(board, 0),
         ])
+
+        await updateAccessPolicy(board.id, board.accessPolicy, client)
 
         if (!isBoardEmpty(board)) {
             console.log(`Creating non-empty board ${board.id} -> bootstrapping history`)
             storeEventHistoryBundle(board.id, [mkBootStrapEvent(board.id, board)], client)
         }
     })
+}
+
+async function updateAccessPolicy(boardId: string, accessPolicy: BoardAccessPolicy, client: PoolClient): Promise<void> {
+    const publicRead = accessPolicy ? !!accessPolicy.publicRead : true
+    const publicWrite = accessPolicy ? !!accessPolicy.publicWrite : true
+    await client.query(`UPDATE board SET public_read=$1, public_write=$2 WHERE id=$3`, [
+        publicRead,
+        publicWrite,
+        boardId,
+    ])
+    await client.query(`DELETE FROM board_access WHERE board_id=$1`, [boardId])
+    if (accessPolicy) {
+        for (const entry of accessPolicy.allowList) {
+            const domain = "domain" in entry ? entry.domain : null
+            const email = "email" in entry ? entry.email : null
+            await client.query(`INSERT INTO BOARD_access (board_id, domain, email, access) VALUES ($1, $2, $3, $4)`, [
+                boardId,
+                domain,
+                email,
+                entry.access,
+            ])
+        }
+    }
 }
 
 export async function updateBoard({
@@ -115,6 +155,7 @@ export async function updateBoard({
         }
         if (accessPolicy) content = { ...content, accessPolicy }
         await client.query("UPDATE board SET content=$1, name=$2 WHERE id=$3", [content, name, boardId])
+        await updateAccessPolicy(boardId, accessPolicy, client)
     })
 }
 
