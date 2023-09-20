@@ -1,10 +1,9 @@
-import { google } from "googleapis"
-import { getEnv } from "./env"
-import { Express, Request } from "express"
-import { removeAuthenticatedUser, setAuthenticatedUser } from "./http-session"
-import { GoogleAuthenticatedUser } from "../../common/src/authenticated-user"
-import { IncomingMessage } from "http"
 import Cookies from "cookies"
+import { Express, Request } from "express"
+import { google } from "googleapis"
+import { GoogleAuthenticatedUser } from "../../common/src/authenticated-user"
+import { getEnv } from "./env"
+import { removeAuthenticatedUser, setAuthenticatedUser } from "./http-session"
 
 const googleConfig = {
     clientID: getEnv("GOOGLE_OAUTH_CLIENT_ID"),
