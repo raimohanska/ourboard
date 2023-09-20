@@ -98,7 +98,6 @@ export function assetStore(
     events.forEach((e) => {
         if (e.action === "server.config") {
             assetStorageURL = e.assetStorageURL
-            console.log("Got", assetStorageURL)
         }
     })
 
