@@ -194,7 +194,12 @@ export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEm
 export type BoardEvent = { boardId: Id }
 export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
 export type LocalUIEvent = Undo | Redo | BoardJoinRequest | BoardLoggedOut | GoOffline
-export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse | AckAddBoard
+export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse | AckAddBoard | ServerConfig
+export type ServerConfig = {
+    action: "server.config"
+    authSupported: boolean
+    assetStorageURL: string
+}
 export type Serial = number
 export type AppEvent =
     | BoardItemEvent
@@ -203,6 +208,7 @@ export type AppEvent =
     | ClientToServerRequest
     | LoginResponse
     | AckAddBoard
+    | ServerConfig
 export type EventWrapper = {
     events: AppEvent[]
     ackId?: string

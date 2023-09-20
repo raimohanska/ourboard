@@ -1,5 +1,6 @@
 import { AppEvent, Id, Serial, EventWrapper } from "../../common/src/domain"
 import { getActiveBoards } from "./board-state"
+import { getConfig } from "./config"
 import { releaseLocksFor } from "./locker"
 import { broadcastCursorPositions, endSession, startSession } from "./websocket-sessions"
 import { WsWrapper } from "./ws-wrapper"
@@ -10,6 +11,12 @@ export type ConnectionHandlerParams = Readonly<{
 
 export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandler) => {
     startSession(socket)
+    const config = getConfig()
+    socket.send({
+        action: "server.config",
+        assetStorageURL: config.storageBackend.assetStorageURL,
+        authSupported: config.authSupported,
+    })
     socket.onError(() => {
         socket.close()
     })

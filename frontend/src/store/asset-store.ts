@@ -91,6 +91,17 @@ export function assetStore(
         return `/not-uploaded-yet.png`
     }
 
+    let assetStorageURL = "/assets"
+    function assetURL(assetId: string) {
+        return `${assetStorageURL}/${assetId}`
+    }
+    events.forEach((e) => {
+        if (e.action === "server.config") {
+            assetStorageURL = e.assetStorageURL
+            console.log("Got", assetStorageURL)
+        }
+    })
+
     return {
         getAsset,
         uploadAsset,
@@ -115,8 +126,3 @@ function getAssetPutResponse(assetId: string, events: L.EventStream<AppEvent>): 
 }
 
 export type AssetStore = ReturnType<typeof assetStore>
-
-const STORAGE_URL = process.env.AWS_ASSETS_BUCKET_URL || "/assets"
-function assetURL(assetId: string) {
-    return `${STORAGE_URL}/${assetId}`
-}

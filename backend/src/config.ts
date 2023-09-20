@@ -1,13 +1,15 @@
 import path from "path"
 import fs from "fs"
 
-export type StorageBackend = Readonly<{ type: "LOCAL"; directory: string } | { type: "AWS" }>
-export type Config = Readonly<{ storageBackend: StorageBackend }>
+export type StorageBackend = Readonly<
+    { type: "LOCAL"; directory: string; assetStorageURL: string } | { type: "AWS"; assetStorageURL: string }
+>
+export type Config = Readonly<{ storageBackend: StorageBackend; authSupported: boolean }>
 
-export const getConfig = (): { storageBackend: StorageBackend } => {
+export const getConfig = (): Config => {
     const storageBackend: StorageBackend = process.env.AWS_ASSETS_BUCKET_URL
-        ? { type: "AWS" }
-        : { type: "LOCAL", directory: path.resolve("localfiles") }
+        ? { type: "AWS", assetStorageURL: process.env.AWS_ASSETS_BUCKET_URL }
+        : { type: "LOCAL", directory: path.resolve("localfiles"), assetStorageURL: "/assets" }
 
     if (storageBackend.type === "LOCAL") {
         try {
@@ -17,5 +19,6 @@ export const getConfig = (): { storageBackend: StorageBackend } => {
 
     return {
         storageBackend,
+        authSupported: true,
     }
 }

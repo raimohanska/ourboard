@@ -74,7 +74,6 @@ async function build() {
         loader: { ".png": "file", ".svg": "file" },
         define: {
             "process.env.NODE_ENV": envFallback(process.env.NODE_ENV, `"development"`),
-            "process.env.AWS_ASSETS_BUCKET_URL": envFallback(process.env.AWS_ASSETS_BUCKET_URL, null),
         },
     })
 

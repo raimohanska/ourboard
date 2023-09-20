@@ -25,6 +25,7 @@ import {
     LoginResponse,
     newISOTimeStamp,
     PersistableBoardItemEvent,
+    ServerConfig,
     TransientBoardItemEvent,
     UIEvent,
     UserSessionInfo,
@@ -73,6 +74,7 @@ export function BoardStore(
         | ClientToServerRequest
         | LoginResponse
         | AckAddBoard
+        | ServerConfig
 
     function tagWithUserFromState(e: PersistableBoardItemEvent): BoardHistoryEntry {
         const user: EventUserInfo = sessionState2UserInfo(sessionInfo.get())
