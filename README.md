@@ -238,20 +238,22 @@ provided you set up some environment variables, which are listed below.
 
 ### Docker
 
-You can build an OurBoard docker image:
+To get an OurBoard docker image, you can either:
 
-    docker build . -t ourboard
+1. Build it from this repository: `docker build . -t raimohanska/ourboard:latest`
+2. Use the image in Docker Hub (just skip to running, it will be downloaded automatically)
 
-You can try it like this:
+You can run it like this:
 
-1. Start a posgres database. For example, running `docker-compose up` in this directory will start one.
+1. Start a posgres database. For example, running `docker-compose up` in your local clone of this directory will start one.
 2. Start the Ourboard container. Run the example script `scripts/run_dockerized.sh` to try it out.
 
 With the example script, you'll have a setup which
 
--   Doesn't have authentication. See environment variables below for configuring Google authentication.
+-   Doesn't have authentication. See environment variables below for configuring Google authentication, which is the only supported option for now.
 -   Stores uploaded assets (images) on the local filesystem. The example script binds the local directory `backend/localfiles` to be used for storage. In your own script, you'll probably want to point out a more suitable directory on your server machine.
 -   Uses an absolutely insecure SESSION_SIGNING_KEY. Make sure to use a long random string instead.
+-   Will benefit from a HTTPS terminating proxy. This is not included. The simple setup will use plain HTTP and respond at http://localhost:1337.
 
 ### Environment variables
 
@@ -259,9 +261,10 @@ With the example script, you'll have a setup which
 DATABASE_URL          Postgres database URL. In Heroku, you can just add the PostgreSQL add on and this variable will be correctly set. The free one will get you started.
 DATABASE_SSL_ENABLED  Use `true` to use SSL for database connection. Recommended.
 REDIRECT_URL          Put your OurBoard application root URL here, if you want the server to redirect all requests that don't have the x-forwarded-proto=https header. For example: https://www.ourboard.io/.
-WS_HOST_DEFAULT       Your domain name here, used for routing websocket connections
-WS_HOST_LOCAL         Your domain name here as well
-WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Always use wss.
+ROOT_URL              Root URL used for redirects. Use https://<yourdomain>/. If you don't have authentication configured, you can omit this one.
+WS_HOST_DEFAULT       Your domain name here, used for routing websocket connections. Can be omitted in simple configurations.
+WS_HOST_LOCAL         Your domain name here as well. Can be omitted in simple configurations.
+WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Always use wss for secure connections.
 BOARD_ALIAS_tutorial  Board identifier for the "tutorial" board that will be cloned for new users. Allows you to create a custom tutorial board. For example, the value `782d4942-a438-44c9-ad5f-3187cc1d0a63` is used in ourboard.io, and this points to a publicly readable, but privately editable board
 ```
 
@@ -281,6 +284,14 @@ other authentication alternatives, so it's either Google or anonymous access.
 ```
 GOOGLE_OAUTH_CLIENT_ID
 GOOGLE_OAUTH_CLIENT_SECRET
+```
+
+## Building and pushing the raimohanska/ourboard docker image
+
+```
+docker login
+docker build . -t raimohanska/ourboard:latest
+docker push raimohanska/ourboard:latest
 ```
 
 ## Contribution
