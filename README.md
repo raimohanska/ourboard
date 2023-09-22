@@ -236,9 +236,21 @@ Copy the result string, navigate to your localhost site and paste the same value
 You should be able to host your own OurBoard instance pretty easily in Heroku. This repository should be runnable as-is,
 provided you set up some environment variables, which are listed below.
 
-### Other options
+### Docker
 
-No other options beside Heroku are available out-of-the-box, but the application is rather simple. Running `yarn build` will build it and `yarn run` will run it. When building for production, some of the environment variables need to be present (see `esbuild.js`) though, so that the client can use Google Login.
+You can build an OurBoard docker image:
+
+    docker build . -t ourboard
+
+You can try it like this:
+
+1. Start a posgres database. For example, running `docker-compose up` in this directory will start one.
+2. Start the Ourboard container. Run the example script `scripts/run_dockerized.sh` to try it out.
+
+With the example script, you'll have a setup which
+
+-   Doesn't have authentication. See environment variables below for configuring Google authentication.
+-   Stores uploaded assets (images) on the local filesystem. The example script binds the local directory `backend/localfiles` to be used for storage. In your own script, you'll probably want to point out a more suitable directory on your server machine.
 
 ### Environment variables
 

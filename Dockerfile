@@ -14,4 +14,5 @@ run yarn build
 
 EXPOSE 1337
 
-CMD [ "node", "backend" ]
+WORKDIR /usr/src/app/backend
+CMD [ "node", "." ]

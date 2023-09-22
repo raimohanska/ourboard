@@ -4,5 +4,6 @@ node_modules
 .env
 **/.env
 backend/dist
+backend/localfiles
 frontend/.cache
 **/yarn-error.log
