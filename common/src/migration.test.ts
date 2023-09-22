@@ -95,6 +95,7 @@ describe("Migration", () => {
                         fromStyle: "none",
                         toStyle: "none",
                         pointStyle: "none",
+                        action: "connect",
                     },
                 ],
             }
@@ -119,6 +120,7 @@ describe("Migration", () => {
                         fromStyle: "black-dot",
                         toStyle: "arrow",
                         pointStyle: "black-dot",
+                        action: "connect",
                     } as Connection,
                 ],
             })
