@@ -8,7 +8,6 @@ import { createBoard, fetchBoard } from "./board-store"
 import { initDB } from "./db"
 import { startExpressServer } from "./express-server"
 import { terminateSessions } from "./websocket-sessions"
-import { startUWebSocketsServer } from "./uwebsockets-server"
 
 let http: Http.Server | null = null
 
@@ -50,7 +49,9 @@ initDB()
             http = startExpressServer(EXPRESS_PORT)
         }
         if (UWEBSOCKETS_PORT) {
-            startUWebSocketsServer(UWEBSOCKETS_PORT)
+            import("./uwebsockets-server").then((uwebsockets) => {
+                uwebsockets.startUWebSocketsServer(UWEBSOCKETS_PORT)
+            })
         }
     })
     .catch((e) => {
