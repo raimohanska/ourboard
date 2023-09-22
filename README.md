@@ -251,6 +251,7 @@ With the example script, you'll have a setup which
 
 -   Doesn't have authentication. See environment variables below for configuring Google authentication.
 -   Stores uploaded assets (images) on the local filesystem. The example script binds the local directory `backend/localfiles` to be used for storage. In your own script, you'll probably want to point out a more suitable directory on your server machine.
+-   Uses an absolutely insecure SESSION_SIGNING_KEY. Make sure to use a long random string instead.
 
 ### Environment variables
 
