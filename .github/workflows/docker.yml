@@ -14,6 +14,6 @@ jobs:
                   DOCKER_HUB_PASSWORD: ${{secrets.DOCKER_HUB_PASSWORD}}
               run: docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
             - name: docker build
-              run: docker build . -t raimohanska/ourboard:latest
+              run: docker build . -t raimohanska/ourboard:latest -t raimohanska/ourboard:${{github.sha}}
             - name: docker push
-              run: docker push raimohanska/ourboard:latest
+              run: docker push raimohanska/ourboard:latest && docker push raimohanska/ourboard:${{github.sha}}
