@@ -1,4 +1,4 @@
-name: tests
+name: build
 on: [push]
 jobs:
     test:
@@ -53,3 +53,33 @@ jobs:
               run: npx playwright install chromium
             - name: Run playwright tests
               run: yarn test:playwright
+    lint:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [15.x]
+        steps:
+            - uses: actions/checkout@v2
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v1
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile
+            - name: Check code formatting & generated files
+              run: yarn lint
+    docker-image:
+        needs: test
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/master'
+        steps:
+            - uses: actions/checkout@v2
+            - name: docker login
+              env:
+                  DOCKER_HUB_USER: ${{secrets.DOCKER_HUB_USER}}
+                  DOCKER_HUB_PASSWORD: ${{secrets.DOCKER_HUB_PASSWORD}}
+              run: docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
+            - name: docker build
+              run: docker build . -t raimohanska/ourboard:latest -t raimohanska/ourboard:${{github.sha}}
+            - name: docker push
+              run: docker push raimohanska/ourboard:latest && docker push raimohanska/ourboard:${{github.sha}}
