@@ -65,6 +65,7 @@
     "@types/jsonwebtoken": "^8.5.0",
     "@types/swagger-ui-express": "^4.1.2",
     "@types/uuid": "^8.3.0",
-    "tsc-watch": "^4.2.9"
+    "tsc-watch": "^4.2.9",
+    "@types/node-fetch": "^2.5.9"
   }
 }
