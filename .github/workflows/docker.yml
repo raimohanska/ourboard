@@ -1,0 +1,19 @@
+name: docker-build
+on:
+  push:
+    branches:
+      - master
+jobs:
+  docker-image:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: docker login
+      env:
+        DOCKER_HUB_USER: ${{secrets.DOCKER_HUB_USER}}
+        DOCKER_HUB_PASSWORD: ${{secrets.DOCKER_HUB_PASSWORD}}
+      run: docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
+    - name: docker build
+      run: docker build . -t raimohanska/ourboard:latest
+    - name: docker push
+      run: docker push raimohanska/ourboard:latest
