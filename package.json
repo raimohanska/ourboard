@@ -23,7 +23,7 @@
   },
   "private": true,
   "engines": {
-    "node": ">15"
+    "node": ">=15"
   },
   "workspaces": [
     "frontend",
