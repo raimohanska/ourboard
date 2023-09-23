@@ -238,12 +238,17 @@ export const HistoryView = ({
                         return null // Ignore all the resizes, recolorings...
                     }
                 }
+
+                const updatedItems = event.items.map(
+                    (update) => ({ ...boardBefore.items[update.id], ...update } as Item),
+                )
+
                 return {
                     timestamp,
                     user,
                     itemIds,
                     kind: "changed",
-                    actionText: `changed ${describeItems(event.items)}`,
+                    actionText: `changed ${describeItems(updatedItems)}`,
                 }
             }
             case "board.rename":

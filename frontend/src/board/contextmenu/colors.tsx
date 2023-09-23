@@ -28,7 +28,7 @@ export function colorsSubMenu({ board, focusedItems, dispatch }: SubmenuProps) {
 
     function setColor(color: Color) {
         const b = board.get()
-        const updated = coloredItems.get().map((item) => ({ ...item, color }))
+        const updated = coloredItems.get().map((item) => ({ id: item.id, color }))
         dispatch({ action: "item.update", boardId: b.id, items: updated })
     }
 }

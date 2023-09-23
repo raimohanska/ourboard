@@ -136,7 +136,7 @@ export const BoardView = ({
     function onURL(assetId: string, url: string) {
         itemsList.get().forEach((i) => {
             if ((i.type === "image" || i.type === "video") && i.assetId === assetId && i.src != url) {
-                dispatch({ action: "item.update", boardId, items: [{ ...i, src: url }] })
+                dispatch({ action: "item.update", boardId, items: [{ id: i.id, src: url }] })
             }
         })
     }

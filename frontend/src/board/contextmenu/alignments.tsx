@@ -76,7 +76,7 @@ function moveFocusedItems(
         .items.sort((item1, item2) => item1[axis] - item2[axis])
         .map((item, index) => {
             const newItem = {
-                ...item,
+                id: item.id,
                 [axis]: getCoordinateToSetToItem(
                     item,
                     min,

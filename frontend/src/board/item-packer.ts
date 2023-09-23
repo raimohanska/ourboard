@@ -1,14 +1,14 @@
 // @ts-ignore
 import { BP2D } from "binpackingjs"
 const { Bin, Box, Packer, heuristics } = BP2D
-import { Board, Container, Item } from "../../../common/src/domain"
+import { Board, Container, Item, ItemUpdate } from "../../../common/src/domain"
 import { Rect } from "../../../common/src/geometry"
 import { ITEM_MARGIN } from "./item-organizer"
 
 type PackItemsResult =
     | {
           ok: true
-          packedItems: Item[]
+          packedItems: ItemUpdate[]
       }
     | {
           ok: false
@@ -31,6 +31,7 @@ const PACK_BINARY_SEARCH_DEFAULT: {
     prev: [],
 }
 
+// TODO: return only changed attributes in ItemUpdate - currently returns full Items
 export function packItems(targetRect: Rect, items: Item[], binarySearch = PACK_BINARY_SEARCH_DEFAULT): PackItemsResult {
     const availableWidth = targetRect.width
     const availableHeight = targetRect.height

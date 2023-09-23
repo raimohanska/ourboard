@@ -278,7 +278,8 @@ export type AuthJWTLogin = {
 export type AuthLogout = { action: "auth.logout" }
 export type Ping = { action: "ping" }
 export type AddItem = { action: "item.add"; boardId: Id; items: Item[]; connections: Connection[] }
-export type UpdateItem = { action: "item.update"; boardId: Id; items: Item[] }
+export type UpdateItem = { action: "item.update"; boardId: Id; items: ItemUpdate[] }
+export type ItemUpdate<I extends Item = Item> = Partial<I> & { id: Id }
 export type MoveItem = {
     action: "item.move"
     boardId: Id
@@ -500,6 +501,7 @@ export function getItemIds(e: BoardHistoryEntry | PersistableBoardItemEvent): Id
         case "item.move":
             return e.items.map((i) => i.id)
         case "item.update":
+            return e.items.map((i) => i.id)
         case "item.add":
             return e.items.map((i) => i.id)
         case "item.bootstrap":
@@ -677,14 +679,14 @@ export function getVerticalAlign(align: Align): VerticalAlign {
     return "middle"
 }
 
-export function setHorizontalAlign<I extends TextItem>(item: I, a: HorizontalAlign): I {
+export function setHorizontalAlign<I extends TextItem>(item: I, a: HorizontalAlign): ItemUpdate<I> {
     const letter = a === "left" ? "L" : a === "center" ? "C" : "R"
     const align = `${getAlign(item)[0]}${letter}`
-    return { ...item, align }
+    return { id: item.id, align } as ItemUpdate<I>
 }
 
-export function setVerticalAlign<I extends TextItem>(item: I, a: VerticalAlign): I {
+export function setVerticalAlign<I extends TextItem>(item: I, a: VerticalAlign): ItemUpdate<I> {
     const letter = a === "top" ? "T" : a === "middle" ? "M" : "B"
     const align = `${letter}${getAlign(item)[1]}`
-    return { ...item, align }
+    return { id: item.id, align } as ItemUpdate<I>
 }

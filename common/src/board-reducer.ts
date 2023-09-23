@@ -18,6 +18,7 @@ import {
     isItemEndPoint,
     isTextItem,
     Item,
+    ItemUpdate,
     MoveItem,
     PersistableBoardItemEvent,
     Point,
@@ -163,6 +164,7 @@ export function boardReducer(
                 {
                     action: "item.update",
                     boardId: board.id,
+                    // TODO: Undo of update could only undo the actually updated fields here
                     items: event.items.map((item) => getItem(board)(item.id)),
                 },
             ]
@@ -294,10 +296,11 @@ function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[
     }
 }
 
-function updateItems(current: Record<Id, Item>, updateList: Item[]): Record<Id, Item> {
-    const updated = arrayToRecordById(updateList)
-    const result = { ...current, ...updated }
-    updateList.filter(isContainer).forEach((container) => {
+function updateItems(current: Record<Id, Item>, updateList: ItemUpdate[]): Record<Id, Item> {
+    const updatedItems: Item[] = updateList.map((update) => ({ ...current[update.id], ...update } as Item))
+    const updatedItemMap = arrayToRecordById(updatedItems)
+    const resultMap = { ...current, ...updatedItemMap }
+    updatedItems.filter(isContainer).forEach((container) => {
         const previous = current[container.id]
         if (previous && !equalRect(previous, container)) {
             // Container shape changed -> check items
@@ -308,14 +311,14 @@ function updateItems(current: Record<Id, Item>, updateList: Item[]): Record<Id, 
                         containedBy(i, container), // Check all items inside the new bounds
                 )
                 .forEach((item) => {
-                    const newContainer = maybeChangeContainerForItem(item, result)
+                    const newContainer = maybeChangeContainerForItem(item, resultMap)
                     if (newContainer?.id !== item.containerId) {
-                        result[item.id] = { ...item, containerId: newContainer ? newContainer.id : undefined }
+                        resultMap[item.id] = { ...item, containerId: newContainer ? newContainer.id : undefined }
                     }
                 })
         }
     })
-    return result
+    return resultMap
 }
 
 function moveItems(board: Board, event: MoveItem) {

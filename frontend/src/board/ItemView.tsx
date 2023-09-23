@@ -153,7 +153,7 @@ export const ItemView = ({
 
     function TextView({ item }: { item: L.Property<TextItem> }) {
         const textAtom = L.atom(L.view(item, "text"), (text) =>
-            dispatch({ action: "item.update", boardId: board.get().id, items: [{ ...item.get(), text }] }),
+            dispatch({ action: "item.update", boardId: board.get().id, items: [{ id, text }] }),
         )
         const showCoords = false
         const focused = L.view(focus, (f) => getSelectedItemIds(f).has(id))

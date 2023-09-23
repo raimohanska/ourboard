@@ -5,6 +5,7 @@ import {
     Color,
     HorizontalAlign,
     Item,
+    ItemUpdate,
     TextItem,
     VerticalAlign,
     getAlign,
@@ -37,10 +38,13 @@ export function textAlignmentsMenu({ board, focusedItems, dispatch, submenu }: S
         return getIfSame(f.items, getVerticalAlign, "top")
     })
 
-    function setAlign(modifyAlign: (i: TextItem) => TextItem) {
+    function setAlign(modifyAlign: (i: TextItem) => ItemUpdate<TextItem>) {
         focusedItems.get()
         const b = board.get()
-        const updated = focusedItems.get().items.map((i) => (isTextItem(i) ? modifyAlign(i) : i))
+        const updated = focusedItems
+            .get()
+            .items.filter(isTextItem)
+            .map((i) => modifyAlign(i))
         dispatch({ action: "item.update", boardId: b.id, items: updated })
     }
 

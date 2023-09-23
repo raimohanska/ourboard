@@ -58,7 +58,7 @@ export function shapesMenu({ board, focusedItems, dispatch }: SubmenuProps) {
                     newShape === "rect"
                         ? { width: maxDim * 1.2, height: maxDim / 1.2 }
                         : { width: maxDim, height: maxDim }
-                return { ...item, shape: newShape, ...dimensions }
+                return { id: item.id, shape: newShape, ...dimensions }
             }) as ShapedItem[]
             dispatch({ action: "item.update", boardId: b.id, items: updated })
         }

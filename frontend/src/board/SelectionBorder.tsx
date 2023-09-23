@@ -90,7 +90,7 @@ export const SelectionBorder = ({
                             vertical === "top" ? dragStartPosition.height - yDiff : dragStartPosition.height + yDiff,
                         )
                         const updatedItem = {
-                            ...current,
+                            id: current.id,
                             x,
                             y,
                             width,

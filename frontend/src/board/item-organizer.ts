@@ -1,4 +1,4 @@
-import { Board, Container, Item } from "../../../common/src/domain"
+import { Board, Container, Item, ItemUpdate } from "../../../common/src/domain"
 import * as G from "../../../common/src/geometry"
 import _ from "lodash"
 
@@ -30,7 +30,8 @@ export function packableItems(cont: Container, board: Board): Item[] {
     return items
 }
 
-export function organizeItems(itemsToPack: Item[], itemsToAvoid: Item[], rect: G.Rect): Item[] {
+// TODO: return only changed attributes in ItemUpdate - currently returns full Items
+export function organizeItems(itemsToPack: Item[], itemsToAvoid: Item[], rect: G.Rect): ItemUpdate[] {
     if (itemsToPack.length === 0) return itemsToPack
     const results: Item[] = []
     let rowY = rect.y
