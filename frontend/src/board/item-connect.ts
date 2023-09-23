@@ -82,10 +82,9 @@ export function newConnectionCreator(
         const b = board.get()
         const boardId = b.id
         const startPoint: ConnectionEndPoint = isItem(from) ? from.id : from
-        const item = isItem(from) ? from : null
         const target = findTarget(b, startPoint, currentBoardCoords, localConnection, getFindTargetOptions(action))
 
-        if (target === item?.id) {
+        if (target === null) {
             if (localConnection !== null) {
                 // Remove current connection, because connect-to-self is not allowed at least for now
                 if (!IS_TOUCHSCREEN)
@@ -95,7 +94,7 @@ export function newConnectionCreator(
         } else {
             if (localConnection === null) {
                 // Start new connection
-                localConnection = newConnection(startPoint, action)
+                localConnection = newConnection(startPoint, target, action)
                 if (!IS_TOUCHSCREEN) dispatch({ action: "connection.add", boardId, connections: [localConnection] })
             } else {
                 // Change current connection endpoint
@@ -114,7 +113,7 @@ export function newConnectionCreator(
             }
         }
 
-        function newConnection(from: ConnectionEndPoint, action: "connect" | "line"): Connection {
+        function newConnection(from: ConnectionEndPoint, target: Id | Point, action: "connect" | "line"): Connection {
             const l = latestConnection.get()
 
             return rerouteConnection(
@@ -197,20 +196,24 @@ export function existingConnectionHandler(
         const options = getFindTargetOptions(connection.action, preventAttach)
         if (type === "to") {
             const target = findTarget(b, connection.from, coords, connection, options)
-            const to = target !== connection.from ? target : coords
-            dispatch({
-                action: "connection.modify",
-                boardId: b.id,
-                connections: [rerouteConnection({ ...connection, to }, b)],
-            })
+            if (target !== null) {
+                const to = target
+                dispatch({
+                    action: "connection.modify",
+                    boardId: b.id,
+                    connections: [rerouteConnection({ ...connection, to }, b)],
+                })
+            }
         } else if (type === "from") {
             const target = findTarget(b, connection.to, coords, connection, options)
-            const from = target !== connection.to ? target : coords
-            dispatch({
-                action: "connection.modify",
-                boardId: b.id,
-                connections: [rerouteConnection({ ...connection, from }, b)],
-            })
+            if (target != null) {
+                const from = target
+                dispatch({
+                    action: "connection.modify",
+                    boardId: b.id,
+                    connections: [rerouteConnection({ ...connection, from }, b)],
+                })
+            }
         } else {
             dispatch({
                 action: "connection.modify",
@@ -235,10 +238,15 @@ function findTarget(
     currentPos: Point,
     currentConnection: Connection | null,
     options: FindTargetOptions,
-): Id | Point {
+): Id | Point | null {
     const items = b.items
     const resolvedFromPoint = resolveEndpoint(from, items)
     const fromItem = isItem(resolvedFromPoint) ? resolvedFromPoint : null
+
+    if (fromItem && containedBy(currentPos, fromItem)) {
+        // Target point inside fromItem => not acceptable
+        return null
+    }
 
     const targetItem =
         options.allowConnect &&
