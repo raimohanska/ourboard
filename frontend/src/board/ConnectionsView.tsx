@@ -1,4 +1,4 @@
-import { componentScope, Fragment, h, ListView } from "harmaja"
+import { Fragment, h, ListView } from "harmaja"
 import * as L from "lonna"
 import { findAttachmentLocation, resolveItemEndpoint } from "../../../common/src/connection-utils"
 import {
@@ -92,8 +92,6 @@ export const ConnectionsView = ({
         zIndex: Z_CONNECTIONS,
     })
 
-    const scope = componentScope()
-
     return (
         <>
             <ListView<ConnectionNodeProps, string>
@@ -106,9 +104,9 @@ export const ConnectionsView = ({
                     observable={connectionsWithItemsPopulated}
                     renderObservable={(key, conn) => {
                         const curve = L.combine(
-                            L.view(conn, "from").pipe(L.skipDuplicates(typedEqual, scope)),
-                            L.view(conn, "to").pipe(L.skipDuplicates(typedEqual, scope)),
-                            L.view(conn, "controlPoints").pipe(L.skipDuplicates(typedEqual, scope)),
+                            L.view(conn, "from"),
+                            L.view(conn, "to"),
+                            L.view(conn, "controlPoints"),
                             (from, to, cps) => {
                                 return quadraticCurveSVGPath(
                                     {
@@ -226,7 +224,6 @@ import { Bezier } from "bezier-js"
 import { findNearestAttachmentLocationForConnectionNode, resolveEndpoint } from "../../../common/src/connection-utils"
 import { emptySet, toggleInSet } from "../../../common/src/sets"
 import { BoardZoom } from "./board-scroll-and-zoom"
-import { isEqual } from "lodash"
 
 function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
     if (!controlPoints.length) {
@@ -255,5 +252,3 @@ function getControlPoint(from: Point, to: Point, controlPoints: Point[]) {
 function bezierCurveFromPoints(from: Point, middle: Point, to: Point): any {
     return Bezier.quadraticFromPoints(from, middle, to)
 }
-
-const typedEqual: <T>(a: T, b: T) => boolean = isEqual
