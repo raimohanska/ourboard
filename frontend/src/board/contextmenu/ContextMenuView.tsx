@@ -12,6 +12,7 @@ import { fontSizesMenu } from "./fontSizes"
 import { resolveEndpoint } from "../../../../common/src/connection-utils"
 import { connectionEndsMenu } from "./connection-ends"
 import { textAlignmentsMenu } from "./textAlignments"
+import { lockMenu } from "./lock"
 
 export type SubmenuProps = {
     focusedItems: L.Property<{ items: Item[]; connections: Connection[] }>
@@ -101,6 +102,7 @@ export const ContextMenuView = ({
         textAlignmentsMenu(props),
         areaTilingMenu(props),
         connectionEndsMenu(props),
+        lockMenu(props),
     ]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
     const captureEvents = (e: JSX.MouseEvent) => {
