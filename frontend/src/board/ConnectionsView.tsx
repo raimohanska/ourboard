@@ -1,23 +1,18 @@
-import * as H from "harmaja"
 import { Fragment, h, ListView } from "harmaja"
-import _ from "lodash"
 import * as L from "lonna"
+import { findAttachmentLocation, resolveItemEndpoint } from "../../../common/src/connection-utils"
 import {
     AttachmentLocation,
     Board,
     ConnectionEndPoint,
     ConnectionEndStyle,
     isDirectedItemEndPoint,
-    isPoint,
     Item,
     Point,
-    RenderableConnection,
 } from "../../../common/src/domain"
-import { findAttachmentLocation, resolveItemEndpoint } from "../../../common/src/connection-utils"
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedConnectionIds } from "./board-focus"
-import * as G from "../../../common/src/geometry"
 import { existingConnectionHandler } from "./item-connect"
 import { Z_CONNECTIONS } from "./zIndices"
 
@@ -226,9 +221,9 @@ export const ConnectionsView = ({
 
 // @ts-ignore
 import { Bezier } from "bezier-js"
-import { BoardZoom } from "./board-scroll-and-zoom"
 import { findNearestAttachmentLocationForConnectionNode, resolveEndpoint } from "../../../common/src/connection-utils"
 import { emptySet, toggleInSet } from "../../../common/src/sets"
+import { BoardZoom } from "./board-scroll-and-zoom"
 
 function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
     if (!controlPoints.length) {
