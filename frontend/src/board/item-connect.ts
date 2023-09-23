@@ -1,4 +1,4 @@
-import _ from "lodash"
+import _, { isEqual } from "lodash"
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import * as uuid from "uuid"
@@ -19,7 +19,7 @@ import {
 import { Dispatch } from "../store/board-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, noFocus } from "./board-focus"
-import { centerPoint, containedBy } from "../../../common/src/geometry"
+import { Coordinates, centerPoint, containedBy } from "../../../common/src/geometry"
 import { ToolController } from "./tool-selection"
 import { emptySet } from "../../../common/src/sets"
 import { IS_TOUCHSCREEN, onSingleTouch } from "./touchScreen"
@@ -173,12 +173,7 @@ export function existingConnectionHandler(
     dispatch: Dispatch,
 ) {
     endNode.addEventListener("drag", (e) => e.stopPropagation())
-    endNode.addEventListener(
-        "drag",
-        _.throttle((e: DragEvent) => {
-            modifyConnection(shouldPreventAttach(e))
-        }, 20) as any,
-    )
+    endNode.addEventListener("drag", (e) => modifyConnection(shouldPreventAttach(e)))
 
     endNode.addEventListener("touchmove", (e: TouchEvent) => {
         onSingleTouch(e, (touch) => {
@@ -189,10 +184,16 @@ export function existingConnectionHandler(
         })
     })
 
+    let prevCoords: Coordinates = coordinateHelper.currentBoardCoordinates.get()
+
     function modifyConnection(preventAttach: boolean) {
+        const coords = coordinateHelper.currentBoardCoordinates.get()
+        if (isEqual(coords, prevCoords)) {
+            return
+        }
+        prevCoords = coords
         const b = board.get()
         const connection = b.connections.find((c) => c.id === connectionId)!
-        const coords = coordinateHelper.currentBoardCoordinates.get()
         const options = getFindTargetOptions(connection.action, preventAttach)
         if (type === "to") {
             const target = findTarget(b, connection.from, coords, connection, options)
