@@ -187,7 +187,7 @@ Google authentication is supported. To enable this feature, you'll need to suppl
 -   Typera for HTTP API
 -   Heroku
 
-## Dev
+## Development
 
 Running locally requires `docker-compose` which is used for starting the local PostgreSQL database. The script below starts the database, but you must make sure you have a working docker setup on your machine, of course.
 
@@ -241,7 +241,7 @@ provided you set up some environment variables, which are listed below.
 To get an OurBoard docker image, you can either:
 
 1. Build it from this repository: `docker build . -t raimohanska/ourboard:latest`
-2. Use the image in Docker Hub (just skip to running, it will be downloaded automatically)
+2. Use the [raimohanska/ourboard image](https://hub.docker.com/r/raimohanska/ourboard) in Docker Hub (just skip to running, it will be downloaded automatically)
 
 You can run it like this:
 
