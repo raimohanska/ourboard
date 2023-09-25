@@ -1,6 +1,11 @@
-An online whiteboard.
+An online whiteboard. Think of it as very poor man's Miro that's open source, free to use and which you can also host yourself. Feel free to try at https://www.ourboard.io/
 
-Feel free to try at https://www.ourboard.io/
+In this Readme:
+
+- [User guide](#features-and-user-guide)
+- [API](#api)
+- [Development instructions](#development)
+- [Hosting Ourboard](#hosting)
 
 ## Features and User Guide
 
@@ -174,19 +179,6 @@ Return board current state in CSV format, where
 
 Returns the full history of given board as JSON.
 
-## Google Authentication integration
-
-Google authentication is supported. To enable this feature, you'll need to supply `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` as environment variables. When running locally, you'll need to place these variables in both `frontend/.env` and `backend/.env`.
-
-## Tech stack
-
--   TypeScript
--   [Harmaja](https://github.com/raimohanska/harmaja) frontend library
--   WebSockets (express-ws / uWebSockets.js both!)
--   Express server
--   Typera for HTTP API
--   Heroku
-
 ## Development
 
 Running locally requires `docker-compose` which is used for starting the local PostgreSQL database. The script below starts the database, but you must make sure you have a working docker setup on your machine, of course.
@@ -207,7 +199,15 @@ Connect to the local PostgreSQL database
 
     yarn psql
 
-## Developing with production data
+### Tech stack
+
+-   TypeScript
+-   [Harmaja](https://github.com/raimohanska/harmaja) frontend library
+-   WebSockets (express-ws / uWebSockets.js both!)
+-   Express server
+-   Typera for HTTP API
+
+### Developing with production data
 
 Do not run your local server against the production database, or you'll corrupt production. The server's in memory state will be out of sync with DB and bad things will happen.
 
@@ -228,6 +228,14 @@ If you need the local state for a given board in localStorage, you can
     )
 
 Copy the result string, navigate to your localhost site and paste the same value to the same localStorage key. Refresh and enjoy.
+
+### Building and pushing the raimohanska/ourboard docker image
+
+```
+docker login
+docker build . -t raimohanska/ourboard:latest
+docker push raimohanska/ourboard:latest
+```
 
 ## Hosting
 
@@ -257,6 +265,8 @@ With the example script, you'll have a setup which
 
 ### Environment variables
 
+Here's a most likely incomplete list of supported environment variables for the server. When developing the application locally, set these variables in `backend/.env` file.
+
 ```
 DATABASE_URL          Postgres database URL. In Heroku, you can just add the PostgreSQL add on and this variable will be correctly set. The free one will get you started.
 DATABASE_SSL_ENABLED  Use `true` to use SSL for database connection. Recommended.
@@ -278,20 +288,11 @@ AWS_SECRET_ACCESS_KEY   Secret access key
 AWS_ASSETS_BUCKET_URL   URL to the AWS bucket. For example https://r-board-assets.s3.eu-north-1.amazonaws.com
 ```
 
-Google Authentication environment variables, needed if you want to enable Google auth. Currently there are no
-other authentication alternatives, so it's either Google or anonymous access.
+Google authentication is supported. To enable this feature, you'll need to supply the following environment variables.
 
 ```
 GOOGLE_OAUTH_CLIENT_ID
 GOOGLE_OAUTH_CLIENT_SECRET
-```
-
-## Building and pushing the raimohanska/ourboard docker image
-
-```
-docker login
-docker build . -t raimohanska/ourboard:latest
-docker push raimohanska/ourboard:latest
 ```
 
 ## Contribution
