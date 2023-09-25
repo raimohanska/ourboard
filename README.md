@@ -239,17 +239,19 @@ docker push raimohanska/ourboard:latest
 
 ## Hosting
 
+OurBoard is made to be easy to deploy and host. It consists of a single Node.js process that needs a PostgreSQL database for storing data. Using environment variables (see below) you can set the URL for the database and optionally configure OurBoard to use S3 for image assets and Google for authentication. By default it comes without authentication / authorization and stores image assets in the local file system.
+
 ### Heroku
 
-You should be able to host your own OurBoard instance pretty easily in Heroku. This repository should be runnable as-is,
+If it suits you, Heroku is likely to be the easiest way to host your own OurBoard server. You should be able to host your own OurBoard instance pretty easily in Heroku. This repository should be runnable as-is,
 provided you set up some environment variables, which are listed below.
 
 ### Docker
 
-To get an OurBoard docker image, you can either:
+OurBoard is available as a Docker image so you can deploy it with Docker or your favorite container environment of choice. To get an OurBoard docker image, you can either:
 
-1. Build it from this repository: `docker build . -t raimohanska/ourboard:latest`
-2. Use the [raimohanska/ourboard image](https://hub.docker.com/r/raimohanska/ourboard) in Docker Hub (just skip to running, it will be downloaded automatically)
+1. Use the [raimohanska/ourboard image](https://hub.docker.com/r/raimohanska/ourboard) in Docker Hub (just skip to running, it will be downloaded automatically)
+2. Build it from this repository: `docker build . -t raimohanska/ourboard:latest`
 
 You can run it like this:
 
