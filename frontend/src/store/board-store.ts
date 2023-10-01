@@ -516,7 +516,7 @@ export function sessionState2UserInfo(state: UserSessionState): EventUserInfo {
         return {
             userType: "authenticated",
             email: state.email,
-            nickname: state.nickname,
+            nickname: state.nickname!,
             name: state.name,
             userId: state.userId,
         }

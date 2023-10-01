@@ -1,14 +1,22 @@
 import { sleep } from "../../common/src/sleep"
 import { isNote, newNote, Point } from "../../common/src/domain"
 import { GenericServerConnection } from "../../frontend/src/store/server-connection"
+import { BoardStore } from "../../frontend/src/store/board-store"
+import type { BoardLocalStore } from "../../frontend/src/store/board-local-store"
 import WebSocket from "ws"
 import _ from "lodash"
 import * as L from "lonna"
 import { NOTE_COLORS } from "../../common/src/colors"
+import { UserSessionStore } from "../../frontend/src/store/user-session-store"
 
-// hack, sue me
-// @ts-ignore
-global.localStorage = {}
+function NoOpBoardLocalStore(): BoardLocalStore {
+    return {
+        getInitialBoardState: (boardId) => Promise.resolve(undefined),
+        clearAllPrivateBoards: () => Promise.resolve(),
+        clearBoardState: (boardId) => Promise.resolve(),
+        storeBoardState: (newState) => Promise.resolve(),
+    }
+}
 
 function add(a: Point, b: Point) {
     return { x: a.x + b.x, y: a.y + b.y }
@@ -23,52 +31,56 @@ function createTester(nickname: string, boardId: string) {
 
     let connection = GenericServerConnection(WS_ADDRESS, L.constant(false), (s) => new WebSocket(s) as any)
 
-    connection.connected
-        .pipe(
-            L.changes,
-            L.filter((c) => c),
-        )
-        .forEach(() => {
-            connection.send({ action: "board.join", boardId })
-        })
+    const userSessionStore = UserSessionStore(connection, {})
+
+    const boardStore = BoardStore(L.atom(boardId), connection, userSessionStore.sessionState, NoOpBoardLocalStore())
+
     connection.bufferedServerEvents.forEach((event) => {
         if (event.action === "board.init" && "board" in event) {
             const boardAtInit = event.board
             const notes = Object.values(boardAtInit.items).filter(isNote)
-            setInterval(() => {
+            setInterval(async () => {
                 counter += increment
                 const position = add(center, {
                     x: radius * Math.sin(counter / 100),
                     y: radius * Math.cos(counter / 100),
                 })
-                connection.send({ action: "cursor.move", position, boardId })
+                boardStore.dispatch({ action: "cursor.move", position, boardId })
                 if (Math.random() < notesPerInterval) {
-                    const note = newNote("NOTE " + counter, "black", position.x, position.y)
+                    const noteText = `NOTE ${counter}`
+                    const noteChars = noteText.split("")
+                    const note = newNote("HELLO", "black", position.x, position.y)
                     notes.push(note)
-                    connection.send({
+                    boardStore.dispatch({
                         action: "item.add",
                         boardId,
                         items: [note],
                         connections: [],
                     })
+                    // send note text char by char as item.update events to simulate typing
+                    for (let i = 0; i < noteChars.length; i++) {
+                        await sleep(10)
+                        const text = String(i)
+                        const updated = { ...note, text }
+                        boardStore.dispatch({
+                            action: "item.update",
+                            boardId,
+                            items: [updated],
+                        })
+                    }
                 }
                 if (Math.random() < editsPerInterval) {
                     const target = _.sample(notes)!
                     const updated = { ...target, text: "EDIT " + counter, color: _.sample(NOTE_COLORS)?.color! }
-                    connection.send({
-                        ackId: "perf",
-                        events: [
-                            {
-                                action: "item.front",
-                                boardId,
-                                itemIds: [updated.id],
-                            },
-                            {
-                                action: "item.update",
-                                boardId,
-                                items: [updated],
-                            },
-                        ],
+                    boardStore.dispatch({
+                        action: "item.front",
+                        boardId,
+                        itemIds: [updated.id],
+                    })
+                    boardStore.dispatch({
+                        action: "item.update",
+                        boardId,
+                        items: [updated],
                     })
                 }
             }, interval)
@@ -101,6 +113,15 @@ console.log(
 )
 console.log(`Total cursor events ${CURSOR_MOVES_PER_SEC * USER_COUNT}/s`)
 console.log(`Total creation events ${NOTES_PER_SEC * USER_COUNT}/s`)
+
+console.log({
+    USER_COUNT,
+    BOARD_IDS,
+    DOMAIN,
+    NOTES_PER_SEC,
+    EDITS_PER_SEC,
+    CURSOR_MOVES_PER_SEC,
+})
 
 for (let i = 0; i < USER_COUNT; i++) {
     createTester("perf-tester-" + (i + 1), BOARD_IDS[i % BOARD_IDS.length])
