@@ -33,9 +33,38 @@ export function GenericServerConnection(
     const bufferedServerEvents = serverEvents.pipe(
         L.bufferWithTime(SERVER_EVENTS_BUFFERING_MILLIS),
         L.flatMap((events) => {
-            return L.fromArray(
-                events.reduce((folded, next) => addOrReplaceEvent(next, folded), [] as EventFromServer[]),
-            )
+            // Because we are buffering events from the server and folding them on the client,
+            // we may get overlapping event ranges.
+            // This is not necessarily a problem, but it does mean that we cannot guarantee that
+            // the serial numbers of events are sequential.
+            //
+            // Minimal example; our buffer of events from the server is:
+            // #1. USER A MODIFIES NOTE 1, SERIAL 1
+            // #2. USER B MODIFIES NOTE 2, SERIAL 2
+            // #3. USER A MODIFIES NOTE 1, SERIAL 3
+            // #4. USER B MODIFIES NOTE 2, SERIAL 4
+            // Folding algorithm:
+            // #1. Result array is empty, cannot fold, push #1 to array -> array contains [#1]
+            // #2. Result array contains [#1], cannot fold, push #2 to array -> array contains [#1, #2]
+            // #3. Result array contains [#1, #2], can fold to #1, replace the event -> array contains [FOLDED1-3, #2]
+            // #4 Result array contains [FOLDED1-3, #2], can fold to #2, replace the event -> array contains [FOLDED1-3, FOLDED2-4]
+            // Processing FOLDED1-3: firstSerial = 1, serial = 3 —> board.serial is at 3
+            // FOLDED2-4: firstSerial = 2, serial = 4 —> warn: serial skip, firstSerial is 2 but board.serial is at 3
+            // For this reason, we cannot make guarantees about the serial numbers of events, and we must allow for gaps.
+            const folded = events
+                .reduce((folded, next) => addOrReplaceEvent(next, folded), [] as EventFromServer[])
+                .sort((a, b) => {
+                    if (!("serial" in a) || a.serial === undefined) {
+                        return 1
+                    } else if (!("serial" in b) || b.serial === undefined) {
+                        return -1
+                    }
+
+                    // Sort by serial number, so that at least when the client processes the events,
+                    // the client's local serial number is always at least as high as the highest serial number
+                    return a.serial - b.serial
+                })
+            return L.fromArray(folded)
         }, globalScope),
     )
 
