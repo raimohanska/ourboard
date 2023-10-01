@@ -5560,6 +5560,13 @@ lonna@^0.12.1:
   dependencies:
     optics-ts "^1.2.0"
 
+lonna@^0.12.2:
+  version "0.12.2"
+  resolved "https://registry.yarnpkg.com/lonna/-/lonna-0.12.2.tgz#b99ada89aeea037afc9c0abdb91adef431e2e1c5"
+  integrity sha512-Mczu88VGg1UMVcldaW6JVcfVFSKq5NQDcc0KvyIQ7UBwqUzZqq6ae6jC1Ez1rY9RirHOSlkfgYIqwPJJ5FeWtg==
+  dependencies:
+    optics-ts "^1.2.0"
+
 lowercase-keys@^1.0.0, lowercase-keys@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/lowercase-keys/-/lowercase-keys-1.0.1.tgz#6f9e30b47084d971a7c820ff15a6c5167b74c26f"

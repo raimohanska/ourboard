@@ -31,7 +31,7 @@
     "json-diff": "^0.5.4",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
-    "lonna": "^0.12.1",
+    "lonna": "^0.12.2",
     "monocle-ts": "^2.3.7",
     "newtype-ts": "^0.3.4",
     "node-pg-migrate": "^6.0.0",
