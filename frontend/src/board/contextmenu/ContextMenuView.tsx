@@ -13,12 +13,14 @@ import { resolveEndpoint } from "../../../../common/src/connection-utils"
 import { connectionEndsMenu } from "./connection-ends"
 import { textAlignmentsMenu } from "./textAlignments"
 import { lockMenu } from "./lock"
+import { BoardPermissionsProvider } from "../board-permissions"
 
 export type SubmenuProps = {
     focusedItems: L.Property<{ items: Item[]; connections: Connection[] }>
     board: L.Property<Board>
     dispatch: Dispatch
     submenu: L.Atom<SubMenuCreator | null>
+    permissions: BoardPermissionsProvider
 }
 
 export type SubMenuCreator = (props: SubmenuProps) => HarmajaOutput
@@ -74,11 +76,13 @@ export const ContextMenuView = ({
     board,
     focus,
     viewRect,
+    permissions,
 }: {
     dispatch: Dispatch
     board: L.Property<Board>
     focus: L.Property<BoardFocus>
     viewRect: L.Property<Rect>
+    permissions: BoardPermissionsProvider
 }) => {
     const focusedItems = L.view(focus, board, (f, b) => {
         if (f.status === "dragging" || f.status === "connection-adding" || f.status === "adding")
@@ -93,7 +97,7 @@ export const ContextMenuView = ({
         (i) => i?.id,
     ).forEach(() => submenu.set(null))
 
-    const props = { board, focusedItems, dispatch, submenu }
+    const props = { board, focusedItems, dispatch, submenu, permissions }
     const widgetCreators = [
         alignmentsMenu("x", props),
         alignmentsMenu("y", props),

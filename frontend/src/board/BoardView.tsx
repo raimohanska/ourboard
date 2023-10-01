@@ -310,9 +310,16 @@ export const BoardView = ({
                             )}
                             <RectangularDragSelection {...{ rect: selectionRect }} />
                             <CursorsView {...{ cursors, sessions, viewRect }} />
-                            {L.view(accessLevel, canWrite, (s) =>
-                                s ? <ContextMenuView {...{ latestNote, dispatch, board, focus, viewRect }} /> : null,
-                            )}
+                            <ContextMenuView
+                                {...{
+                                    latestNote,
+                                    dispatch,
+                                    board,
+                                    focus,
+                                    viewRect,
+                                    permissions: boardStore.permissionsProvider,
+                                }}
+                            />
                             <ConnectionsView {...{ board, zoom, dispatch, focus, coordinateHelper }} />
                         </div>
                     </div>

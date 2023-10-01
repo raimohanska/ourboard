@@ -400,6 +400,11 @@
             }
         }
 
+        .icon.disabled {
+            color: $disabled-color;
+            pointer-events: none;
+        }
+
         .connection-ends {
             .icon {
                 display: flex;

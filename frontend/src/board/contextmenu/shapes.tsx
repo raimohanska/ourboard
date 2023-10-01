@@ -21,7 +21,7 @@ export function getShapeIcon(item: Item): ShapeIcon {
     return shapes[isShapedItem(item) ? item.shape || "square" : "square"]
 }
 
-export function shapesMenu({ board, focusedItems, dispatch }: SubmenuProps) {
+export function shapesSubMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const shapedItems = L.view(focusedItems, (items) => items.items.filter(isShapedItem))
     const anyShaped = L.view(shapedItems, (items) => items.length > 0)
     const currentShape = L.view(shapedItems, (items) =>

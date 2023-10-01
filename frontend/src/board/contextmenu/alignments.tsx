@@ -1,4 +1,4 @@
-import { h } from "harmaja"
+import { componentScope, h } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
 import { Item } from "../../../../common/src/domain"
@@ -19,10 +19,15 @@ const createSubMenuByAxis = (axis: Axis) => (props: SubmenuProps) => {
 }
 
 export function alignmentsMenu(axis: Axis, props: SubmenuProps) {
-    // TODO duplication
     const hasItemsToAlign = L.view(props.focusedItems, (items) => items.items.length > 1)
     const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.items.length > 2)
     const createSubmenu = createSubMenuByAxis(axis)
+    const enabled = props.permissions.everyItemHasPermission(
+        props.focusedItems.pipe(L.map((i) => i.items)),
+        (p) => p.canMove,
+        componentScope(),
+    )
+
     return L.combine(hasItemsToAlign, hasItemsToDistribute, (hasItemsToAlign, hasItemsToDistribute) => {
         return !hasItemsToAlign && !hasItemsToDistribute
             ? []
@@ -30,9 +35,9 @@ export function alignmentsMenu(axis: Axis, props: SubmenuProps) {
                   <div className="icon-group align">
                       {hasItemsToAlign && (
                           <span
-                              className="icon"
+                              className={L.view(enabled, (e) => (e ? "icon" : "icon disabled"))}
                               onClick={() => props.submenu.modify((v) => (v === createSubmenu ? null : createSubmenu))}
-                              title="Align left"
+                              title={axis === "x" ? "Align left" : "Align top"}
                           >
                               {axis == "x" ? <AlignHorizontalLeftIcon /> : <AlignVerticalTopIcon />}
                           </span>

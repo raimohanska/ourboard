@@ -95,11 +95,13 @@ export const ShapeDiamondIcon = (color: Color, fill?: Color) => (
     </svg>
 )
 
+const enabledColor = (enabled: L.Property<boolean>) => L.view(enabled, (c) => (c ? black : disabledColor))
+
 export const IncreaseFontSizeIcon = () => (
     <svg viewBox="0 -3 25 21" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
             d="M7.11072 0.959999H8.93472L15.8947 18H13.5907L11.5747 13.008H4.42272L2.43072 18H0.126719L7.11072 0.959999ZM11.0947 11.328L8.02272 3.456L4.85472 11.328H11.0947ZM24.9129 8.616V10.344H22.0809V13.416H20.1609V10.344H17.3289V8.616H20.1609V5.544H22.0809V8.616H24.9129Z"
-            fill="black"
+            fill="currentColor"
         />
     </svg>
 )
@@ -108,13 +110,13 @@ export const DecreaseFontSizeIcon = () => (
     <svg viewBox="0 -4 25 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
             d="M5.01913 0.639999H6.23513L10.8751 12H9.33913L7.99513 8.672H3.22713L1.89913 12H0.363125L5.01913 0.639999ZM7.67513 7.552L5.62713 2.304L3.51513 7.552H7.67513ZM12.0553 8.272V6.992H16.7753V8.272H12.0553Z"
-            fill="black"
+            fill="currentColor"
         />
     </svg>
 )
 
 export const UndoIcon = ({ enabled }: { enabled: L.Property<boolean> }) => {
-    const undoColor = L.view(enabled, (c) => (c ? black : disabledColor))
+    const undoColor = enabledColor(enabled)
     return (
         <svg width="100%" viewBox="0 0 36 30" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -155,93 +157,109 @@ export const RedoIcon = ({ enabled }: { enabled: L.Property<boolean> }) => {
     )
 }
 
-export const TextAlignHorizontalLeftIcon = ({ color }: { color: Color }) => (
+export const TextAlignHorizontalLeftIcon = () => (
     <svg viewBox="0 0 24 24">
-        <path fill={color} d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"></path>
+        <path
+            fill="currentColor"
+            d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"
+        ></path>
     </svg>
 )
 
-export const TextAlignHorizontalRightIcon = ({ color }: { color: Color }) => (
+export const TextAlignHorizontalRightIcon = () => (
     <svg viewBox="0 0 24 24">
-        <path fill={color} d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"></path>
+        <path
+            fill="currentColor"
+            d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"
+        ></path>
     </svg>
 )
 
-export const TextAlignHorizontalCenterIcon = ({ color }: { color: Color }) => (
+export const TextAlignHorizontalCenterIcon = () => (
     <svg viewBox="0 0 24 24">
-        <path fill={color} d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"></path>
+        <path
+            fill="currentColor"
+            d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"
+        ></path>
     </svg>
 )
 
-export const TextAlignVerticalBottomIcon = ({ color }: { color: Color }) => (
+export const TextAlignVerticalBottomIcon = () => (
     <svg viewBox="0 0 24 24">
-        <path fill={color} d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"></path>
+        <path fill="currentColor" d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"></path>
     </svg>
 )
 
-export const TextAlignVerticalMiddleIcon = ({ color }: { color: Color }) => (
+export const TextAlignVerticalMiddleIcon = () => (
     <svg viewBox="0 0 24 24">
-        <path fill={color} d="M8 19h3v4h2v-4h3l-4-4-4 4zm8-14h-3V1h-2v4H8l4 4 4-4zM4 11v2h16v-2H4z"></path>
+        <path fill="currentColor" d="M8 19h3v4h2v-4h3l-4-4-4 4zm8-14h-3V1h-2v4H8l4 4 4-4zM4 11v2h16v-2H4z"></path>
     </svg>
 )
 
-export const TextAlignVerticalTopIcon = ({ color }: { color: Color }) => (
+export const TextAlignVerticalTopIcon = () => (
     <svg viewBox="0 0 24 24">
-        <path fill={color} d="M8 11h3v10h2V11h3l-4-4-4 4zM4 3v2h16V3H4z"></path>
+        <path fill="currentColor" d="M8 11h3v10h2V11h3l-4-4-4 4zM4 3v2h16V3H4z"></path>
     </svg>
 )
 
 export const AlignHorizontalLeftIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M4 22H2V2h2v20zM22 7H6v3h16V7zm-6 7H6v3h10v-3z" />
+        <path fill="currentColor" d="M4 22H2V2h2v20zM22 7H6v3h16V7zm-6 7H6v3h10v-3z" />
     </svg>
 )
 
 export const AlignHorizontalRightIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M20,2h2v20h-2V2z M2,10h16V7H2V10z M8,17h10v-3H8V17z" />
+        <path fill="currentColor" d="M20,2h2v20h-2V2z M2,10h16V7H2V10z M8,17h10v-3H8V17z" />
     </svg>
 )
 
 export const AlignHorizontalCenterIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <polygon points="11,2 13,2 13,7 21,7 21,10 13,10 13,14 18,14 18,17 13,17 13,22 11,22 11,17 6,17 6,14 11,14 11,10 3,10 3,7 11,7" />
+        <polygon
+            fill="currentColor"
+            points="11,2 13,2 13,7 21,7 21,10 13,10 13,14 18,14 18,17 13,17 13,22 11,22 11,17 6,17 6,14 11,14 11,10 3,10 3,7 11,7"
+        />
     </svg>
 )
 
 export const AlignVerticalTopIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M22 2v2H2V2h20zM7 22h3V6H7v16zm7-6h3V6h-3v10z" />
+        <path fill="currentColor" d="M22 2v2H2V2h20zM7 22h3V6H7v16zm7-6h3V6h-3v10z" />
     </svg>
 )
 
 export const AlignVerticalCenterIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <polygon points="22,11 17,11 17,6 14,6 14,11 10,11 10,3 7,3 7,11 1.84,11 1.84,13 7,13 7,21 10,21 10,13 14,13 14,18 17,18 17,13 22,13" />
+        <polygon
+            fill="currentColor"
+            points="22,11 17,11 17,6 14,6 14,11 10,11 10,3 7,3 7,11 1.84,11 1.84,13 7,13 7,21 10,21 10,13 14,13 14,18 17,18 17,13 22,13"
+        />
     </svg>
 )
 
 export const AlignVerticalBottomIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M22,22H2v-2h20V22z M10,2H7v16h3V2z M17,8h-3v10h3V8z" />
+        <path fill="currentColor" d="M22,22H2v-2h20V22z M10,2H7v16h3V2z M17,8h-3v10h3V8z" />
     </svg>
 )
 
 export const HorizontalDistributeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M4 22H2V2h2v20zM22 2h-2v20h2V2zm-8.5 5h-3v10h3V7z" />
+        <path fill="currentColor" d="M4 22H2V2h2v20zM22 2h-2v20h2V2zm-8.5 5h-3v10h3V7z" />
     </svg>
 )
 
 export const VerticalDistributeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M22 2v2H2V2h20zM7 10.5v3h10v-3H7zM2 20v2h20v-2H2z" />
+        <path fill="currentColor" d="M22 2v2H2V2h20zM7 10.5v3h10v-3H7zM2 20v2h20v-2H2z" />
     </svg>
 )
 
 export const TileIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <path
+            fill="currentColor"
             d="M3 3v8h8V3H3zm6 6H5V5h4v4zm-6 4v8h8v-8H3zm6 6H5v-4h4v4zm4-16v8h8V3h-8zm6 6h-4V5h4v4zm-6 4v8h8v-8h-8zm6 6h-4v-4h4v4z"
             fill-rule="evenodd"
         />
@@ -284,76 +302,49 @@ export const UserIcon = () => (
 
 export const ConnectionLeftArrowIcon = () => (
     <svg width="30" height="12" viewBox="0 0 30 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M-1.90735e-06 6L10 11.7735V0.226497L-1.90735e-06 6ZM30 5L9 5V7L30 7V5Z" fill="black" />
+        <path d="M-1.90735e-06 6L10 11.7735V0.226497L-1.90735e-06 6ZM30 5L9 5V7L30 7V5Z" fill="currentColor" />
     </svg>
 )
 
 export const ConnectionCenterLineIcon = () => (
     <svg width="36" height="2" viewBox="0 0 36 2" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line y1="1" x2="36" y2="1" stroke="black" stroke-width="2" />
+        <line y1="1" x2="36" y2="1" stroke="currentColor" stroke-width="2" />
     </svg>
 )
 
 export const ConnectionRightArrowIcon = () => (
     <svg width="30" height="12" viewBox="0 0 30 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M30 6L20 0.226497V11.7735L30 6ZM0 7L21 7V5L0 5L0 7Z" fill="black" />
+        <path d="M30 6L20 0.226497V11.7735L30 6ZM0 7L21 7V5L0 5L0 7Z" fill="currentColor" />
     </svg>
 )
 
 export const ConnectionEndLineIcon = () => (
     <svg width="30" height="2" viewBox="0 0 30 2" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line y1="1" x2="30" y2="1" stroke="black" stroke-width="2" />
+        <line y1="1" x2="30" y2="1" stroke="currentColor" stroke-width="2" />
     </svg>
 )
 
 export const ConnectionLeftDotIcon = () => (
     <svg width="30" height="8" viewBox="0 0 30 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line x1="3" y1="4" x2="30" y2="4" stroke="black" stroke-width="2" />
-        <circle cx="4" cy="4" r="4" fill="#00263A" />
+        <line x1="3" y1="4" x2="30" y2="4" stroke="currentColor" stroke-width="2" />
+        <circle cx="4" cy="4" r="4" fill="currentColor" />
     </svg>
 )
 
 export const ConnectionRightDotIcon = () => (
     <svg width="30" height="8" viewBox="0 0 30 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line x1="27" y1="4" y2="4" stroke="black" stroke-width="2" />
-        <circle cx="26" cy="4" r="4" transform="rotate(-180 26 4)" fill="#00263A" />
+        <line x1="27" y1="4" y2="4" stroke="currentColor" stroke-width="2" />
+        <circle cx="26" cy="4" r="4" transform="rotate(-180 26 4)" fill="currentColor" />
     </svg>
 )
 
 export const ConnectionCenterCurveIcon = () => (
     <svg width="46" height="26" viewBox="0 0 46 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g filter="url(#filter0_d_4_616)">
-            <path
-                d="M5.07492 8.4044C4.61425 11.5105 17.3143 24.2626 23.054 8.24941C28.7936 -7.76379 41.033 8.09442 41.033 8.09442"
-                stroke="black"
-                stroke-width="2"
-            />
-        </g>
-        <defs>
-            <filter
-                id="filter0_d_4_616"
-                x="0.0625"
-                y="0.0914307"
-                width="45.7617"
-                height="25.0645"
-                filterUnits="userSpaceOnUse"
-                color-interpolation-filters="sRGB"
-            >
-                <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                <feColorMatrix
-                    in="SourceAlpha"
-                    type="matrix"
-                    values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                    result="hardAlpha"
-                />
-                <feOffset dy="4" />
-                <feGaussianBlur stdDeviation="2" />
-                <feComposite in2="hardAlpha" operator="out" />
-                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
-                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_4_616" />
-                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_4_616" result="shape" />
-            </filter>
-        </defs>
+        <path
+            d="M5.07492 8.4044C4.61425 11.5105 17.3143 24.2626 23.054 8.24941C28.7936 -7.76379 41.033 8.09442 41.033 8.09442"
+            stroke="currentColor"
+            stroke-width="2"
+        />
     </svg>
 )
 
@@ -365,38 +356,11 @@ export const LockIcon = () => (
 
 export const ConnectionCenterCurveDotIcon = () => (
     <svg width="46" height="26" viewBox="0 0 46 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g filter="url(#filter0_d_7_49)">
-            <path
-                d="M5.07492 8.4044C4.61425 11.5105 17.3143 24.2626 23.054 8.24941C28.7936 -7.76379 41.033 8.09442 41.033 8.09442"
-                stroke="black"
-                stroke-width="2"
-            />
-        </g>
-        <circle cx="23" cy="9" r="4" fill="#00263A" />
-        <defs>
-            <filter
-                id="filter0_d_7_49"
-                x="0.0625"
-                y="0.0915527"
-                width="45.7617"
-                height="25.0642"
-                filterUnits="userSpaceOnUse"
-                color-interpolation-filters="sRGB"
-            >
-                <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                <feColorMatrix
-                    in="SourceAlpha"
-                    type="matrix"
-                    values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                    result="hardAlpha"
-                />
-                <feOffset dy="4" />
-                <feGaussianBlur stdDeviation="2" />
-                <feComposite in2="hardAlpha" operator="out" />
-                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
-                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_7_49" />
-                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_7_49" result="shape" />
-            </filter>
-        </defs>
+        <path
+            d="M5.07492 8.4044C4.61425 11.5105 17.3143 24.2626 23.054 8.24941C28.7936 -7.76379 41.033 8.09442 41.033 8.09442"
+            stroke="currentColor"
+            stroke-width="2"
+        />
+        <circle cx="23" cy="9" r="4" fill="currentColor" />
     </svg>
 )

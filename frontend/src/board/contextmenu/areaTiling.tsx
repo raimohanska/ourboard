@@ -1,4 +1,4 @@
-import { h } from "harmaja"
+import { componentScope, h } from "harmaja"
 import * as L from "lonna"
 import { Board, Container, findItem, isContainer, Item } from "../../../../common/src/domain"
 import { TileIcon } from "../../components/Icons"
@@ -7,7 +7,7 @@ import { contentRect, organizeItems, packableItems } from "../item-organizer"
 import { packItems } from "../item-packer"
 import { SubmenuProps } from "./ContextMenuView"
 
-export function areaTilingMenu({ board, focusedItems, dispatch }: SubmenuProps) {
+export function areaTilingMenu({ board, focusedItems, dispatch, permissions }: SubmenuProps) {
     const packables = L.view(focusedItems, (items) => {
         if (items.items.length === 1) {
             if (isContainer(items.items[0])) return items.items
@@ -18,6 +18,9 @@ export function areaTilingMenu({ board, focusedItems, dispatch }: SubmenuProps) 
         }
         return []
     })
+    const enabled = permissions.everyItemHasPermission(packables, (p) => p.canMove, componentScope())
+    const className = enabled.pipe(L.map((e) => (e ? "icon" : "icon disabled")))
+
     return L.view(
         packables,
         (ps) => ps.length > 0,
@@ -26,7 +29,7 @@ export function areaTilingMenu({ board, focusedItems, dispatch }: SubmenuProps) 
                 ? [
                       <div className="icon-group area-options">
                           <span
-                              className="icon"
+                              className={className}
                               title="Organize contents"
                               onClick={() => packArbitraryItems(packables.get())}
                           >
