@@ -35,19 +35,19 @@ export type LoginFailedDueToTechnicalProblem = BaseSessionState & {
 export type LoggingInServer = BaseSessionState &
     GoogleAuthenticatedUser & {
         status: "logging-in-server"
-        nickname: string
+        nickname: string | undefined
     }
 
 export type LoggedIn = BaseSessionState &
     GoogleAuthenticatedUser & {
         status: "logged-in"
-        nickname: string
+        nickname: string | undefined
         userId: string
     }
 
 export type UserSessionStore = ReturnType<typeof UserSessionStore>
 
-export function UserSessionStore(connection: ServerConnection, localStorage: Storage) {
+export function UserSessionStore(connection: ServerConnection, nicknameStore: any) {
     const eventsReducer = (state: UserSessionState, event: AppEvent | boolean): UserSessionState => {
         if (typeof event === "boolean") {
             // Connected = true, Disconnected = false
@@ -101,19 +101,22 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
 
     const userFromCookie = getAuthenticatedUserFromCookie()
 
-    const initialState: UserSessionState = !userFromCookie
+    const initialState: Extract<
+        UserSessionState,
+        { status: "anonymous" } | { status: "logging-in-server" }
+    > = !userFromCookie
         ? {
               status: "anonymous",
               sessionId: null,
-              nickname: localStorage.nickname || undefined,
-              nicknameSetByUser: !!localStorage.nickname,
+              nickname: nicknameStore.nickname || undefined,
+              nicknameSetByUser: !!nicknameStore.nickname,
               loginSupported: false,
           }
         : {
               status: "logging-in-server",
               sessionId: null,
-              nickname: localStorage.nickname || undefined,
-              nicknameSetByUser: !!localStorage.nickname,
+              nickname: nicknameStore.nickname || undefined,
+              nicknameSetByUser: !!nicknameStore.nickname,
               ...userFromCookie,
           }
 
@@ -134,7 +137,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
     }
 
     function storeNickName(nickname: string) {
-        localStorage.nickname = nickname
+        nicknameStore.nickname = nickname
         return nickname
     }
 }
@@ -142,6 +145,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
 // Get / set authenticated user stored in cookies
 
 function getCookie(name: string) {
+    if (typeof document === "undefined") return undefined
     const value = `; ${document.cookie}`
     const parts = value.split(`; ${name}=`)
     if (parts.length === 2) return parts.pop()!.split(";").shift()

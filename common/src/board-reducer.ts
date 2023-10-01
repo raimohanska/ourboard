@@ -33,7 +33,29 @@ export function boardReducer(
     if (isBoardHistoryEntry(event) && event.serial) {
         const firstSerial = event.firstSerial ? event.firstSerial : event.serial
         if (firstSerial !== board.serial + 1) {
-            console.warn(`Serial skip ${board.serial} -> ${event.serial}`)
+            // Because we are buffering events from the server and folding them on the client,
+            // we may get overlapping event ranges. See `server-connection.ts`.
+            // This is not necessarily a problem, but it does mean that we cannot guarantee that
+            // the serial numbers of events are sequential.
+            //
+            // Minimal example; our buffer of events from the server is:
+            // #1. USER A MODIFIES NOTE 1, SERIAL 1
+            // #2. USER B MODIFIES NOTE 2, SERIAL 2
+            // #3. USER A MODIFIES NOTE 1, SERIAL 3
+            // #4. USER B MODIFIES NOTE 2, SERIAL 4
+            // Folding algorithm:
+            // #1. Result array is empty, cannot fold, push #1 to array -> array contains [#1]
+            // #2. Result array contains [#1], cannot fold, push #2 to array -> array contains [#1, #2]
+            // #3. Result array contains [#1, #2], can fold to #1, replace the event -> array contains [FOLDED1-3, #2]
+            // #4 Result array contains [FOLDED1-3, #2], can fold to #2, replace the event -> array contains [FOLDED1-3, FOLDED2-4]
+            // Processing FOLDED1-3: firstSerial = 1, serial = 3 —> board.serial is at 3
+            // FOLDED2-4: firstSerial = 2, serial = 4 —> warn: serial skip, firstSerial is 2 but board.serial is at 3
+            // For this reason, we cannot make guarantees about the serial numbers of events, and we must allow for gaps.
+            //
+            // The log below used to be here, but because of the above, it doesn't make sense to log it anymore.
+            // console.warn(
+            //     `Serial skip. board.serial: ${board.serial}, event.serial: ${event.serial}, event.firstSerial: ${event.firstSerial}`,
+            // )
         }
         board = { ...board, serial: event.serial }
     }
