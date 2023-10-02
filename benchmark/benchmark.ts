@@ -36,14 +36,22 @@ function createTestBoard(size = 1000): Board {
     }
 }
 
-let testBoard = createTestBoard()
-let itemsArray = Object.values(testBoard.items) as Note[]
+let testBoards = Array.from({ length: 100 }, () => {
+    const board = createTestBoard(100)
+    const items = Object.values(board.items) as Note[]
+    return {
+        board,
+        items,
+    }
+})
 
-console.time("10000 item.updates on a 1000 item board")
+console.time("10000 item.updates on a randomly picked 100 item board")
 for (let i = 0; i < 10000; i++) {
-    const item = itemsArray[i % itemsArray.length]
-    ;[testBoard] = boardReducer(testBoard, {
-        boardId: testBoard.id,
+    let randomBoard = testBoards[Math.floor(Math.random() * testBoards.length)]
+    // const itemsArray = Object.values(randomBoard.items) as Note[]
+    const item = randomBoard.items[i % randomBoard.items.length]
+    ;[randomBoard.board] = boardReducer(randomBoard.board, {
+        boardId: randomBoard.board.id,
         action: "item.update",
         items: [
             {
@@ -53,31 +61,45 @@ for (let i = 0; i < 10000; i++) {
         ],
     })
 }
-console.timeEnd("10000 item.updates on a 1000 item board")
+console.timeEnd("10000 item.updates on a randomly picked 100 item board")
 
-testBoard = createTestBoard()
-itemsArray = Object.values(testBoard.items) as Note[]
+testBoards = Array.from({ length: 100 }, () => {
+    const board = createTestBoard(100)
+    const items = Object.values(board.items) as Note[]
+    return {
+        board,
+        items,
+    }
+})
 
-console.time("1000 item.adds on a 1000 item board")
-for (let i = 0; i < 1000; i++) {
+console.time("10000 item.adds on a randomly picked 100 item board")
+for (let i = 0; i < 10000; i++) {
+    const randomBoard = testBoards[Math.floor(Math.random() * testBoards.length)]
     const item = newNote("foo")
-    ;[testBoard] = boardReducer(testBoard, {
-        boardId: testBoard.id,
+    ;[randomBoard.board] = boardReducer(randomBoard.board, {
+        boardId: randomBoard.board.id,
         action: "item.add",
         items: [item],
         connections: [],
     })
 }
-console.timeEnd("1000 item.adds on a 1000 item board")
+console.timeEnd("10000 item.adds on a randomly picked 100 item board")
 
-testBoard = createTestBoard()
-itemsArray = Object.values(testBoard.items) as Note[]
+testBoards = Array.from({ length: 100 }, () => {
+    const board = createTestBoard(100)
+    const items = Object.values(board.items) as Note[]
+    return {
+        board,
+        items,
+    }
+})
 
-console.time("10000 item.moves on a 1000 item board")
+console.time("10000 item.moves on a randomly picked 100 item board")
 for (let i = 0; i < 10000; i++) {
-    const item = itemsArray[i % itemsArray.length]
-    ;[testBoard] = boardReducer(testBoard, {
-        boardId: testBoard.id,
+    const randomBoard = testBoards[Math.floor(Math.random() * testBoards.length)]
+    const item = randomBoard.items[i % randomBoard.items.length]
+    ;[randomBoard.board] = boardReducer(randomBoard.board, {
+        boardId: randomBoard.board.id,
         action: "item.move",
         items: [
             {
@@ -89,4 +111,17 @@ for (let i = 0; i < 10000; i++) {
         connections: [],
     })
 }
-console.timeEnd("10000 item.moves on a 1000 item board")
+console.timeEnd("10000 item.moves on a randomly picked 100 item board")
+
+console.time("Reference: creating 10000 input objects and doing nothing")
+const noop = (item: any) => {
+    item.text
+}
+for (let i = 0; i < 10000; i++) {
+    const item = newNote("foo")
+    noop({
+        ...item,
+        text: "Hello world",
+    })
+}
+console.timeEnd("Reference: creating 10000 input objects and doing nothing")
