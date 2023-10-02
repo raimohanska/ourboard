@@ -9,6 +9,7 @@
     "uuid": "^8.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.11.0",
     "@types/jest": "^26.0.15",
     "@types/uuid": "^8.3.0",
     "cypress": "6.8.0",
@@ -16,9 +17,9 @@
     "jest": "^26.6.3",
     "lint-staged": "^10.5.4",
     "npm-run-all": "^4.1.5",
-    "@playwright/test": "^1.11.0",
     "prettier": "^2.2.1",
     "ts-jest": "^26.4.3",
+    "tsx": "3.13.0",
     "typescript": "^4.0.2"
   },
   "private": true,
@@ -38,6 +39,7 @@
     "dev:backend": "yarn --cwd backend dev",
     "start": "yarn start:backend",
     "start:backend": "yarn --cwd backend start",
+    "benchmark": "tsx benchmark/benchmark.ts",
     "build": "yarn build:frontend && yarn build:backend && yarn build:perf-tester",
     "build:frontend": "yarn --cwd frontend build",
     "build:backend": "yarn --cwd backend build",
