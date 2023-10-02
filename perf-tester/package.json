@@ -27,7 +27,7 @@
     "watch": "tsc --watch --noEmit",
     "build": "tsc",
     "start": "node .",
-    "create-boards": "ts-node src/create-boards.ts",
+    "create-boards": "tsx src/create-boards.ts",
     "dev": "tsc-watch --onSuccess \"node .\" --preserveWatchOutput"
   },
   "devDependencies": {
