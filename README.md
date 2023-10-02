@@ -2,10 +2,10 @@ An online whiteboard. Think of it as very poor man's Miro that's open source, fr
 
 In this Readme:
 
-- [User guide](#features-and-user-guide)
-- [API](#api)
-- [Development instructions](#development)
-- [Hosting Ourboard](#hosting)
+-   [User guide](#features-and-user-guide)
+-   [API](#api)
+-   [Development instructions](#development)
+-   [Hosting Ourboard](#hosting)
 
 ## Features and User Guide
 
