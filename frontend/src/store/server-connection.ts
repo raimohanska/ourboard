@@ -114,7 +114,6 @@ export function GenericServerConnection(
 
     function send(e: UIEvent | EventWrapper) {
         //console.log("Sending", e)
-        if ("action" in e) sentUIEvents.push(e)
         let wrapper: EventWrapper
         if ("action" in e) {
             sentUIEvents.push(e)
