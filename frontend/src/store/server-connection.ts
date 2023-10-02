@@ -1,6 +1,6 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
-import { addOrReplaceEvent } from "../../../common/src/action-folding"
+import { CURSORS_ONLY, addOrReplaceEvent } from "../../../common/src/action-folding"
 import { AppEvent, EventFromServer, EventWrapper, UIEvent } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
 
@@ -34,7 +34,7 @@ export function GenericServerConnection(
         L.bufferWithTime(SERVER_EVENTS_BUFFERING_MILLIS),
         L.flatMap((events) => {
             return L.fromArray(
-                events.reduce((folded, next) => addOrReplaceEvent(next, folded), [] as EventFromServer[]),
+                events.reduce((folded, next) => addOrReplaceEvent(next, folded, CURSORS_ONLY), [] as EventFromServer[]),
             )
         }, globalScope),
     )

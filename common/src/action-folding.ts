@@ -15,15 +15,20 @@ import {
 } from "./domain"
 
 type FoldOptions = {
+    cursorsOnly?: boolean
     foldAddUpdate: boolean
 }
 
 const defaultOptions = {
     foldAddUpdate: true,
+    cursorsOnly: false,
 }
+
+export const CURSORS_ONLY: FoldOptions = { cursorsOnly: true, foldAddUpdate: false }
 
 export function foldActions(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
     if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
+        if (options.cursorsOnly) return null
         if (!isSameUser(a.user, b.user)) return null
         const folded = foldActions_(a, b, options)
         if (!folded) return null
@@ -39,6 +44,14 @@ Folding can be done if in any given state S, applying actions A and B consecutiv
 This function should return that composite action or null if folding is not possible.
 */
 export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
+    if (a.action === CURSOR_POSITIONS_ACTION_TYPE && b.action === CURSOR_POSITIONS_ACTION_TYPE) {
+        return b
+    }
+    if (a.action === "cursor.move" && b.action === "cursor.move" && b.boardId === a.boardId) {
+        return b // This is a local cursor move
+    }
+    if (options.cursorsOnly) return null
+
     if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
         if (!isSameUser(a.user, b.user)) return null
     }
@@ -66,14 +79,6 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
                 }
             }
         }
-    } else if (a.action === CURSOR_POSITIONS_ACTION_TYPE) {
-        if (b.action === CURSOR_POSITIONS_ACTION_TYPE) {
-            return b
-        }
-    } else if (a.action === "cursor.move") {
-        if (b.action === "cursor.move" && b.boardId === a.boardId) {
-            return b
-        }
     } else if (a.action === "item.front") {
         if (b.action === "item.front" && b.boardId === a.boardId && arrayEquals(b.itemIds, a.itemIds)) return b
     } else if (a.action === "item.move") {
@@ -94,10 +99,10 @@ function everyMovedItemMatches(evt: MoveItem, evt2: MoveItem) {
     return arrayIdMatch(evt.items, evt2.items) && arrayIdMatch(evt.connections, evt2.connections)
 }
 
-export function addOrReplaceEvent<E extends AppEvent>(event: E, q: E[]): E[] {
+export function addOrReplaceEvent<E extends AppEvent>(event: E, q: E[], options: FoldOptions = defaultOptions): E[] {
     for (let i = 0; i < q.length; i++) {
         let eventInQueue = q[i]
-        const folded = foldActions(eventInQueue, event)
+        const folded = foldActions(eventInQueue, event, options)
         if (folded) {
             return [...q.slice(0, i), folded, ...q.slice(i + 1)] as E[]
         }
