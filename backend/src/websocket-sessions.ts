@@ -142,7 +142,11 @@ export async function addSessionToBoard(
     if (!session) throw new Error("No session found for socket " + origin.id)
     const boardId = boardState.board.id
     boardState.sessions = [...boardState.sessions, session]
-    if (initAtSerial) {
+    const initDiff = initAtSerial && boardState.board.serial - initAtSerial
+    if (initDiff && initDiff > 200) {
+        console.log(`Sending fresh board state for board ${boardId} instead of diff (${initDiff} events to sync)`)
+        initAsNew(session, boardId, accessLevel, boardState)
+    } else if (initAtSerial) {
         const entry: UserSessionBoardEntry = { boardId, status: "buffering", accessLevel, bufferedEvents: [] }
         // 1. Add session to the board with "buffering" status, to collect all events that were meant to be sent during this async initialization
         session.boardSession = entry
@@ -204,12 +208,7 @@ export async function addSessionToBoard(
             })
         }
     } else {
-        session.boardSession = { boardId, status: "ready", accessLevel, bufferedEvents: [] }
-        session.sendEvent({
-            action: "board.init",
-            board: boardState.board,
-            accessLevel,
-        })
+        initAsNew(session, boardId, accessLevel, boardState)
     }
 
     // TODO SECURITY: don't reveal authenticated emails to unidentified users on same board
@@ -234,6 +233,15 @@ export async function addSessionToBoard(
 
     // Notify existing users of new user
     broadcastJoinEvent(boardState.board.id, session)
+}
+
+function initAsNew(session: UserSession, boardId: string, accessLevel: AccessLevel, boardState: ServerSideBoardState) {
+    session.boardSession = { boardId, status: "ready", accessLevel, bufferedEvents: [] }
+    session.sendEvent({
+        action: "board.init",
+        board: boardState.board,
+        accessLevel,
+    })
 }
 
 export function setNicknameForSession(event: SetNickname, origin: WsWrapper) {
