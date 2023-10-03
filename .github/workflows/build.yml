@@ -42,8 +42,6 @@ jobs:
               run: yarn start&
               env:
                   SESSION_SIGNING_SECRET: notsosecretthing
-                  GOOGLE_OAUTH_CLIENT_ID: whatever
-                  GOOGLE_OAUTH_CLIENT_SECRET: whatever
             - name: Run cypress tests
               uses: cypress-io/github-action@v2
               with:
