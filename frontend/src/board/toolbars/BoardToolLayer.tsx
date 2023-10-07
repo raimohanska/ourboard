@@ -6,7 +6,7 @@ import { BoardStore, Dispatch } from "../../store/board-store"
 import { UserSessionState } from "../../store/user-session-store"
 import { BoardCoordinateHelper } from "../board-coordinates"
 import { BoardFocus } from "../board-focus"
-import { BoardZoom } from "../board-scroll-and-zoom"
+import { BoardZoom, ZoomAndScrollControls } from "../board-scroll-and-zoom"
 import { BoardViewMessage } from "../BoardViewMessage"
 import { ToolController } from "../tool-selection"
 import { IS_TOUCHSCREEN } from "../touchScreen"
@@ -28,7 +28,7 @@ export const BoardToolLayer = ({
     toolController,
     dispatch,
     viewRect,
-    zoom,
+    adjustZoom,
     focus,
 }: {
     boardStore: BoardStore
@@ -41,10 +41,8 @@ export const BoardToolLayer = ({
     onAdd: (i: Item) => void
     toolController: ToolController
     dispatch: Dispatch
-    viewRect: L.Atom<G.Rect>
-    zoom: L.Atom<BoardZoom>
     focus: L.Atom<BoardFocus>
-}) => {
+} & ZoomAndScrollControls) => {
     const touchMoveStart = L.bus<void>()
     const boardState = boardStore.state
     const boardAccessStatus = L.view(boardState, (s) => s.status)
@@ -76,7 +74,7 @@ export const BoardToolLayer = ({
             </div>
             <MiniMapView board={board} viewRect={viewRect} />
             <div className="zoom-toolbar board-tool">
-                <ZoomControls {...{ zoom }} />
+                <ZoomControls {...{ adjustZoom, viewRect }} />
             </div>
 
             {L.view(focus, (f) => {

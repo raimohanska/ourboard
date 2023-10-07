@@ -133,13 +133,6 @@ export function boardCoordinateHelper(
         })
     })
 
-    function scrollCursorToBoardCoordinates(coords: Coordinates) {
-        const diff = subtract(coords, currentBoardCoordinates.get())
-        const diffPixels = { x: emToPagePx(diff.x), y: emToPagePx(diff.y) }
-        scrollElem.get()!.scrollLeft += diffPixels.x
-        scrollElem.get()!.scrollTop += diffPixels.y
-    }
-
     const scrollEvent = scrollElem.pipe(
         L.changes,
         L.flatMapLatest((el) => L.fromEvent(el, "scroll"), componentScope()),
@@ -153,6 +146,19 @@ export function boardCoordinateHelper(
         }),
     )
 
+    function scrollByPixels(diffPixels: { x: number; y: number }) {
+        scrollElem.get()!.scrollLeft += diffPixels.x
+        scrollElem.get()!.scrollTop += diffPixels.y
+    }
+
+    function scrollByBoardCoordinates(diffEm: { x: number; y: number }) {
+        const diffPx = {
+            x: emToPagePx(diffEm.x),
+            y: emToPagePx(diffEm.y),
+        }
+        scrollByPixels(diffPx)
+    }
+
     return {
         pageToBoardCoordinates,
         pageCoordDiffToThisPoint,
@@ -164,6 +170,6 @@ export function boardCoordinateHelper(
         emToPagePx,
         emToBoardPx,
         pxToEm,
-        scrollCursorToBoardCoordinates,
+        scrollByBoardCoordinates,
     }
 }

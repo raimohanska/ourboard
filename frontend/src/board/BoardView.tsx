@@ -173,7 +173,7 @@ export const BoardView = ({
         focus.set(noFocus)
     })
 
-    const { viewRect } = boardScrollAndZoomHandler(
+    const { viewRect, adjustZoom } = boardScrollAndZoomHandler(
         board,
         boardElement,
         scrollElement,
@@ -325,13 +325,13 @@ export const BoardView = ({
                         containerElement,
                         coordinateHelper,
                         dispatch,
-                        zoom,
                         focus,
                         latestNote,
                         onAdd,
                         toolController,
                         sessionState,
                         viewRect,
+                        adjustZoom,
                     }}
                 />
             </div>

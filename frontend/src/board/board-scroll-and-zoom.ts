@@ -5,14 +5,16 @@ import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import * as G from "../../../common/src/geometry"
 import { Board } from "../../../common/src/domain"
-import { isFirefox } from "../components/browser"
 import { ToolController } from "./tool-selection"
 
 export type BoardZoom = { zoom: number; quickZoom: number }
+export type ZoomAdjustMode = "preserveCursor" | "preserveCenter"
 
 function nonNull<A>(x: A | null | undefined): x is A {
     return !!x
 }
+
+export type ZoomAndScrollControls = ReturnType<typeof boardScrollAndZoomHandler>
 
 export function boardScrollAndZoomHandler(
     board: L.Property<Board>,
@@ -91,9 +93,6 @@ export function boardScrollAndZoomHandler(
     const viewRect = L.atom(viewRectProp, (newRect) => {
         const boardRect = boardElement.get()?.getBoundingClientRect()!
         const viewRect = scrollElement.get()?.getBoundingClientRect()!
-        const scrollX = viewRect.x - boardRect.x
-        const scrollY = viewRect.y - boardRect.y
-
         const newX = coordinateHelper.emToBoardPx(newRect.x)
         const newY = coordinateHelper.emToBoardPx(newRect.y)
 
@@ -109,7 +108,7 @@ export function boardScrollAndZoomHandler(
             event.preventDefault()
             const clampedStep = clamp(event.deltaY, -8, 8)
             const step = Math.pow(1.01, -clampedStep)
-            adjustZoom((z) => z * step)
+            adjustZoom((z) => z * step, "preserveCursor")
         } else {
             // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
             // Let's set the mode to 'select' as a best-effort "works like you'd expect" UX thing
@@ -136,21 +135,42 @@ export function boardScrollAndZoomHandler(
     zoom.pipe(L.changes, L.debounce(50, componentScope())).forEach((z) => {
         if (z.quickZoom !== 1 && !scaleStart) {
             const newZoom = clamp(z.zoom * z.quickZoom, MIN_ZOOM, MAX_ZOOM)
-            console.log("Zoom", newZoom)
             zoom.set({ zoom: newZoom, quickZoom: 1 })
         }
     })
 
-    function adjustZoom(fn: (previous: number) => number) {
-        const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
+    function getViewRectCenter() {
+        const vr = viewRect.get()
+        return { x: vr.x + vr.width / 2, y: vr.y + vr.height / 2 }
+    }
+
+    function adjustZoom(fn: (previous: number) => number, mode: ZoomAdjustMode) {
+        if (mode === "preserveCursor") {
+            const prevCursor = coordinateHelper.currentBoardCoordinates.get()
+            justAdjustZoom(fn)
+            const diffEm = G.subtract(prevCursor, coordinateHelper.currentBoardCoordinates.get())
+            coordinateHelper.scrollByBoardCoordinates(diffEm)
+        } else {
+            const prevCenterEm = getViewRectCenter()
+            const prevZoom = zoom.get()
+            justAdjustZoom(fn)
+            const newZoom = zoom.get()
+            const ratio = (newZoom.zoom * newZoom.quickZoom) / (prevZoom.zoom * prevZoom.quickZoom)
+            const newCenterEm = G.multiply(prevCenterEm, 1 / ratio)
+            const diffEm = G.subtract(prevCenterEm, newCenterEm)
+            coordinateHelper.scrollByBoardCoordinates(diffEm)
+        }
+    }
+
+    function justAdjustZoom(fn: (previous: number) => number) {
         zoom.modify((z) => {
             return {
                 quickZoom: _.clamp(fn(z.quickZoom), MIN_ZOOM / z.zoom, MAX_ZOOM / z.zoom),
                 zoom: z.zoom,
             }
         })
-        coordinateHelper.scrollCursorToBoardCoordinates(prevBoardCoords)
     }
+
     let scaleStart: number | null = null
 
     function onGestureStart(e: any) {
@@ -166,7 +186,7 @@ export function boardScrollAndZoomHandler(
         const scale = typeof e.scale === "number" && (e.scale as number)
         if (scale && scaleStart) {
             const result = scale * scaleStart
-            adjustZoom(() => result)
+            adjustZoom(() => result, "preserveCursor")
         }
     }
 
@@ -190,5 +210,6 @@ export function boardScrollAndZoomHandler(
     })
     return {
         viewRect,
+        adjustZoom,
     }
 }
