@@ -1,6 +1,6 @@
 import * as H from "harmaja"
 import { componentScope } from "harmaja"
-import _ from "lodash"
+import _, { clamp } from "lodash"
 import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import * as G from "../../../common/src/geometry"
@@ -107,7 +107,8 @@ export function boardScrollAndZoomHandler(
         // Wheel-zoom, or two finger zoom gesture on trackpad
         if (ctrlOrCmd && event.deltaY !== 0) {
             event.preventDefault()
-            const step = Math.pow(1.01, -event.deltaY * (isFirefox ? 4 : 1))
+            const clampedStep = clamp(event.deltaY, -8, 8)
+            const step = Math.pow(1.01, -clampedStep)
             adjustZoom((z) => z * step)
         } else {
             // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
