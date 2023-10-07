@@ -130,9 +130,14 @@ export function boardScrollAndZoomHandler(
         }
     }
 
+    const MAX_ZOOM = 10
+    const MIN_ZOOM = 0.1
+
     zoom.pipe(L.changes, L.debounce(50, componentScope())).forEach((z) => {
         if (z.quickZoom !== 1 && !scaleStart) {
-            zoom.set({ zoom: z.zoom * z.quickZoom, quickZoom: 1 })
+            const newZoom = clamp(z.zoom * z.quickZoom, MIN_ZOOM, MAX_ZOOM)
+            console.log("Zoom", newZoom)
+            zoom.set({ zoom: newZoom, quickZoom: 1 })
         }
     })
 
@@ -140,8 +145,7 @@ export function boardScrollAndZoomHandler(
         const prevBoardCoords = coordinateHelper.currentBoardCoordinates.get()
         zoom.modify((z) => {
             return {
-                // TODO: clamp total zoom
-                quickZoom: _.clamp(fn(z.quickZoom), 0.2, 10),
+                quickZoom: _.clamp(fn(z.quickZoom), MIN_ZOOM / z.zoom, MAX_ZOOM / z.zoom),
                 zoom: z.zoom,
             }
         })
