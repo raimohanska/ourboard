@@ -7,26 +7,26 @@ import { getEnv } from "./env"
 import { AuthProvider } from "./oauth"
 
 type GenericOAuthConfig = {
-    OAUTH_CONFIG_URL: string
-    OAUTH_CLIENT_ID: string
-    OAUTH_CLIENT_SECRET: string
+    OIDC_CONFIG_URL: string
+    OIDC_CLIENT_ID: string
+    OIDC_CLIENT_SECRET: string
 }
 
-export const genericOauthConfig: GenericOAuthConfig | null = process.env.OAUTH_CONFIG_URL
+export const genericOIDCConfig: GenericOAuthConfig | null = process.env.OIDC_CONFIG_URL
     ? {
-          OAUTH_CONFIG_URL: getEnv("OAUTH_CONFIG_URL"),
-          OAUTH_CLIENT_ID: getEnv("OAUTH_CLIENT_ID"),
-          OAUTH_CLIENT_SECRET: getEnv("OAUTH_CLIENT_SECRET"),
+          OIDC_CONFIG_URL: getEnv("OIDC_CONFIG_URL"),
+          OIDC_CLIENT_ID: getEnv("OIDC_CLIENT_ID"),
+          OIDC_CLIENT_SECRET: getEnv("OIDC_CLIENT_SECRET"),
       }
     : null
 
-export function GenericOAuthProvider(config: GenericOAuthConfig): AuthProvider {
-    console.log(`Setting up generic OAuth authentication using client id ${config.OAUTH_CLIENT_ID}`)
+export function GenericOIDCAuthProvider(config: GenericOAuthConfig): AuthProvider {
+    console.log(`Setting up generic OAuth authentication using client id ${config.OIDC_CLIENT_ID}`)
 
     const callbackUrl = `${getEnv("ROOT_URL")}/google-callback`
 
     const openIdConfiguration = (async () => {
-        const response = await fetch(config.OAUTH_CONFIG_URL)
+        const response = await fetch(config.OIDC_CONFIG_URL)
         return decodeOrThrow(OpenIdConfiguration, await response.json())
     })()
 
@@ -37,8 +37,8 @@ export function GenericOAuthProvider(config: GenericOAuthConfig): AuthProvider {
                 "content-type": "application/x-www-form-urlencoded",
             },
             body: `grant_type=authorization_code&code=${encodeURIComponent(code)}&client_id=${encodeURIComponent(
-                config.OAUTH_CLIENT_ID,
-            )}&client_secret=${config.OAUTH_CLIENT_SECRET}&redirect_uri=${callbackUrl}`,
+                config.OIDC_CLIENT_ID,
+            )}&client_secret=${config.OIDC_CLIENT_SECRET}&redirect_uri=${callbackUrl}`,
         })
 
         const body = await response.json()
@@ -54,7 +54,7 @@ export function GenericOAuthProvider(config: GenericOAuthConfig): AuthProvider {
             scopes,
         )}&response_type=code&state=${encodeURIComponent(state)}&redirect_uri=${encodeURIComponent(
             redirectUri,
-        )}&client_id=${config.OAUTH_CLIENT_ID}`
+        )}&client_id=${config.OIDC_CLIENT_ID}`
     }
 
     return {

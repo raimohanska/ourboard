@@ -3,7 +3,7 @@ import { Express, Request } from "express"
 import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
 import { removeAuthenticatedUser, setAuthenticatedUser } from "./http-session"
 import { GoogleAuthProvider, googleConfig } from "./google-auth"
-import { GenericOAuthProvider, genericOauthConfig } from "./generic-oauth"
+import { GenericOIDCAuthProvider, genericOIDCConfig } from "./generic-oidc-auth"
 
 export interface AuthProvider {
     getAuthPageURL: () => Promise<string>
@@ -50,6 +50,6 @@ export function setupAuth(app: Express, provider: AuthProvider) {
 
 export const authProvider: AuthProvider | null = googleConfig
     ? GoogleAuthProvider(googleConfig)
-    : genericOauthConfig
-    ? GenericOAuthProvider(genericOauthConfig)
+    : genericOIDCConfig
+    ? GenericOIDCAuthProvider(genericOIDCConfig)
     : null
