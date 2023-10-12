@@ -1,6 +1,6 @@
 import path from "path"
 import fs from "fs"
-import { googleConfig } from "./google-auth"
+import { authProvider } from "./oauth"
 
 export type StorageBackend = Readonly<
     { type: "LOCAL"; directory: string; assetStorageURL: string } | { type: "AWS"; assetStorageURL: string }
@@ -20,6 +20,6 @@ export const getConfig = (): Config => {
 
     return {
         storageBackend,
-        authSupported: googleConfig !== null,
+        authSupported: authProvider !== null,
     }
 }

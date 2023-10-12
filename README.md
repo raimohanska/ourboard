@@ -297,6 +297,14 @@ GOOGLE_OAUTH_CLIENT_ID
 GOOGLE_OAUTH_CLIENT_SECRET
 ```
 
+Generic OAuth authentication is also supported as an experimental feature (only Google tested so far). To enable this feature, you'll need to supply the following environment variables.
+
+```
+OAUTH_CONFIG_URL        Your OpenID configuration endpoint. For example: https://accounts.google.com/.well-known/openid-configuration
+OAUTH_CLIENT_ID         Your OAuth2 client id
+OAUTH_CLIENT_SECRET     Your OAuth2 client secret
+```
+
 ## Contribution
 
 See Issues!

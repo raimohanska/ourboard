@@ -1,4 +1,4 @@
-import { GoogleAuthenticatedUser } from "../../common/src/authenticated-user"
+import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
 import {
     AccessLevel,
     AckJoinBoard,
@@ -266,7 +266,7 @@ export function setNicknameForSession(event: SetNickname, origin: WsWrapper) {
 }
 
 export async function setVerifiedUserForSession(
-    event: UserLoggedIn | GoogleAuthenticatedUser,
+    event: UserLoggedIn | OAuthAuthenticatedUser,
     session: UserSession,
 ): Promise<EventUserInfoAuthenticated> {
     const userId = await getUserIdForEmail(event.email)

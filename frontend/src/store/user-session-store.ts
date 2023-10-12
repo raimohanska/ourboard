@@ -1,6 +1,6 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
-import { GoogleAuthenticatedUser } from "../../../common/src/authenticated-user"
+import { OAuthAuthenticatedUser } from "../../../common/src/authenticated-user"
 import { AppEvent, BoardAccessPolicy, Id } from "../../../common/src/domain"
 import { signIn } from "../google-auth"
 import { ServerConnection } from "./server-connection"
@@ -33,13 +33,13 @@ export type LoginFailedDueToTechnicalProblem = BaseSessionState & {
  *  Locally OAUTH authenticated but auth with server pending
  **/
 export type LoggingInServer = BaseSessionState &
-    GoogleAuthenticatedUser & {
+    OAuthAuthenticatedUser & {
         status: "logging-in-server"
         nickname: string
     }
 
 export type LoggedIn = BaseSessionState &
-    GoogleAuthenticatedUser & {
+    OAuthAuthenticatedUser & {
         status: "logged-in"
         nickname: string
         userId: string
@@ -147,11 +147,11 @@ function getCookie(name: string) {
     if (parts.length === 2) return parts.pop()!.split(";").shift()
 }
 
-function getAuthenticatedUserFromCookie(): GoogleAuthenticatedUser | null {
+function getAuthenticatedUserFromCookie(): OAuthAuthenticatedUser | null {
     const userCookie = getUserJWT()
     if (userCookie) {
         try {
-            return jwtDecode(userCookie) as GoogleAuthenticatedUser
+            return jwtDecode(userCookie) as OAuthAuthenticatedUser
         } catch (e) {
             console.warn("Token parsing failed", userCookie, e)
         }
@@ -173,7 +173,7 @@ export function isLoginInProgress(state: StateId): boolean {
     return state === "logging-in-server"
 }
 
-export function getAuthenticatedUser(state: UserSessionState): GoogleAuthenticatedUser | null {
+export function getAuthenticatedUser(state: UserSessionState): OAuthAuthenticatedUser | null {
     if (state.status === "logged-in" || state.status === "logging-in-server") {
         return state
     } else {

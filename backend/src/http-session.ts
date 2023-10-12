@@ -2,12 +2,12 @@ import Cookies from "cookies"
 import { IncomingMessage, ServerResponse } from "http"
 import JWT from "jsonwebtoken"
 import { getEnv } from "./env"
-import { GoogleAuthenticatedUser } from "../../common/src/authenticated-user"
+import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
 import { ISOTimeStamp, newISOTimeStamp } from "../../common/src/domain"
 
 const secret = getEnv("SESSION_SIGNING_SECRET")
 
-export type LoginInfo = GoogleAuthenticatedUser & {
+export type LoginInfo = OAuthAuthenticatedUser & {
     timestamp: ISOTimeStamp | undefined
 }
 
@@ -30,7 +30,7 @@ export function getAuthenticatedUserFromJWT(jwt: string): LoginInfo | null {
     return null
 }
 
-export function setAuthenticatedUser(req: IncomingMessage, res: ServerResponse, userInfo: GoogleAuthenticatedUser) {
+export function setAuthenticatedUser(req: IncomingMessage, res: ServerResponse, userInfo: OAuthAuthenticatedUser) {
     const loginInfo: LoginInfo = { ...userInfo, timestamp: newISOTimeStamp() }
     const jwt = JWT.sign(loginInfo, secret)
     new Cookies(req, res).set("user", jwt, {
