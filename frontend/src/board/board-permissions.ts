@@ -6,11 +6,13 @@ export interface ItemPermissions {
     canChangeTextAlign: boolean
     canMove: boolean
     canLock: boolean
+    canUnlock: boolean
 }
 export interface ConnectionPermissions {
     canMove: boolean
     canChangeShapeAndColor: boolean
     canLock: boolean
+    canUnlock: boolean
 }
 
 export function anyItemHasPermission(items: Item[], f: (p: ItemPermissions) => boolean): boolean {
@@ -23,17 +25,19 @@ export function anyConnectionHasPermission(items: Connection[], f: (p: Connectio
 
 export function getItemPermissions(item: Item): ItemPermissions {
     return {
-        canChangeFont: false,
-        canChangeShapeAndColor: false,
-        canChangeTextAlign: false,
-        canMove: false,
-        canLock: true,
+        canChangeFont: !item.locked,
+        canChangeShapeAndColor: !item.locked,
+        canChangeTextAlign: !item.locked,
+        canMove: !item.locked,
+        canLock: !item.locked,
+        canUnlock: item.locked === "locked",
     }
 }
 export function getConnectionPermissions(connection: Connection): ConnectionPermissions {
     return {
-        canMove: false,
-        canChangeShapeAndColor: false,
-        canLock: true,
+        canMove: !connection.locked,
+        canChangeShapeAndColor: !connection.locked,
+        canLock: !connection.locked,
+        canUnlock: connection.locked === "locked",
     }
 }

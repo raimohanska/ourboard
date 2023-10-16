@@ -119,7 +119,8 @@ export type BoardCursorPositions = Record<Id, UserCursorPosition>
 export type Color = string
 
 export type ItemBounds = { x: number; y: number; width: number; height: number; z: number }
-export type ItemProperties = { id: string; containerId?: string } & ItemBounds
+export type LockState = "locked" | "read-only" | undefined
+export type ItemProperties = { id: string; containerId?: string; locked?: LockState } & ItemBounds
 
 export const ITEM_TYPES = {
     NOTE: "note",
@@ -153,6 +154,7 @@ export type Connection = {
     controlPoints: Point[]
     to: ConnectionEndPoint
     containerId?: string
+    locked?: LockState
     fromStyle: ConnectionEndStyle
     toStyle: ConnectionEndStyle
     pointStyle: "none" | "black-dot"
