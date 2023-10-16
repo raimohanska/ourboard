@@ -4,6 +4,7 @@ import { isTextItem } from "../../../../common/src/domain"
 import { DecreaseFontSizeIcon, IncreaseFontSizeIcon } from "../../components/Icons"
 import { SubmenuProps } from "./ContextMenuView"
 import { black, disabledColor } from "../../components/UIColors"
+import { anyItemHasPermission } from "../board-permissions"
 
 type MenuIconProps = {
     onClick: () => void
@@ -24,10 +25,10 @@ export const MenuIcon = (props: MenuIconProps) => {
     )
 }
 
-export function fontSizesMenu({ board, focusedItems, dispatch, permissions }: SubmenuProps) {
+export function fontSizesMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const textItems = L.view(focusedItems, (items) => items.items.filter(isTextItem))
     const anyText = L.view(textItems, (items) => items.length > 0)
-    const enabled = permissions.everyItemHasPermission(textItems, (p) => p.canChangeFont, componentScope())
+    const enabled = L.view(textItems, (items) => anyItemHasPermission(items, (p) => p.canChangeFont))
     const className = enabled.pipe(L.map((e) => (e ? "icon" : "icon disabled")))
 
     return L.view(anyText, (any) =>

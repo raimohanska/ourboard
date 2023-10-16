@@ -13,6 +13,7 @@ import {
     VerticalDistributeIcon,
 } from "../../components/Icons"
 import { SubmenuProps } from "./ContextMenuView"
+import { anyItemHasPermission } from "../board-permissions"
 
 const createSubMenuByAxis = (axis: Axis) => (props: SubmenuProps) => {
     return <div className={`submenu alignment ${axis}`}>{alignmentsSubMenu(axis, props)}</div>
@@ -22,11 +23,7 @@ export function alignmentsMenu(axis: Axis, props: SubmenuProps) {
     const hasItemsToAlign = L.view(props.focusedItems, (items) => items.items.length > 1)
     const hasItemsToDistribute = L.view(props.focusedItems, (items) => items.items.length > 2)
     const createSubmenu = createSubMenuByAxis(axis)
-    const enabled = props.permissions.everyItemHasPermission(
-        props.focusedItems.pipe(L.map((i) => i.items)),
-        (p) => p.canMove,
-        componentScope(),
-    )
+    const enabled = L.view(props.focusedItems, (items) => anyItemHasPermission(items.items, (p) => p.canMove))
 
     return L.combine(hasItemsToAlign, hasItemsToDistribute, (hasItemsToAlign, hasItemsToDistribute) => {
         return !hasItemsToAlign && !hasItemsToDistribute

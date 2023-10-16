@@ -317,7 +317,6 @@ export const BoardView = ({
                                     board,
                                     focus,
                                     viewRect,
-                                    permissions: boardStore.permissionsProvider,
                                 }}
                             />
                             <ConnectionsView {...{ board, zoom, dispatch, focus, coordinateHelper }} />

@@ -34,7 +34,6 @@ import { mkBootStrapEvent } from "../../../common/src/migration"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
-import { BoardPermissionsProvider, ItemPermissions, ConnectionPermissions } from "../board/board-permissions"
 export type Dispatch = (e: UIEvent) => void
 export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardAccessStatus =
@@ -503,8 +502,6 @@ export function BoardStore(
         })
     }
 
-    const permissionsProvider: BoardPermissionsProvider = BoardPermissionsProvider(L.view(state, "accessLevel"))
-
     return {
         state,
         events,
@@ -512,7 +509,6 @@ export function BoardStore(
         dispatch,
         canUndo: undoStack.canPop,
         canRedo: redoStack.canPop,
-        permissionsProvider,
     }
 }
 

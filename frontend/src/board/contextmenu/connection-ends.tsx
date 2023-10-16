@@ -13,6 +13,7 @@ import {
     ConnectionRightDotIcon,
 } from "../../components/Icons"
 import { SubmenuProps } from "./ContextMenuView"
+import { anyConnectionHasPermission } from "../board-permissions"
 
 const styles: ConnectionEndStyle[] = ["arrow", "black-dot", "none"]
 function nextStyle(style: ConnectionEndStyle) {
@@ -20,15 +21,13 @@ function nextStyle(style: ConnectionEndStyle) {
     return styles[(i + 1) % styles.length]
 }
 
-export function connectionEndsMenu({ board, focusedItems, dispatch, permissions }: SubmenuProps) {
+export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const connections = L.view(focusedItems, (items) => items.connections)
     const singleConnection = L.view(connections, (connections) =>
         connections.length === 1 && connections[0].action === "connect" ? connections[0] : null,
     )
-    const enabled = permissions.everyConnectionHasPermission(
-        connections,
-        (p) => p.canChangeShapeAndColor,
-        componentScope(),
+    const enabled = L.view(connections, (connections) =>
+        anyConnectionHasPermission(connections, (p) => p.canChangeShapeAndColor),
     )
     const className = enabled.pipe(L.map((e) => (e ? "icon" : "icon disabled")))
 
