@@ -6,6 +6,7 @@ import {
     Board,
     Connection,
     ConnectionEndPoint,
+    ConnectionUpdate,
     findItem,
     findItemIdsRecursively,
     getConnection,
@@ -156,16 +157,22 @@ export function boardReducer(
                 },
             ]
         case "item.update": {
+            const updatedConnections = updateConnections(board, event.connections || [])
             return [
                 {
                     ...board,
                     items: updateItems(board.items, event.items),
+                    connections: board.connections.map((c) => {
+                        const replacement = updatedConnections.find((r) => r.id === c.id)
+                        return replacement ? replacement : c
+                    }),
                 },
                 {
                     action: "item.update",
                     boardId: board.id,
                     // TODO: Undo of update could only undo the actually updated fields here
                     items: event.items.map((item) => getItem(board)(item.id)),
+                    connections: (event.connections || []).map((connection) => getConnection(board)(connection.id)),
                 },
             ]
         }
@@ -294,6 +301,18 @@ function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[
         ...items,
         ...updated,
     }
+}
+
+function updateConnections(board: Board, updates: ConnectionUpdate[]): Connection[] {
+    return updates.map((update) => {
+        const existing = board.connections.find((c) => c.id === update.id)
+        if (!existing) {
+            throw Error(`Trying to modify nonexisting connection ${update.id} on board ${board.id}`)
+        }
+        const updated = { ...existing, ...update }
+        validateConnection(board, updated)
+        return updated
+    })
 }
 
 function updateItems(current: Record<Id, Item>, updateList: ItemUpdate[]): Record<Id, Item> {

@@ -280,8 +280,9 @@ export type AuthJWTLogin = {
 export type AuthLogout = { action: "auth.logout" }
 export type Ping = { action: "ping" }
 export type AddItem = { action: "item.add"; boardId: Id; items: Item[]; connections: Connection[] }
-export type UpdateItem = { action: "item.update"; boardId: Id; items: ItemUpdate[] }
+export type UpdateItem = { action: "item.update"; boardId: Id; items: ItemUpdate[]; connections?: ConnectionUpdate[] }
 export type ItemUpdate<I extends Item = Item> = Partial<I> & { id: Id }
+export type ConnectionUpdate = Partial<Connection> & { id: Id }
 export type MoveItem = {
     action: "item.move"
     boardId: Id

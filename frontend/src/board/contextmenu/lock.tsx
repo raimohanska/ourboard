@@ -32,8 +32,11 @@ export function lockMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     function setLocked() {
         const b = board.get()
         if (!enabled.get()) return
-        const updated = focusedItems.get().items.map((item) => ({ id: item.id, locked: nextLockState.get() }))
-        dispatch({ action: "item.update", boardId: b.id, items: updated })
+        const all = focusedItems.get()
+        const locked = nextLockState.get()
+        const items = all.items.map((item) => ({ id: item.id, locked }))
+        const connections = all.connections.map((connection) => ({ id: connection.id, locked }))
+        dispatch({ action: "item.update", boardId: b.id, items, connections })
     }
 
     return L.view(hasItems, nextLockState, (hasItems, nextState) => {
