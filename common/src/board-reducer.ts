@@ -28,6 +28,7 @@ import {
     Point,
     Text,
     TextItem,
+    Update,
     Video,
 } from "./domain"
 import { equalRect, Rect } from "./geometry"
@@ -191,9 +192,10 @@ export function boardReducer(
                 {
                     action: "item.update",
                     boardId: board.id,
-                    // TODO: Undo of update could only undo the actually updated fields here
-                    items: event.items.map((item) => getItem(board)(item.id)),
-                    connections: (event.connections || []).map((connection) => getConnection(board)(connection.id)),
+                    items: event.items.map((update) => copyMatchingKeysFromOriginal(update, getItem(board)(update.id))),
+                    connections: (event.connections || []).map((update) =>
+                        copyMatchingKeysFromOriginal(update, getConnection(board)(update.id)),
+                    ),
                 },
             ]
         }
@@ -292,6 +294,12 @@ export function boardReducer(
             console.warn("Unknown event", event)
             return [board, null]
     }
+}
+
+function copyMatchingKeysFromOriginal<T extends { id: Id }>(update: Update<T>, original: T): Update<T> {
+    const keysAndValues = Object.keys(update).map((key) => [key, original[key as keyof T]])
+    const result = Object.fromEntries(keysAndValues)
+    return result
 }
 
 function validateConnection(board: Board, connection: Connection) {
