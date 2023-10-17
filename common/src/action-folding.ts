@@ -1,4 +1,4 @@
-import { arrayEquals, arrayIdMatch, idsOf } from "./arrays"
+import { arrayEquals, arrayIdAndKeysMatch, arrayIdMatch, idsOf } from "./arrays"
 import { boardReducer } from "./board-reducer"
 import {
     actionNamespaceIs,
@@ -84,7 +84,14 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
     } else if (a.action === "item.move") {
         if (b.action === "item.move" && b.boardId === a.boardId && everyMovedItemMatches(b, a)) return b
     } else if (a.action === "item.update") {
-        if (b.action === "item.update" && b.boardId === a.boardId && arrayIdMatch(b.items, a.items)) return b
+        if (
+            b.action === "item.update" &&
+            b.boardId === a.boardId &&
+            arrayIdAndKeysMatch(b.items, a.items) &&
+            arrayIdAndKeysMatch(b.connections ?? [], a.connections ?? [])
+        ) {
+            return b
+        }
     } else if (a.action === "item.lock" || a.action === "item.unlock") {
         if (b.action === a.action && b.boardId === a.boardId && b.itemId === a.itemId) return b
     } else if (a.action === "connection.modify" && b.action === "connection.modify") {
