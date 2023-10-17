@@ -5,6 +5,7 @@ import { Board, Container } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { Dispatch } from "../store/board-store"
+import { canMove } from "./board-permissions"
 
 type Horizontal = "left" | "right"
 type Vertical = "top" | "bottom"
@@ -34,14 +35,16 @@ export const SelectionBorder = ({
         }
     })
 
-    return (
-        <span className="selection-control" style={style}>
-            <span className="corner-resize-drag top left"></span>
-            <DragCorner {...{ horizontal: "left", vertical: "top" }} />
-            <DragCorner {...{ horizontal: "left", vertical: "bottom" }} />
-            <DragCorner {...{ horizontal: "right", vertical: "top" }} />
-            <DragCorner {...{ horizontal: "right", vertical: "bottom" }} />
-        </span>
+    return L.view(item, canMove, (m) =>
+        m ? (
+            <span className="selection-control" style={style}>
+                <span className="corner-resize-drag top left"></span>
+                <DragCorner {...{ horizontal: "left", vertical: "top" }} />
+                <DragCorner {...{ horizontal: "left", vertical: "bottom" }} />
+                <DragCorner {...{ horizontal: "right", vertical: "top" }} />
+                <DragCorner {...{ horizontal: "right", vertical: "bottom" }} />
+            </span>
+        ) : null,
     )
 
     function DragCorner({ vertical, horizontal }: { vertical: Vertical; horizontal: Horizontal }) {
