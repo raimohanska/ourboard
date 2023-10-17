@@ -25,7 +25,7 @@ import {
 } from "../../components/Icons"
 import { black, disabledColor } from "../../components/UIColors"
 import { SubmenuProps } from "./ContextMenuView"
-import { anyItemHasPermission } from "../board-permissions"
+import { canChangeTextAlign } from "../board-permissions"
 
 export function textAlignmentsMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const textItems = L.view(focusedItems, (items) => items.items.filter(isTextItem))
@@ -49,7 +49,7 @@ export function textAlignmentsMenu({ board, focusedItems, dispatch }: SubmenuPro
         dispatch({ action: "item.update", boardId: b.id, items: updated })
     }
 
-    const enabled = L.view(textItems, (items) => anyItemHasPermission(items, (p) => p.canChangeTextAlign))
+    const enabled = L.view(textItems, (items) => items.some(canChangeTextAlign))
 
     const className = enabled.pipe(L.map((e) => (e ? "icon" : "icon disabled")))
 

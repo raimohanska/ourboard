@@ -2,10 +2,10 @@ import { h } from "harmaja"
 import * as L from "lonna"
 import { Board, Container, Item, findItem, isContainer } from "../../../../common/src/domain"
 import { TileIcon } from "../../components/Icons"
-import { anyItemHasPermission } from "../board-permissions"
 import { contentRect, organizeItems, packableItems } from "../item-organizer"
 import { packItems } from "../item-packer"
 import { SubmenuProps } from "./ContextMenuView"
+import { canMove } from "../board-permissions"
 
 export function areaTilingMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const packables = L.view(focusedItems, (items) => {
@@ -18,7 +18,7 @@ export function areaTilingMenu({ board, focusedItems, dispatch }: SubmenuProps) 
         }
         return []
     })
-    const enabled = L.view(packables, (items) => anyItemHasPermission(items, (p) => p.canMove))
+    const enabled = L.view(packables, (items) => items.some(canMove))
     const className = enabled.pipe(L.map((e) => (e ? "icon" : "icon disabled")))
 
     return L.view(

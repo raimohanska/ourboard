@@ -6,7 +6,7 @@ import { colorsSubMenu } from "./colors"
 import { SubmenuProps } from "./ContextMenuView"
 import { getShapeIcon, shapesSubMenu } from "./shapes"
 import { disabledColor } from "../../components/UIColors"
-import { anyItemHasPermission } from "../board-permissions"
+import { canChangeShapeAndColor } from "../board-permissions"
 
 function createSubMenu(props: SubmenuProps) {
     return (
@@ -20,7 +20,7 @@ function createSubMenu(props: SubmenuProps) {
 export function colorsAndShapesMenu(props: SubmenuProps) {
     const coloredItems = L.view(props.focusedItems, (items) => items.items.filter(isColoredItem))
     const representativeColoredItem: L.Property<ColoredItem | null> = L.view(coloredItems, (items) => items[0] || null)
-    const enabled = L.view(coloredItems, (items) => anyItemHasPermission(items, (p) => p.canChangeShapeAndColor))
+    const enabled = L.view(coloredItems, (items) => items.some(canChangeShapeAndColor))
     return L.view(representativeColoredItem, enabled, (item, enabled) => {
         if (!item) return []
         const color = NOTE_COLORS.find((c) => c.color === item.color) || NOTE_COLORS[0]

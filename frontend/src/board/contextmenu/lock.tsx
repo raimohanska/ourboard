@@ -1,23 +1,15 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import { LockIcon } from "../../components/Icons"
+import * as P from "../board-permissions"
 import { SubmenuProps } from "./ContextMenuView"
-import { anyConnectionHasPermission, anyItemHasPermission } from "../board-permissions"
-import { LockState } from "../../../../common/src/domain"
 
 export function lockMenu({ board, focusedItems, dispatch }: SubmenuProps) {
-    const canLock = L.view(
-        focusedItems,
-        (items) =>
-            anyItemHasPermission(items.items, (p) => p.canLock) ||
-            anyConnectionHasPermission(items.connections, (p) => p.canLock),
-    )
+    const canLock = L.view(focusedItems, (items) => items.items.some(P.canLock) || items.connections.some(P.canLock))
 
     const canUnlock = L.view(
         focusedItems,
-        (items) =>
-            anyItemHasPermission(items.items, (p) => p.canUnlock) ||
-            anyConnectionHasPermission(items.connections, (p) => p.canUnlock),
+        (items) => items.items.some(P.canUnlock) || items.connections.some(P.canUnlock),
     )
 
     const showUnlock = L.view(canLock, canUnlock, (l, u) => !l && u)
