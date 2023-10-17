@@ -1,6 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { LockIcon } from "../../components/Icons"
+import { LockIcon, UnlockIcon } from "../../components/Icons"
 import * as P from "../board-permissions"
 import { SubmenuProps } from "./ContextMenuView"
 
@@ -17,9 +17,6 @@ export function lockMenu({ board, focusedItems, dispatch }: SubmenuProps) {
 
     const hasItems = L.view(focusedItems, (ps) => ps.connections.length > 0 || ps.items.length > 0)
     const nextLockState = L.view(showUnlock, (unlock): "locked" | undefined => (unlock ? undefined : "locked"))
-
-    // TODO: show unlock icon
-    // TODO: lock connections too
 
     function setLocked() {
         const b = board.get()
@@ -40,7 +37,7 @@ export function lockMenu({ board, focusedItems, dispatch }: SubmenuProps) {
                           title={nextState === "locked" ? "Lock item(s)" : "Unlock item(s)"}
                           onClick={setLocked}
                       >
-                          <LockIcon />
+                          {nextState === "locked" ? <LockIcon /> : <UnlockIcon />}
                       </span>
                   </div>,
               ]
