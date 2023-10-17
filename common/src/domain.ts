@@ -530,7 +530,7 @@ export const getConnection = (b: Board) => (id: Id) => {
     return conn
 }
 
-export const findItem = (boardOrItems: Board | Record<string, Item>) => (id: Id) => {
+export const findItem = (boardOrItems: Board | Record<string, Item>) => (id: Id): Item | null => {
     const items = getItems(boardOrItems)
     const item = items[id]
     return item || null

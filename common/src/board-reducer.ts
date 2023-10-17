@@ -7,12 +7,14 @@ import {
     Connection,
     ConnectionEndPoint,
     ConnectionUpdate,
+    Container,
     findItem,
     findItemIdsRecursively,
     getConnection,
     getEndPointItemId,
     getItem,
     Id,
+    Image,
     isBoardHistoryEntry,
     isContainedBy,
     isContainer,
@@ -21,11 +23,24 @@ import {
     Item,
     ItemUpdate,
     MoveItem,
+    Note,
     PersistableBoardItemEvent,
     Point,
+    Text,
     TextItem,
+    Video,
 } from "./domain"
 import { equalRect, Rect } from "./geometry"
+import {
+    BoardPermission,
+    canChangeFont,
+    canChangeShapeAndColor,
+    canChangeText,
+    canChangeTextAlign,
+    canDelete,
+    canMove,
+    nullablePermission,
+} from "../../frontend/src/board/board-permissions"
 
 export function boardReducer(
     board: Board,
@@ -56,7 +71,7 @@ export function boardReducer(
             ]
         }
         case "connection.modify": {
-            const connections = event.connections
+            const connections = event.connections.filter(canMove)
 
             const existingConnections = connections.map((r) => {
                 validateConnection(board, r)
@@ -81,7 +96,7 @@ export function boardReducer(
         case "connection.delete": {
             const ids = new Set(event.connectionIds)
 
-            const existingConnections = board.connections.filter((c) => ids.has(c.id))
+            const existingConnections = board.connections.filter((c) => ids.has(c.id) || !canDelete(c))
 
             return [
                 { ...board, connections: board.connections.filter((c) => !ids.has(c.id)) },
@@ -138,7 +153,11 @@ export function boardReducer(
             return [
                 {
                     ...board,
-                    items: applyFontSize(board.items, 1.1, event.itemIds),
+                    items: applyFontSize(
+                        board.items,
+                        1.1,
+                        filterItemIdsByPermissions(event.itemIds, board, canChangeFont),
+                    ),
                 },
                 {
                     ...event,
@@ -149,7 +168,11 @@ export function boardReducer(
             return [
                 {
                     ...board,
-                    items: applyFontSize(board.items, 1 / 1.1, event.itemIds),
+                    items: applyFontSize(
+                        board.items,
+                        1 / 1.1,
+                        filterItemIdsByPermissions(event.itemIds, board, canChangeFont),
+                    ),
                 },
                 {
                     ...event,
@@ -158,14 +181,12 @@ export function boardReducer(
             ]
         case "item.update": {
             const updatedConnections = updateConnections(board, event.connections || [])
+            const updatedItems = updateItems(board, event.items)
             return [
                 {
                     ...board,
-                    items: updateItems(board.items, event.items),
-                    connections: board.connections.map((c) => {
-                        const replacement = updatedConnections.find((r) => r.id === c.id)
-                        return replacement ? replacement : c
-                    }),
+                    items: updatedItems,
+                    connections: updatedConnections,
                 },
                 {
                     action: "item.update",
@@ -194,8 +215,10 @@ export function boardReducer(
                 },
             ]
         case "item.delete": {
-            const itemIdsToDelete = findItemIdsRecursively(event.itemIds, board)
-            const connectionIdsToDelete = new Set(event.connectionIds)
+            const itemIds = filterItemIdsByPermissions(event.itemIds, board, canDelete)
+            const connectionIds = filterConnectionIdsByPermissions(event.connectionIds, board, canDelete)
+            const itemIdsToDelete = findItemIdsRecursively(itemIds, board)
+            const connectionIdsToDelete = new Set(connectionIds)
             const updatedItems = { ...board.items }
             itemIdsToDelete.forEach((id) => {
                 delete updatedItems[id]
@@ -304,7 +327,8 @@ function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[
 }
 
 function updateConnections(board: Board, updates: ConnectionUpdate[]): Connection[] {
-    return updates.map((update) => {
+    updates = filterConnectionUpdatesByPermissions(updates, board)
+    const updatedConnections = updates.map((update) => {
         const existing = board.connections.find((c) => c.id === update.id)
         if (!existing) {
             throw Error(`Trying to modify nonexisting connection ${update.id} on board ${board.id}`)
@@ -313,9 +337,15 @@ function updateConnections(board: Board, updates: ConnectionUpdate[]): Connectio
         validateConnection(board, updated)
         return updated
     })
+    return board.connections.map((c) => {
+        const replacement = updatedConnections.find((r) => r.id === c.id)
+        return replacement ? replacement : c
+    })
 }
 
-function updateItems(current: Record<Id, Item>, updateList: ItemUpdate[]): Record<Id, Item> {
+function updateItems(board: Board, updateList: ItemUpdate[]): Record<Id, Item> {
+    updateList = filterItemUpdatesByPermissions(updateList, board)
+    const current = board.items
     const updatedItems: Item[] = updateList.map((update) => ({ ...current[update.id], ...update } as Item))
     const updatedItemMap = arrayToRecordById(updatedItems)
     const resultMap = { ...current, ...updatedItemMap }
@@ -340,7 +370,73 @@ function updateItems(current: Record<Id, Item>, updateList: ItemUpdate[]): Recor
     return resultMap
 }
 
+function filterItemIdsByPermissions(itemIds: Id[], board: Board, permission: BoardPermission) {
+    return itemIds.filter((id) => nullablePermission(permission)(findItem(board)(id)))
+}
+
+function filterConnectionIdsByPermissions(connectionIds: Id[], board: Board, permission: BoardPermission) {
+    return connectionIds.filter((id) => permission(getConnection(board)(id)))
+}
+
+function filterMoveByPermissions(event: MoveItem, board: Board) {
+    return {
+        ...event,
+        items: event.items.filter((i) => canMove(getItem(board)(i.id))),
+        connections: event.connections.filter((c) => canMove(getConnection(board)(c.id))),
+    }
+}
+
+function filterItemUpdatesByPermissions(updates: ItemUpdate[], board: Board): ItemUpdate[] {
+    type AnyItemKey = keyof Note | keyof Text | keyof Container | keyof Image | keyof Video
+    const propertyToPermissionMapping: Partial<Record<AnyItemKey, BoardPermission>> = {
+        align: canChangeTextAlign,
+        color: canChangeShapeAndColor,
+        fontSize: canChangeFont,
+        x: canMove,
+        y: canMove,
+        width: canMove,
+        height: canMove,
+        text: canChangeText,
+    }
+    return updates.filter((update) => {
+        const item = findItem(board)(update.id)
+        if (!item) return false
+        const keys = Object.keys(update) as AnyItemKey[]
+        const permissionFns = keys.map((key) => propertyToPermissionMapping[key])
+        for (let fn of permissionFns) {
+            if (fn && !fn(item)) {
+                console.log("Deny update", keys)
+                return false
+            }
+        }
+        return true
+    })
+}
+
+function filterConnectionUpdatesByPermissions(updates: ConnectionUpdate[], board: Board): ConnectionUpdate[] {
+    const propertyToPermissionMapping: Partial<Record<keyof Connection, BoardPermission>> = {
+        from: canMove,
+        to: canMove,
+        fromStyle: canChangeShapeAndColor,
+        toStyle: canChangeShapeAndColor,
+        controlPoints: canMove,
+    }
+    return updates.filter((update) => {
+        const connection = getConnection(board)(update.id)
+        const keys = Object.keys(update) as (keyof Connection)[]
+        const permissionFns = keys.map((key) => propertyToPermissionMapping[key])
+        for (let fn of permissionFns) {
+            if (fn && !fn(connection)) {
+                console.log("Deny update", keys)
+                return false
+            }
+        }
+        return true
+    })
+}
+
 function moveItems(board: Board, event: MoveItem) {
+    event = filterMoveByPermissions(event, board)
     const itemMoves: Record<Id, ItemMove> = {}
     const itemsOnBoard = board.items
     const connectionMovesInEvent = event.connections || []
@@ -382,7 +478,7 @@ function moveItems(board: Board, event: MoveItem) {
         }
     }
 
-    let connections: Connection[] = board.connections.flatMap((connection) => {
+    let updatedConnections: Connection[] = board.connections.flatMap((connection) => {
         const move = connectionMoves[connection.id]
         if (!move) return connection
         if (move.ends === "both") {
@@ -410,7 +506,7 @@ function moveItems(board: Board, event: MoveItem) {
     return {
         ...board,
         items: updatedItems,
-        connections,
+        connections: updatedConnections,
     }
 }
 
