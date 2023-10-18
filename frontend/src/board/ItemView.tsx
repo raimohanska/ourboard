@@ -34,7 +34,6 @@ import { itemZIndex } from "./zIndices"
 export const ItemView = ({
     board,
     accessLevel,
-    history,
     id,
     type,
     item,
@@ -104,6 +103,7 @@ export const ItemView = ({
 
     return (
         <span
+            title={L.view(isLocked, (l) => (l ? "Item is selected by another user" : ""))}
             ref={ref}
             data-test={dataTest}
             data-itemid={id}
@@ -113,7 +113,11 @@ export const ItemView = ({
             className={L.view(
                 selected,
                 L.view(item, getItemBackground),
-                (s, b) => `${type} ${"color-" + b.replace("#", "").toLowerCase()} ${s ? "selected" : ""}`,
+                isLocked,
+                (s, b, l) =>
+                    `${type} ${"color-" + b.replace("#", "").toLowerCase()} ${s ? "selected" : ""} ${
+                        l ? "locked" : ""
+                    }`,
             )}
             style={L.view(item, (i) => {
                 return {
@@ -143,7 +147,6 @@ export const ItemView = ({
             {(type === "note" || type === "text" || type === "container") && (
                 <TextView item={item as L.Property<TextItem>} />
             )}
-            {L.view(isLocked, (l) => l && <span className="lock">🔒</span>)}
 
             {type === "container" && (
                 <DragBorder {...{ id, board, toolController, coordinateHelper, latestConnection, focus, dispatch }} />

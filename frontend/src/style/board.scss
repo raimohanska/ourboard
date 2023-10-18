@@ -163,6 +163,10 @@
                     border: 1px dashed #00000040;
                 }
             }
+
+            &.locked {
+                opacity: 0.5;
+            }
         }
 
         .note {
