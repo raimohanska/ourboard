@@ -6,6 +6,7 @@ yarn-error.log
 *.mp4
 cypress/screenshots/
 cypress/videos/
+cypress/downloads/
 backend/localfiles/
 /ignore
 .DS_Store
