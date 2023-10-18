@@ -119,8 +119,8 @@ export type BoardCursorPositions = Record<Id, UserCursorPosition>
 export type Color = string
 
 export type ItemBounds = { x: number; y: number; width: number; height: number; z: number }
-export type LockState = "locked" | "read-only" | undefined
-export type ItemProperties = { id: string; containerId?: string; locked?: LockState } & ItemBounds
+export type LockState = false | "locked" | "read-only"
+export type ItemProperties = { id: string; containerId?: string; locked: LockState } & ItemBounds
 
 export const ITEM_TYPES = {
     NOTE: "note",
@@ -154,7 +154,7 @@ export type Connection = {
     controlPoints: Point[]
     to: ConnectionEndPoint
     containerId?: string
-    locked?: LockState
+    locked: LockState
     fromStyle: ConnectionEndStyle
     toStyle: ConnectionEndStyle
     pointStyle: "none" | "black-dot"
@@ -377,7 +377,7 @@ export function newNote(
     shape: NoteShape = "square",
     z: number = 0,
 ): Note {
-    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z, shape }
+    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z, shape, locked: false }
 }
 
 export function newSimilarNote(note: Note) {
@@ -392,7 +392,7 @@ export function newText(
     height: number = 2,
     z: number = 0,
 ): Text {
-    return { id: uuid.v4(), type: "text", text, x, y, width, height, z, color: "none" }
+    return { id: uuid.v4(), type: "text", text, x, y, width, height, z, color: "none", locked: false }
 }
 
 export function newContainer(
@@ -402,7 +402,18 @@ export function newContainer(
     height: number = 20,
     z: number = 0,
 ): Container {
-    return { id: uuid.v4(), type: "container", text: "Unnamed area", x, y, width, height, z, color: "white" }
+    return {
+        id: uuid.v4(),
+        type: "container",
+        text: "Unnamed area",
+        x,
+        y,
+        width,
+        height,
+        z,
+        color: "white",
+        locked: false,
+    }
 }
 
 export function newImage(
@@ -413,7 +424,7 @@ export function newImage(
     height: number = 5,
     z: number = 0,
 ): Image {
-    return { id: uuid.v4(), type: "image", assetId, x, y, width, height, z }
+    return { id: uuid.v4(), type: "image", assetId, x, y, width, height, z, locked: false }
 }
 
 export function newVideo(
@@ -424,7 +435,7 @@ export function newVideo(
     height: number = 5,
     z: number = 0,
 ): Video {
-    return { id: uuid.v4(), type: "video", assetId, x, y, width, height, z }
+    return { id: uuid.v4(), type: "video", assetId, x, y, width, height, z, locked: false }
 }
 
 export const isBoardItemEvent = (a: AppEvent): a is BoardItemEvent =>

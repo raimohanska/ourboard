@@ -123,6 +123,7 @@ export function newConnectionCreator(
                     controlPoints: l && l.controlPoints.length === 0 ? [] : [{ x: 0, y: 0 }],
                     to: target,
                     action,
+                    locked: false,
                     ...(action === "connect"
                         ? {
                               fromStyle: (l && l.fromStyle) ?? "none",

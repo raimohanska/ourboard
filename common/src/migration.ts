@@ -59,14 +59,22 @@ function migrateConnection(c: Connection): Connection {
             ? c
             : { ...c, fromStyle: "black-dot", toStyle: "arrow", pointStyle: "black-dot" }
     c = c.action !== undefined ? c : { ...c, action: "connect" }
+    c = c.locked !== undefined ? c : { ...c, locked: false }
     return c
 }
 
 function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<string, Item>): Item {
-    const { width, height, z, type, ...rest } = item
+    const { width, height, z, type, locked, ...rest } = item
 
     // Force type, width and height for all items
-    let fixedItem = { type: type || "note", width: width || 5, height: height || 5, z: z || 0, ...rest } as Item
+    let fixedItem = {
+        type: type || "note",
+        width: width || 5,
+        height: height || 5,
+        z: z || 0,
+        locked: locked || false,
+        ...rest,
+    } as Item
     if (fixedItem.type === "text") {
         fixedItem.color ??= "none"
     }
