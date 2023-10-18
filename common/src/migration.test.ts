@@ -74,10 +74,10 @@ describe("Migration", () => {
                 ...defaultBoardSize,
                 connections: [],
                 items: arrayToRecordById([
-                    { ...containedNoteWithNoType, type: "note", containerId: "d", z: 0 },
-                    { ...containedNote2, containerId: "d", z: 0 },
-                    { ...unContainedNoteWithNoDimensions, width: 5, height: 5, z: 0 },
-                    { type: "container", id: "d", x: 0, y: 0, width: 5, height: 5, z: 0, text: "" },
+                    { ...containedNoteWithNoType, type: "note", containerId: "d", z: 0, locked: false },
+                    { ...containedNote2, containerId: "d", z: 0, locked: false },
+                    { ...unContainedNoteWithNoDimensions, width: 5, height: 5, z: 0, locked: false },
+                    { type: "container", id: "d", x: 0, y: 0, width: 5, height: 5, z: 0, text: "", locked: false },
                 ]),
             })
         })
@@ -96,6 +96,7 @@ describe("Migration", () => {
                         toStyle: "none",
                         pointStyle: "none",
                         action: "connect",
+                        locked: false,
                     },
                 ],
             }
@@ -121,6 +122,7 @@ describe("Migration", () => {
                         toStyle: "arrow",
                         pointStyle: "black-dot",
                         action: "connect",
+                        locked: false,
                     } as Connection,
                 ],
             })
