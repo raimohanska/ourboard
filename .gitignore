@@ -11,3 +11,4 @@ backend/localfiles/
 .DS_Store
 latest.dump
 .vscode
+backups
