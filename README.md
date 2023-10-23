@@ -263,8 +263,9 @@ With the example script, you'll have a setup which
 -   Doesn't have authentication. See environment variables below for configuring Google authentication, which is the only supported option for now.
 -   Stores uploaded assets (images) on the local filesystem. The example script binds the local directory `backend/localfiles` to be used for storage. In your own script, you'll probably want to point out a more suitable directory on your server machine.
 -   Uses an absolutely insecure SESSION_SIGNING_KEY. Make sure to use a long random string instead.
--   Will benefit from a HTTPS terminating proxy. This is not included. The simple setup will use plain HTTP and respond at http://localhost:1337.
--   If your setup doesn't respond to http://localhost:1337, you'll need to set the ROOT*URL variable (and all the WS* variables unless you have the latest ourboard image)
+-   Uses plain HTTP and responds at http://localhost:1337. If you want it to respond at some other URL, you'll need to set the ROOT\__\_URL variable (and all the WS_ variables unless you have the latest ourboard image)
+
+Read on!
 
 ### Environment variables
 
@@ -284,15 +285,6 @@ HTTPS_CERT_FILE       Path to HTTPS certificate file. When running in docker, ma
 HTTPS_KEY_FILE        Path to HTTPS key file. When running in docker, make sure to add appropriate mounts to make the file available to the dockerized process.
 REDIRECT_URL          Put your OurBoard application root URL here, if you want the server to redirect all requests that don't have the x-forwarded-proto=https
 DATABASE_SSL_ENABLED  Use `true` to use SSL for database connection. Recommended.
-```
-
-And finally some more settings you're unlikely to need.
-
-```
-WS_HOST_DEFAULT       Your domain name here, used for routing websocket connections. Is automatically derived from ROOT_URL in latest image.
-WS_HOST_LOCAL         Your domain name here as well. Is automatically derived from ROOT_URL in latest image.
-WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Is automatically derived from ROOT_URL in latest image.
-BOARD_ALIAS_tutorial  Board identifier for the "tutorial" board that will be cloned for new users. Allows you to create a custom tutorial board. For example, the value `782d4942-a438-44c9-ad5f-3187cc1d0a63` is used in ourboard.io, and this points to a publicly readable, but privately editable board
 ```
 
 AWS environment variables, needed for hosting board assets on AWS S3. If these are missing, all uploaded
@@ -318,6 +310,15 @@ Generic OpenID Connect authentication is also supported as an experimental featu
 OIDC_CONFIG_URL        Your OpenID configuration endpoint. For example: https://accounts.google.com/.well-known/openid-configuration
 OIDC_CLIENT_ID         Your OAuth2 client id
 OIDC_CLIENT_SECRET     Your OAuth2 client secret
+```
+
+And finally some more settings you're unlikely to need.
+
+```
+WS_HOST_DEFAULT       Your domain name here, used for routing websocket connections. Is automatically derived from ROOT_URL in latest image.
+WS_HOST_LOCAL         Your domain name here as well. Is automatically derived from ROOT_URL in latest image.
+WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Is automatically derived from ROOT_URL in latest image.
+BOARD_ALIAS_tutorial  Board identifier for the "tutorial" board that will be cloned for new users. Allows you to create a custom tutorial board. For example, the value `782d4942-a438-44c9-ad5f-3187cc1d0a63` is used in ourboard.io, and this points to a publicly readable, but privately editable board
 ```
 
 ## Contribution
