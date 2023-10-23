@@ -5,6 +5,7 @@ import JWT from "jsonwebtoken"
 import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
 import { getEnv } from "./env"
 import { AuthProvider } from "./oauth"
+import { ROOT_URL } from "./host-config"
 
 type GenericOAuthConfig = {
     OIDC_CONFIG_URL: string
@@ -23,7 +24,7 @@ export const genericOIDCConfig: GenericOAuthConfig | null = process.env.OIDC_CON
 export function GenericOIDCAuthProvider(config: GenericOAuthConfig): AuthProvider {
     console.log(`Setting up generic OAuth authentication using client id ${config.OIDC_CLIENT_ID}`)
 
-    const callbackUrl = `${getEnv("ROOT_URL")}/google-callback`
+    const callbackUrl = `${ROOT_URL}/google-callback`
 
     const openIdConfiguration = (async () => {
         const response = await fetch(config.OIDC_CONFIG_URL)

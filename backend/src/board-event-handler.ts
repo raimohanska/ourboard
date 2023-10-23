@@ -18,10 +18,7 @@ import { associateUserWithBoard } from "./user-store"
 import { getBoardInfo } from "./board-store"
 import { WsWrapper } from "./ws-wrapper"
 import { sleep } from "../../common/src/sleep"
-
-const WS_PROTOCOL = process.env.WS_PROTOCOL ?? "ws"
-const WS_HOST_LOCAL = (process.env.WS_HOST_LOCAL ?? "localhost:1337").split(",")
-const WS_HOST_DEFAULT = process.env.WS_HOST_DEFAULT ?? "localhost:1337"
+import { WS_HOST_DEFAULT, WS_HOST_LOCAL, WS_PROTOCOL } from "./host-config"
 
 export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (key: string) => string) => async (
     socket: WsWrapper,

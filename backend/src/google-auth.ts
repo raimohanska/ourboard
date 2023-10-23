@@ -2,6 +2,7 @@ import { google } from "googleapis"
 import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
 import { getEnv } from "./env"
 import { AuthProvider } from "./oauth"
+import { ROOT_URL } from "./host-config"
 
 type GoogleConfig = {
     clientID: string
@@ -13,7 +14,7 @@ export const googleConfig: GoogleConfig | null = process.env.GOOGLE_OAUTH_CLIENT
     ? {
           clientID: getEnv("GOOGLE_OAUTH_CLIENT_ID"),
           clientSecret: getEnv("GOOGLE_OAUTH_CLIENT_SECRET"),
-          callbackURL: `${getEnv("ROOT_URL")}/google-callback`,
+          callbackURL: `${ROOT_URL}/google-callback`,
       }
     : null
 
