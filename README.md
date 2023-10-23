@@ -264,19 +264,25 @@ With the example script, you'll have a setup which
 -   Stores uploaded assets (images) on the local filesystem. The example script binds the local directory `backend/localfiles` to be used for storage. In your own script, you'll probably want to point out a more suitable directory on your server machine.
 -   Uses an absolutely insecure SESSION_SIGNING_KEY. Make sure to use a long random string instead.
 -   Will benefit from a HTTPS terminating proxy. This is not included. The simple setup will use plain HTTP and respond at http://localhost:1337.
+-   If your setup doesn't respond to http://localhost:1337, you'll need to set the ROOT*URL variable (and all the WS* variables unless you have the latest ourboard image)
 
 ### Environment variables
 
-Here's a most likely incomplete list of supported environment variables for the server. When developing the application locally, set these variables in `backend/.env` file.
+Here's a most likely incomplete list of supported environment variables for the server. When developing the application locally, set these variables in `backend/.env` file. The most important first - you'll most likely need to set these.
 
 ```
 DATABASE_URL          Postgres database URL. In Heroku, you can just add the PostgreSQL add on and this variable will be correctly set. The free one will get you started.
+ROOT_URL              Root URL used for redirects. Use https://<yourdomain>/. If you don't have authentication configured or you're actually planning to access your server using the address http://localhost:1337, you can omit this one.
+```
+
+Then, there's more, in case you're using an SSL connection to the PostgreSQL database, want http->https recirection and so on.
+
+```
 DATABASE_SSL_ENABLED  Use `true` to use SSL for database connection. Recommended.
 REDIRECT_URL          Put your OurBoard application root URL here, if you want the server to redirect all requests that don't have the x-forwarded-proto=https header. For example: https://www.ourboard.io/.
-ROOT_URL              Root URL used for redirects. Use https://<yourdomain>/. If you don't have authentication configured, you can omit this one.
-WS_HOST_DEFAULT       Your domain name here, used for routing websocket connections. Can be omitted in simple configurations.
-WS_HOST_LOCAL         Your domain name here as well. Can be omitted in simple configurations.
-WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Always use wss for secure connections.
+WS_HOST_DEFAULT       Your domain name here, used for routing websocket connections. Is automatically derived from ROOT_URL in latest image.
+WS_HOST_LOCAL         Your domain name here as well. Is automatically derived from ROOT_URL in latest image.
+WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Is automatically derived from ROOT_URL in latest image.
 BOARD_ALIAS_tutorial  Board identifier for the "tutorial" board that will be cloned for new users. Allows you to create a custom tutorial board. For example, the value `782d4942-a438-44c9-ad5f-3187cc1d0a63` is used in ourboard.io, and this points to a publicly readable, but privately editable board
 ```
 
