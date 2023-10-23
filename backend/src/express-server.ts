@@ -14,26 +14,14 @@ import { authProvider, setupAuth } from "./oauth"
 import openapiDoc from "./openapi"
 import { createGetSignedPutUrl } from "./storage"
 import { WsWrapper } from "./ws-wrapper"
+import { getEnv } from "./env"
+
 dotenv.config()
 
-export const startExpressServer = (port: number) => {
+export const startExpressServer = (httpPort?: number, httpsPort?: number): (() => void) => {
     const config = getConfig()
 
     const app = express()
-
-    let http = new Http.Server(app)
-    const ws = expressWs(app, http)
-
-    const redirectURL = process.env.REDIRECT_URL
-    if (redirectURL) {
-        app.get("*", function (req, res, next) {
-            if (req.headers["x-forwarded-proto"] !== "https") {
-                res.redirect(redirectURL)
-            } else {
-                next()
-            }
-        })
-    }
 
     app.use("/", express.static("../frontend/dist"))
     app.use("/", express.static("../frontend/public"))
@@ -90,7 +78,56 @@ export const startExpressServer = (port: number) => {
         setupAuth(app, authProvider)
     }
 
-    const signedPutUrl = createGetSignedPutUrl(config.storageBackend)
+    let stop = () => {}
+
+    if (httpPort) {
+        const http = new Http.Server(app)
+        startWs(http, app)
+        http.listen(httpPort, () => {
+            console.log("Listening HTTP on port " + httpPort)
+        })
+        stop = () => {
+            stop()
+            http.close()
+        }
+    }
+
+    if (httpsPort) {
+        let https = new Https.Server(
+            {
+                cert: fs.readFileSync(getEnv("HTTPS_CERT_FILE")),
+                key: fs.readFileSync(getEnv("HTTPS_KEY_FILE")),
+            },
+            app,
+        )
+        startWs(https, app)
+        https.listen(httpsPort, () => {
+            console.log("Listening HTTPS on port " + httpsPort)
+        })
+        stop = () => {
+            stop()
+            https.close()
+        }
+    }
+
+    const redirectURL = process.env.REDIRECT_URL
+    if (redirectURL) {
+        app.get("*", function (req, res, next) {
+            if (req.headers["x-forwarded-proto"] !== "https") {
+                res.redirect(redirectURL)
+            } else {
+                next()
+            }
+        })
+    }
+    return stop
+}
+
+function startWs(http: any, app: express.Express) {
+    const ws = expressWs(app, http)
+
+    const signedPutUrl = createGetSignedPutUrl(getConfig().storageBackend)
+
     ws.app.ws("/socket/lobby", (socket, req) => {
         connectionHandler(WsWrapper(socket), handleBoardEvent(null, signedPutUrl))
     })
@@ -98,10 +135,4 @@ export const startExpressServer = (port: number) => {
         const boardId = req.params.boardId
         connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, signedPutUrl))
     })
-
-    http.listen(port, () => {
-        console.log("Listening on port " + port)
-    })
-
-    return http
 }

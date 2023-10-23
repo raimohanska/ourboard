@@ -275,11 +275,19 @@ DATABASE_URL          Postgres database URL. In Heroku, you can just add the Pos
 ROOT_URL              Root URL used for redirects. Use https://<yourdomain>/. If you don't have authentication configured or you're actually planning to access your server using the address http://localhost:1337, you can omit this one.
 ```
 
-Then, there's more, in case you're using an SSL connection to the PostgreSQL database, want http->https recirection and so on.
+HTTPS and TLS related settings:
 
 ```
+HTTPS_PORT            Local port to use for HTTPS sockets. Use this if you want OurBoard to terminate HTTPS. If you use a proxy like NGINX or run in a hosted environment like Heroku, you won't be needing this one.
+HTTPS_CERT_FILE       Path to HTTPS certificate file. When running in docker, make sure to add appropriate mounts to make the file available to the dockerized process.
+HTTPS_KEY_FILE        Path to HTTPS key file. When running in docker, make sure to add appropriate mounts to make the file available to the dockerized process.
+REDIRECT_URL          Put your OurBoard application root URL here, if you want the server to redirect all requests that don't have the x-forwarded-proto=https
 DATABASE_SSL_ENABLED  Use `true` to use SSL for database connection. Recommended.
-REDIRECT_URL          Put your OurBoard application root URL here, if you want the server to redirect all requests that don't have the x-forwarded-proto=https header. For example: https://www.ourboard.io/.
+```
+
+And finally some more settings you're unlikely to need.
+
+```
 WS_HOST_DEFAULT       Your domain name here, used for routing websocket connections. Is automatically derived from ROOT_URL in latest image.
 WS_HOST_LOCAL         Your domain name here as well. Is automatically derived from ROOT_URL in latest image.
 WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Is automatically derived from ROOT_URL in latest image.

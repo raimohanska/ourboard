@@ -9,11 +9,11 @@ import { initDB } from "./db"
 import { startExpressServer } from "./express-server"
 import { terminateSessions } from "./websocket-sessions"
 
-let http: Http.Server | null = null
+let stopServer: (() => void) | null = null
 
 async function shutdown() {
     console.log("Shutdown initiated. Closing sockets.")
-    if (http) http.close()
+    if (stopServer) stopServer()
     terminateSessions()
     console.log("Shutdown in progress. Waiting for all changes to be saved...")
     await awaitSavingChanges()
@@ -27,11 +27,12 @@ process.on("SIGTERM", () => {
 })
 
 const PORT = parseInt(process.env.PORT || "1337")
+const HTTPS_PORT = process.env.HTTPS_PORT ? parseInt(process.env.HTTPS_PORT) : undefined
 const BIND_UWEBSOCKETS_TO_PORT = process.env.BIND_UWEBSOCKETS_TO_PORT === "true"
 if (BIND_UWEBSOCKETS_TO_PORT && process.env.UWEBSOCKETS_PORT) {
     throw Error("Cannot have both UWEBSOCKETS_PORT and BIND_UWEBSOCKETS_TO_PORT envs")
 }
-const EXPRESS_PORT = BIND_UWEBSOCKETS_TO_PORT ? null : PORT
+const HTTP_PORT = BIND_UWEBSOCKETS_TO_PORT ? null : PORT
 const UWEBSOCKETS_PORT = BIND_UWEBSOCKETS_TO_PORT
     ? PORT
     : process.env.UWEBSOCKETS_PORT
@@ -45,8 +46,8 @@ initDB()
         }
     })
     .then(() => {
-        if (EXPRESS_PORT) {
-            http = startExpressServer(EXPRESS_PORT)
+        if (HTTP_PORT) {
+            stopServer = startExpressServer(HTTP_PORT, HTTPS_PORT)
         }
         if (UWEBSOCKETS_PORT) {
             import("./uwebsockets-server").then((uwebsockets) => {
