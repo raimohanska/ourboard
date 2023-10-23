@@ -24,7 +24,7 @@
   },
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=18 <21"
   },
   "workspaces": [
     "frontend",
