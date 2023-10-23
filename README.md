@@ -273,6 +273,7 @@ Here's a most likely incomplete list of supported environment variables for the 
 ```
 DATABASE_URL          Postgres database URL. In Heroku, you can just add the PostgreSQL add on and this variable will be correctly set. The free one will get you started.
 ROOT_URL              Root URL used for redirects. Use https://<yourdomain>/. If you don't have authentication configured or you're actually planning to access your server using the address http://localhost:1337, you can omit this one.
+PORT                  HTTP port that OurBoard should bind. Defaults to 1337.
 ```
 
 HTTPS and TLS related settings:
