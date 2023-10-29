@@ -345,6 +345,7 @@ In the Id Token received from the Auth provider, OurBoard expects to find the fo
 
 -   Either `name` or `preferred_username` representing the display name for the user
 -   `email` representing the email address of the user. OurBoard does not expect this to be a valid email address; it just uses the email as the unique identifier for the user.
+-   Optional `picture` for a URL for the user's profile picture
 
 Thus far, I've tested Ourboard OIDC with Google and Keycloak.
 
