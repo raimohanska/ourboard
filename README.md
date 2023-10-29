@@ -33,9 +33,12 @@ Adding images
 -   Add by dragging a file from your computer or from a browser window
 -   Add by pasting an image from the clipboard using Command-V
 
-Adding videos
+Organizing your stuff
 
--   Add by dragging a file from your computer or from a browser window
+-   Create an Area and drag items on it to keep them together. When you move the Area, the items move with it!
+-   Use Areas, lines, connections and images to give a visual structure to your board
+-   Lock items in place to prevent accidental moves of static items and lines
+-   Use "structured stickies": 1. Create an Area to be used as a template, choose a nice color 2. Add template content, e.g.. labels like "size" 3. Lock the labels in place. Now you can clone the whole area with a single click on the Clone button (or Cmd-D).
 
 Keyboard shortcuts
 
