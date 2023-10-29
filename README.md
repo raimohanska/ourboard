@@ -9,6 +9,8 @@ In this Readme:
 
 ## Features and User Guide
 
+The user guide here is bound to be incomplete and out-of-date. Feel welcome to improve it!
+
 ### Basics
 
 Setting your nickname
@@ -59,9 +61,7 @@ Pro tips
 
 ### Board access controls
 
-All boards created using the UI are accessible to anyone with the link.
-
-Boards with restricted access can currently only be created using the POST API (see below).
+All boards created accessible to anyone with the link by default. If you Sign In using Google authentication, you'll also be able to create boards with restricted access. It's possible to grant access to certain emails or to people with an email in a given domain.
 
 ## Github Issues Integration
 
