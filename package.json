@@ -33,8 +33,10 @@
   ],
   "scripts": {
     "dev": "npm-run-all --parallel dev:db watch:frontend dev:backend typecheck:dev:frontend",
+    "dev-with-keycloak": "npm-run-all --parallel dev:keycloak dev",
     "dev:no-db": "npm-run-all --parallel watch:frontend dev:backend",
-    "dev:db": "docker-compose up||true",
+    "dev:db": "docker-compose up db||true",
+    "dev:keycloak": "docker-compose up keycloak||true",
     "watch:frontend": "yarn --cwd frontend watch",
     "dev:backend": "yarn --cwd backend dev",
     "start": "yarn start:backend",

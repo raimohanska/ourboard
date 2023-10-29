@@ -9,3 +9,25 @@ services:
         environment:
             POSTGRES_USER: r-board
             POSTGRES_PASSWORD: secret
+
+    keycloak-db:
+        image: postgres:12
+        restart: always
+        ports:
+            - 13339:5432
+        environment:
+            POSTGRES_USER: keycloak
+            POSTGRES_PASSWORD: secret
+        volumes:
+            - ./keycloak/keycloak-db.dump:/docker-entrypoint-initdb.d/keycloak-db.dump.sql
+    keycloak:
+        depends_on:
+            - keycloak-db
+        image: quay.io/keycloak/keycloak:22.0.5
+        command: start-dev --db postgres --db-url jdbc:postgresql://keycloak-db/keycloak --db-username keycloak --db-password secret
+        ports:
+            - 8080:8080
+        environment:
+            - KEYCLOAK_ADMIN=admin
+            - KEYCLOAK_ADMIN_PASSWORD=admin
+            - DATABASE_URL=postgres://keycloak:secreto@keycloak-db:5432/keycloak

@@ -297,21 +297,6 @@ AWS_SECRET_ACCESS_KEY   Secret access key
 AWS_ASSETS_BUCKET_URL   URL to the AWS bucket. For example https://r-board-assets.s3.eu-north-1.amazonaws.com
 ```
 
-Google authentication is supported. To enable this feature, you'll need to supply the following environment variables.
-
-```
-GOOGLE_OAUTH_CLIENT_ID
-GOOGLE_OAUTH_CLIENT_SECRET
-```
-
-Generic OpenID Connect authentication is also supported as an experimental feature (only Google tested so far). To enable this feature, you'll need to supply the following environment variables.
-
-```
-OIDC_CONFIG_URL        Your OpenID configuration endpoint. For example: https://accounts.google.com/.well-known/openid-configuration
-OIDC_CLIENT_ID         Your OAuth2 client id
-OIDC_CLIENT_SECRET     Your OAuth2 client secret
-```
-
 And finally some more settings you're unlikely to need.
 
 ```
@@ -320,6 +305,52 @@ WS_HOST_LOCAL         Your domain name here as well. Is automatically derived fr
 WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Is automatically derived from ROOT_URL in latest image.
 BOARD_ALIAS_tutorial  Board identifier for the "tutorial" board that will be cloned for new users. Allows you to create a custom tutorial board. For example, the value `782d4942-a438-44c9-ad5f-3187cc1d0a63` is used in ourboard.io, and this points to a publicly readable, but privately editable board
 ```
+
+Read on for authentication provider configuration.
+
+### Google authentication
+
+Google authentication is supported. To enable this feature, you'll need to supply the following environment variables.
+
+```
+GOOGLE_OAUTH_CLIENT_ID
+GOOGLE_OAUTH_CLIENT_SECRET
+```
+
+You'll of course need to set up an account on the Google side and configure a client so that you can get the client id and secret variables you'll use on OurBoard side. When configuring the Google client, you should allow the URL `<OURBOARD_ROOT_URL>/google-callback` as a valid callback URL.
+
+### OpenID Connect configuration
+
+Generic OpenID Connect (OIDC) authentication is also supported as an experimental feature. To enable this feature, you'll need to supply the following environment variables.
+
+```
+OIDC_CONFIG_URL        Your OpenID configuration endpoint. For example: https://accounts.google.com/.well-known/openid-configuration
+OIDC_CLIENT_ID         Your OAuth2 client id
+OIDC_CLIENT_SECRET     Your OAuth2 client secret
+```
+
+You'll of course need an external auth provider and configure a client so that you can get the client id and secret variables you'll use on OurBoard side. When configuring the OIDC client, you should allow the URL `<OURBOARD_ROOT_URL>/google-callback` as a valid callback URL. OurBoard uses the OAuth "standard flow" or "authorization code flow" and expects to be able to find your OIDC configuration at the URL pointed by tge `OIDC_CONFIG_URL` environment variable.
+
+In the Id Token received from the Auth provider, OurBoard expects to find the following claims:
+
+-   Either `name` or `preferred_username` representing the display name for the user
+-   `email` representing the email address of the user. OurBoard does not expect this to be a valid email address; it just uses the email as the unique identifier for the user.
+
+Thus far, I've tested Ourboard OIDC with Google and Keycloak.
+
+### OpenID Connect Using KeyCloak
+
+NOTICE: This is just a simple example for testing and **not a production-grade setup**. Make sure to configure Keycloak properly before using it in production.
+
+An example KeyCloak setup is bundled with the OurBoard development environment. To try it, set the following environment variables in `backend/.env`:
+
+```
+OICD_CONFIG_URL=http://127.0.0.1:8080/realms/ourboard/.well-known/openid-configuration
+OIDC_CLIENT_ID=ourboard
+OIDC_CLIENT_SECRET=S2qHjCg12IDxz89Lffo49NQ19ooWCUwF
+```
+
+When you start OurBoard in development mode using `yarn dev-with-keycloak`, you can now Sign In using the username `ourboard-test` and password `password`.
 
 ## Contribution
 

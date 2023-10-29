@@ -6,6 +6,7 @@ import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
 import { getEnv } from "./env"
 import { AuthProvider } from "./oauth"
 import { ROOT_URL } from "./host-config"
+import { optional } from "../../common/src/domain"
 
 type GenericOAuthConfig = {
     OIDC_CONFIG_URL: string
@@ -43,8 +44,15 @@ export function GenericOIDCAuthProvider(config: GenericOAuthConfig): AuthProvide
         })
 
         const body = await response.json()
+
         const idToken = JWT.decode(body.id_token)
-        return decodeOrThrow(IdToken, idToken)
+        console.log(JSON.stringify(idToken, null, 2))
+        const user = decodeOrThrow(IdToken, idToken)
+        return {
+            email: user.email,
+            name: "name" in user ? user.name : user.preferred_username,
+            picture: user.picture ?? undefined,
+        }
     }
 
     async function getAuthPageURL() {
@@ -69,11 +77,18 @@ const OpenIdConfiguration = t.type({
     token_endpoint: t.string,
 })
 
-const IdToken = t.type({
-    email: t.string,
-    name: t.string,
-    picture: t.string,
-})
+const IdToken = t.union([
+    t.type({
+        email: t.string,
+        name: t.string,
+        picture: optional(t.string),
+    }),
+    t.type({
+        email: t.string,
+        preferred_username: t.string,
+        picture: optional(t.string),
+    }),
+])
 
 export function decodeOrThrow<T>(codec: t.Type<T, any>, input: any): T {
     const validationResult = codec.decode(input)
