@@ -86,8 +86,9 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
         http.listen(httpPort, () => {
             console.log("Listening HTTP on port " + httpPort)
         })
+        const prevStop = stop
         stop = () => {
-            stop()
+            prevStop()
             http.close()
         }
     }
@@ -104,8 +105,9 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
         https.listen(httpsPort, () => {
             console.log("Listening HTTPS on port " + httpsPort)
         })
+        const prevStop = stop
         stop = () => {
-            stop()
+            prevStop()
             https.close()
         }
     }
