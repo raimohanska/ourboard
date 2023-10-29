@@ -33,7 +33,7 @@ Adding images
 -   Add by dragging a file from your computer or from a browser window
 -   Add by pasting an image from the clipboard using Command-V
 
-Organizing your stuff
+Organizing your board
 
 -   Create an Area and drag items on it to keep them together. When you move the Area, the items move with it!
 -   Use Areas, lines, connections and images to give a visual structure to your board
