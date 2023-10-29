@@ -7,11 +7,14 @@ import { getEnv } from "./env"
 import { AuthProvider } from "./oauth"
 import { ROOT_URL } from "./host-config"
 import { optional } from "../../common/src/domain"
+import { REQUIRE_AUTH } from "./require-auth"
+import { Request, Response } from "express"
 
 type GenericOAuthConfig = {
     OIDC_CONFIG_URL: string
     OIDC_CLIENT_ID: string
     OIDC_CLIENT_SECRET: string
+    OIDC_LOGOUT?: string
 }
 
 export const genericOIDCConfig: GenericOAuthConfig | null = process.env.OIDC_CONFIG_URL
@@ -19,6 +22,7 @@ export const genericOIDCConfig: GenericOAuthConfig | null = process.env.OIDC_CON
           OIDC_CONFIG_URL: getEnv("OIDC_CONFIG_URL"),
           OIDC_CLIENT_ID: getEnv("OIDC_CLIENT_ID"),
           OIDC_CLIENT_SECRET: getEnv("OIDC_CLIENT_SECRET"),
+          OIDC_LOGOUT: process.env.OIDC_LOGOUT,
       }
     : null
 
@@ -66,15 +70,41 @@ export function GenericOIDCAuthProvider(config: GenericOAuthConfig): AuthProvide
         )}&client_id=${config.OIDC_CLIENT_ID}`
     }
 
+    const shouldHandleLogout = REQUIRE_AUTH || config.OIDC_LOGOUT
+
+    async function getLogoutUrl(): Promise<string> {
+        if (config.OIDC_LOGOUT && config.OIDC_LOGOUT !== "true") {
+            return config.OIDC_LOGOUT
+        }
+
+        const logoutUrl = (await openIdConfiguration).end_session_endpoint
+
+        if (!logoutUrl) {
+            throw Error(
+                `OIDC configuration at ${config.OIDC_CONFIG_URL} does not specify end_session_endpoint. Use OIDC_LOGOUT environment variable to define the logout endpoint explicitly.`,
+            )
+        }
+
+        return logoutUrl
+    }
+
+    const logout = shouldHandleLogout
+        ? async (req: Request, res: Response) => {
+              res.redirect(await getLogoutUrl())
+          }
+        : undefined
+
     return {
         getAccountFromCode,
         getAuthPageURL,
+        logout,
     }
 }
 
 const OpenIdConfiguration = t.type({
     authorization_endpoint: t.string,
     token_endpoint: t.string,
+    end_session_endpoint: optional(t.string),
 })
 
 const IdToken = t.union([

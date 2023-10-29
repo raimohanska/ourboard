@@ -337,6 +337,7 @@ Generic OpenID Connect (OIDC) authentication is also supported as an experimenta
 OIDC_CONFIG_URL        Your OpenID configuration endpoint. For example: https://accounts.google.com/.well-known/openid-configuration
 OIDC_CLIENT_ID         Your OAuth2 client id
 OIDC_CLIENT_SECRET     Your OAuth2 client secret
+OIDC_LOGOUT            URL to redirect the user after a logout on Ourboard. This allows you to sign out from the OIDC provider. You can also use the value `true` to automatically determine this URL based on the `end_session_endpoint` field in the response from the OIDC_CONFIG_URL endpoint. If omitted and `REQUIRE_AUTH=true` is not set, OurBoard will simply allow anonymous usage after a logout.
 ```
 
 You'll of course need an external auth provider and configure a client so that you can get the client id and secret variables you'll use on OurBoard side. When configuring the OIDC client, you should allow the URL `<OURBOARD_ROOT_URL>/google-callback` as a valid callback URL. OurBoard uses the OAuth "standard flow" or "authorization code flow" and expects to be able to find your OIDC configuration at the URL pointed by tge `OIDC_CONFIG_URL` environment variable.

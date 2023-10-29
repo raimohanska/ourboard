@@ -16,6 +16,7 @@ import { createGetSignedPutUrl } from "./storage"
 import { WsWrapper } from "./ws-wrapper"
 import { getEnv } from "./env"
 import { getAuthenticatedUser } from "./http-session"
+import { possiblyRequireAuth } from "./require-auth"
 
 dotenv.config()
 
@@ -28,16 +29,7 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
         setupAuth(app, authProvider)
     }
 
-    if (process.env.REQUIRE_AUTH === "true") {
-        // Require authentication for all resources except the URLs bound by setupAuth above
-        app.use("/", (req: express.Request, res: express.Response, next: express.NextFunction) => {
-            if (!getAuthenticatedUser(req)) {
-                res.redirect("/login")
-            } else {
-                next()
-            }
-        })
-    }
+    possiblyRequireAuth(app)
 
     app.use("/", express.static("../frontend/dist"))
     app.use("/", express.static("../frontend/public"))

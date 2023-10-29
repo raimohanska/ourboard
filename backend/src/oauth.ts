@@ -1,5 +1,5 @@
 import Cookies from "cookies"
-import { Express, Request } from "express"
+import { Express, Request, Response } from "express"
 import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
 import { removeAuthenticatedUser, setAuthenticatedUser } from "./http-session"
 import { GoogleAuthProvider, googleConfig } from "./google-auth"
@@ -8,6 +8,7 @@ import { GenericOIDCAuthProvider, genericOIDCConfig } from "./generic-oidc-auth"
 export interface AuthProvider {
     getAuthPageURL: () => Promise<string>
     getAccountFromCode: (code: string) => Promise<OAuthAuthenticatedUser>
+    logout?: (req: Request, res: Response) => Promise<void>
 }
 
 export function setupAuth(app: Express, provider: AuthProvider) {
@@ -23,7 +24,11 @@ export function setupAuth(app: Express, provider: AuthProvider) {
 
     app.get("/logout", async (req, res) => {
         removeAuthenticatedUser(req, res)
-        res.redirect(parseReturnPath(req))
+        if (provider.logout) {
+            await provider.logout(req, res)
+        } else {
+            res.redirect(parseReturnPath(req))
+        }
     })
 
     app.get("/google-callback", async (req, res) => {
