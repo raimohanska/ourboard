@@ -269,7 +269,9 @@ Read on!
 
 ### Environment variables
 
-Here's a most likely incomplete list of supported environment variables for the server. When developing the application locally, set these variables in `backend/.env` file. The most important first - you'll most likely need to set these.
+The OurBoard server is configured using environment variables. Here's a most likely incomplete list of supported environment variables for the server.
+
+When developing the application locally, set these variables in `backend/.env` file. The most important first - you'll most likely need to set these.
 
 ```
 DATABASE_URL          Postgres database URL. In Heroku, you can just add the PostgreSQL add on and this variable will be correctly set. The free one will get you started.
@@ -306,9 +308,17 @@ WS_PROTOCOL           `wss` for secure, `ws` for non-secure WebSockets. Is autom
 BOARD_ALIAS_tutorial  Board identifier for the "tutorial" board that will be cloned for new users. Allows you to create a custom tutorial board. For example, the value `782d4942-a438-44c9-ad5f-3187cc1d0a63` is used in ourboard.io, and this points to a publicly readable, but privately editable board
 ```
 
-Read on for authentication provider configuration.
+### Authentication configuration
 
-### Google authentication
+Ourboard can be configured to use Google or generic OpenID Connect (OIDC) authentication using environment variables.
+
+Even if you set an auth provider (see below), the server will default to allowing anonymous access as well - only boards that are explicitly set with access restrictions will require authentication. However, if you want to require authentication for all access, you can use the following environment variable.
+
+```
+REQUIRE_AUTH        Use `true` to require authentication for all access.
+```
+
+#### Google authentication
 
 Google authentication is supported. To enable this feature, you'll need to supply the following environment variables.
 
@@ -319,7 +329,7 @@ GOOGLE_OAUTH_CLIENT_SECRET
 
 You'll of course need to set up an account on the Google side and configure a client so that you can get the client id and secret variables you'll use on OurBoard side. When configuring the Google client, you should allow the URL `<OURBOARD_ROOT_URL>/google-callback` as a valid callback URL.
 
-### OpenID Connect configuration
+#### OpenID Connect configuration
 
 Generic OpenID Connect (OIDC) authentication is also supported as an experimental feature. To enable this feature, you'll need to supply the following environment variables.
 
@@ -338,7 +348,7 @@ In the Id Token received from the Auth provider, OurBoard expects to find the fo
 
 Thus far, I've tested Ourboard OIDC with Google and Keycloak.
 
-### OpenID Connect Using KeyCloak
+#### OpenID Connect Using KeyCloak
 
 NOTICE: This is just a simple example for testing and **not a production-grade setup**. Make sure to configure Keycloak properly before using it in production.
 

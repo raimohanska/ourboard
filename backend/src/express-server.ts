@@ -15,6 +15,7 @@ import openapiDoc from "./openapi"
 import { createGetSignedPutUrl } from "./storage"
 import { WsWrapper } from "./ws-wrapper"
 import { getEnv } from "./env"
+import { getAuthenticatedUser } from "./http-session"
 
 dotenv.config()
 
@@ -22,6 +23,21 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
     const config = getConfig()
 
     const app = express()
+
+    if (authProvider) {
+        setupAuth(app, authProvider)
+    }
+
+    if (process.env.REQUIRE_AUTH === "true") {
+        // Require authentication for all resources except the URLs bound by setupAuth above
+        app.use("/", (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            if (!getAuthenticatedUser(req)) {
+                res.redirect("/login")
+            } else {
+                next()
+            }
+        })
+    }
 
     app.use("/", express.static("../frontend/dist"))
     app.use("/", express.static("../frontend/public"))
@@ -73,10 +89,6 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
     app.use(apiRoutes.handler())
 
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiDoc))
-
-    if (authProvider) {
-        setupAuth(app, authProvider)
-    }
 
     let stop = () => {}
 
