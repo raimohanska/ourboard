@@ -18,7 +18,7 @@ COPY tsconfig.json .
 
 run yarn build
 
-FROM node:18 as runner
+FROM gcr.io/distroless/nodejs18-debian12 as runner
 
 COPY --from=builder /usr/src/app/backend/dist/index.js /usr/src/app/backend/dist/index.js
 COPY --from=builder /usr/src/app/backend/migrations /usr/src/app/backend/migrations
@@ -28,4 +28,4 @@ WORKDIR /usr/src/app
 EXPOSE 1337
 
 WORKDIR /usr/src/app/backend
-CMD [ "node", "dist/index.js" ]
+CMD [ "dist/index.js" ]
