@@ -1,7 +1,7 @@
 {
   "name": "rboard-backend",
   "version": "1.0.0",
-  "main": "dist/backend/src/server.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "dependencies": {
     "@types/cookies": "^0.7.7",
@@ -51,8 +51,8 @@
   "scripts": {
     "start": "node --enable-source-maps .",
     "dev": "npm-run-all --parallel watch apidocs:dev",
-    "build": "tsc",
-    "watch": "tsc-watch --onSuccess \"node --enable-source-maps .\" --preserveWatchOutput",
+    "build": "tsc && ncc build dist/backend/src/server.js -o dist",
+    "watch": "tsc-watch --onSuccess \"node --enable-source-maps dist/backend/src/server.js\" --preserveWatchOutput",
     "apidocs": "typera-openapi --prettify src/api-routes.ts",
     "apidocs:dev": "nodemon --watch src/api-routes.ts --exec 'yarn apidocs'",
     "lint": "yarn apidocs --check"
@@ -63,9 +63,10 @@
   "devDependencies": {
     "@types/express": "^4.17.7",
     "@types/jsonwebtoken": "^8.5.0",
+    "@types/node-fetch": "^2.5.9",
     "@types/swagger-ui-express": "^4.1.2",
     "@types/uuid": "^8.3.0",
-    "tsc-watch": "^4.2.9",
-    "@types/node-fetch": "^2.5.9"
+    "@vercel/ncc": "^0.38.1",
+    "tsc-watch": "^4.2.9"
   }
 }

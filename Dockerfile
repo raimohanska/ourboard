@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:18 as builder
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -18,7 +18,14 @@ COPY tsconfig.json .
 
 run yarn build
 
+FROM node:18 as runner
+
+COPY --from=builder /usr/src/app/backend/dist/index.js /usr/src/app/backend/dist/index.js
+COPY --from=builder /usr/src/app/backend/migrations /usr/src/app/backend/migrations
+COPY --from=builder /usr/src/app/frontend/public /usr/src/app/frontend/public
+COPY --from=builder /usr/src/app/frontend/dist /usr/src/app/frontend/dist
+WORKDIR /usr/src/app
 EXPOSE 1337
 
 WORKDIR /usr/src/app/backend
-CMD [ "node", "." ]
+CMD [ "node", "dist/index.js" ]
