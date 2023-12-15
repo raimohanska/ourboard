@@ -4,7 +4,7 @@ import { badRequest, internalServerError, notFound } from "typera-common/respons
 import { applyMiddleware } from "typera-express"
 import { wrapNative } from "typera-express/middleware"
 import { headers } from "typera-express/parser"
-import { YELLOW } from "../../../common/src/colors"
+import { DEFAULT_NOTE_COLOR } from "../../../common/src/colors"
 import {
     AppEvent,
     Board,
@@ -105,7 +105,7 @@ export function addItem(
     let itemAttributes: object = getItemAttributesForContainer(container, board.board)
     if (itemId) itemAttributes = { ...itemAttributes, id: itemId }
 
-    const item: Note = { ...newNote(text, color || YELLOW), ...itemAttributes }
+    const item: Note = { ...newNote(text, color || DEFAULT_NOTE_COLOR), ...itemAttributes }
     const appEvent: AppEvent = { action: "item.add", boardId: board.board.id, items: [item], connections: [] }
     dispatchSystemAppEvent(board, appEvent)
 }

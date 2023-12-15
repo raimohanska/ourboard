@@ -1,6 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { NOTE_COLORS, TRANSPARENT, YELLOW } from "../../../../common/src/colors"
+import { DEFAULT_NOTE_COLOR, NOTE_COLORS, TRANSPARENT } from "../../../../common/src/colors"
 import { Color, Item, isColoredItem } from "../../../../common/src/domain"
 import { SubmenuProps } from "./ContextMenuView"
 
@@ -42,6 +42,6 @@ export function colorsSubMenu({ board, focusedItems, dispatch }: SubmenuProps) {
 
 function itemColorOrDefault(items: Item[]) {
     const firstNoteWithColor = items.find(isColoredItem)
-    if (!firstNoteWithColor) return YELLOW
+    if (!firstNoteWithColor) return DEFAULT_NOTE_COLOR
     return firstNoteWithColor.color
 }

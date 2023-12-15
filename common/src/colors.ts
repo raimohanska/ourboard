@@ -9,6 +9,7 @@ export const BLACK = "#000000"
 export const LIGHT_GRAY = "#f4f4f6"
 export const WHITE = "#ffffff"
 export const TRANSPARENT = "#ffffff00"
+export const DEFAULT_NOTE_COLOR = YELLOW
 
 export const NOTE_COLORS = [
     { name: "light-blue", color: LIGHT_BLUE },

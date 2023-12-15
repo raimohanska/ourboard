@@ -1,7 +1,7 @@
 import _ from "lodash"
 import * as L from "lonna"
 import * as uuid from "uuid"
-import { YELLOW } from "../../../common/src/colors"
+import { DEFAULT_NOTE_COLOR } from "../../../common/src/colors"
 import { connectionRect, resolveEndpoint } from "../../../common/src/connection-utils"
 import {
     Board,
@@ -181,7 +181,7 @@ export function cutCopyPasteHandler(
                         if (sanitized.length > 50) {
                             toCreate = [newText(sanitized, currentCenter.x, currentCenter.y)]
                         } else {
-                            toCreate = [newNote(sanitized, YELLOW, currentCenter.x, currentCenter.y)]
+                            toCreate = [newNote(sanitized, DEFAULT_NOTE_COLOR, currentCenter.x, currentCenter.y)]
                         }
                         dispatch({ action: "item.add", boardId: currentBoard.id, items: toCreate, connections: [] })
                     } else if (e.clipboardData) {

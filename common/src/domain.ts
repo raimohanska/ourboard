@@ -1,7 +1,7 @@
 import _ from "lodash"
 import * as uuid from "uuid"
 import * as t from "io-ts"
-import { LIGHT_BLUE, PINK, RED, YELLOW } from "./colors"
+import { DEFAULT_NOTE_COLOR, LIGHT_BLUE, PINK, RED } from "./colors"
 import { arrayToRecordById } from "./arrays"
 
 export type Id = string
@@ -369,7 +369,7 @@ export function newBoard(name: string, accessPolicy?: BoardAccessPolicy): Board 
 
 export function newNote(
     text: string,
-    color: Color = YELLOW,
+    color: Color = DEFAULT_NOTE_COLOR,
     x: number = 20,
     y: number = 20,
     width: number = 5,
