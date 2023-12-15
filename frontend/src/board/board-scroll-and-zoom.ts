@@ -108,7 +108,7 @@ export function boardScrollAndZoomHandler(
             event.preventDefault()
             const clampedStep = clamp(event.deltaY, -8, 8)
             const step = Math.pow(1.01, -clampedStep)
-            adjustZoom((z) => z * step, "preserveCursor")
+            adjustZoom({ scaleBy: step }, "preserveCursor")
         } else {
             // If the user seems to be using a trackpad, and they haven't manually selected a tool yet,
             // Let's set the mode to 'select' as a best-effort "works like you'd expect" UX thing
@@ -144,16 +144,18 @@ export function boardScrollAndZoomHandler(
         return { x: vr.x + vr.width / 2, y: vr.y + vr.height / 2 }
     }
 
-    function adjustZoom(fn: (previous: number) => number, mode: ZoomAdjustMode) {
+    type ZoomAdjustment = { scaleBy: number } | { setZoom: number }
+
+    function adjustZoom(change: ZoomAdjustment, mode: ZoomAdjustMode) {
         if (mode === "preserveCursor") {
             const prevCursor = coordinateHelper.currentBoardCoordinates.get()
-            justAdjustZoom(fn)
+            justAdjustZoom(change)
             const diffEm = G.subtract(prevCursor, coordinateHelper.currentBoardCoordinates.get())
             coordinateHelper.scrollByBoardCoordinates(diffEm)
         } else {
             const prevCenterEm = getViewRectCenter()
             const prevZoom = zoom.get()
-            justAdjustZoom(fn)
+            justAdjustZoom(change)
             const newZoom = zoom.get()
             const ratio = (newZoom.zoom * newZoom.quickZoom) / (prevZoom.zoom * prevZoom.quickZoom)
             const newCenterEm = G.multiply(prevCenterEm, 1 / ratio)
@@ -162,13 +164,17 @@ export function boardScrollAndZoomHandler(
         }
     }
 
-    function justAdjustZoom(fn: (previous: number) => number) {
-        zoom.modify((z) => {
-            return {
-                quickZoom: _.clamp(fn(z.quickZoom), MIN_ZOOM / z.zoom, MAX_ZOOM / z.zoom),
-                zoom: z.zoom,
-            }
-        })
+    function justAdjustZoom(change: ZoomAdjustment) {
+        if ("scaleBy" in change) {
+            zoom.modify((z) => {
+                return {
+                    quickZoom: _.clamp(z.quickZoom * change.scaleBy, MIN_ZOOM / z.zoom, MAX_ZOOM / z.zoom),
+                    zoom: z.zoom,
+                }
+            })
+        } else {
+            zoom.set({ quickZoom: 1, zoom: change.setZoom })
+        }
     }
 
     let scaleStart: number | null = null
@@ -185,8 +191,7 @@ export function boardScrollAndZoomHandler(
         e.preventDefault()
         const scale = typeof e.scale === "number" && (e.scale as number)
         if (scale && scaleStart) {
-            const result = scale * scaleStart
-            adjustZoom(() => result, "preserveCursor")
+            adjustZoom({ setZoom: scale * scaleStart }, "preserveCursor")
         }
     }
 
@@ -196,15 +201,15 @@ export function boardScrollAndZoomHandler(
     }
 
     function increaseZoom(adjustMode: ZoomAdjustMode) {
-        adjustZoom((z) => z * 1.2, adjustMode)
+        adjustZoom({ scaleBy: 1.2 }, adjustMode)
     }
 
     function decreaseZoom(adjustMode: ZoomAdjustMode) {
-        adjustZoom((z) => z / 1.2, adjustMode)
+        adjustZoom({ scaleBy: 1 / 1.2 }, adjustMode)
     }
 
-    function resetZoom() {
-        zoom.set({ zoom: 1, quickZoom: 1 })
+    function resetZoom(adjustMode: ZoomAdjustMode) {
+        adjustZoom({ setZoom: 1 }, adjustMode)
     }
 
     H.onMount(() => {
