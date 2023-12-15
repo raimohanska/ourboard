@@ -96,8 +96,16 @@ export const ItemView = ({
     )
 
     function itemPadding(i: Item) {
+        if (i.type != "note") return undefined
+
         const shape = getItemShape(i)
-        return shape == "diamond" ? `${i.width / 4}em` : shape == "round" ? `${i.width / 8}em` : undefined
+        return shape == "diamond"
+            ? `${i.width / 4}em`
+            : shape == "round"
+            ? `${i.width / 8}em`
+            : shape == "square" || shape == "rect"
+            ? `${(i.fontSize || 1) / 3}em`
+            : undefined
     }
     const shape = L.view(item, getItemShape)
 
