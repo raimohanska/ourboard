@@ -8,10 +8,10 @@ export function ZoomControls({
 }: Pick<ZoomAndScrollControls, "increaseZoom" | "decreaseZoom">) {
     return (
         <span className="zoom-controls">
-            <span className="icon" title="Zoom in" onClick={increaseZoom}>
+            <span className="icon" title="Zoom in" onClick={() => increaseZoom("preserveCenter")}>
                 <ZoomInIcon />
             </span>
-            <span className="icon" title="Zoom out" onClick={decreaseZoom}>
+            <span className="icon" title="Zoom out" onClick={() => decreaseZoom("preserveCenter")}>
                 <ZoomOutIcon />
             </span>
         </span>

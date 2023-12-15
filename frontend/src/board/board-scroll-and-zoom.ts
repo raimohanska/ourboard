@@ -195,12 +195,12 @@ export function boardScrollAndZoomHandler(
         scaleStart = null
     }
 
-    function increaseZoom() {
-        adjustZoom((z) => z * 1.2, "preserveCenter")
+    function increaseZoom(adjustMode: ZoomAdjustMode) {
+        adjustZoom((z) => z * 1.2, adjustMode)
     }
 
-    function decreaseZoom() {
-        adjustZoom((z) => z / 1.2, "preserveCenter")
+    function decreaseZoom(adjustMode: ZoomAdjustMode) {
+        adjustZoom((z) => z / 1.2, adjustMode)
     }
 
     function resetZoom() {
