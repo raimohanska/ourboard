@@ -1,6 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
-import { BoardCoordinateHelper } from "./board-coordinates"
+import { BoardCoordinateHelper, snapToGrid } from "./board-coordinates"
 import { Board, Container } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
@@ -81,8 +81,14 @@ export const SelectionBorder = ({
                             }
                         }
 
+                        xDiff = snapToGrid(xDiff)
+                        yDiff = snapToGrid(yDiff)
+
                         const x = horizontal === "left" ? dragStartPosition.x + xDiff : dragStartPosition.x
                         const y = vertical === "top" ? dragStartPosition.y + yDiff : dragStartPosition.y
+
+                        const snapWidthAndHeight = horizontal === "left" || vertical === "top"
+
                         const width = Math.max(
                             0.5,
                             horizontal === "left" ? dragStartPosition.width - xDiff : dragStartPosition.width + xDiff,
@@ -92,6 +98,7 @@ export const SelectionBorder = ({
                             0.5,
                             vertical === "top" ? dragStartPosition.height - yDiff : dragStartPosition.height + yDiff,
                         )
+
                         const updatedItem = {
                             id: current.id,
                             x,

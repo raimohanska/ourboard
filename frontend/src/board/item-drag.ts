@@ -92,10 +92,17 @@ export function onBoardItemDrag(
     const drag = (e: Drag) => {
         e.stopPropagation()
         const f = focus.get()
+
+        const newPos2 = coordinateHelper.boardCoordDiffFromThisPageCoordinate({
+            x: 20 * Math.floor(dragStart!.pageX / 20),
+            y: 20 * Math.floor(dragStart!.pageY / 20),
+        })
+
         if (f.status !== "dragging") {
             e.preventDefault()
             return
         }
+
         const newPos = coordinateHelper.boardCoordDiffFromThisPageCoordinate({
             x: dragStart!.pageX,
             y: dragStart!.pageY,

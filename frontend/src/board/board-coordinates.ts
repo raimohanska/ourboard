@@ -9,6 +9,10 @@ const newCoordinates = (x: number, y: number): Coordinates => {
     return { x, y }
 }
 
+export const snapToGrid = (val: number, gridSize = 0.5): number => {
+    return gridSize * Math.floor(val / gridSize)
+}
+
 // HTML client coordinates: relative to viewport
 export type PageCoordinates = Coordinates
 // Board coordinates used in the domain objects: in em unit, from board top left corner.
