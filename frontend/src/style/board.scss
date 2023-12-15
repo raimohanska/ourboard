@@ -398,9 +398,32 @@
             &.white,
             &.transparent {
                 border: 1px solid #eeeeee;
-            }
-            &.transparent {
                 background: repeating-conic-gradient(#dddddd 0% 25%, transparent 0% 50%) 50%/0.5em 0.5em;
+            }
+
+            &.new-color {
+                position: relative;
+                background: conic-gradient(
+                        #ff5555 0%,
+                        #ffaa55 15%,
+                        #ffff55 30%,
+                        #55ff55 45%,
+                        #5555ff 60%,
+                        #aa55ff 75%,
+                        #ff55ff 90%,
+                        #ff5555 100%
+                    )
+                    50%;
+                border-radius: 50%;
+
+                > input[type="color"] {
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    opacity: 0;
+                    left: 0;
+                    top: 0;
+                }
             }
         }
 

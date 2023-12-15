@@ -23,7 +23,7 @@ export function colorsAndShapesMenu(props: SubmenuProps) {
     const enabled = L.view(coloredItems, (items) => items.some(canChangeShapeAndColor))
     return L.view(representativeColoredItem, enabled, (item, enabled) => {
         if (!item) return []
-        const color = NOTE_COLORS.find((c) => c.color === item.color) || NOTE_COLORS[0]
+        const color = NOTE_COLORS.find((c) => c.color === item.color) || { name: "custom", color: item.color }
         const shapeIcon = getShapeIcon(item)
 
         return !item
