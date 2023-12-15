@@ -4,8 +4,19 @@ import { Board, Item } from "../../../../common/src/domain"
 import { Rect } from "../../../../common/src/geometry"
 import { DND_GHOST_HIDING_IMAGE } from "../item-drag"
 import { onSingleTouch } from "../touchScreen"
+import { ZoomControls } from "./ZoomControls"
+import { ZoomAndScrollControls } from "../board-scroll-and-zoom"
 
-export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board: L.Property<Board> }) => {
+export const MiniMapView = ({
+    viewRect,
+    board,
+    increaseZoom,
+    decreaseZoom,
+    resetZoom,
+}: { viewRect: L.Atom<Rect>; board: L.Property<Board> } & Pick<
+    ZoomAndScrollControls,
+    "increaseZoom" | "decreaseZoom" | "resetZoom"
+>) => {
     const minimapWidthPx = 125
     const minimapDimensions = L.view(board, (rect) => {
         return { width: minimapWidthPx, height: (minimapWidthPx / rect.width) * rect.height }
@@ -89,6 +100,9 @@ export const MiniMapView = ({ viewRect, board }: { viewRect: L.Atom<Rect>; board
                     onDragEnd={onDragEnd}
                     style={viewAreaStyle}
                 />
+            </div>
+            <div className="zoom-toolbar board-tool">
+                <ZoomControls {...{ increaseZoom, decreaseZoom, resetZoom, viewRect }} />
             </div>
         </div>
     )
