@@ -58,6 +58,7 @@ import { BoardViewHeader } from "./header/BoardViewHeader"
 import { VideoView } from "./VideoView"
 import { startConnecting } from "./item-connect"
 import { emptySet } from "../../../common/src/sets"
+import { installZoomKeyboardShortcuts } from "./zoom-shortcuts"
 
 const emptyNote = newNote("")
 
@@ -144,6 +145,16 @@ export const BoardView = ({
 
     doOnUnmount.push(cutCopyPasteHandler(board, focus, coordinateHelper, dispatch, uploadImageFile))
 
+    const zoomControls = boardScrollAndZoomHandler(
+        board,
+        boardElement,
+        scrollElement,
+        zoom,
+        coordinateHelper,
+        toolController,
+    )
+    const { viewRect } = zoomControls
+
     imageDropHandler(boardElement, assets, focus, uploadImageFile)
     itemCreateHandler(board, focus, latestNote, boardElement, onAdd)
     itemDeleteHandler(boardId, dispatch, focus)
@@ -151,6 +162,7 @@ export const BoardView = ({
     itemMoveWithArrowKeysHandler(board, dispatch, focus)
     itemUndoHandler(dispatch)
     itemSelectAllHandler(board, focus)
+    installZoomKeyboardShortcuts(zoomControls)
     installKeyboardShortcut(
         (e) => e.key === "Escape",
         () => {
@@ -172,15 +184,6 @@ export const BoardView = ({
     onClickOutside(boardElement, () => {
         focus.set(noFocus)
     })
-
-    const { viewRect, adjustZoom } = boardScrollAndZoomHandler(
-        board,
-        boardElement,
-        scrollElement,
-        zoom,
-        coordinateHelper,
-        toolController,
-    )
 
     function onClick(e: JSX.UIEvent) {
         const f = focus.get()
@@ -336,8 +339,7 @@ export const BoardView = ({
                         onAdd,
                         toolController,
                         sessionState,
-                        viewRect,
-                        adjustZoom,
+                        ...zoomControls,
                     }}
                 />
             </div>

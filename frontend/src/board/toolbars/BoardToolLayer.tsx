@@ -28,7 +28,8 @@ export const BoardToolLayer = ({
     toolController,
     dispatch,
     viewRect,
-    adjustZoom,
+    increaseZoom,
+    decreaseZoom,
     focus,
 }: {
     boardStore: BoardStore
@@ -74,7 +75,7 @@ export const BoardToolLayer = ({
             </div>
             <MiniMapView board={board} viewRect={viewRect} />
             <div className="zoom-toolbar board-tool">
-                <ZoomControls {...{ adjustZoom, viewRect }} />
+                <ZoomControls {...{ increaseZoom, decreaseZoom, viewRect }} />
             </div>
 
             {L.view(focus, (f) => {

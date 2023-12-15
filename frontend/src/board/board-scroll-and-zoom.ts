@@ -195,6 +195,18 @@ export function boardScrollAndZoomHandler(
         scaleStart = null
     }
 
+    function increaseZoom() {
+        adjustZoom((z) => z * 1.2, "preserveCenter")
+    }
+
+    function decreaseZoom() {
+        adjustZoom((z) => z / 1.2, "preserveCenter")
+    }
+
+    function resetZoom() {
+        zoom.set({ zoom: 1, quickZoom: 1 })
+    }
+
     H.onMount(() => {
         // have to use this for chrome: https://stackoverflow.com/questions/42101723/unable-to-preventdefault-inside-passive-event-listener
         document.addEventListener("wheel", wheelZoomHandler, { passive: false })
@@ -211,5 +223,8 @@ export function boardScrollAndZoomHandler(
     return {
         viewRect,
         adjustZoom,
+        increaseZoom,
+        decreaseZoom,
+        resetZoom,
     }
 }
