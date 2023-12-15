@@ -6,7 +6,7 @@ import { BoardStore, Dispatch } from "../../store/board-store"
 import { UserSessionState } from "../../store/user-session-store"
 import { BoardCoordinateHelper } from "../board-coordinates"
 import { BoardFocus } from "../board-focus"
-import { BoardZoom, ZoomAndScrollControls } from "../board-scroll-and-zoom"
+import { ZoomAndScrollControls } from "../board-scroll-and-zoom"
 import { BoardViewMessage } from "../BoardViewMessage"
 import { ToolController } from "../tool-selection"
 import { IS_TOUCHSCREEN } from "../touchScreen"
@@ -30,6 +30,7 @@ export const BoardToolLayer = ({
     viewRect,
     increaseZoom,
     decreaseZoom,
+    resetZoom,
     focus,
 }: {
     boardStore: BoardStore
@@ -73,10 +74,13 @@ export const BoardToolLayer = ({
             <div className="undo-redo-toolbar board-tool">
                 <UndoRedo {...{ dispatch, boardStore }} />
             </div>
-            <MiniMapView board={board} viewRect={viewRect} />
-            <div className="zoom-toolbar board-tool">
-                <ZoomControls {...{ increaseZoom, decreaseZoom, viewRect }} />
-            </div>
+            <MiniMapView
+                board={board}
+                viewRect={viewRect}
+                increaseZoom={increaseZoom}
+                decreaseZoom={decreaseZoom}
+                resetZoom={resetZoom}
+            />
 
             {L.view(focus, (f) => {
                 if (f.status !== "adding") return null

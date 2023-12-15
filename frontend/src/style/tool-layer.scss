@@ -218,12 +218,22 @@
         .zoom-toolbar {
             position: absolute;
             font-size: 1.5em;
-            right: 1rem;
-            bottom: 1rem;
-            padding: 0.5em;
+            right: 0;
+            top: 100%;
+            color: #00263a;
+            left: 0;
+            padding: 0.3em;
+
             .touch & {
                 display: none;
             }
+        }
+
+        .zoom-controls {
+            display: flex;
+            justify-content: space-evenly;
+            height: 2rem;
+            align-items: center;
         }
 
         .minimap {
@@ -236,7 +246,7 @@
             background: white;
             border: 0.3em solid #eeeeee88;
             box-sizing: content-box;
-            padding-bottom: 3rem;
+            border-bottom-width: 3rem;
             min-width: 6rem;
             @media (max-width: $narrow-screen-breakpoint) {
                 display: none;
@@ -262,7 +272,7 @@
 
         .icon {
             &:not(:first-child) {
-                margin-left: 0.5em;
+                margin-left: 0.3em;
             }
             cursor: pointer;
             position: relative;
