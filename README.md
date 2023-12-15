@@ -42,6 +42,8 @@ Organizing your board
 
 Keyboard shortcuts
 
+These are for Mac. For other OS, replace command with control.
+
 ```
 DEL/Backspace       Delete item
 A                   Create new area
@@ -55,6 +57,9 @@ Command-X           Cut
 Command-Z           Undo
 Command-Shift-Z     Redo
 Command-D           Duplicate
+Command-Minus       Zoom out
+Command-Plus        Zoom in
+Command-Zero        Reset zoom
 Arrow keys          Move selected items. SHIFT for big steps, ALT for fine-tuning.
 ```
 
