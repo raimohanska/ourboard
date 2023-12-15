@@ -5,12 +5,14 @@ import { add, Coordinates, origin, subtract } from "../../../common/src/geometry
 import { BoardZoom } from "./board-scroll-and-zoom"
 import { onSingleTouch } from "./touchScreen"
 
+export const DEFAULT_GRID_SIZE = 0.5
+
 const newCoordinates = (x: number, y: number): Coordinates => {
     return { x, y }
 }
 
-export const snapToGrid = (val: number, gridSize = 0.5): number => {
-    return gridSize * Math.floor(val / gridSize)
+export const snapToGrid = (val: number, disableSnap: boolean = false, gridSize = DEFAULT_GRID_SIZE): number => {
+    return disableSnap ? val : gridSize * Math.round(val / gridSize)
 }
 
 // HTML client coordinates: relative to viewport
