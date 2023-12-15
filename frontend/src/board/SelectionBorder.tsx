@@ -87,8 +87,6 @@ export const SelectionBorder = ({
                         const x = horizontal === "left" ? dragStartPosition.x + xDiff : dragStartPosition.x
                         const y = vertical === "top" ? dragStartPosition.y + yDiff : dragStartPosition.y
 
-                        const snapWidthAndHeight = horizontal === "left" || vertical === "top"
-
                         const width = Math.max(
                             0.5,
                             horizontal === "left" ? dragStartPosition.width - xDiff : dragStartPosition.width + xDiff,
