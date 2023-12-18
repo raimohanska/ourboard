@@ -56,7 +56,7 @@ export const SelectionBorder = ({
                 focus,
                 coordinateHelper,
                 false,
-                (b, startPos, items, connections, xDiff, yDiff) => {
+                (b, startPos, items, connections, xDiff, yDiff, shiftKey) => {
                     const updatedItems = items.map(({ current, dragStartPosition }) => {
                         const maintainAspectRatio =
                             current.type === "image" || (current.type === "note" && current.shape !== "rect")
@@ -81,8 +81,8 @@ export const SelectionBorder = ({
                             }
                         }
 
-                        xDiff = snapToGrid(xDiff)
-                        yDiff = snapToGrid(yDiff)
+                        xDiff = snapToGrid(xDiff, !shiftKey)
+                        yDiff = snapToGrid(yDiff, !shiftKey)
 
                         const x = horizontal === "left" ? dragStartPosition.x + xDiff : dragStartPosition.x
                         const y = vertical === "top" ? dragStartPosition.y + yDiff : dragStartPosition.y

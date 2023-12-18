@@ -29,7 +29,7 @@ export function itemDragToMove(
             focus,
             coordinateHelper,
             onlyWhenSelected,
-            (b, startPos, items, connections, xDiff, yDiff) => {
+            (b, startPos, items, connections, xDiff, yDiff, shiftKey) => {
                 // Cant drag when connect tool is active
                 const t = toolController.tool.get()
 
@@ -48,9 +48,11 @@ export function itemDragToMove(
                     const movedItems = items.map(({ dragStartPosition, current }) => {
                         const x = snapToGrid(
                             Math.min(Math.max(dragStartPosition.x + xDiff, margin), b.width - current.width - margin),
+                            !shiftKey,
                         )
                         const y = snapToGrid(
                             Math.min(Math.max(dragStartPosition.y + yDiff, margin), b.height - current.height - margin),
+                            !shiftKey,
                         )
 
                         const container = maybeChangeContainerForItem(current, b.items)
