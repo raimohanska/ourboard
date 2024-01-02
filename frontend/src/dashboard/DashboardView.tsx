@@ -44,7 +44,8 @@ export const DashboardView = ({
                             case "logged-in":
                                 return (
                                     <>
-                                        <span>{user.name}</span> <a onClick={signOut}>Sign out</a>
+                                        <span title={user.email}>{user.name}</span>
+                                        <a onClick={signOut}>Sign out</a>
                                     </>
                                 )
                             default:
