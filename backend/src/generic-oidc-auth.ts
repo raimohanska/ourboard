@@ -9,6 +9,7 @@ import { ROOT_URL } from "./host-config"
 import { optional } from "../../common/src/domain"
 import { REQUIRE_AUTH } from "./require-auth"
 import { Request, Response } from "express"
+import { decodeOrThrow } from "./decodeOrThrow"
 
 type GenericOAuthConfig = {
     OIDC_CONFIG_URL: string
@@ -119,21 +120,3 @@ const IdToken = t.union([
         picture: optional(t.string),
     }),
 ])
-
-export function decodeOrThrow<T>(codec: t.Type<T, any>, input: any): T {
-    const validationResult = codec.decode(input)
-    if (isLeft(validationResult)) {
-        throw new ValidationError(validationResult)
-    }
-    return validationResult.right
-}
-
-class ValidationError extends Error {
-    constructor(errors: Left<t.Errors>) {
-        super(report_(errors.left))
-    }
-}
-
-function report_(errors: t.Errors) {
-    return PathReporter.report(left(errors)).join("\n")
-}

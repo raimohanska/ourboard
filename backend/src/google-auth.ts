@@ -3,6 +3,10 @@ import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
 import { getEnv } from "./env"
 import { AuthProvider } from "./oauth"
 import { ROOT_URL } from "./host-config"
+import { decodeOrThrow } from "./decodeOrThrow"
+import * as T from "io-ts"
+import { optional } from "../../common/src/domain"
+import JWT from "jsonwebtoken"
 
 type GoogleConfig = {
     clientID: string
@@ -36,22 +40,24 @@ export const GoogleAuthProvider = (googleConfig: GoogleConfig): AuthProvider => 
         })
     }
 
+    const IdToken = T.strict({
+        hd: optional(T.string),
+        email: T.string,
+        email_verified: T.boolean,
+        name: T.string,
+        picture: T.string,
+    })
+
     async function getAccountFromCode(code: string): Promise<OAuthAuthenticatedUser> {
         const auth = googleOAUTH2()
         const data = await auth.getToken(code)
-        const tokens = data.tokens
+        const idToken = decodeOrThrow(IdToken, JWT.decode(assertNotNull(data.tokens.id_token)))
+        const email = idToken.email
 
-        auth.setCredentials(tokens)
-        const plus = google.people({ version: "v1", auth })
-        const me = await plus.people.get({
-            resourceName: "people/me",
-            personFields: "names,emailAddresses,photos",
-        })
-        const email = assertNotNull(assertNotNull(me.data.emailAddresses)[0]?.value)
         return {
-            name: assertNotNull(assertNotNull(assertNotNull(me.data.names)[0]).displayName),
+            name: idToken.name,
             email,
-            picture: assertNotNull(assertNotNull(assertNotNull(me.data.photos)[0]).url),
+            picture: idToken.picture,
         }
     }
 
