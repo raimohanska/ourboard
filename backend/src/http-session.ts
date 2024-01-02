@@ -23,7 +23,12 @@ export function getAuthenticatedUser(req: IncomingMessage): LoginInfo | null {
 export function getAuthenticatedUserFromJWT(jwt: string): LoginInfo | null {
     try {
         JWT.verify(jwt, secret)
-        return JWT.decode(jwt) as LoginInfo
+        const loginInfo = JWT.decode(jwt) as LoginInfo
+        if (loginInfo.domain === undefined) {
+            console.log("Rejecting legacy token without domain")
+            return null
+        }
+        return loginInfo
     } catch (e) {
         console.warn("Token verification failed", jwt, e)
     }

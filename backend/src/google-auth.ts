@@ -58,6 +58,7 @@ export const GoogleAuthProvider = (googleConfig: GoogleConfig): AuthProvider => 
             name: idToken.name,
             email,
             picture: idToken.picture,
+            domain: idToken.hd ?? null,
         }
     }
 

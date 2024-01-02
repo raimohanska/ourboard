@@ -1,15 +1,13 @@
-import { isLeft, Left, left } from "fp-ts/lib/Either"
+import { Request, Response } from "express"
 import * as t from "io-ts"
-import { PathReporter } from "io-ts/lib/PathReporter"
 import JWT from "jsonwebtoken"
 import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
-import { getEnv } from "./env"
-import { AuthProvider } from "./oauth"
-import { ROOT_URL } from "./host-config"
 import { optional } from "../../common/src/domain"
-import { REQUIRE_AUTH } from "./require-auth"
-import { Request, Response } from "express"
 import { decodeOrThrow } from "./decodeOrThrow"
+import { getEnv } from "./env"
+import { ROOT_URL } from "./host-config"
+import { AuthProvider } from "./oauth"
+import { REQUIRE_AUTH } from "./require-auth"
 
 type GenericOAuthConfig = {
     OIDC_CONFIG_URL: string
@@ -51,12 +49,13 @@ export function GenericOIDCAuthProvider(config: GenericOAuthConfig): AuthProvide
         const body = await response.json()
 
         const idToken = JWT.decode(body.id_token)
-        console.log(JSON.stringify(idToken, null, 2))
+        //console.log(JSON.stringify(idToken, null, 2))
         const user = decodeOrThrow(IdToken, idToken)
         return {
             email: user.email,
             name: "name" in user ? user.name : user.preferred_username,
             picture: user.picture ?? undefined,
+            domain: user.hd ?? null,
         }
     }
 
@@ -113,10 +112,12 @@ const IdToken = t.union([
         email: t.string,
         name: t.string,
         picture: optional(t.string),
+        hd: optional(t.string),
     }),
     t.type({
         email: t.string,
         preferred_username: t.string,
         picture: optional(t.string),
+        hd: optional(t.string),
     }),
 ])

@@ -26,6 +26,7 @@ import {
     newISOTimeStamp,
     PersistableBoardItemEvent,
     ServerConfig,
+    SessionUserInfo,
     TransientBoardItemEvent,
     UIEvent,
     UserSessionInfo,
@@ -512,7 +513,7 @@ export function BoardStore(
     }
 }
 
-export function sessionState2UserInfo(state: UserSessionState): EventUserInfo {
+export function sessionState2UserInfo(state: UserSessionState): SessionUserInfo {
     if (state.status === "logged-in") {
         return {
             userType: "authenticated",
@@ -520,6 +521,8 @@ export function sessionState2UserInfo(state: UserSessionState): EventUserInfo {
             nickname: state.nickname,
             name: state.name,
             userId: state.userId,
+            domain: state.domain,
+            picture: state.picture,
         }
     } else {
         return {

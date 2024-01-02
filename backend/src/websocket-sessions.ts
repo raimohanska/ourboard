@@ -22,6 +22,7 @@ import {
 } from "../../common/src/domain"
 import { maybeGetBoard, ServerSideBoardState } from "./board-state"
 import { getBoardHistory } from "./board-store"
+import { LoginInfo } from "./http-session"
 import { randomProfession } from "./professions"
 import { getUserIdForEmail } from "./user-store"
 import { StringifyCache, WsWrapper } from "./ws-wrapper"
@@ -266,7 +267,7 @@ export function setNicknameForSession(event: SetNickname, origin: WsWrapper) {
 }
 
 export async function setVerifiedUserForSession(
-    event: UserLoggedIn | OAuthAuthenticatedUser,
+    event: OAuthAuthenticatedUser,
     session: UserSession,
 ): Promise<EventUserInfoAuthenticated> {
     const userId = await getUserIdForEmail(event.email)
@@ -276,6 +277,7 @@ export async function setVerifiedUserForSession(
         name: event.name,
         email: event.email,
         picture: event.picture,
+        domain: event.domain,
         userId,
     }
     if (session.boardSession) {

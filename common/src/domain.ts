@@ -62,10 +62,6 @@ export type BoardAccessPolicyDefined = t.TypeOf<typeof BoardAccessPolicyDefinedC
 export const BoardAccessPolicyCodec = t.union([t.undefined, BoardAccessPolicyDefinedCodec])
 export type BoardAccessPolicy = t.TypeOf<typeof BoardAccessPolicyCodec>
 
-export type AuthorizedParty = AuthorizedByEmailAddress | AuthorizedByDomain
-export type AuthorizedByEmailAddress = { email: string }
-export type AuthorizedByDomain = { domain: string }
-
 export type EventUserInfo = UnidentifiedUserInfo | SystemUserInfo | EventUserInfoAuthenticated
 
 export type UnidentifiedUserInfo = { nickname: string; userType: "unidentified" }
@@ -88,6 +84,7 @@ export type SessionUserInfoAuthenticated = {
     email: string
     picture: string | undefined
     userId: string
+    domain: string | null
 }
 
 export type UserSessionInfo = SessionUserInfo & {
@@ -607,7 +604,7 @@ export function getBoardAttributes(board: Board, userInfo?: EventUserInfo): Boar
 
 export const BOARD_ITEM_BORDER_MARGIN = 0.5
 
-export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, userInfo: EventUserInfo): AccessLevel {
+export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, userInfo: SessionUserInfo): AccessLevel {
     if (!accessPolicy) return "read-write"
     let accessLevel: AccessLevel = accessPolicy.publicWrite
         ? "read-write"
@@ -618,12 +615,14 @@ export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, us
         return accessLevel
     }
     const email = userInfo.email
+    const domain = userInfo.domain
+
     const defaultAccess = "read-write"
     for (let entry of accessPolicy.allowList) {
         const nextLevel =
             "email" in entry && entry.email === email
                 ? entry.access || defaultAccess
-                : "domain" in entry && email.endsWith(entry.domain)
+                : "domain" in entry && domain === entry.domain
                 ? entry.access || defaultAccess
                 : "none"
         accessLevel = combineAccessLevels(accessLevel, nextLevel)
