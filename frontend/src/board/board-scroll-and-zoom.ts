@@ -4,7 +4,7 @@ import _, { clamp } from "lodash"
 import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import * as G from "../../../common/src/geometry"
-import { Board } from "../../../common/src/domain"
+import { Board, Point } from "../../../common/src/domain"
 import { ToolController } from "./tool-selection"
 
 export type BoardZoom = { zoom: number; quickZoom: number }
@@ -42,22 +42,51 @@ export function boardScrollAndZoomHandler(
         (id) => "scrollAndZoom." + id,
     )
 
-    L.view(scrollElement, localStorageKey, (el, key) => ({ el, key }))
+    L.view(scrollElement, boardElement, localStorageKey, (el, be, key) => ({ el, be, key }))
         .pipe(L.applyScope(componentScope()))
-        .forEach(({ el, key }) => {
-            if (el) {
+        .forEach(({ el, be, key }) => {
+            if (el && be) {
                 const storedScrollAndZoom = localStorage[key]
-                if (storedScrollAndZoom) {
-                    //console.log("Init position for board", key)
-                    const parsed = JSON.parse(storedScrollAndZoom)
-                    setTimeout(() => {
+                setTimeout(() => {
+                    if (storedScrollAndZoom) {
+                        //console.log("Init position for board", key)
+                        const parsed = JSON.parse(storedScrollAndZoom)
                         el.scrollTop = parsed.y
                         el.scrollLeft = parsed.x
                         zoom.set({ zoom: parsed.zoom, quickZoom: 1 })
-                    }, 0) // Need to wait for first render to have correct size. Causes a little flicker.
-                }
+                    } else {
+                        viewRect.set(boardContentArea(board.get()))
+                    }
+                }, 0) // Need to wait for first render to have correct size. Causes a little flicker.
             }
         })
+
+    function boardContentArea(b: Board) {
+        const width = b.width / 10
+        const height = b.height / 10
+        let left = b.width / 2 - width / 2
+        let top = b.height / 2 - height / 2
+        let right = left + width
+        let bottom = top + height
+
+        Object.values(b.items).forEach((item) => {
+            const { x, y, width, height } = item
+            left = Math.min(left, x)
+            top = Math.min(top, y)
+            right = Math.max(right, x + width)
+            bottom = Math.max(bottom, y + height)
+        })
+
+        const marginTop = height * 0.1
+        const marginLeft = height * 0.1
+
+        return {
+            x: left - marginLeft,
+            y: top - marginTop,
+            width: right - left + 2 * marginLeft,
+            height: bottom - top + marginTop,
+        }
+    }
 
     scrollAndZoom.pipe(L.changes, L.debounce(100), L.applyScope(componentScope())).forEach((s) => {
         //console.log("Store position for board", localStorageKey.get())
@@ -89,12 +118,13 @@ export function boardScrollAndZoomHandler(
         L.cached(componentScope()),
     )
 
-    // NOTE: viewRect only supports panning, i.e. setting a viewRect with different size doesn't have an effect
     const viewRect = L.atom(viewRectProp, (newRect) => {
-        const boardRect = boardElement.get()?.getBoundingClientRect()!
-        const viewRect = scrollElement.get()?.getBoundingClientRect()!
-        const newX = coordinateHelper.emToBoardPx(newRect.x)
-        const newY = coordinateHelper.emToBoardPx(newRect.y)
+        const currentRect = viewRectProp.get()
+        const factor = newRect.width / currentRect.width
+        zoom.modify((z) => ({ ...z, quickZoom: z.quickZoom / factor }))
+
+        const newX = coordinateHelper.emToBoardPx(newRect.x) / factor
+        const newY = coordinateHelper.emToBoardPx(newRect.y) / factor
 
         scrollElement.get()!.scrollLeft = newX
         scrollElement.get()!.scrollTop = newY
