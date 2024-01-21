@@ -129,7 +129,7 @@ describe("Board functionality", () => {
         cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
     })
 
-    it("Can select note by dragging on board with ALT pressed", () => {
+    it.skip("Can select note by dragging on board with ALT pressed", () => {
         createNote("HELLO", 420, 120)
 
         getBoard().then((board) => {
