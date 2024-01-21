@@ -9,12 +9,12 @@
     white-space: nowrap;
     border-bottom: 2px solid #e7e8e8;
     font-size: 0.8em;
-    z-index: $z-index-menu;
+    z-index: $z-index-top-menu;
     padding: 0 0.8em;
     height: $header-height;
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 2fr 1fr;
     background: #fffffff8;
     color: $black;
 
@@ -71,6 +71,46 @@
         }
         a:not(:first-of-type) svg {
             margin-left: 0.21em;
+        }
+    }
+
+    .right-panel {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        @media (max-width: $narrow-screen-breakpoint) {
+            .other-users {
+                display: none;
+            }
+        }
+
+        .other-users {
+            position: relative;
+            .pop-up {
+                position: absolute;
+                top: 1em;
+                right: 0;
+                min-width: 10em;
+                background-color: white;
+                border-radius: 0px 0px 3px 3px;
+                padding: 1.5em 1em 1em;
+                text-align: right;
+                display: none;
+                ul {
+                    li:first-child {
+                        margin-bottom: 0.5em;
+                    }
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                border-bottom: 2px solid #e7e8e8;
+            }
+            &:hover {
+                .pop-up {
+                    display: block;
+                }
+            }
         }
     }
 

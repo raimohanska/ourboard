@@ -155,6 +155,13 @@ export const BoardView = ({
     )
     const { viewRect } = zoomControls
 
+    boardStore.eventsFromServer.forEach((e) => {
+        if (e.action === "user.bringAllToMe") {
+            console.log(`Following user ${e.nickname}`, e)
+            viewRect.set(e.viewRect)
+        }
+    })
+
     imageDropHandler(boardElement, assets, focus, uploadImageFile)
     itemCreateHandler(board, focus, latestNote, boardElement, onAdd)
     itemDeleteHandler(boardId, dispatch, focus)
@@ -288,6 +295,7 @@ export const BoardView = ({
                     accessLevel,
                     modalContent,
                     eventsFromServer: boardStore.eventsFromServer,
+                    viewRect,
                 }}
             />
             <div className="content-container" ref={containerElement.set}>

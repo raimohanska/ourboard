@@ -162,6 +162,18 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
                 }
                 return true
             }
+            case "user.bringAllToMe": {
+                const session = getSession(socket)
+                const state = maybeGetBoard(appEvent.boardId)
+                if (session && state && session.isOnBoard(appEvent.boardId)) {
+                    if (session.sessionId !== appEvent.sessionId) {
+                        console.warn("Incorrect sessionId in user.bringAllToMe")
+                    } else {
+                        broadcastBoardEvent(appEvent, session)
+                    }
+                }
+                return true
+            }
             case "asset.put.request": {
                 const { assetId } = appEvent
                 const signedUrl = getSignedPutUrl(assetId)

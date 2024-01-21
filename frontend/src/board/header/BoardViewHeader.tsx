@@ -3,13 +3,15 @@ import { getNavigator } from "harmaja-router"
 import * as L from "lonna"
 import * as uuid from "uuid"
 import { AccessLevel, Board, EventFromServer, UserSessionInfo } from "../../../../common/src/domain"
-import { createBoardAndNavigate, Routes } from "../../board-navigation"
+import { Routes, createBoardAndNavigate } from "../../board-navigation"
 import { EditableSpan } from "../../components/EditableSpan"
-import { BoardState, Dispatch } from "../../store/board-store"
-import { defaultAccessPolicy, UserSessionState } from "../../store/user-session-store"
+import { Dispatch } from "../../store/board-store"
+import { UserSessionState, defaultAccessPolicy } from "../../store/user-session-store"
 import { BackToAllBoardsLink } from "../toolbars/BackToAllBoardsLink"
+import { OtherUsersView } from "./OtherUsersView"
 import { SharingModalDialog } from "./SharingModalDialog"
 import { UserInfoView } from "./UserInfoView"
+import { Rect } from "../../../../common/src/geometry"
 
 export function BoardViewHeader({
     usersOnBoard,
@@ -19,6 +21,7 @@ export function BoardViewHeader({
     dispatch,
     modalContent,
     eventsFromServer,
+    viewRect,
 }: {
     usersOnBoard: L.Property<UserSessionInfo[]>
     board: L.Property<Board>
@@ -27,6 +30,7 @@ export function BoardViewHeader({
     dispatch: Dispatch
     modalContent: L.Atom<any>
     eventsFromServer: L.EventStream<EventFromServer>
+    viewRect: L.Property<Rect>
 }) {
     const editingAtom = L.atom(false)
     const nameAtom = L.atom(
@@ -86,12 +90,21 @@ export function BoardViewHeader({
                         </>
                     ),
             )}
-            <UserInfoView
-                state={sessionState}
-                usersOnBoard={usersOnBoard}
-                dispatch={dispatch}
-                modalContent={modalContent}
-            />
+            <span className="right-panel">
+                <OtherUsersView
+                    usersOnBoard={usersOnBoard}
+                    board={board}
+                    viewRect={viewRect}
+                    state={sessionState}
+                    dispatch={dispatch}
+                />
+                <UserInfoView
+                    state={sessionState}
+                    usersOnBoard={usersOnBoard}
+                    dispatch={dispatch}
+                    modalContent={modalContent}
+                />
+            </span>
         </header>
     )
 }

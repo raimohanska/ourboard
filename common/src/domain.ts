@@ -3,6 +3,7 @@ import * as uuid from "uuid"
 import * as t from "io-ts"
 import { DEFAULT_NOTE_COLOR, LIGHT_BLUE, PINK, RED } from "./colors"
 import { arrayToRecordById } from "./arrays"
+import { Rect } from "./geometry"
 
 export type Id = string
 export type ISOTimeStamp = string
@@ -242,6 +243,7 @@ export type BoardStateSyncEvent =
     | ActionApplyFailed
     | AssetPutUrlResponse
     | Ack
+    | BringAllToMe
 
 export type ClientToServerRequest =
     | CursorMove
@@ -257,6 +259,7 @@ export type ClientToServerRequest =
     | UserLoggedIn
     | AuthLogout
     | Ping
+    | BringAllToMe
 
 export type LoginResponse =
     | { action: "auth.login.response"; success: false }
@@ -298,6 +301,7 @@ export type GotBoardLocks = { action: "board.locks"; boardId: Id; locks: ItemLoc
 export type AddBoard = { action: "board.add"; payload: Board | BoardStub }
 export type AckAddBoard = { action: "board.add.ack"; boardId: Id }
 export type JoinBoard = { action: "board.join"; boardId: Id; initAtSerial?: Serial }
+export type BringAllToMe = { action: "user.bringAllToMe"; boardId: Id; sessionId: Id; viewRect: Rect; nickname: string }
 export type AssociateBoard = { action: "board.associate"; boardId: Id; lastOpened: ISOTimeStamp }
 export type DissociateBoard = { action: "board.dissociate"; boardId: Id }
 export type SetBoardAccessPolicy = {
