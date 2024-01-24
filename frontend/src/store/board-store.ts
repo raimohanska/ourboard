@@ -200,6 +200,8 @@ export function BoardStore(
                 }
             } else if (event.action === "board.joined") {
                 return { ...state, users: state.users.concat(event) }
+            } else if (event.action === "board.left") {
+                return { ...state, users: state.users.filter((u) => u.sessionId !== event.sessionId) }
             } else if (event.action === "board.locks") {
                 return { ...state, locks: event.locks }
             } else if (event.action === "ack") {

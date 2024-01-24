@@ -236,6 +236,7 @@ export type BoardStateSyncEvent =
     | GotBoardLocks
     | CursorPositions
     | JoinedBoard
+    | LeftBoard
     | UserLoggedIn
     | AckJoinBoard
     | DeniedJoinBoard
@@ -326,6 +327,7 @@ export type RecentBoardsFromServer = { action: "user.boards"; email: string; boa
 export type Ack = { action: "ack"; ackId: string; serials: Record<Id, Serial> }
 export type ActionApplyFailed = { action: "board.action.apply.failed" }
 export type JoinedBoard = { action: "board.joined"; boardId: Id } & UserSessionInfo
+export type LeftBoard = { action: "board.left"; boardId: Id; sessionId: Id }
 export type UserInfoUpdate = { action: "userinfo.set" } & UserSessionInfo
 export type InitBoardNew = { action: "board.init"; board: Board; accessLevel: AccessLevel }
 export type InitBoardDiff = {

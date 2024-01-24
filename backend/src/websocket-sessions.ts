@@ -111,6 +111,7 @@ export function endSession(socket: WsWrapper) {
         const boardState = maybeGetBoard(session.boardSession.boardId)
         if (boardState) {
             boardState.sessions = boardState.sessions.filter((s) => s.sessionId !== sessionId)
+            broadcastBoardEvent({ action: "board.left", boardId: boardState.board.id, sessionId })
         } else {
             console.warn(`Board state not found when ending session: ${session.boardSession.boardId}`)
         }
