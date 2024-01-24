@@ -262,7 +262,7 @@ export function setNicknameForSession(event: SetNickname, origin: WsWrapper) {
         ...session.userInfo,
     }
     if (session.boardSession) {
-        sendTo(everyoneElseOnTheSameBoard(session.boardSession.boardId, session), updateInfo)
+        sendTo(everyoneOnTheBoard(session.boardSession.boardId), updateInfo)
     }
 }
 
