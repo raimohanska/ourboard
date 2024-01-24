@@ -46,7 +46,7 @@ export const OtherUsersView = ({ usersOnBoard, dispatch, state, board, viewRect 
                                 renderItem={(u) => (
                                     <li className="user">
                                         {u.nickname}
-                                        <span style={{ opacity: 0.5, fontSize: "0.8em" }}>
+                                        <span className="youlink">
                                             {u.sessionId === state.get().sessionId ? " (you)" : ""}
                                         </span>
                                     </li>
