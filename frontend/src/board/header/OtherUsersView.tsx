@@ -40,8 +40,17 @@ export const OtherUsersView = ({ usersOnBoard, dispatch, state, board, viewRect 
                                 </a>
                             </li>
                             <ListView
-                                observable={usersOnBoard}
-                                renderItem={(u) => <li className="user">{u.nickname}</li>}
+                                observable={L.view(usersOnBoard, (users) =>
+                                    users.slice().sort((a, b) => a.nickname.localeCompare(b.nickname)),
+                                )}
+                                renderItem={(u) => (
+                                    <li className="user">
+                                        {u.nickname}
+                                        <span style={{ opacity: 0.5, fontSize: "0.8em" }}>
+                                            {u.sessionId === state.get().sessionId ? " (you)" : ""}
+                                        </span>
+                                    </li>
+                                )}
                             />
                         </ul>
                     </div>
