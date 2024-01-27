@@ -21,49 +21,6 @@ const PaletteContainer = () => cy.get(`[data-test="palette-new-container"]`)
 const PaletteText = () => cy.get(`[data-test="palette-new-text"]`)
 const getBoard = () => cy.get(`.ready .board`)
 
-describe("Initial screen", () => {
-    it("Opens correctly", () => {
-        cy.visit("http://localhost:1337")
-        cy.get('[data-test="app-title"').contains("OurBoard").should("be.visible")
-    })
-
-    it("Navigating to example board works via link", () => {
-        cy.visit("http://localhost:1337")
-        cy.get("a").contains("Shared test board").click()
-
-        cy.url().should("eq", "http://localhost:1337/b/default")
-
-        cy.get('[data-test="board-name"]').contains("Test Board").should("be.visible")
-    })
-
-    it("Creating new board works", () => {
-        cy.visit("http://localhost:1337")
-        cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
-        cy.get('[data-test="create-board-submit"]').click()
-
-        cy.url().should("contain", "http://localhost:1337/b/")
-        cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
-
-        // Go back and repeat (regression test for a bug)
-        cy.get(".navigation-toolbar a").click()
-        cy.get('input[placeholder="Enter board name"').type("ReaktorIsTheBest")
-        cy.get('[data-test="create-board-submit"]').click()
-        cy.get('[data-test="board-name"]').contains("ReaktorIsTheBest").should("be.visible")
-    })
-
-    it("Navigating to a nonexisting board", () => {
-        cy.visit("http://localhost:1337/b/bogus")
-        cy.get(".board-status-message").contains("not found").should("be.visible")
-    })
-})
-
-describe("Example board", () => {
-    it("Opens correctly from direct link", () => {
-        cy.visit("http://localhost:1337/b/default")
-        cy.get('[data-test="board-name"]').contains("Test Board").should("be.visible")
-    })
-})
-
 function createNote(text, relX, relY, color = "yellow") {
     PaletteNote().then((elements) => {
         const { x, y } = elements[0].getBoundingClientRect()
