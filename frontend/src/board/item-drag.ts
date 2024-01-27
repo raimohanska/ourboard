@@ -106,6 +106,8 @@ export function onBoardItemDrag(
         currentPos = newPos
         const { x: xDiff, y: yDiff } = newPos
 
+        console.log("DIFF", xDiff, yDiff)
+
         const b = board.get()
         const items = [...f.itemIds].map((id) => {
             const current = b.items[id]

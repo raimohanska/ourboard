@@ -4,6 +4,7 @@ import { Board, UserSessionInfo } from "../../../../common/src/domain"
 import { Dispatch } from "../../store/board-store"
 import { UserSessionState } from "../../store/user-session-store"
 import { Rect } from "../../../../common/src/geometry"
+import { assertNotNull } from "../../../../common/src/assertNotNull"
 
 type OtherUsersViewProps = {
     usersOnBoard: L.Property<UserSessionInfo[]>
@@ -58,9 +59,4 @@ export const OtherUsersView = ({ usersOnBoard, dispatch, state, board, viewRect 
             )
         },
     )
-}
-
-function assertNotNull<T>(x: T | null | undefined): T {
-    if (x === null || x === undefined) throw Error("Assertion failed: " + x)
-    return x
 }

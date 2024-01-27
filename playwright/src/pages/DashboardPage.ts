@@ -12,7 +12,9 @@ export function DashboardPage(page: Page) {
         async createNewBoard(name: string) {
             await page.getByPlaceholder("Enter board name").fill(name)
             await page.getByRole("button", { name: "Create" }).click()
-            return BoardPage(page)
+            const board = BoardPage(page)
+            await board.assertBoardName(name)
+            return board
         },
         async goToBoard(name: string) {
             await page.locator(".recent-boards li").filter({ hasText: name }).first().click()

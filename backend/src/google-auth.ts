@@ -1,5 +1,6 @@
 import { google } from "googleapis"
 import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
+import { assertNotNull } from "../../common/src/assertNotNull"
 import { getEnv } from "./env"
 import { AuthProvider } from "./oauth"
 import { ROOT_URL } from "./host-config"
@@ -60,11 +61,6 @@ export const GoogleAuthProvider = (googleConfig: GoogleConfig): AuthProvider => 
             picture: idToken.picture,
             domain: idToken.hd ?? null,
         }
-    }
-
-    function assertNotNull<T>(x: T | null | undefined): T {
-        if (x === null || x === undefined) throw Error("Assertion failed: " + x)
-        return x
     }
 
     return {
