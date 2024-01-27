@@ -51,6 +51,13 @@ jobs:
               run: npx playwright install chromium
             - name: Run playwright tests
               run: yarn test:playwright
+            - name: Archive results
+              uses: actions/upload-artifact@v4
+              with:
+                  name: test-results
+                  path: |
+                      cypress/screenshots
+                      playwright/results
     lint:
         runs-on: ubuntu-latest
         strategy:

@@ -12,3 +12,4 @@ backend/localfiles/
 latest.dump
 .vscode
 backups
+playwright/results
