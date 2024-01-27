@@ -1,4 +1,4 @@
-import { PlaywrightTestConfig } from "@playwright/test"
+import { PlaywrightTestConfig, devices } from "@playwright/test"
 
 const ci = process.env.CI === "true"
 
@@ -12,8 +12,18 @@ const config: PlaywrightTestConfig = {
     use: {
         baseURL: "http://localhost:8080",
         actionTimeout: 15000,
-        trace: "on",
+        trace: "retain-on-failure",
     },
     reporter: ci ? "github" : "line",
+    projects: [
+        {
+            name: "chromium",
+            use: { ...devices["Desktop Chrome"] },
+        },
+        {
+            name: "firefox",
+            use: { ...devices["Desktop Firefox"] },
+        },
+    ],
 }
 export default config

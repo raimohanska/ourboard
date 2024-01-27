@@ -57,6 +57,11 @@ export function BoardPage(page: Page) {
         })
     }
 
+    async function getElementSize(item: Locator) {
+        const { width, height } = assertNotNull(await item.boundingBox())
+        return { width, height }
+    }
+
     async function createNew(paletteItem: Locator, x: number, y: number) {
         await expect(paletteItem).toBeVisible()
 
@@ -137,7 +142,17 @@ export function BoardPage(page: Page) {
         },
         async assertItemPosition(item: Locator, x: number, y: number) {
             const pos = await getElementPosition(item)
-            expect(pos).toEqual({ x, y })
+            expect(pos.x).toBeGreaterThan(x - 5)
+            expect(pos.x).toBeLessThan(x + 5)
+            expect(pos.y).toBeGreaterThan(y - 5)
+            expect(pos.y).toBeLessThan(y + 5)
+        },
+        async assertItemSize(item: Locator, width: number, height: number) {
+            const size = await getElementSize(item)
+            expect(size.width).toBeGreaterThan(width - 5)
+            expect(size.width).toBeLessThan(width + 5)
+            expect(size.height).toBeGreaterThan(height - 5)
+            expect(size.height).toBeLessThan(height + 5)
         },
         async getItemPosition(item: Locator) {
             return await getElementPosition(item)

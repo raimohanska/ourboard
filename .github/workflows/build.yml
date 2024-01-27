@@ -41,10 +41,11 @@ jobs:
               env:
                   SESSION_SIGNING_SECRET: notsosecretthing
             - name: Prepare Playwright
-              run: npx playwright install chromium
+              run: npx playwright install chromium firefox
             - name: Run playwright tests
               run: yarn test:playwright
             - name: Archive results
+              if: always()
               uses: actions/upload-artifact@v4
               with:
                   name: test-results

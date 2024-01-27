@@ -35,7 +35,7 @@ test.describe("Basic board functionality", () => {
             await board.selectItems(monoids, semigroups)
             await board.dragItem(monoids, 400, 300)
             await board.assertItemPosition(monoids, 400, 300)
-            await board.assertItemPosition(semigroups, 300, 197)
+            await board.assertItemPosition(semigroups, 300, 200)
         })
     })
 
@@ -104,9 +104,9 @@ test.describe("Basic board functionality", () => {
     test("Aligning notes", async ({ page }) => {
         const board = await navigateToNewBoard(page)
         const n1 = await board.createNoteWithText(250, 120, "ALIGN")
-        const n2 = await board.createNoteWithText(300, 100, "ALL")
-        const n3 = await board.createNoteWithText(320, 190, "THESE")
-        await board.createNoteWithText(300, 250, "BUT NOT THIS")
+        const n2 = await board.createNoteWithText(450, 100, "ALL")
+        const n3 = await board.createNoteWithText(320, 250, "THESE")
+        await board.createNoteWithText(300, 450, "BUT NOT THIS")
         await board.selectItems(n1, n2, n3)
         const originalCoordinates = await Promise.all([n1, n2, n3].map((n) => board.getItemPosition(n)))
         await (await board.contextMenu.openHorizontalAlign()).left.click()
@@ -140,7 +140,7 @@ test.describe("Basic board functionality", () => {
         await test.step("Can drag to resize items", async () => {
             await board.selectItems(monoids)
             await board.dragSelectionBottomCorner(550, 550)
-            await expect(monoids).toHaveCSS("width", "382.562px")
+            await board.assertItemSize(monoids, 380, 380)
         })
     })
 
