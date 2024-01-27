@@ -26,10 +26,8 @@ jobs:
               uses: actions/setup-node@v1
               with:
                   node-version: ${{ matrix.node-version }}
-            - name: Install dependencies
-              uses: cypress-io/github-action@v2
-              with:
-                  runTests: false
+            - name: Install deps
+              run: yarn
             - name: Run unit tests
               run: yarn test:unit
             - name: Wait for DB
@@ -42,11 +40,6 @@ jobs:
               run: yarn start&
               env:
                   SESSION_SIGNING_SECRET: notsosecretthing
-            - name: Run cypress tests
-              uses: cypress-io/github-action@v2
-              with:
-                  install: false
-                  wait-on: "http://localhost:1337"
             - name: Prepare Playwright
               run: npx playwright install chromium
             - name: Run playwright tests
@@ -56,7 +49,6 @@ jobs:
               with:
                   name: test-results
                   path: |
-                      cypress/screenshots
                       playwright/results
     lint:
         runs-on: ubuntu-latest

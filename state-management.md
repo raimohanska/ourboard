@@ -39,5 +39,5 @@
 
 ## Proofing
 
--   Cypress integration test involving client and server (actually catches bugs)
+-   Playwright integration test involving client and server (actually catches bugs)
 -   Performance tester: 100 cursors (SHOW!)

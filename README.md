@@ -198,10 +198,10 @@ yarn install
 yarn dev
 ```
 
-Run end-to end Cypress tests against the server you just started:
+Run end-to end Playwright tests
 
--   `yarn test-e2e:dev` to run once
--   `yarn cypress` to open the Cypress UI for repeated test runs
+-   `yarn test:playwright` to run tests once
+-   `yarn test:playwright --ui` to open the Playwright UI
 
 Connect to the local PostgreSQL database
 

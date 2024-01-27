@@ -1,5 +1,5 @@
-import { Browser, chromium, expect, test } from "@playwright/test"
-import { navigateToBoard, navigateToNewBoard } from "../pages/BoardPage"
+import { expect, test } from "@playwright/test"
+import { navigateToBoard, navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
 
 test.describe("Two simultaneous users", () => {
     test("two anonymous users can see each other notes", async ({ page, browser }) => {
@@ -21,8 +21,3 @@ test.describe("Two simultaneous users", () => {
         await expect(userPage.getNote(anotherUserPageNoteText)).toBeVisible()
     })
 })
-
-export const semiUniqueId = () => {
-    const now = String(Date.now())
-    return now.substring(now.length - 5)
-}

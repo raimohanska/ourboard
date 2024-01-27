@@ -1,6 +1,5 @@
 backend/dist
 backend/localfiles
-cypress
 Dockerfile
 frontend/.cache
 ignore

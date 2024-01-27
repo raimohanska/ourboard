@@ -1,6 +1,6 @@
-import { Browser, chromium, expect, test } from "@playwright/test"
-import { navigateToBoard, navigateToNewBoard } from "../pages/BoardPage"
-import { semiUniqueId } from "./collaboration.spec"
+import { expect, test } from "@playwright/test"
+import { sleep } from "../../../common/src/sleep"
+import { navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
 
 test.describe("Basic board functionality", () => {
     test("Can create note by dragging from palette", async ({ page }) => {
@@ -39,6 +39,81 @@ test.describe("Basic board functionality", () => {
         })
     })
 
+    test("Changing note color", async ({ page }) => {
+        const board = await navigateToNewBoard(page)
+        const monoids = await board.createNoteWithText(100, 200, "Monoids")
+        const colorsAndShapes = await board.contextMenu.openColorsAndShapes()
+        await colorsAndShapes.selectColor("pink")
+        await board.assertItemColor(monoids, "rgb(253, 196, 231)")
+    })
+
+    test("Duplicate note by Ctrl+D", async ({ page }) => {
+        const board = await navigateToNewBoard(page)
+        const monoids = await board.createNoteWithText(100, 200, "Monoids")
+        await page.keyboard.press("Escape")
+        await page.keyboard.press("Control+d")
+    })
+
+    test.skip("Copy, paste and cut", async ({ page }) => {
+        // TODO: not sure how to trigger native copy, paste events
+        const board = await navigateToNewBoard(page)
+        const monoids = await board.createNoteWithText(100, 200, "Monoids")
+        await page.keyboard.press("Control+c", {})
+        await board.clickOnBoard({ x: 500, y: 300 })
+        await page.keyboard.press("Control+v")
+
+        await board.changeItemText(board.getNote("Monoids"), "Monads")
+        await expect(board.getNote("Monoids")).toBeVisible()
+        await expect(board.getNote("Monads")).toBeVisible()
+    })
+
+    test("Move items with arrow keys", async ({ page }) => {
+        const board = await navigateToNewBoard(page)
+        const monoids = await board.createNoteWithText(100, 200, "Monoids")
+        const origPos = await board.getItemPosition(monoids)
+        await test.step("Normally", async () => {
+            await page.keyboard.press("ArrowRight")
+            expect(await board.getItemPosition(monoids)).toEqual({ x: origPos.x + 14, y: origPos.y })
+        })
+        await test.step("Faster with shift", async () => {
+            await page.keyboard.press("Shift+ArrowLeft")
+            expect(await board.getItemPosition(monoids)).toEqual({ x: origPos.x - 125, y: origPos.y })
+        })
+        await test.step("Slower with alt", async () => {
+            await page.keyboard.press("Alt+ArrowDown")
+            expect(await board.getItemPosition(monoids)).toEqual({ x: origPos.x - 125, y: origPos.y + 1 })
+        })
+    })
+
+    test("Deleting notes", async ({ page }) => {
+        const board = await navigateToNewBoard(page)
+        const monoids = await board.createNoteWithText(100, 200, "Monoids")
+
+        await test.step("With delete key", async () => {
+            await page.keyboard.press("Delete")
+            await expect(monoids).not.toBeVisible()
+        })
+
+        await test.step("With backspace key", async () => {
+            const functors = await board.createNoteWithText(100, 200, "Functors")
+            await page.keyboard.press("Delete")
+            await expect(functors).not.toBeVisible()
+        })
+    })
+
+    test("Aligning notes", async ({ page }) => {
+        const board = await navigateToNewBoard(page)
+        const n1 = await board.createNoteWithText(250, 120, "ALIGN")
+        const n2 = await board.createNoteWithText(300, 100, "ALL")
+        const n3 = await board.createNoteWithText(320, 190, "THESE")
+        await board.createNoteWithText(300, 250, "BUT NOT THIS")
+        await board.selectItems(n1, n2, n3)
+        const originalCoordinates = await Promise.all([n1, n2, n3].map((n) => board.getItemPosition(n)))
+        await (await board.contextMenu.openHorizontalAlign()).left.click()
+        const newCoordinates = await Promise.all([n1, n2, n3].map((n) => board.getItemPosition(n)))
+        expect(newCoordinates.every((c) => c.x === originalCoordinates[0].x)).toBeTruthy()
+    })
+
     test("Can edit note text", async ({ page }) => {
         const board = await navigateToNewBoard(page)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
@@ -51,6 +126,7 @@ test.describe("Basic board functionality", () => {
         })
 
         await test.step("Check persistence", async () => {
+            await sleep(1000) // Time for persistence
             await page.reload()
             await expect(monoids).toBeVisible()
             await expect(semigroups).toBeVisible()
@@ -74,7 +150,7 @@ test.describe("Basic board functionality", () => {
         const semigroups = await board.createNoteWithText(250, 200, "SemiGroups")
 
         async function resetSelection() {
-            await board.scrollContainer.click({ position: { x: 100, y: 100 } })
+            await board.clickOnBoard({ x: 100, y: 100 })
             await board.assertSelected(monoids, false)
         }
 

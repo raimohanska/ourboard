@@ -101,6 +101,7 @@ export function BoardPage(page: Page) {
             await createNew(this.newNoteOnPalette, x, y)
             await expect(this.getNote("HELLO")).toBeVisible()
             await page.keyboard.type(`${text}`)
+            await page.keyboard.press("Escape")
             await expect(this.getNote(text)).toBeVisible()
             return this.getNote(text)
         },
@@ -138,7 +139,14 @@ export function BoardPage(page: Page) {
             const pos = await getElementPosition(item)
             expect(pos).toEqual({ x, y })
         },
+        async getItemPosition(item: Locator) {
+            return await getElementPosition(item)
+        },
+        async assertItemColor(item: Locator, color: string) {
+            await expect(item.locator(".shape")).toHaveCSS("background-color", color)
+        },
         async changeItemText(item: Locator, text: string) {
+            await item.click()
             await item.locator(".text").dblclick()
             await page.keyboard.type(text)
         },
@@ -148,6 +156,9 @@ export function BoardPage(page: Page) {
             } else {
                 await expect(item).not.toHaveClass(/selected/)
             }
+        },
+        async clickOnBoard(position: { x: number; y: number }) {
+            await scrollContainer.click({ position })
         },
         async dragOnBoard(
             from: { x: number; y: number },
@@ -180,6 +191,39 @@ export function BoardPage(page: Page) {
             async dismiss() {
                 await page.locator(".user-info button").click()
             },
+        },
+        contextMenu: ContextMenu(page),
+    }
+}
+
+function ContextMenu(page: Page) {
+    const contextMenu = page.locator(".context-menu")
+    return {
+        async openColorsAndShapes() {
+            await contextMenu.locator(".colors-shapes .icon").click()
+            return {
+                async selectColor(color: string) {
+                    await page.locator(`.submenu .colors .icon.${color}`).click()
+                },
+            }
+        },
+        async openHorizontalAlign() {
+            await contextMenu.locator(".icon-group.align .icon").first().click()
+            const submenu = page.locator(`.submenu.alignment.x`)
+            return {
+                left: submenu.getByTitle("Align left"),
+                center: submenu.getByTitle("Align center"),
+                right: submenu.getByTitle("Align right"),
+            }
+        },
+        async openVerticalAlign() {
+            await contextMenu.locator(".icon-group.align .icon").nth(1).click()
+            const submenu = page.locator(`.submenu.alignment.y`)
+            return {
+                top: submenu.getByTitle("Align top"),
+                middle: submenu.getByTitle("Align middle"),
+                bottom: submenu.getByTitle("Align bottom"),
+            }
         },
     }
 }
