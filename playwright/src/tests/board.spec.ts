@@ -37,7 +37,12 @@ test.describe("Basic board functionality", () => {
             await board.assertItemPosition(monoids, 400, 300)
             await board.assertItemPosition(semigroups, 300, 200)
         })
+
+        // TODO: test persistence
     })
+
+    // TODO: test creating and modifying connections
+    // TODO: test duplicating multiple items
 
     test("Changing note color", async ({ page }) => {
         const board = await navigateToNewBoard(page)
