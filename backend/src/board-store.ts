@@ -39,6 +39,7 @@ where id=$1
 
 export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
     return await inTransaction(async (client) => {
+        const started = new Date().getTime()
         const result = await client.query(selectBoardQuery, [id])
         if (result.rows.length == 0) {
             return null
@@ -84,8 +85,9 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             })
 
             const serial = (historyEventCount > 0 ? lastSerial : snapshot.serial) || 0
+            const elapsed = new Date().getTime() - started
             console.log(
-                `Loaded board ${id} at serial ${serial} from snapshot at serial ${snapshot.serial} and ${historyEventCount} events after snapshot`,
+                `Loaded board ${id} at serial ${serial} from snapshot at serial ${snapshot.serial} and ${historyEventCount} events after snapshot. Took ${elapsed}ms`,
             )
 
             if (historyEventCount > 1000 /* time to create a new snapshot*/) {
