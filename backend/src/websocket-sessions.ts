@@ -25,13 +25,14 @@ import { getBoardHistory } from "./board-store"
 import { LoginInfo } from "./http-session"
 import { randomProfession } from "./professions"
 import { getUserIdForEmail } from "./user-store"
-import { StringifyCache, WsWrapper } from "./ws-wrapper"
+import { toBuffer, WsWrapper } from "./ws-wrapper"
 
 export type UserSession = {
     readonly sessionId: Id
     boardSession: UserSessionBoardEntry | null
     userInfo: SessionUserInfo
-    sendEvent: (event: EventFromServer, cache?: StringifyCache) => void
+    sendEvent: (event: EventFromServer) => void
+    sendBuffer: (event: Buffer) => void
     isOnBoard: (boardId: Id) => boolean
     close(): void
 }
@@ -61,8 +62,8 @@ const everyoneOnTheBoard = (boardId: string) => {
     return boardState.sessions
 }
 const sendTo = (recipients: UserSession[], message: EventFromServer) => {
-    const cache = StringifyCache()
-    recipients.forEach((c) => c.sendEvent(message, cache))
+    const buffer = toBuffer(message)
+    recipients.forEach((c) => c.sendBuffer(buffer))
 }
 const everyoneElseOnTheSameBoard = (boardId: Id, session?: UserSession) =>
     everyoneOnTheBoard(boardId).filter((s) => s !== session)
@@ -73,7 +74,10 @@ export function startSession(socket: WsWrapper) {
 
 function userSession(socket: WsWrapper): UserSession {
     const sessionId = socket.id
-    function sendEvent(event: EventFromServer, cache?: StringifyCache) {
+    function sendBuffer(buffer: Buffer) {
+        socket.send(buffer)
+    }
+    function sendEvent(event: EventFromServer) {
         if (isBoardHistoryEntry(event)) {
             const entry = session.boardSession
             if (!entry) throw Error("Board " + event.boardId + " not found for session " + sessionId)
@@ -82,12 +86,13 @@ function userSession(socket: WsWrapper): UserSession {
                 return
             }
         }
-        socket.send(event, cache)
+        sendBuffer(toBuffer(event))
     }
     const session: UserSession = {
         sessionId,
         userInfo: anonymousUser("Anonymous " + randomProfession()),
         boardSession: null,
+        sendBuffer,
         sendEvent,
         isOnBoard: (boardId: Id) => session.boardSession != null && session.boardSession.boardId === boardId,
         close: () => socket.close(),

@@ -1,6 +1,5 @@
 import uws from "uWebSockets.js"
 import { EventFromServer } from "../../common/src/domain"
-import { StringifyCache } from "./ws-wrapper"
 import * as uuid from "uuid"
 import { connectionHandler, MessageHandler } from "./connection-handler"
 import { handleBoardEvent } from "./board-event-handler"
@@ -24,9 +23,9 @@ export const WsWrapper = (ws: uws.WebSocket) => {
         closeE.forEach(f)
     }
     return {
-        send: (msg: EventFromServer, cache?: StringifyCache) => {
+        send: (buffer: Buffer) => {
             try {
-                ws.send(cache ? cache.stringify(msg) : JSON.stringify(msg))
+                ws.send(buffer, false)
             } catch (e) {
                 ws.close()
             }

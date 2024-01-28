@@ -16,7 +16,7 @@ import { obtainLock } from "./locker"
 import { addSessionToBoard, broadcastBoardEvent, getSession } from "./websocket-sessions"
 import { associateUserWithBoard } from "./user-store"
 import { getBoardInfo } from "./board-store"
-import { WsWrapper } from "./ws-wrapper"
+import { toBuffer, WsWrapper } from "./ws-wrapper"
 import { sleep } from "../../common/src/sleep"
 import { WS_HOST_DEFAULT, WS_HOST_LOCAL, WS_PROTOCOL } from "./host-config"
 
@@ -177,7 +177,7 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
             case "asset.put.request": {
                 const { assetId } = appEvent
                 const signedUrl = getSignedPutUrl(assetId)
-                socket.send({ action: "asset.put.response", assetId, signedUrl })
+                socket.send(toBuffer({ action: "asset.put.response", assetId, signedUrl }))
                 return true
             }
         }

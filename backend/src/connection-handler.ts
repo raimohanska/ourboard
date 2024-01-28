@@ -3,7 +3,7 @@ import { getActiveBoards } from "./board-state"
 import { getConfig } from "./config"
 import { releaseLocksFor } from "./locker"
 import { broadcastCursorPositions, endSession, startSession } from "./websocket-sessions"
-import { WsWrapper } from "./ws-wrapper"
+import { WsWrapper, toBuffer } from "./ws-wrapper"
 
 export type ConnectionHandlerParams = Readonly<{
     getSignedPutUrl: (key: string) => string
@@ -12,11 +12,13 @@ export type ConnectionHandlerParams = Readonly<{
 export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandler) => {
     startSession(socket)
     const config = getConfig()
-    socket.send({
-        action: "server.config",
-        assetStorageURL: config.storageBackend.assetStorageURL,
-        authSupported: config.authSupported,
-    })
+    socket.send(
+        toBuffer({
+            action: "server.config",
+            assetStorageURL: config.storageBackend.assetStorageURL,
+            authSupported: config.authSupported,
+        }),
+    )
     socket.onError(() => {
         socket.close()
     })
@@ -34,7 +36,7 @@ export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandl
                 }
             }
             if (event.ackId) {
-                socket.send({ action: "ack", ackId: event.ackId, serials: serialsToAck })
+                socket.send(toBuffer({ action: "ack", ackId: event.ackId, serials: serialsToAck }))
             }
         } catch (e) {
             console.error("Error while handling event from client. Closing connection.", e)

@@ -10,7 +10,7 @@ import {
     getUserIdForEmail,
 } from "./user-store"
 import { getSession, logoutUser, setNicknameForSession, setVerifiedUserForSession } from "./websocket-sessions"
-import { WsWrapper } from "./ws-wrapper"
+import { WsWrapper, toBuffer } from "./ws-wrapper"
 
 export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): Promise<MessageHandlerResult> {
     switch (appEvent.action) {
@@ -95,7 +95,7 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
                 }
                 const board = { ...defaultBoardSize, items: {}, connections: [], ...template, ...payload, serial: 0 }
                 await addBoard(board)
-                socket.send({ action: "board.add.ack", boardId: board.id })
+                socket.send(toBuffer({ action: "board.add.ack", boardId: board.id }))
             }
             return true
         }

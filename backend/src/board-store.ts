@@ -75,6 +75,10 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
                     await getFullBoardHistory(id, client, updateBoardWithEventChunk)
                 } catch (e) {
                     console.error(`Unable to reboot snapshot, failing at loop index ${i}. Giving up.`)
+
+                    // TODO: this board cannot be repaired automatically. We should block usage, or it will be
+                    // and endless loop. Local dev, board ee803db1-f41a-43c6-9e39-83057faace60.
+
                     throw e
                 }
             })
