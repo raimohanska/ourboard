@@ -58,9 +58,9 @@ export function boardReducer(
     //console.log(event.action, inplace)
     switch (event.action) {
         case "connection.add": {
-            const connections = event.connections
+            const newConnections = event.connections
 
-            for (let connection of connections) {
+            for (let connection of newConnections) {
                 validateConnection(board, connection)
 
                 if (board.connections.some((c) => c.id === connection.id)) {
@@ -69,11 +69,20 @@ export function boardReducer(
             }
 
             return [
-                { ...board, connections: [...board.connections, ...connections] },
+                {
+                    ...board,
+                    connections: applyListModification(
+                        board.connections,
+                        (cs) => {
+                            cs.push(...newConnections)
+                        },
+                        inplace,
+                    ),
+                },
                 () => ({
                     action: "connection.delete",
                     boardId: event.boardId,
-                    connectionIds: connections.map((c) => c.id),
+                    connectionIds: newConnections.map((c) => c.id),
                 }),
             ]
         }
@@ -92,10 +101,11 @@ export function boardReducer(
             return [
                 {
                     ...board,
-                    connections: board.connections.map((c) => {
-                        const replacement = connections.find((r) => r.id === c.id)
-                        return replacement ? replacement : c
-                    }),
+                    connections: applyListModification(
+                        board.connections,
+                        (cs) => replaceById(cs, connections),
+                        inplace,
+                    ),
                 },
                 () => ({ action: "connection.modify", boardId: event.boardId, connections: existingConnections }),
             ]
@@ -121,21 +131,27 @@ export function boardReducer(
             if (event.items.some((a) => board.items[a.id])) {
                 throw new Error("Adding duplicate item " + JSON.stringify(event.items))
             }
-            const itemsToAdd = event.items.reduce((acc: Record<string, Item>, item) => {
-                if (
-                    item.containerId &&
-                    !findItem(board)(item.containerId) &&
-                    !findItem(arrayToRecordById(event.items))(item.containerId)
-                ) {
-                    // Add item but don't try to assign to a non-existing container
-                    acc[item.id] = { ...item, containerId: undefined }
-                    return acc
-                }
-                acc[item.id] = item
-                return acc
-            }, {})
 
-            const boardWithAddedItems = { ...board, items: { ...board.items, ...itemsToAdd } }
+            const updatedItems = applyModification(
+                board.items,
+                (items) => {
+                    event.items.forEach((item) => {
+                        if (
+                            item.containerId &&
+                            !findItem(board)(item.containerId) &&
+                            !findItem(arrayToRecordById(event.items))(item.containerId)
+                        ) {
+                            // Add item but don't try to assign to a non-existing container
+                            items[item.id] = { ...item, containerId: undefined }
+                        } else {
+                            items[item.id] = item
+                        }
+                    }, {})
+                },
+                inplace,
+            )
+
+            const boardWithAddedItems = { ...board, items: updatedItems }
 
             const connectionsToAdd = event.connections || []
 
@@ -148,7 +164,16 @@ export function boardReducer(
             })
 
             return [
-                { ...boardWithAddedItems, connections: [...board.connections, ...connectionsToAdd] },
+                {
+                    ...boardWithAddedItems,
+                    connections: applyListModification(
+                        board.connections,
+                        (cs) => {
+                            cs.push(...connectionsToAdd)
+                        },
+                        inplace,
+                    ),
+                },
                 () => ({
                     action: "item.delete",
                     boardId: board.id,
@@ -164,6 +189,7 @@ export function boardReducer(
                         board.items,
                         1.1,
                         filterItemIdsByPermissions(event.itemIds, board, canChangeFont),
+                        inplace,
                     ),
                 },
                 () => ({
@@ -179,6 +205,7 @@ export function boardReducer(
                         board.items,
                         1 / 1.1,
                         filterItemIdsByPermissions(event.itemIds, board, canChangeFont),
+                        inplace,
                     ),
                 },
                 () => ({
@@ -207,7 +234,7 @@ export function boardReducer(
         }
         case "item.move":
             return [
-                moveItems(board, event),
+                moveItems(board, event, inplace),
                 () => ({
                     action: "item.move",
                     boardId: board.id,
@@ -227,7 +254,7 @@ export function boardReducer(
             const connectionIds = filterConnectionIdsByPermissions(event.connectionIds, board, canDelete)
             const itemIdsToDelete = findItemIdsRecursively(itemIds, board)
             const connectionIdsToDelete = new Set(connectionIds)
-            const updatedItems = { ...board.items }
+            const updatedItems = inplace ? board.items : { ...board.items }
             itemIdsToDelete.forEach((id) => {
                 delete updatedItems[id]
             })
@@ -328,23 +355,6 @@ function validateEndPoint(board: Board, connection: Connection, key: "to" | "fro
     }
 }
 
-function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[]) {
-    const updated = itemIds.reduce((acc: Record<string, Item>, id) => {
-        const u = items[id] && isTextItem(items[id]) ? (items[id] as TextItem) : null
-        if (u) {
-            acc[u.id] = {
-                ...u,
-                fontSize: ((u as TextItem).fontSize || 1) * factor,
-            }
-        }
-        return acc
-    }, {})
-    return {
-        ...items,
-        ...updated,
-    }
-}
-
 function updateConnections(board: Board, updates: ConnectionUpdate[]): Connection[] {
     if (updates.length === 0) return board.connections
     updates = filterConnectionUpdatesByPermissions(updates, board)
@@ -365,29 +375,79 @@ function updateConnections(board: Board, updates: ConnectionUpdate[]): Connectio
 
 function updateItems(board: Board, updateList: ItemUpdate[], inplace: boolean): Record<Id, Item> {
     updateList = filterItemUpdatesByPermissions(updateList, board)
-    const current = board.items
-    const updatedItems: Item[] = updateList.map((update) => ({ ...current[update.id], ...update } as Item))
-    const updatedItemMap = arrayToRecordById(updatedItems, inplace ? current : {})
-    const resultMap = inplace ? current : { ...current, ...updatedItemMap }
+    const updatedItems: Item[] = updateList.map((update) => ({ ...board.items[update.id], ...update } as Item))
+
+    const resultItems = applyModification(
+        board.items,
+        (items) => {
+            arrayToRecordById(updatedItems, items)
+        },
+        inplace,
+    )
+
     updatedItems.filter(isContainer).forEach((container) => {
-        const previous = current[container.id]
+        const previous = board.items[container.id]
         if (previous && !equalRect(previous, container)) {
             // Container shape changed -> check items
-            Object.values(current)
+            Object.values(board.items)
                 .filter(
                     (i) =>
                         i.containerId === container.id || // Check all previously contained items
                         containedBy(i, container), // Check all items inside the new bounds
                 )
                 .forEach((item) => {
-                    const newContainer = maybeChangeContainerForItem(item, resultMap)
+                    const newContainer = maybeChangeContainerForItem(item, resultItems)
                     if (newContainer?.id !== item.containerId) {
-                        resultMap[item.id] = { ...item, containerId: newContainer ? newContainer.id : undefined }
+                        resultItems[item.id] = { ...item, containerId: newContainer ? newContainer.id : undefined }
                     }
                 })
         }
     })
-    return resultMap
+    return resultItems
+}
+
+function applyModification<T>(
+    items: Record<string, T>,
+    modification: (items: Record<string, T>) => void,
+    inplace: boolean,
+): Record<string, T> {
+    const updated = inplace ? items : { ...items }
+    modification(updated)
+    return updated
+}
+
+function applyListModification<T>(list: T[], modification: (list: T[]) => void, inplace: boolean) {
+    const newList = inplace ? list : [...list]
+    modification(newList)
+    return newList
+}
+
+function replaceById<T extends { id: Id }>(list: T[], replacements: T[]) {
+    replacements.forEach((replacement) => {
+        const index = list.findIndex((item) => item.id === replacement.id)
+        if (index === -1) {
+            throw Error(`Trying to replace nonexisting item ${replacement.id}`)
+        }
+        list[index] = replacement
+    })
+}
+
+function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[], inplace: boolean) {
+    return applyModification(
+        items,
+        (items) => {
+            itemIds.forEach((id) => {
+                const u = items[id] && isTextItem(items[id]) ? (items[id] as TextItem) : null
+                if (u) {
+                    items[u.id] = {
+                        ...u,
+                        fontSize: ((u as TextItem).fontSize || 1) * factor,
+                    }
+                }
+            })
+        },
+        inplace,
+    )
 }
 
 function filterItemIdsByPermissions(itemIds: Id[], board: Board, permission: BoardPermission) {
@@ -455,7 +515,7 @@ function filterConnectionUpdatesByPermissions(updates: ConnectionUpdate[], board
     })
 }
 
-function moveItems(board: Board, event: MoveItem) {
+function moveItems(board: Board, event: MoveItem, inplace: boolean) {
     event = filterMoveByPermissions(event, board)
     const itemMoves: Record<Id, ItemMove> = {}
     const itemsOnBoard = board.items
@@ -520,7 +580,7 @@ function moveItems(board: Board, event: MoveItem) {
             items[id] = updated
             return items
         },
-        { ...board.items },
+        inplace ? board.items : { ...board.items },
     )
 
     return {
