@@ -1,23 +1,14 @@
 import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardCursorPositions, BoardHistoryEntry, Id, ItemLocks, Serial } from "../../common/src/domain"
 import { Locks } from "./locker"
-import {
-    createAccessToken,
-    createBoard,
-    fetchBoard,
-    mkSnapshot,
-    saveBoardSnapshot,
-    saveRecentEvents,
-} from "./board-store"
+import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./board-store"
 import { broadcastItemLocks, getBoardSessionCount, getSessionCount } from "./websocket-sessions"
 import { compactBoardHistory, quickCompactBoardHistory } from "./compact-history"
 import { sleep } from "../../common/src/sleep"
 import { UserSession } from "./websocket-sessions"
-import { inTransaction } from "./db"
 // A mutable state object for server side state
 export type ServerSideBoardState = {
     ready: true
-    snapshotSerial: Serial
     board: Board
     recentEvents: BoardHistoryEntry[]
     storingEvents: BoardHistoryEntry[]
@@ -44,7 +35,7 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState | null> {
         const fetchState = async () => {
             const boardData = await fetchBoard(id)
             if (!boardData) return null
-            const { board, accessTokens, snapshotSerial } = boardData
+            const { board, accessTokens } = boardData
             return {
                 ready: true,
                 board,
@@ -55,7 +46,6 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState | null> {
                 cursorsMoved: false,
                 cursorPositions: {},
                 sessions: [],
-                snapshotSerial,
             } as ServerSideBoardState
         }
         const fetch = fetchState()
@@ -110,10 +100,10 @@ export function updateBoards(boardState: ServerSideBoardState, appEvent: BoardHi
 export async function addBoard(board: Board, createToken?: boolean): Promise<ServerSideBoardState> {
     await createBoard(board)
     const accessTokens = createToken ? [await createAccessToken(board)] : []
-    const boardState: ServerSideBoardState = {
+    const boardState = {
         ready: true as const,
         board,
-        snapshotSerial: 0,
+        serial: 0,
         recentEvents: [],
         storingEvents: [],
         locks: Locks((changedLocks) => broadcastItemLocks(board.id, changedLocks)),
@@ -155,18 +145,6 @@ async function saveBoardChanges(state: ServerSideBoardState) {
         )
         try {
             await saveRecentEvents(state.board.id, state.storingEvents)
-            if (state.board.serial - state.snapshotSerial > 5000) {
-                console.log(
-                    `Saving snapshot for board ${state.board.id} with ${
-                        state.board.serial - state.snapshotSerial
-                    } new events`,
-                )
-                await inTransaction(async (client) => {
-                    await saveBoardSnapshot(mkSnapshot(state.board, state.board.serial), client)
-                })
-                state.snapshotSerial = state.board.serial
-            }
-            // TODO: also update snapshot if more than 1000 events since snapshot
         } catch (e) {
             // Push event back to the head of save list for retrying later
             state.recentEvents = [...state.storingEvents, ...state.recentEvents]
