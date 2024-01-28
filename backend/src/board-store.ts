@@ -6,9 +6,10 @@ import { Board, BoardAccessPolicy, BoardHistoryEntry, Id, isBoardEmpty, Serial }
 import { migrateBoard, migrateEvent, mkBootStrapEvent } from "../../common/src/migration"
 import { inTransaction, withDBClient } from "./db"
 
-export type BoardAndAccessTokens = {
+export type BoardFetchResult = {
     board: Board
     accessTokens: string[]
+    snapshotSerial: Serial
 }
 
 export type BoardInfo = {
@@ -37,7 +38,7 @@ select id,
 where id=$1
 `
 
-export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
+export async function fetchBoard(id: Id): Promise<BoardFetchResult | null> {
     return await inTransaction(async (client) => {
         const started = new Date().getTime()
         const result = await client.query(selectBoardQuery, [id])
@@ -100,7 +101,7 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
                 await client.query("SELECT token FROM board_api_token WHERE board_id=$1", [id])
             ).rows.map((row) => row.token)
 
-            return { board: { ...board, serial }, accessTokens }
+            return { board: { ...board, serial }, accessTokens, snapshotSerial: snapshot.serial }
         }
     })
 }
@@ -180,7 +181,7 @@ export async function createAccessToken(board: Board): Promise<string> {
 }
 
 export async function saveRecentEvents(id: Id, recentEvents: BoardHistoryEntry[]) {
-    await inTransaction(async (client) => storeEventHistoryBundle(id, recentEvents, client))
+    await inTransaction(async (client) => await storeEventHistoryBundle(id, recentEvents, client))
 }
 
 type StreamingBoardEventCallback = (chunk: BoardHistoryEntry[]) => void
