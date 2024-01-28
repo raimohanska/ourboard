@@ -134,7 +134,7 @@ export const HistoryView = ({
                 event.action === "item.delete" &&
                 !event.itemIds.some((id) => !!findItem(currentBoard)(id))
             )
-                parsedEntry = { ...parsedEntry, revertAction }
+                parsedEntry = { ...parsedEntry, revertAction: revertAction() }
             const newHistory = parsedEntry !== null ? [...parsedHistory, parsedEntry] : parsedHistory
             return { board: boardAfter, parsedHistory: newHistory, revertAction }
         }, init)

@@ -126,7 +126,7 @@ export function BoardStore(
                 stack.modify((s) => s.slice(0, s.length - 1))
                 const operationAsHistoryEntry = tagWithUserFromState(undoOperation)
                 const [board, reverse] = boardReducer(state.board!, operationAsHistoryEntry)
-                if (reverse) otherStack.add(reverse)
+                if (reverse) otherStack.add(reverse())
                 return flushIfPossible({
                     ...state,
                     board,
@@ -176,7 +176,7 @@ export function BoardStore(
                         // No serial == is local event. TODO: maybe a nicer way to recognize this?
                         redoStack.clear()
                         const [board, reverse] = boardReducer(state.board!, event)
-                        if (reverse) undoStack.add(reverse)
+                        if (reverse) undoStack.add(reverse())
                         return flushIfPossible({ ...state, board, queue: addOrReplaceEvent(event, state.queue) })
                     } else {
                         // Remote event

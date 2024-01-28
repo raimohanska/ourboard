@@ -46,7 +46,7 @@ import {
 export function boardReducer(
     board: Board,
     event: PersistableBoardItemEvent,
-): [Board, PersistableBoardItemEvent | null] {
+): [Board, (() => PersistableBoardItemEvent) | null] {
     if (isBoardHistoryEntry(event) && event.serial) {
         const firstSerial = event.firstSerial ? event.firstSerial : event.serial
         if (firstSerial !== board.serial + 1) {
@@ -68,7 +68,11 @@ export function boardReducer(
 
             return [
                 { ...board, connections: [...board.connections, ...connections] },
-                { action: "connection.delete", boardId: event.boardId, connectionIds: connections.map((c) => c.id) },
+                () => ({
+                    action: "connection.delete",
+                    boardId: event.boardId,
+                    connectionIds: connections.map((c) => c.id),
+                }),
             ]
         }
         case "connection.modify": {
@@ -91,7 +95,7 @@ export function boardReducer(
                         return replacement ? replacement : c
                     }),
                 },
-                { action: "connection.modify", boardId: event.boardId, connections: existingConnections },
+                () => ({ action: "connection.modify", boardId: event.boardId, connections: existingConnections }),
             ]
         }
         case "connection.delete": {
@@ -101,7 +105,7 @@ export function boardReducer(
 
             return [
                 { ...board, connections: board.connections.filter((c) => !ids.has(c.id)) },
-                { action: "connection.add", boardId: event.boardId, connections: existingConnections },
+                () => ({ action: "connection.add", boardId: event.boardId, connections: existingConnections }),
             ]
         }
         case "board.rename":
@@ -143,12 +147,12 @@ export function boardReducer(
 
             return [
                 { ...boardWithAddedItems, connections: [...board.connections, ...connectionsToAdd] },
-                {
+                () => ({
                     action: "item.delete",
                     boardId: board.id,
                     itemIds: event.items.map((i) => i.id),
                     connectionIds: event.connections.map((c) => c.id),
-                },
+                }),
             ]
         case "item.font.increase":
             return [
@@ -160,10 +164,10 @@ export function boardReducer(
                         filterItemIdsByPermissions(event.itemIds, board, canChangeFont),
                     ),
                 },
-                {
+                () => ({
                     ...event,
                     action: "item.font.decrease",
-                },
+                }),
             ]
         case "item.font.decrease":
             return [
@@ -175,10 +179,10 @@ export function boardReducer(
                         filterItemIdsByPermissions(event.itemIds, board, canChangeFont),
                     ),
                 },
-                {
+                () => ({
                     ...event,
                     action: "item.font.increase",
-                },
+                }),
             ]
         case "item.update": {
             const updatedConnections = updateConnections(board, event.connections || [])
@@ -189,20 +193,20 @@ export function boardReducer(
                     items: updatedItems,
                     connections: updatedConnections,
                 },
-                {
+                () => ({
                     action: "item.update",
                     boardId: board.id,
                     items: event.items.map((update) => copyMatchingKeysFromOriginal(update, getItem(board)(update.id))),
                     connections: (event.connections || []).map((update) =>
                         copyMatchingKeysFromOriginal(update, getConnection(board)(update.id)),
                     ),
-                },
+                }),
             ]
         }
         case "item.move":
             return [
                 moveItems(board, event),
-                {
+                () => ({
                     action: "item.move",
                     boardId: board.id,
                     items: event.items.map((i) => {
@@ -214,7 +218,7 @@ export function boardReducer(
                         const startPoint = resolveEndpoint(conn.from, board)
                         return { id: c.id, x: startPoint.x, y: startPoint.y }
                     }),
-                },
+                }),
             ]
         case "item.delete": {
             const itemIds = filterItemIdsByPermissions(event.itemIds, board, canDelete)
@@ -241,12 +245,12 @@ export function boardReducer(
                     connections: connectionsToKeep,
                     items: updatedItems,
                 },
-                {
+                () => ({
                     action: "item.add",
                     boardId: board.id,
                     items: Array.from(itemIdsToDelete).map(getItem(board)),
                     connections: connectionsDeleted,
-                },
+                }),
             ]
         }
         case "item.front":

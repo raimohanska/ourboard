@@ -16,7 +16,7 @@ export function boardHistoryReducer(
     const [updatedBoard, undoAction] = boardReducer(board.board, appEvent)
     const history = updatedBoard !== board.board ? addToHistory(board.history, appEvent) : board.history
     const updatedBoardWithHistory = { board: updatedBoard, history }
-    return [updatedBoardWithHistory, undoAction]
+    return [updatedBoardWithHistory, undoAction ? undoAction() : null]
 }
 
 function addToHistory(history: BoardHistoryEntry[], appEvent: EventFromServer): BoardHistoryEntry[] {
