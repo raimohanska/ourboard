@@ -339,6 +339,7 @@ function applyFontSize(items: Record<string, Item>, factor: number, itemIds: Id[
 }
 
 function updateConnections(board: Board, updates: ConnectionUpdate[]): Connection[] {
+    if (updates.length === 0) return board.connections
     updates = filterConnectionUpdatesByPermissions(updates, board)
     const updatedConnections = updates.map((update) => {
         const existing = board.connections.find((c) => c.id === update.id)
