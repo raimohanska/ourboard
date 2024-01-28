@@ -46,6 +46,7 @@ import {
 export function boardReducer(
     board: Board,
     event: PersistableBoardItemEvent,
+    inplace: boolean = false,
 ): [Board, (() => PersistableBoardItemEvent) | null] {
     if (isBoardHistoryEntry(event) && event.serial) {
         const firstSerial = event.firstSerial ? event.firstSerial : event.serial
@@ -54,6 +55,7 @@ export function boardReducer(
         }
         board = { ...board, serial: event.serial }
     }
+    //console.log(event.action, inplace)
     switch (event.action) {
         case "connection.add": {
             const connections = event.connections
@@ -186,7 +188,7 @@ export function boardReducer(
             ]
         case "item.update": {
             const updatedConnections = updateConnections(board, event.connections || [])
-            const updatedItems = updateItems(board, event.items)
+            const updatedItems = updateItems(board, event.items, inplace)
             return [
                 {
                     ...board,
@@ -273,24 +275,29 @@ export function boardReducer(
                 return [board, null]
             }
 
-            const updated = event.itemIds.reduce((acc: Record<string, Item>, id) => {
-                const item = board.items[id]
-                if (!item) {
-                    console.warn(`Warning: trying to "item.front" nonexisting item ${id} on board ${board.id}`)
+            const updated = event.itemIds.reduce(
+                (acc: Record<string, Item>, id) => {
+                    const item = board.items[id]
+                    if (!item) {
+                        console.warn(`Warning: trying to "item.front" nonexisting item ${id} on board ${board.id}`)
+                        return acc
+                    }
+                    const u = item.type !== "container" ? { ...item, z: maxZ + 1 } : item
+                    acc[u.id] = u
                     return acc
-                }
-                const u = item.type !== "container" ? { ...item, z: maxZ + 1 } : item
-                acc[u.id] = u
-                return acc
-            }, {})
+                },
+                inplace ? board.items : {},
+            )
 
             return [
                 {
                     ...board,
-                    items: {
-                        ...board.items,
-                        ...updated,
-                    },
+                    items: inplace
+                        ? board.items
+                        : {
+                              ...board.items,
+                              ...updated,
+                          },
                 },
                 null,
             ] // TODO: return item.back
@@ -356,12 +363,12 @@ function updateConnections(board: Board, updates: ConnectionUpdate[]): Connectio
     })
 }
 
-function updateItems(board: Board, updateList: ItemUpdate[]): Record<Id, Item> {
+function updateItems(board: Board, updateList: ItemUpdate[], inplace: boolean): Record<Id, Item> {
     updateList = filterItemUpdatesByPermissions(updateList, board)
     const current = board.items
     const updatedItems: Item[] = updateList.map((update) => ({ ...current[update.id], ...update } as Item))
-    const updatedItemMap = arrayToRecordById(updatedItems)
-    const resultMap = { ...current, ...updatedItemMap }
+    const updatedItemMap = arrayToRecordById(updatedItems, inplace ? current : {})
+    const resultMap = inplace ? current : { ...current, ...updatedItemMap }
     updatedItems.filter(isContainer).forEach((container) => {
         const previous = current[container.id]
         if (previous && !equalRect(previous, container)) {

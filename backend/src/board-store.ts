@@ -59,7 +59,7 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
                         // And the database status is considered the master
                         return b
                     }
-                    return boardReducer(b, e)[0]
+                    return boardReducer(b, e, true)[0]
                 }, board)
                 historyEventCount += chunk.length
                 lastSerial = chunk[chunk.length - 1].serial ?? snapshot.serial

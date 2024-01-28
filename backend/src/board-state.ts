@@ -89,7 +89,8 @@ export function updateBoards(boardState: ServerSideBoardState, appEvent: BoardHi
         throw Error("Event already has serial")
     }
     const eventWithSerial = { ...appEvent, serial }
-    const updatedBoard = boardReducer(boardState.board, eventWithSerial)[0]
+
+    const updatedBoard = boardReducer(boardState.board, eventWithSerial, true)[0]
 
     boardState.board = updatedBoard
     boardState.recentEvents.push(eventWithSerial)
