@@ -51,7 +51,9 @@ export function boardReducer(
     if (isBoardHistoryEntry(event) && event.serial) {
         const firstSerial = event.firstSerial ? event.firstSerial : event.serial
         if (firstSerial !== board.serial + 1) {
-            console.warn(`Serial skip ${board.serial} -> ${event.serial}`)
+            console.warn(
+                `Serial skip ${board.serial} -> ${firstSerial} (firstSerial ${event.firstSerial} serial ${event.serial})`,
+            )
         }
         board = { ...board, serial: event.serial }
     }
