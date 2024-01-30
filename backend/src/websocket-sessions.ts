@@ -337,7 +337,10 @@ export const broadcastItemLocks = (() => {
             return
         }
         timeouts[boardId] = setTimeout(() => {
-            sendTo(everyoneOnTheBoard(boardId), { action: "board.locks", boardId, locks })
+            const boardState = maybeGetBoard(boardId)
+            if (boardState) {
+                sendTo(boardState.sessions, { action: "board.locks", boardId, locks })
+            }
             timeouts[boardId] = undefined
         }, BROADCAST_DEBOUNCE_MS)
     }

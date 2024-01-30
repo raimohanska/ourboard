@@ -49,9 +49,13 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
             // Path - board id mismatch -> always redirect
 
             const wsAddress = `${WS_PROTOCOL}://${wsHost}/socket/board/${appEvent.boardId}`
-            console.info(
-                `Trying to join board ${appEvent.boardId} on socket for board ${allowedBoardId}, board host ${wsHost} local hostnames ${WS_HOST_LOCAL}`,
-            )
+            if (allowedBoardId) {
+                console.info(
+                    `Trying to join board ${appEvent.boardId} on socket for board ${allowedBoardId}, board host ${wsHost} local hostnames ${WS_HOST_LOCAL}`,
+                )
+            } else {
+                // This is the lobby, no need to complain
+            }
             session.sendEvent({
                 action: "board.join.denied",
                 boardId: appEvent.boardId,
