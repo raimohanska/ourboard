@@ -52,8 +52,11 @@ function createTester(nickname: string, boardId: string) {
                         connections: [],
                     })
                 }
-                if (Math.random() < editsPerInterval) {
+                if (Math.random() < editsPerInterval && notes.length > 0) {
                     const target = _.sample(notes)!
+                    if (!target) {
+                        throw Error("Target item not found")
+                    }
                     const updated = { ...target, text: "EDIT " + counter, color: _.sample(NOTE_COLORS)?.color! }
                     connection.send({
                         ackId: "perf",
