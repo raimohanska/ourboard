@@ -29,7 +29,7 @@ with allow_lists as (
 	  from board_access a
 	  where a.board_id = b.id
 	) as allow_list
-	from board b
+	from board b for update
 )
 select id,
     jsonb_set (content - 'accessPolicy', '{accessPolicy}', cast(case when allow_list is null then 'null' else (json_build_object('allowList', allow_list, 'publicRead', public_read, 'publicWrite', public_write)) end as jsonb)) as content

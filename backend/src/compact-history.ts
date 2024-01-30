@@ -15,10 +15,13 @@ import {
     verifyContinuityFromMetas,
 } from "./board-store"
 import { inTransaction } from "./db"
+import { sleep } from "../../common/src/sleep"
 
 export async function quickCompactBoardHistory(id: Id) {
     let fallback = false
     const result = inTransaction(async (client) => {
+        // Lock the board to prevent loading the board while compacting
+        await client.query("select 1 from board where id=$1 for update", [id])
         const bundleMetas = await getBoardHistoryBundleMetas(client, id)
         if (bundleMetas.length === 0) return
         const consistent = verifyContinuityFromMetas(id, 0, bundleMetas)
