@@ -193,7 +193,7 @@ export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEm
 
 export type BoardEvent = { boardId: Id }
 export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
-export type LocalUIEvent = Undo | Redo | BoardJoinRequest | BoardLoggedOut | GoOffline
+export type LocalUIEvent = Undo | Redo | BoardSetId | BoardReadyToJoin | BoardLoggedOut | GoOffline
 export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse | AckAddBoard | ServerConfig
 export type ServerConfig = {
     action: "server.config"
@@ -346,7 +346,9 @@ export type AssetPutUrlRequest = { action: "asset.put.request"; assetId: string 
 export type AssetPutUrlResponse = { action: "asset.put.response"; assetId: string; signedUrl: string }
 export type Undo = { action: "ui.undo" }
 export type Redo = { action: "ui.redo" }
-export type BoardJoinRequest = { action: "ui.board.join.request"; boardId: Id | undefined }
+
+export type BoardSetId = { action: "ui.board.setId"; boardId: Id | undefined }
+export type BoardReadyToJoin = { action: "ui.board.readyToJoin"; boardId: Id }
 export type BoardLoggedOut = { action: "ui.board.logged.out"; boardId: Id }
 export type GoOffline = { action: "ui.offline" }
 

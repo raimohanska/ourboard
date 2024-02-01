@@ -197,7 +197,6 @@ async function initBoardStore({
     const store = BoardStore(boardId, connection, sessionInfo, localStore)
 
     expect(store.state.get().board).toEqual(undefined)
-    expect(store.state.get().offline).toEqual(true)
     expect(store.state.get().queue).toEqual([])
     expect(store.state.get().sent).toEqual([])
     expect(store.state.get().serverShadow).toEqual(undefined)
