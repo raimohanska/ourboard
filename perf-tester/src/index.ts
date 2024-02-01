@@ -1,5 +1,5 @@
 import { sleep } from "../../common/src/sleep"
-import { isNote, newNote, Point } from "../../common/src/domain"
+import { defaultBoardSize, isNote, newNote, Point } from "../../common/src/domain"
 import { GenericServerConnection } from "../../frontend/src/store/server-connection"
 import WebSocket from "ws"
 import _ from "lodash"
@@ -16,7 +16,8 @@ function add(a: Point, b: Point) {
 
 function createTester(nickname: string, boardId: string) {
     let counter = 0
-    const center = { x: 10 + Math.random() * 60, y: 10 + Math.random() * 40 }
+    const { width, height } = defaultBoardSize
+    const center = { x: width / 2 - 30 + Math.random() * 60, y: height / 2 - 20 + Math.random() * 40 }
     const radius = 10 + Math.random() * 10
     const increment = Math.random() * 4 - 2
     const WS_ADDRESS = `${DOMAIN ? "wss" : "ws"}://${DOMAIN ?? "localhost:1337"}/socket/board/${boardId}`
