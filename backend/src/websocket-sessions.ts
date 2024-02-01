@@ -148,7 +148,9 @@ export async function addSessionToBoard(
     const session = sessions[origin.id]
     if (!session) throw new Error("No session found for socket " + origin.id)
     const boardId = boardState.board.id
-    boardState.sessions = [...boardState.sessions, session]
+    if (!boardState.sessions.includes(session)) {
+        boardState.sessions = [...boardState.sessions, session]
+    }
     const initDiff = initAtSerial && boardState.board.serial - initAtSerial
     if (initDiff && initDiff > 200) {
         console.log(`Sending fresh board state for board ${boardId} instead of diff (${initDiff} events to sync)`)
