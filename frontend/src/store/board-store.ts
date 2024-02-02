@@ -2,7 +2,6 @@ import _ from "lodash"
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { addOrReplaceEvent, foldActions } from "../../../common/src/action-folding"
-import { boardHistoryReducer } from "../../../common/src/board-history-reducer"
 import { boardReducer } from "../../../common/src/board-reducer"
 import {
     AccessLevel,
@@ -54,7 +53,6 @@ export type BoardState = {
     board: Board | undefined
     serverShadow: Board | undefined
     queue: (BoardHistoryEntry | CursorMove)[] // serverShadow + queue = current board
-    serverHistory: BoardHistoryEntry[] // history until serverShadow (queued events not included)
     sent: (BoardHistoryEntry | CursorMove)[]
     locks: ItemLocks
     users: UserSessionInfo[]
@@ -168,7 +166,7 @@ export function BoardStore(
     let redoStack = CommandStack()
 
     let initialServerSyncEventBuffer: BoardHistoryEntry[] = []
-
+    let eventsSinceInit = 0
     const eventsReducer = (state: BoardState, event: BoardStoreEvent): BoardState => {
         const storedInitialState = boardStateFromLocalStorage.get()?.storedInitialState
 
@@ -181,6 +179,10 @@ export function BoardStore(
             } else if (event.action === "ui.redo") {
                 return redoStack.pop(state, undoStack)
             } else if (isPersistableBoardItemEvent(event)) {
+                if (eventsSinceInit == 0) {
+                    console.log("First event since init at serial", event.serial)
+                }
+                eventsSinceInit++
                 try {
                     if (event.serial == undefined) {
                         if (!canWrite(state.accessLevel)) return state
@@ -191,10 +193,7 @@ export function BoardStore(
                         return flushIfPossible({ ...state, board, queue: addOrReplaceEvent(event, state.queue) })
                     } else {
                         // Remote event
-                        const [{ board: newServerShadow, history: newServerHistory }] = boardHistoryReducer(
-                            { board: state.serverShadow!, history: state.serverHistory },
-                            event,
-                        )
+                        const [newServerShadow] = boardReducer(state.serverShadow!, event)
                         // Rebase local events on top of new server shadow
                         // TODO: what if fails?
                         const localEvents = [...state.sent, ...state.queue]
@@ -202,7 +201,7 @@ export function BoardStore(
                             .filter(isBoardHistoryEntry)
                             .reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
                         //console.log(`Processed remote board event and rebased ${localEvents.length} local events on top`, event)
-                        return { ...state, serverShadow: newServerShadow, board, serverHistory: newServerHistory }
+                        return { ...state, serverShadow: newServerShadow, board }
                     }
                 } catch (e) {
                     console.error("Error applying event. Fetching as new board...", e)
@@ -224,9 +223,8 @@ export function BoardStore(
                     //console.log("Got ack")
                     return flushIfPossible({ ...state, sent: [] })
                 } else {
-                    // Our sent events now acknowledged and will be incorporated into serverShadow and serverHistory
+                    // Our sent events now acknowledged and will be incorporated into serverShadow
                     const newServerEvents = state.sent.filter(isBoardHistoryEntry)
-                    const newServerHistory = [...state.serverHistory, ...newServerEvents]
                     const newServerShadow =
                         state.queue.length > 0
                             ? newServerEvents.reduce((b, e) => boardReducer(b, e)[0], state.serverShadow!)
@@ -238,7 +236,6 @@ export function BoardStore(
                         ...state,
                         board: { ...state.board!, serial: newSerial },
                         serverShadow: { ...newServerShadow, serial: newSerial },
-                        serverHistory: newServerHistory,
                         sent: [],
                     })
                 }
@@ -307,7 +304,6 @@ export function BoardStore(
                     status: "offline",
                     queue: storedInitialState.queue,
                     sent: [],
-                    serverHistory: storedInitialState.serverHistory,
                     serverShadow: storedInitialState.serverShadow,
                     board,
                 }
@@ -341,6 +337,7 @@ export function BoardStore(
             const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
             return { ...state, users }
         } else if (event.action === "board.init") {
+            eventsSinceInit = 0
             console.log(`Going to online mode. Init as new board at serial ${event.board.serial}`)
             return {
                 ...state,
@@ -349,12 +346,9 @@ export function BoardStore(
                 accessLevel: event.accessLevel,
                 serverShadow: event.board,
                 sent: [],
-                serverHistory: [
-                    //  Create a bootstrap event to make the local history consistent even though we don't have the full history from server.
-                    mkBootStrapEvent(event.board.id, event.board, event.board.serial),
-                ],
             }
         } else if (event.action === "board.init.diff") {
+            eventsSinceInit = 0
             if (event.first) {
                 // Ensure local buffer empty on first chunk even if an earlier init was aborted.
                 initialServerSyncEventBuffer = []
@@ -413,7 +407,6 @@ export function BoardStore(
                 )
                 // Local board = server shadow + local queue
                 const board = queue.reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
-                const newServerHistory = [...state.serverHistory, ...initialServerSyncEventBuffer]
 
                 initialServerSyncEventBuffer = []
 
@@ -424,7 +417,6 @@ export function BoardStore(
                     board,
                     serverShadow: newServerShadow,
                     queue,
-                    serverHistory: newServerHistory,
                 })
             } catch (e) {
                 console.error("Error initializing board. Fetching as new board...", e)
@@ -454,7 +446,6 @@ export function BoardStore(
         accessLevel: "none",
         serverShadow: undefined,
         board: undefined,
-        serverHistory: [],
         locks: {},
         users: [],
         queue: [],
@@ -481,7 +472,6 @@ export function BoardStore(
         L.map((state) => {
             return {
                 serverShadow: state.serverShadow!,
-                serverHistory: state.serverHistory,
                 queue: state.queue.filter(isBoardHistoryEntry),
             }
         }),

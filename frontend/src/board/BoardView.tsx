@@ -83,7 +83,6 @@ export const BoardView = ({
         L.filter((b: Board) => !!b, componentScope()),
     )
     const accessLevel = L.view(boardState, "accessLevel")
-    const history = L.view(boardState, "serverHistory")
     const locks = L.view(boardState, (s) => s.locks)
     const sessionId = L.view(sessionState, (s) => s.sessionId)
     const sessions = L.view(boardState, (s) => s.users)

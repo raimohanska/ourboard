@@ -6,7 +6,6 @@ import { migrateBoard, migrateEvent } from "../../../common/src/migration"
 export type LocalStorageBoard = {
     serverShadow: Board
     queue: BoardHistoryEntry[] // serverShadow + queue = current board
-    serverHistory: BoardHistoryEntry[] // history until serverShadow (queued events not included)
 }
 
 const BOARD_STORAGE_KEY_PREFIX = "board_"
@@ -31,7 +30,6 @@ async function getStoredState(localStorageKey: string): Promise<LocalStorageBoar
         return {
             serverShadow: migrateBoard(state.serverShadow),
             queue: state.queue.map(migrateEvent),
-            serverHistory: state.serverHistory.map(migrateEvent),
         }
     } catch (e) {
         console.error(`Fetching local state ${localStorageKey} from IndexedDB failed`, e)

@@ -3,16 +3,13 @@ import * as L from "lonna"
 import {
     AccessLevel,
     Board,
-    BoardHistoryEntry,
     canWrite,
     Connection,
     getAlign,
     getHorizontalAlign,
     getItemBackground,
-    getItemIds,
     getItemShape,
     getVerticalAlign,
-    Id,
     isTextItem,
     Item,
     ItemType,
@@ -46,7 +43,6 @@ export const ItemView = ({
 }: {
     board: L.Property<Board>
     accessLevel: L.Property<AccessLevel>
-    history: L.Property<BoardHistoryEntry[]>
     id: string
     type: ItemType
     item: L.Property<Item>

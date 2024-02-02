@@ -112,7 +112,6 @@ describe("With stored local state", () => {
             locallyStoredBoard: {
                 serverShadow: board1,
                 queue: [],
-                serverHistory: [],
             },
         })
 
@@ -137,7 +136,6 @@ describe("With stored local state", () => {
             locallyStoredBoard: {
                 serverShadow: board1,
                 queue: [],
-                serverHistory: [],
             },
         })
 
