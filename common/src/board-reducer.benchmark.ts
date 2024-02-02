@@ -52,7 +52,7 @@ for (let i = 0; i < eventCount; i++) {
             boardId,
             items: [updated],
         },
-        true,
+        { inplace: true },
     )
 }
 const elapsed = new Date().getTime() - started

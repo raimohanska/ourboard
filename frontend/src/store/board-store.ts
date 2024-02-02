@@ -193,7 +193,7 @@ export function BoardStore(
                         return flushIfPossible({ ...state, board, queue: addOrReplaceEvent(event, state.queue) })
                     } else {
                         // Remote event
-                        const [newServerShadow] = boardReducer(state.serverShadow!, event)
+                        const [newServerShadow] = boardReducer(state.serverShadow!, event, { strictOnSerials: true })
                         // Rebase local events on top of new server shadow
                         // TODO: what if fails?
                         const localEvents = [...state.sent, ...state.queue]
@@ -209,6 +209,8 @@ export function BoardStore(
                     return {
                         ...state,
                         status: "joining",
+                        sent: [],
+                        queue: [],
                     }
                 }
             } else if (event.action === "board.joined") {

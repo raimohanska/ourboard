@@ -90,7 +90,7 @@ export function updateBoards(boardState: ServerSideBoardState, appEvent: BoardHi
     }
     const eventWithSerial = { ...appEvent, serial }
 
-    const updatedBoard = boardReducer(boardState.board, eventWithSerial, true)[0]
+    const updatedBoard = boardReducer(boardState.board, eventWithSerial, { inplace: true, strictOnSerials: true })[0]
 
     boardState.board = updatedBoard
     boardState.recentEvents.push(eventWithSerial)

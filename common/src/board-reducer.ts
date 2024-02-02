@@ -43,17 +43,26 @@ import {
     nullablePermission,
 } from "../../frontend/src/board/board-permissions"
 
+type BoardReducerOptions = {
+    inplace?: boolean
+    strictOnSerials?: boolean
+}
+
 export function boardReducer(
     board: Board,
     event: PersistableBoardItemEvent,
-    inplace: boolean = false,
+    options: BoardReducerOptions = {},
 ): [Board, (() => PersistableBoardItemEvent) | null] {
+    const inplace = options.inplace ?? false
     if (isBoardHistoryEntry(event) && event.serial) {
         const firstSerial = event.firstSerial ? event.firstSerial : event.serial
         if (firstSerial !== board.serial + 1) {
-            console.warn(
-                `Serial skip on ${event.action}, ${board.serial} -> ${firstSerial} (firstSerial ${event.firstSerial} serial ${event.serial})`,
-            )
+            const message = `Serial skip on ${event.action}, ${board.serial} -> ${firstSerial} (firstSerial ${event.firstSerial} serial ${event.serial})`
+            if (options.strictOnSerials) {
+                throw Error(message)
+            } else {
+                console.warn(message)
+            }
         }
         board = { ...board, serial: event.serial }
     }
