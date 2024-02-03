@@ -4,8 +4,8 @@ import { Board, BoardHistoryEntry, Id } from "../../../common/src/domain"
 import { migrateBoard, migrateEvent } from "../../../common/src/migration"
 
 export type LocalStorageBoard = {
-    serverShadow: Board
-    queue: BoardHistoryEntry[] // serverShadow + queue = current board
+    serverShadow: Board // Our view of the board as it is on the server
+    queue: BoardHistoryEntry[] // Local events to send. serverShadow + queue = current board.
 }
 
 const BOARD_STORAGE_KEY_PREFIX = "board_"
