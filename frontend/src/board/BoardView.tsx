@@ -295,6 +295,7 @@ export const BoardView = ({
                     modalContent,
                     eventsFromServer: boardStore.eventsFromServer,
                     viewRect,
+                    online: L.view(boardStore.state, (s) => s.status === "online"),
                 }}
             />
             <div className="content-container" ref={containerElement.set}>

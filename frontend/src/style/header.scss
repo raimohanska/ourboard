@@ -79,9 +79,16 @@
         align-items: center;
         justify-content: flex-end;
         @media (max-width: $narrow-screen-breakpoint) {
-            .other-users {
+            .other-users,
+            .offline-status {
                 display: none;
             }
+        }
+
+        .offline-status {
+            font-size: 0.8em;
+            opacity: 0.8;
+            cursor: pointer;
         }
 
         .other-users {

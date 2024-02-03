@@ -22,6 +22,7 @@ export function BoardViewHeader({
     modalContent,
     eventsFromServer,
     viewRect,
+    online,
 }: {
     usersOnBoard: L.Property<UserSessionInfo[]>
     board: L.Property<Board>
@@ -31,6 +32,7 @@ export function BoardViewHeader({
     modalContent: L.Atom<any>
     eventsFromServer: L.EventStream<EventFromServer>
     viewRect: L.Property<Rect>
+    online: L.Property<boolean>
 }) {
     const editingAtom = L.atom(false)
     const nameAtom = L.atom(
@@ -97,6 +99,7 @@ export function BoardViewHeader({
                     viewRect={viewRect}
                     state={sessionState}
                     dispatch={dispatch}
+                    online={online}
                 />
                 <UserInfoView
                     state={sessionState}
