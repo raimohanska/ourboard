@@ -93,11 +93,7 @@ export function BoardStore(
 
     const ACK_ID = "1"
 
-    type BoardStateFromLocalStorage = {
-        boardId: Id
-        storedInitialState: LocalStorageBoard | undefined
-    }
-    const boardStateFromLocalStorage = L.atom<BoardStateFromLocalStorage | null>(null)
+    const boardStateFromLocalStorage = L.atom<LocalStorageBoard | undefined>(undefined)
 
     function flushIfPossible(state: BoardState): BoardState {
         // Only flush when board is ready and we are not waiting for ack.
@@ -168,7 +164,6 @@ export function BoardStore(
     let initialServerSyncEventBuffer: BoardHistoryEntry[] = []
 
     const eventsReducer = (state: BoardState, event: BoardStoreEvent): BoardState => {
-        const storedInitialState = boardStateFromLocalStorage.get()?.storedInitialState
         if (state.status === "online") {
             // Process these events only when online
             if (event.action === "cursor.move") {
@@ -296,6 +291,7 @@ export function BoardStore(
                 console.log("Join board with no board id. Reseting board state.")
                 return initialState
             }
+            const storedInitialState = boardStateFromLocalStorage.get()
             if (storedInitialState && storedInitialState.serverShadow.id === event.boardId) {
                 console.log(`Starting offline with local board state, serial=${storedInitialState.serverShadow.serial}`)
                 const board = storedInitialState.queue.reduce(
@@ -322,10 +318,7 @@ export function BoardStore(
             }
         } else if (event.action === "ui.board.readyToJoin") {
             if (state.status !== "online" && state.status !== "joining") {
-                const initAtSerial =
-                    state.serverShadow?.id === event.boardId
-                        ? state.serverShadow.serial
-                        : storedInitialState?.serverShadow?.serial
+                const initAtSerial = state.serverShadow?.serial
 
                 const joinRequest: JoinBoard = {
                     action: "board.join",
@@ -362,9 +355,8 @@ export function BoardStore(
             }
             const boardId = event.boardAttributes.id
             try {
-                if (!storedInitialState)
-                    throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
-                if (storedInitialState.serverShadow.id !== event.boardAttributes.id)
+                if (!state.serverShadow) throw Error(`Trying to init at ${event.initAtSerial} without serverShadow`)
+                if (state.serverShadow.id !== event.boardAttributes.id)
                     throw Error(`Trying to init board with nonmatching id`)
                 const events = event.recentEvents
                 initialServerSyncEventBuffer.push(...events)
@@ -377,26 +369,18 @@ export function BoardStore(
                     return state
                 }
 
-                const usedLocalState =
-                    state.board && state.board.id === boardId && state.serverShadow
-                        ? { serverShadow: state.serverShadow, queue: state.queue.filter(isBoardHistoryEntry) }
-                        : storedInitialState
-
-                if (usedLocalState !== storedInitialState)
-                    console.log(
-                        `Using local state instead of stored. Using ${usedLocalState.queue.length} local events (out of ${state.queue.length})`,
+                if (state.serverShadow.serial != event.initAtSerial)
+                    throw Error(
+                        `Trying to init at ${event.initAtSerial} with local serverShadow at ${state.serverShadow.serial}`,
                     )
 
-                const localSerial = usedLocalState.serverShadow.serial
-                if (localSerial != event.initAtSerial)
-                    throw Error(`Trying to init at ${event.initAtSerial} with local board state at ${localSerial}`)
-
                 const initialBoard = {
-                    ...usedLocalState.serverShadow,
+                    ...state.serverShadow,
                     ...event.boardAttributes,
                 } as Board
 
-                const queue = usedLocalState.queue
+                const queue = state.queue.filter(isBoardHistoryEntry) // Discard old cursor events etc, but keep any offline board events that need to be sent
+
                 if (initialServerSyncEventBuffer.length > 0) {
                     console.log(
                         `Going to online mode. Init at ${event.initAtSerial} with ${
@@ -428,6 +412,7 @@ export function BoardStore(
                     status: "online",
                     board,
                     serverShadow: newServerShadow,
+                    sent: [], // Discard information about anything that was sent earlierly and to which we never got an ack for
                     queue,
                 })
             } catch (e) {
@@ -447,7 +432,13 @@ export function BoardStore(
                 console.log(`Discarding ${state.sent.length} sent events of which we don't have an ack yet`)
                 // TODO: should we rollback board too?
             }
-            return { ...state, status: "offline", sent: [], users: [], locks: {} }
+            return {
+                ...state,
+                status: "offline",
+                sent: [], // Discard information about anything that was sent earlierly and to which we never got an ack for
+                users: [],
+                locks: {},
+            }
         }
         //console.warn("Unhandled event", event.action);
         return state
@@ -493,11 +484,11 @@ export function BoardStore(
     })
 
     boardId.forEach(async (boardId) => {
-        boardStateFromLocalStorage.set(null)
+        boardStateFromLocalStorage.set(undefined)
         if (boardId) {
             console.log("Got board id, fetching local state", boardId)
             const storedInitialState = await localStore.getInitialBoardState(boardId)
-            boardStateFromLocalStorage.set({ boardId, storedInitialState })
+            boardStateFromLocalStorage.set(storedInitialState)
             dispatch({ action: "ui.board.setId", boardId }) // This is for the reducer locally to start offline mode
             checkReadyToJoin()
         }
@@ -531,7 +522,7 @@ export function BoardStore(
     })
 
     function checkReadyToJoin() {
-        const bid = boardStateFromLocalStorage.get()?.boardId
+        const bid = boardStateFromLocalStorage.get()?.serverShadow.id
         if (bid && connection.connected.get() && !isLoginInProgress(sessionStatus.get())) {
             console.log("Ready to join board")
             dispatch({ action: "ui.board.readyToJoin", boardId: bid }) // This is for the reducer locally to trigger join if not already online
