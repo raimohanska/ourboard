@@ -25,13 +25,13 @@ import { getBoardHistory } from "./board-store"
 import { LoginInfo } from "./http-session"
 import { randomProfession } from "./professions"
 import { getUserIdForEmail } from "./user-store"
-import { LazyBuffer, toBuffer, toLazyBuffer, WsWrapper } from "./ws-wrapper"
+import { toBuffer, WsWrapper } from "./ws-wrapper"
 
 export type UserSession = {
     readonly sessionId: Id
     boardSession: UserSessionBoardEntry | null
     userInfo: SessionUserInfo
-    sendEvent: (event: EventFromServer, cache?: LazyBuffer) => void
+    sendEvent: (event: EventFromServer) => void
     isOnBoard: (boardId: Id) => boolean
     close(): void
 }
@@ -61,7 +61,7 @@ const everyoneOnTheBoard = (boardId: string) => {
     return boardState.sessions
 }
 const sendTo = (recipients: UserSession[], message: EventFromServer) => {
-    recipients.forEach((c) => c.sendEvent(message, toLazyBuffer(message)))
+    recipients.forEach((c) => c.sendEvent(message))
 }
 const everyoneElseOnTheSameBoard = (boardId: Id, session?: UserSession) =>
     everyoneOnTheBoard(boardId).filter((s) => s !== session)
@@ -73,7 +73,7 @@ export function startSession(socket: WsWrapper) {
 function userSession(socket: WsWrapper): UserSession {
     const sessionId = socket.id
 
-    function sendEvent(event: EventFromServer, lazyBuffer?: LazyBuffer) {
+    function sendEvent(event: EventFromServer) {
         if (isBoardHistoryEntry(event)) {
             const entry = session.boardSession
             if (!entry) throw Error("Board " + event.boardId + " not found for session " + sessionId)
@@ -82,7 +82,7 @@ function userSession(socket: WsWrapper): UserSession {
                 return
             }
         }
-        socket.send(lazyBuffer?.() ?? toBuffer(event))
+        socket.send(toBuffer(event))
     }
     const session: UserSession = {
         sessionId,

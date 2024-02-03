@@ -36,17 +36,13 @@ export const WsWrapper = (ws: WebSocket) => {
 }
 export type WsWrapper = ReturnType<typeof WsWrapper>
 
-export type LazyBuffer = () => Buffer
-export function toLazyBuffer(msg: EventFromServer): LazyBuffer {
-    let buffer: Buffer | null = null
-    return () => {
-        if (!buffer) {
-            buffer = toBuffer(msg)
-        }
-        return buffer
-    }
-}
-
+type CachedBuffer = { msg: EventFromServer; buffer: Buffer }
+let cachedBuffer: CachedBuffer | null = null
 export function toBuffer(msg: EventFromServer) {
-    return Buffer.from(JSON.stringify(msg))
+    // We cache the latest buffer to avoid creating a new buffer for every message.
+    if (cachedBuffer && cachedBuffer.msg === msg) {
+        return cachedBuffer.buffer
+    }
+    cachedBuffer = { msg, buffer: Buffer.from(JSON.stringify(msg)) }
+    return cachedBuffer.buffer
 }
