@@ -5,7 +5,7 @@ import { globalScope } from "lonna"
 import { UserSessionStore } from "./user-session-store"
 
 export function CursorsStore(connection: ServerConnection, sessionStore: UserSessionStore) {
-    const cursors = connection.bufferedServerEvents.pipe(
+    const cursorUpdates = connection.bufferedServerEvents.pipe(
         L.filter(isCursors),
         L.map((event) => {
             const otherCursors = { ...event.p }
@@ -14,9 +14,15 @@ export function CursorsStore(connection: ServerConnection, sessionStore: UserSes
             const cursors = Object.values(otherCursors)
             return cursors
         }),
-        L.toProperty([]),
-        L.applyScope(globalScope),
     )
+    const cursorReset = connection.connected.pipe(
+        L.changes,
+        L.filter((connected) => !connected),
+        L.map(() => [] as UserCursorPosition[]),
+    )
+
+    const cursors = L.merge([cursorUpdates, cursorReset]).pipe(L.toProperty([]), L.applyScope(globalScope))
+
     let cursorsReceivedLast = 0
     const cursorDelay = cursors.pipe(
         L.map(() => {
