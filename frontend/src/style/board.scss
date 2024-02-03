@@ -3,7 +3,7 @@
     height: calc(100vh - 2em);
     display: flex;
     flex-direction: column;
-    &:not(.ready) {
+    &:not(.online, .offline) {
         header .controls,
         > .content-container > .scroll-container > .border-container > .board,
         header #board-info,
