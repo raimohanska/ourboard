@@ -17,6 +17,7 @@ import { sleep } from "../../../common/src/sleep"
 import { mkBootStrapEvent } from "../../../common/src/migration"
 
 const otherUserEventAttributes = { user: { userType: "unidentified", nickname: "joe" }, timestamp: "0" } as const
+const localUser = { userType: "unidentified", nickname: "" } as const
 
 const board0 = newBoard("testboard")
 const item1 = newNote("hello1")
@@ -40,6 +41,7 @@ const board2_2 = { ...board2, serial: 2, items: { ...board2.items, [item1.id]: i
 describe("Board Store", () => {
     it("Applies event from server", async () => {
         const [store, serverEvents] = await initBoardStore({ serverSideBoard: board0 })
+        expect(store.state.get().board).toEqual(board0)
 
         serverEvents.push(addItem1)
 
@@ -49,6 +51,7 @@ describe("Board Store", () => {
 
     it("Applies local event", async () => {
         const [store, serverEvents] = await initBoardStore({ serverSideBoard: board0 })
+        expect(store.state.get().board).toEqual(board0)
 
         // 1. Event applied locally, serverShadow and serial unchanged
         store.dispatch({ action: "item.add", boardId: board0.id, items: [item1], connections: [] })
@@ -63,6 +66,7 @@ describe("Board Store", () => {
 
     it("Rebases local event when remote event arrives before ack", async () => {
         const [store, serverEvents] = await initBoardStore({ serverSideBoard: board1 })
+        expect(store.state.get().board).toEqual(board1)
         // 1. Event applied locally, serverShadow and serial unchanged
         store.dispatch({ action: "item.add", boardId: board0.id, items: [item2], connections: [] })
         expect(store.state.get().board).toEqual(board2)
@@ -142,9 +146,53 @@ describe("With stored local state", () => {
         expect(store.state.get().board).toEqual({ ...board2, serial: 2 })
         expect(store.state.get().serverShadow).toEqual(store.state.get().board)
     })
+
+    it("With queued local changes", async () => {
+        const [store, serverEvents] = await initBoardStore({
+            serverSideBoard: board1,
+            serverSideHistory: [],
+            locallyStoredBoard: {
+                serverShadow: board1,
+                queue: [
+                    { action: "item.update", boardId: board0.id, items: [item1_1], timestamp: "0", user: localUser },
+                ],
+            },
+        })
+
+        expect(store.state.get().board).toEqual({ ...board1, items: { [item1.id]: item1_1 } })
+    })
+
+    it("With queued local changes and server-side changes", async () => {
+        const [store, serverEvents] = await initBoardStore({
+            serverSideBoard: { ...board2, serial: 2 },
+            serverSideHistory: [
+                mkBootStrapEvent(board1.id, board1, board1.serial),
+                {
+                    action: "item.add",
+                    boardId: board0.id,
+                    items: [item2],
+                    connections: [],
+                    serial: 2,
+                    ...otherUserEventAttributes,
+                },
+            ],
+            locallyStoredBoard: {
+                serverShadow: board1,
+                queue: [
+                    { action: "item.update", boardId: board0.id, items: [item1_1], timestamp: "0", user: localUser },
+                ],
+            },
+        })
+
+        // The server-side changes should be applied first, then the queued local changes
+        expect(store.state.get().board).toEqual({
+            ...board2,
+            serial: 2,
+            items: { ...board2.items, [item1.id]: item1_1 },
+        })
+    })
 })
 
-// TODO: test diff init with local "offline" events
 // TODO: test going offline, resync
 // TODO: test discarding sent-but-not-acknowledeged events when going offline
 // TODO: test effects of server event buffering (bufferedServerEvents)
@@ -207,7 +255,7 @@ async function initBoardStore({
 
     sessionInfo.set({
         status: "anonymous",
-        nickname: "",
+        nickname: localUser.nickname,
         nicknameSetByUser: false,
         sessionId: "",
         loginSupported: false,
@@ -240,7 +288,6 @@ async function initBoardStore({
 
     await waitForBackgroundJobs()
 
-    expect(store.state.get().board).toEqual(serverSideBoard)
     expect(store.state.get().serverShadow).toEqual(serverSideBoard)
 
     return [store, serverEvents] as const
