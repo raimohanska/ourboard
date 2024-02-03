@@ -4,6 +4,7 @@ import * as t from "io-ts"
 import { DEFAULT_NOTE_COLOR, LIGHT_BLUE, PINK, RED } from "./colors"
 import { arrayToRecordById } from "./arrays"
 import { Rect } from "./geometry"
+import { LocalStorageBoard } from "../../frontend/src/store/board-local-store"
 
 export type Id = string
 export type ISOTimeStamp = string
@@ -193,7 +194,7 @@ export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEm
 
 export type BoardEvent = { boardId: Id }
 export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
-export type LocalUIEvent = Undo | Redo | BoardSetId | BoardReadyToJoin | BoardLoggedOut | GoOffline
+export type LocalUIEvent = Undo | Redo | SetLocalBoard | GoOnline | BoardLoggedOut | GoOffline
 export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse | AckAddBoard | ServerConfig
 export type ServerConfig = {
     action: "server.config"
@@ -347,10 +348,14 @@ export type AssetPutUrlResponse = { action: "asset.put.response"; assetId: strin
 export type Undo = { action: "ui.undo" }
 export type Redo = { action: "ui.redo" }
 
-export type BoardSetId = { action: "ui.board.setId"; boardId: Id | undefined }
-export type BoardReadyToJoin = { action: "ui.board.readyToJoin"; boardId: Id }
+export type SetLocalBoard = {
+    action: "ui.board.setLocal"
+    boardId: Id | undefined
+    storedInitialState: LocalStorageBoard | undefined
+}
 export type BoardLoggedOut = { action: "ui.board.logged.out"; boardId: Id }
 export type GoOffline = { action: "ui.offline" }
+export type GoOnline = { action: "ui.online" }
 
 export const CURSOR_POSITIONS_ACTION_TYPE = "c" as const
 export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE; p: Record<Id, UserCursorPosition> }
