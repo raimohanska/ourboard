@@ -6,6 +6,7 @@ import { Board } from "../../../common/src/domain"
 import * as G from "../../../common/src/geometry"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { ToolController } from "./tool-selection"
+import { boardContentArea } from "./boardContentArea"
 
 export type BoardZoom = { zoom: number; quickZoom: number }
 export type ZoomAdjustMode = "preserveCursor" | "preserveCenter"
@@ -42,14 +43,15 @@ export function boardScrollAndZoomHandler(
         (id) => "scrollAndZoom." + id,
     )
 
-    L.view(scrollElement, boardElement, localStorageKey, (el, be, key) => ({ el, be, key }))
+    const boardIsNonEmpty = board.pipe(L.map((b) => Object.keys(b.items).length > 0))
+    L.view(scrollElement, boardElement, localStorageKey, boardIsNonEmpty, (el, be, key, neb) => ({ el, be, key, neb }))
         .pipe(L.applyScope(componentScope()))
         .forEach(({ el, be, key }) => {
             if (el && be) {
                 const storedScrollAndZoom = localStorage[key]
                 setTimeout(() => {
                     if (storedScrollAndZoom) {
-                        //console.log("Init position for board", key)
+                        console.log("Restoring scroll and zoom for board from localStorage")
                         const parsed = JSON.parse(storedScrollAndZoom)
                         el.scrollTop = parsed.y
                         el.scrollLeft = parsed.x
@@ -60,33 +62,6 @@ export function boardScrollAndZoomHandler(
                 }, 0) // Need to wait for first render to have correct size. Causes a little flicker.
             }
         })
-
-    function boardContentArea(b: Board) {
-        const width = b.width / 10
-        const height = b.height / 10
-        let left = b.width / 2 - width / 2
-        let top = b.height / 2 - height / 2
-        let right = left + width
-        let bottom = top + height
-
-        Object.values(b.items).forEach((item) => {
-            const { x, y, width, height } = item
-            left = Math.min(left, x)
-            top = Math.min(top, y)
-            right = Math.max(right, x + width)
-            bottom = Math.max(bottom, y + height)
-        })
-
-        const marginTop = height * 0.1
-        const marginLeft = height * 0.1
-
-        return {
-            x: left - marginLeft,
-            y: top - marginTop,
-            width: right - left + 2 * marginLeft,
-            height: bottom - top + marginTop,
-        }
-    }
 
     scrollAndZoom.pipe(L.changes, L.debounce(100), L.applyScope(componentScope())).forEach((s) => {
         //console.log("Store position for board", localStorageKey.get())
