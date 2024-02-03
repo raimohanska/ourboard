@@ -361,9 +361,14 @@ export function BoardStore(
                     throw Error(`Trying to init at ${event.initAtSerial} without local board state`)
                 if (storedInitialState.serverShadow.id !== event.boardAttributes.id)
                     throw Error(`Trying to init board with nonmatching id`)
-
-                initialServerSyncEventBuffer.push(...event.recentEvents)
+                const events = event.recentEvents
+                initialServerSyncEventBuffer.push(...events)
                 if (!event.last) {
+                    console.log(
+                        `Got board.init.diff chunk of ${events.length} events (${events[0].serial}..${
+                            events[events.length - 1].serial
+                        }), waiting for more...`,
+                    )
                     return state
                 }
 

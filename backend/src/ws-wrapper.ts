@@ -36,6 +36,17 @@ export const WsWrapper = (ws: WebSocket) => {
 }
 export type WsWrapper = ReturnType<typeof WsWrapper>
 
+export type LazyBuffer = () => Buffer
+export function toLazyBuffer(msg: EventFromServer): LazyBuffer {
+    let buffer: Buffer | null = null
+    return () => {
+        if (!buffer) {
+            buffer = toBuffer(msg)
+        }
+        return buffer
+    }
+}
+
 export function toBuffer(msg: EventFromServer) {
     return Buffer.from(JSON.stringify(msg))
 }
