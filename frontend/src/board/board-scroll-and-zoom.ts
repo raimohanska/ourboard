@@ -2,9 +2,9 @@ import * as H from "harmaja"
 import { componentScope } from "harmaja"
 import _, { clamp } from "lodash"
 import * as L from "lonna"
-import { BoardCoordinateHelper } from "./board-coordinates"
+import { Board } from "../../../common/src/domain"
 import * as G from "../../../common/src/geometry"
-import { Board, Point } from "../../../common/src/domain"
+import { BoardCoordinateHelper } from "./board-coordinates"
 import { ToolController } from "./tool-selection"
 
 export type BoardZoom = { zoom: number; quickZoom: number }
@@ -213,7 +213,7 @@ export function boardScrollAndZoomHandler(
         e.preventDefault()
         const scale = typeof e.scale === "number" && (e.scale as number)
         if (scale) {
-            scaleStart = zoom.get().quickZoom / scale
+            scaleStart = (zoom.get().quickZoom * zoom.get().zoom) / scale
         }
     }
 
