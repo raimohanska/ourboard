@@ -146,6 +146,7 @@ describe("With stored local state", () => {
 
 // TODO: test diff init with local "offline" events
 // TODO: test going offline, resync
+// TODO: test discarding sent-but-not-acknowledeged events when going offline
 // TODO: test effects of server event buffering (bufferedServerEvents)
 // TODO: test undo, redo buffers
 

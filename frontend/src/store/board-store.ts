@@ -434,7 +434,7 @@ export function BoardStore(
             }
             if (state.sent.length > 0) {
                 console.log(`Discarding ${state.sent.length} sent events of which we don't have an ack yet`)
-                // TODO: should we rollback board too?
+                // TODO: We should definitely roll back the board as well!
             }
             return {
                 ...state,
