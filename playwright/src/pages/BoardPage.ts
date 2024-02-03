@@ -21,7 +21,7 @@ export const semiUniqueId = () => {
 }
 
 export function BoardPage(page: Page) {
-    const board = page.locator(".ready .board")
+    const board = page.locator(".online .board")
     const newNoteOnPalette = page.getByTestId("palette-new-note")
     const newTextOnPalette = page.getByTestId("palette-new-text")
     const newContainerOnPalette = page.getByTestId("palette-new-container")
@@ -76,9 +76,9 @@ export function BoardPage(page: Page) {
         await moveMouseTo(itemPos)
         await element.dispatchEvent("dragstart", await itemToClientPos(itemPos))
         await element.dispatchEvent("drag")
-        page.locator(`.ready .board`).dispatchEvent("dragover", await itemToClientPos(itemPos))
+        page.locator(`.online .board`).dispatchEvent("dragover", await itemToClientPos(itemPos))
         await moveMouseTo({ x, y })
-        page.locator(`.ready .board`).dispatchEvent("dragover", await itemToClientPos({ x, y }))
+        page.locator(`.online .board`).dispatchEvent("dragover", await itemToClientPos({ x, y }))
         await waitForThrottle()
         await element.dispatchEvent("drag")
         await element.dispatchEvent("dragend")
