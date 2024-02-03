@@ -30,7 +30,7 @@ const App = () => {
     boardStore.state
         .pipe(
             L.changes,
-            L.filter((s: BoardState) => s.status === "ready" && !!s.board),
+            L.filter((s: BoardState) => s.status === "online" && !!s.board),
             L.map((s: BoardState) => ({ id: s.board!.id, name: s.board!.name } as RecentBoardAttributes)),
             L.skipDuplicates(_.isEqual),
         )

@@ -42,7 +42,7 @@ export type BoardAccessStatus =
     | "loading"
     | "joining"
     | "offline"
-    | "ready"
+    | "online"
     | "denied-temporarily"
     | "denied-permanently"
     | "login-required"
@@ -50,10 +50,10 @@ export type BoardAccessStatus =
 export type BoardState = {
     status: BoardAccessStatus
     accessLevel: AccessLevel
-    board: Board | undefined
-    serverShadow: Board | undefined
-    queue: (BoardHistoryEntry | CursorMove)[] // serverShadow + queue = current board
-    sent: (BoardHistoryEntry | CursorMove)[]
+    board: Board | undefined // Current board shown on the client
+    serverShadow: Board | undefined // Our view of the board as it is on the server
+    queue: (BoardHistoryEntry | CursorMove)[] // Local events to send. serverShadow + sent + queue = current board
+    sent: (BoardHistoryEntry | CursorMove)[] // Events sent to server, waiting for ack
     locks: ItemLocks
     users: UserSessionInfo[]
 }
@@ -101,7 +101,7 @@ export function BoardStore(
 
     function flushIfPossible(state: BoardState): BoardState {
         // Only flush when board is ready and we are not waiting for ack.
-        if (state.status === "ready" && state.sent.length === 0 && state.queue.length > 0) {
+        if (state.status === "online" && state.sent.length === 0 && state.queue.length > 0) {
             //console.log(`Send ${state.queue.map(i => i.action)}, await ack for ${state.queue.length}`)
             connection.send({ events: state.queue, ackId: ACK_ID })
             return { ...state, queue: [], sent: state.queue }
@@ -166,36 +166,40 @@ export function BoardStore(
     let redoStack = CommandStack()
 
     let initialServerSyncEventBuffer: BoardHistoryEntry[] = []
-    let eventsSinceInit = 0
+
     const eventsReducer = (state: BoardState, event: BoardStoreEvent): BoardState => {
         const storedInitialState = boardStateFromLocalStorage.get()?.storedInitialState
-
-        if (state.status === "ready") {
-            // Process these events only when "ready"
+        if (state.status === "online") {
+            // Process these events only when online
             if (event.action === "cursor.move") {
                 return flushIfPossible({ ...state, queue: addOrReplaceEvent(event, state.queue) })
-            } else if (event.action === "ui.undo") {
+            }
+        }
+        if (state.status === "online" || state.status === "offline") {
+            // Process these events only when online or offline
+            if (event.action === "ui.undo") {
                 return undoStack.pop(state, redoStack)
             } else if (event.action === "ui.redo") {
                 return redoStack.pop(state, undoStack)
             } else if (isPersistableBoardItemEvent(event)) {
-                if (eventsSinceInit == 0) {
-                    console.log("First event since init at serial", event.serial)
-                }
-                eventsSinceInit++
                 try {
                     if (event.serial == undefined) {
+                        // No serial == is local event.
                         if (!canWrite(state.accessLevel)) return state
-                        // No serial == is local event. TODO: maybe a nicer way to recognize this?
                         redoStack.clear()
                         const [board, reverse] = boardReducer(state.board!, event)
                         if (reverse) undoStack.add(reverse())
                         return flushIfPossible({ ...state, board, queue: addOrReplaceEvent(event, state.queue) })
                     } else {
                         // Remote event
+                        if (state.status !== "online") {
+                            // Skip while not online. For instance, when recently reconnected, we may receive events from others while still
+                            // Waiting for our final board.init.diff sync event. It would be disastrous to process these events before fully synced.
+                            // The server will re-send any missed events after sync, after which we can start processing normally.
+                            return state
+                        }
                         const [newServerShadow] = boardReducer(state.serverShadow!, event, { strictOnSerials: true })
-                        // Rebase local events on top of new server shadow
-                        // TODO: what if fails?
+                        // Rebase local events on top of new server shadow. If this fails, there's a catch below.
                         const localEvents = [...state.sent, ...state.queue]
                         const board = localEvents
                             .filter(isBoardHistoryEntry)
@@ -252,8 +256,6 @@ export function BoardStore(
                 }
                 return state
             }
-        } else {
-            // Process these events only when not "ready"
         }
         // Process these events in both ready and not-ready states
         if (event.action === "ui.board.logged.out") {
@@ -319,11 +321,16 @@ export function BoardStore(
                 board: emptyBoard(event.boardId),
             }
         } else if (event.action === "ui.board.readyToJoin") {
-            if (state.status !== "ready" && state.status !== "joining") {
+            if (state.status !== "online" && state.status !== "joining") {
+                const initAtSerial =
+                    state.serverShadow?.id === event.boardId
+                        ? state.serverShadow.serial
+                        : storedInitialState?.serverShadow?.serial
+
                 const joinRequest: JoinBoard = {
                     action: "board.join",
                     boardId: event.boardId,
-                    initAtSerial: storedInitialState?.serverShadow?.serial,
+                    initAtSerial,
                 }
                 console.log(`Sending board.join at serial ${joinRequest.initAtSerial}`)
                 connection.send(joinRequest)
@@ -339,18 +346,16 @@ export function BoardStore(
             const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
             return { ...state, users }
         } else if (event.action === "board.init") {
-            eventsSinceInit = 0
             console.log(`Going to online mode. Init as new board at serial ${event.board.serial}`)
             return {
                 ...state,
-                status: "ready",
+                status: "online",
                 board: event.board,
                 accessLevel: event.accessLevel,
                 serverShadow: event.board,
                 sent: [],
             }
         } else if (event.action === "board.init.diff") {
-            eventsSinceInit = 0
             if (event.first) {
                 // Ensure local buffer empty on first chunk even if an earlier init was aborted.
                 initialServerSyncEventBuffer = []
@@ -420,7 +425,7 @@ export function BoardStore(
                 return flushIfPossible({
                     ...state,
                     accessLevel: event.accessLevel,
-                    status: "ready",
+                    status: "online",
                     board,
                     serverShadow: newServerShadow,
                     queue,
@@ -435,7 +440,7 @@ export function BoardStore(
                 }
             }
         } else if (event.action === "ui.offline") {
-            if (state.status === "ready" || state.status === "joining" || state.status === "loading") {
+            if (state.status === "online" || state.status === "joining" || state.status === "loading") {
                 console.log(`Disconnected. Going to offline mode.`)
             }
             if (state.sent.length > 0) {
@@ -475,7 +480,7 @@ export function BoardStore(
 
     const localBoardToSave = state.pipe(
         L.changes,
-        L.filter((state) => state.board !== undefined && state.board.serial > 0 && state.status === "ready"),
+        L.filter((state) => state.board !== undefined && state.board.serial > 0 && state.status === "online"),
         L.map((state) => {
             return {
                 serverShadow: state.serverShadow!,
