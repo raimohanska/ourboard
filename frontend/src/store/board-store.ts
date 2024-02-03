@@ -93,7 +93,11 @@ export function BoardStore(
 
     const ACK_ID = "1"
 
-    const boardStateFromLocalStorage = L.atom<LocalStorageBoard | undefined>(undefined)
+    type BoardStateFromLocalStorage = {
+        boardId: Id
+        storedInitialState: LocalStorageBoard | undefined
+    }
+    const boardStateFromLocalStorage = L.atom<BoardStateFromLocalStorage | null>(null)
 
     function flushIfPossible(state: BoardState): BoardState {
         // Only flush when board is ready and we are not waiting for ack.
@@ -291,7 +295,7 @@ export function BoardStore(
                 console.log("Join board with no board id. Reseting board state.")
                 return initialState
             }
-            const storedInitialState = boardStateFromLocalStorage.get()
+            const storedInitialState = boardStateFromLocalStorage.get()?.storedInitialState
             if (storedInitialState && storedInitialState.serverShadow.id === event.boardId) {
                 console.log(`Starting offline with local board state, serial=${storedInitialState.serverShadow.serial}`)
                 const board = storedInitialState.queue.reduce(
@@ -484,11 +488,14 @@ export function BoardStore(
     })
 
     boardId.forEach(async (boardId) => {
-        boardStateFromLocalStorage.set(undefined)
+        boardStateFromLocalStorage.set(null)
         if (boardId) {
             console.log("Got board id, fetching local state", boardId)
             const storedInitialState = await localStore.getInitialBoardState(boardId)
-            boardStateFromLocalStorage.set(storedInitialState)
+            boardStateFromLocalStorage.set({
+                boardId,
+                storedInitialState,
+            })
             dispatch({ action: "ui.board.setId", boardId }) // This is for the reducer locally to start offline mode
             checkReadyToJoin()
         }
@@ -522,7 +529,7 @@ export function BoardStore(
     })
 
     function checkReadyToJoin() {
-        const bid = boardStateFromLocalStorage.get()?.serverShadow.id
+        const bid = boardStateFromLocalStorage.get()?.boardId
         if (bid && connection.connected.get() && !isLoginInProgress(sessionStatus.get())) {
             console.log("Ready to join board")
             dispatch({ action: "ui.board.readyToJoin", boardId: bid }) // This is for the reducer locally to trigger join if not already online
