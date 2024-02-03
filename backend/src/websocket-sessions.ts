@@ -147,7 +147,7 @@ export async function addSessionToBoard(
         boardState.sessions = [...boardState.sessions, session]
     }
     const initDiff = initAtSerial && boardState.board.serial - initAtSerial
-    if (initDiff && initDiff > 200) {
+    if (initDiff && initDiff > Object.keys(boardState.board.items).length) {
         console.log(`Sending fresh board state for board ${boardId} instead of diff (${initDiff} events to sync)`)
         initAsNew(session, boardId, accessLevel, boardState)
     } else if (initAtSerial) {
