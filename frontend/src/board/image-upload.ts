@@ -57,11 +57,11 @@ export function imageUploadHandler(
     onURL: (id: string, url: AssetURL) => void,
 ): ImageUploadFunction {
     return async (file: File): Promise<void> => {
-        const info = await videoOrImageInfo(file)
-        const [assetId, urlPromise] = await assets.uploadAsset(file)
+        const info = await imageDimensions(file)
         if (!info) {
-            console.log("File is not an image or a video")
+            console.log("File is not an image")
         } else if (info.type === "image") {
+            const [assetId, urlPromise] = await assets.uploadAsset(file)
             const { width, height } = info
             const maxWidth = 10
             const w = Math.min(width, maxWidth)
@@ -71,25 +71,11 @@ export function imageUploadHandler(
             onAdd(image)
             const finalUrl = await urlPromise
             onURL(assetId, finalUrl)
-        } else {
-            const w = 20 // Just some initial dimensions in em, user can resize
-            const h = 12
-            const { x, y } = coordinateHelper.currentBoardCoordinates.get()
-            const video = newVideo(assetId, x, y, w, h)
-            onAdd(video)
-            const finalUrl = await urlPromise
-            onURL(assetId, finalUrl)
         }
     }
 }
 
-async function videoOrImageInfo(file: File): Promise<ImageOrVideoInfo> {
-    return (await imageDimensions(file)) || (await videoInfo(file))
-}
-
 type ImageInfo = { type: "image"; width: number; height: number }
-type VideoInfo = { type: "video" }
-type ImageOrVideoInfo = ImageInfo | VideoInfo | null
 
 function imageDimensions(file: File): Promise<ImageInfo | null> {
     return new Promise((resolve, reject) => {
@@ -108,12 +94,4 @@ function imageDimensions(file: File): Promise<ImageInfo | null> {
 
         img.src = URL.createObjectURL(file)
     })
-}
-
-async function videoInfo(file: File): Promise<VideoInfo | null> {
-    console.log("Assuming it's a video TODO", file.type)
-    if (file.type.startsWith("video/")) {
-        return { type: "video" }
-    }
-    return null
 }
