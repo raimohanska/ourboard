@@ -1,12 +1,12 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
-import { CURSORS_ONLY, addOrReplaceEvent } from "../../../common/src/action-folding"
-import { AppEvent, EventFromServer, EventWrapper, UIEvent } from "../../../common/src/domain"
+import { CURSORS_AND_BATCHING, addOrReplaceEvent, foldEventList } from "../../../common/src/action-folding"
+import { AppEvent, EventFromServer, EventWrapper, UIEvent, isBoardHistoryEntry } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
 
 export type Dispatch = (e: UIEvent) => void
 
-const SERVER_EVENTS_BUFFERING_MILLIS = 20
+const SERVER_EVENTS_BUFFERING_MILLIS = 100 // TODO maybe responsive to load?
 
 export type ServerConnection = ReturnType<typeof GenericServerConnection>
 
@@ -33,9 +33,7 @@ export function GenericServerConnection(
     const bufferedServerEvents = serverEvents.pipe(
         L.bufferWithTime(SERVER_EVENTS_BUFFERING_MILLIS),
         L.flatMap((events) => {
-            return L.fromArray(
-                events.reduce((folded, next) => addOrReplaceEvent(next, folded, CURSORS_ONLY), [] as EventFromServer[]),
-            )
+            return L.fromArray(foldEventList(events, CURSORS_AND_BATCHING))
         }, globalScope),
     )
 

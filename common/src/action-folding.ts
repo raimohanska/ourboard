@@ -1,3 +1,4 @@
+import _ from "lodash"
 import { arrayEquals, arrayIdAndKeysMatch, arrayIdMatch, idsOf } from "./arrays"
 import { boardReducer } from "./board-reducer"
 import {
@@ -15,20 +16,35 @@ import {
 } from "./domain"
 
 type FoldOptions = {
-    cursorsOnly?: boolean
+    cursorsAndBatchingOnly?: boolean
     foldAddUpdate: boolean
 }
 
 const defaultOptions = {
     foldAddUpdate: true,
-    cursorsOnly: false,
+    cursorsAndBatchingOnly: false,
 }
 
-export const CURSORS_ONLY: FoldOptions = { cursorsOnly: true, foldAddUpdate: false }
+export const CURSORS_AND_BATCHING: FoldOptions = { cursorsAndBatchingOnly: true, foldAddUpdate: false }
+
+// TODO: Serial skips were observed when making local changes
+// TODO: The lag still accumulates. Could try mutative mode.
 
 export function foldActions(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
-    if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
-        if (options.cursorsOnly) return null
+    if (a.action === "ui.batchupdate" && isBoardHistoryEntry(b) && options.cursorsAndBatchingOnly) {
+        return {
+            action: "ui.batchupdate",
+            boardId: a.boardId,
+            updates: [...a.updates, b],
+        }
+    } else if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
+        if (options.cursorsAndBatchingOnly) {
+            return {
+                action: "ui.batchupdate",
+                boardId: a.boardId,
+                updates: [a, b],
+            }
+        }
         if (!isSameUser(a.user, b.user)) return null
         const folded = foldActions_(a, b, options)
         if (!folded) return null
@@ -43,14 +59,14 @@ export function foldActions(a: AppEvent, b: AppEvent, options: FoldOptions = def
 Folding can be done if in any given state S, applying actions A and B consecutively can be replaced with a single action C.
 This function should return that composite action or null if folding is not possible.
 */
-export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
+function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
     if (a.action === CURSOR_POSITIONS_ACTION_TYPE && b.action === CURSOR_POSITIONS_ACTION_TYPE) {
         return b
     }
     if (a.action === "cursor.move" && b.action === "cursor.move" && b.boardId === a.boardId) {
         return b // This is a local cursor move
     }
-    if (options.cursorsOnly) return null
+    if (options.cursorsAndBatchingOnly) return null
 
     if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
         if (!isSameUser(a.user, b.user)) return null
@@ -104,6 +120,16 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
 
 function everyMovedItemMatches(evt: MoveItem, evt2: MoveItem) {
     return arrayIdMatch(evt.items, evt2.items) && arrayIdMatch(evt.connections, evt2.connections)
+}
+
+export function foldEventList<E extends AppEvent>(events: E[], options: FoldOptions = defaultOptions): E[] {
+    const [cursorEvents, otherEvents] = _.partition(events, (e) => e.action === CURSOR_POSITIONS_ACTION_TYPE)
+    const lastCursorEvent = cursorEvents.length ? [cursorEvents[cursorEvents.length - 1]] : []
+    const foldedOtherEvents = events.reduce((folded, next) => addOrReplaceEvent(next, folded, options), [] as E[])
+    if (lastCursorEvent.length > cursorEvents.length) {
+        console.log("Cursors", cursorEvents.length, " -> 1")
+    }
+    return [...foldedOtherEvents, ...lastCursorEvent]
 }
 
 export function addOrReplaceEvent<E extends AppEvent>(event: E, q: E[], options: FoldOptions = defaultOptions): E[] {

@@ -194,7 +194,7 @@ export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEm
 
 export type BoardEvent = { boardId: Id }
 export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
-export type LocalUIEvent = Undo | Redo | SetLocalBoard | GoOnline | BoardLoggedOut | GoOffline
+export type LocalUIEvent = Undo | Redo | SetLocalBoard | GoOnline | BoardLoggedOut | GoOffline | BatchUpdate
 export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse | AckAddBoard | ServerConfig
 export type ServerConfig = {
     action: "server.config"
@@ -228,6 +228,7 @@ export type PersistableBoardItemEvent =
     | BootstrapBoard
     | RenameBoard
     | SetBoardAccessPolicy
+
 export type BoardInit = InitBoardNew | InitBoardDiff
 export type TransientBoardItemEvent = LockItem | UnlockItem
 export type BoardItemEvent = PersistableBoardItemEvent | TransientBoardItemEvent
@@ -356,6 +357,7 @@ export type SetLocalBoard = {
 export type BoardLoggedOut = { action: "ui.board.logged.out"; boardId: Id }
 export type GoOffline = { action: "ui.offline" }
 export type GoOnline = { action: "ui.online" }
+export type BatchUpdate = { action: "ui.batchupdate"; boardId: Id; updates: PersistableBoardItemEvent[] }
 
 export const CURSOR_POSITIONS_ACTION_TYPE = "c" as const
 export type CursorPositions = { action: typeof CURSOR_POSITIONS_ACTION_TYPE; p: Record<Id, UserCursorPosition> }

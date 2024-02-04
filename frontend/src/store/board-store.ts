@@ -167,6 +167,18 @@ export function BoardStore(
 
     let initialServerSyncEventBuffer: BoardHistoryEntry[] = []
 
+    function applyRemoteUpdates(state: BoardState, events: PersistableBoardItemEvent[]) {
+        const shadow = state.serverShadow!
+        // Clone on a level known to avoid mutation of the original serverShadow object
+        const clonedShadow = { ...shadow, items: { ...shadow.items }, connections: [...shadow.connections] }
+        const newServerShadow = events.reduce((b, e) => boardReducer(b, e, { inplace: true })[0], clonedShadow)
+        // Rebase local events on top of new server shadow. If this fails, there's a catch below.
+        const localEvents = [...state.sent, ...state.queue]
+        const board = localEvents.filter(isBoardHistoryEntry).reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
+        //console.log(`Processed remote board event and rebased ${localEvents.length} local events on top`, event)
+        return { ...state, serverShadow: newServerShadow, board }
+    }
+
     const eventsReducer = (state: BoardState, event: BoardStoreEvent): BoardState => {
         if (state.status === "online") {
             // Process these events only when online
@@ -180,6 +192,13 @@ export function BoardStore(
                 return undoStack.pop(state, redoStack)
             } else if (event.action === "ui.redo") {
                 return redoStack.pop(state, undoStack)
+            } else if (event.action === "ui.batchupdate") {
+                if (state.status !== "online") {
+                    // Skip while not online.
+                    return state
+                }
+                console.log("Processing batch of", event.updates.length, "events")
+                return applyRemoteUpdates(state, event.updates)
             } else if (isPersistableBoardItemEvent(event)) {
                 try {
                     if (event.serial == undefined) {
@@ -197,14 +216,7 @@ export function BoardStore(
                             // The server will re-send any missed events after sync, after which we can start processing normally.
                             return state
                         }
-                        const [newServerShadow] = boardReducer(state.serverShadow!, event, { strictOnSerials: true })
-                        // Rebase local events on top of new server shadow. If this fails, there's a catch below.
-                        const localEvents = [...state.sent, ...state.queue]
-                        const board = localEvents
-                            .filter(isBoardHistoryEntry)
-                            .reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
-                        //console.log(`Processed remote board event and rebased ${localEvents.length} local events on top`, event)
-                        return { ...state, serverShadow: newServerShadow, board }
+                        return applyRemoteUpdates(state, [event])
                     }
                 } catch (e) {
                     console.error("Error applying event. Fetching as new board...", e)
