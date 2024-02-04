@@ -54,9 +54,9 @@ export function boardContentArea(b: Board) {
 
     if (!items.length) {
         console.log("No items in board, centering view")
-        return { x: b.width / 2 - width / 2, y: b.height / 2 - height / 2, width, height }
+        return addMargin({ x: b.width / 2 - width / 2, y: b.height / 2 - height / 2, width, height }, height * 0.1)
     }
-
+    console.log(`${items.length} items on board, calculating view area`)
     let itemsArea = itemToRect(items[0])
     items.forEach((item) => {
         itemsArea = combineRects(itemsArea, itemToRect(item))
