@@ -254,6 +254,7 @@ describe("With stored local state", () => {
     })
 })
 
+// TODO: test going offline before getting board.init (case server redirects to other URL)
 // TODO: test effects of server event buffering (bufferedServerEvents)
 // TODO: test undo, redo buffers
 
