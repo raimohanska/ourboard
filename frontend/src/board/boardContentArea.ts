@@ -45,7 +45,24 @@ function clampIntoKeepingSize(rect: Rect, bounds: Rect) {
     return { x, y, width: rect.width, height: rect.height }
 }
 
-export function boardContentArea(b: Board) {
+function growToProportions(rect: Rect, proportions: { width: number; height: number }) {
+    const width = rect.width
+    const height = rect.height
+    const targetWidth = rect.height * (proportions.width / proportions.height)
+    const targetHeight = rect.width * (proportions.height / proportions.width)
+    if (targetWidth > rect.width) {
+        const diff = targetWidth - rect.width
+        rect.x -= diff / 2
+        rect.width = targetWidth
+    } else {
+        const diff = targetHeight - rect.height
+        rect.y -= diff / 2
+        rect.height = targetHeight
+    }
+    return rect
+}
+
+export function boardContentArea(b: Board, viewPortDimensions: { width: number; height: number }) {
     // Default / minimum size for initial view
     const width = b.width / 10
     const height = b.height / 10
@@ -64,6 +81,8 @@ export function boardContentArea(b: Board) {
 
     // Now we have the area of all items, let's add some margin
     itemsArea = addMargin(itemsArea, width * 0.2)
+
+    itemsArea = growToProportions(itemsArea, viewPortDimensions)
 
     // Grow to at least the default size keeping center point
     itemsArea = setMinimumSizeKeepingCenter(itemsArea, { width, height })

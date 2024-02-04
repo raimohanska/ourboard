@@ -57,7 +57,7 @@ export function boardScrollAndZoomHandler(
                         el.scrollLeft = parsed.x
                         zoom.set({ zoom: parsed.zoom, quickZoom: 1 })
                     } else {
-                        viewRect.set(boardContentArea(board.get()))
+                        viewRect.set(boardContentArea(board.get(), viewRect.get()))
                     }
                 }, 0) // Need to wait for first render to have correct size. Causes a little flicker.
             }
