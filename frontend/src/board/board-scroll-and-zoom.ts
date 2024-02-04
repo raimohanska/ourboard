@@ -43,11 +43,11 @@ export function boardScrollAndZoomHandler(
         (id) => "scrollAndZoom." + id,
     )
 
-    const boardIsNonEmpty = board.pipe(L.map((b) => Object.keys(b.items).length > 0))
+    const boardIsNonEmpty = board.pipe(L.map((b) => b.name !== ""))
     L.view(scrollElement, boardElement, localStorageKey, boardIsNonEmpty, (el, be, key, neb) => ({ el, be, key, neb }))
         .pipe(L.applyScope(componentScope()))
-        .forEach(({ el, be, key }) => {
-            if (el && be) {
+        .forEach(({ el, be, key, neb }) => {
+            if (el && be && key && neb) {
                 const storedScrollAndZoom = localStorage[key]
                 setTimeout(() => {
                     if (storedScrollAndZoom) {
