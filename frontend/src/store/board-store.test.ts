@@ -193,7 +193,7 @@ describe("With stored local state", () => {
         })
     })
 
-    it.only("Going offline and back online", async () => {
+    it("Going offline and back online", async () => {
         const { store, serverEvents, connected, sentEvents, replyToJoinRequest } = await initBoardStore({
             serverSideBoard: board0,
         })
