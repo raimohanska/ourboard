@@ -102,7 +102,7 @@ export function makeCopies(
         if (isItemEndPoint(endPoint)) {
             const newId = oldToNewId[getEndPointItemId(endPoint)]
             if (!newId) {
-                console.warn(`Target item ${endPoint} not found from pasted contents, assuming it exists on board`)
+                console.warn(`Target item ${endPoint} not found from pasted contents, assuming it exists on board`)
                 return endPoint
             }
             return newId
