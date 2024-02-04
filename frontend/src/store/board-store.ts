@@ -433,13 +433,14 @@ export function BoardStore(
             if (state.status === "online" || state.status === "joining" || state.status === "loading") {
                 console.log(`Disconnected. Going to offline mode.`)
             }
-            if (state.sent.length > 0) {
+            let board = state.board
+            if (state.sent.length > 0 && state.serverShadow) {
                 console.log(`Discarding ${state.sent.length} sent events of which we don't have an ack yet`)
+                // Roll back to serverShadow+queue, now that sent are discarded
+                board = state.queue
+                    .filter(isBoardHistoryEntry)
+                    .reduce((b, e) => boardReducer(b, e)[0], assertNotNull(state.serverShadow))
             }
-            // Roll back to serverShadow+queue, now that sent are discarded
-            const board = state.queue
-                .filter(isBoardHistoryEntry)
-                .reduce((b, e) => boardReducer(b, e)[0], assertNotNull(state.serverShadow))
             return {
                 ...state,
                 board,
