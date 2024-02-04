@@ -35,6 +35,7 @@ import { mkBootStrapEvent } from "../../../common/src/migration"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { isLoginInProgress, UserSessionState } from "./user-session-store"
+import { assertNotNull } from "../../../common/src/assertNotNull"
 export type Dispatch = (e: UIEvent) => void
 export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardAccessStatus =
@@ -434,10 +435,14 @@ export function BoardStore(
             }
             if (state.sent.length > 0) {
                 console.log(`Discarding ${state.sent.length} sent events of which we don't have an ack yet`)
-                // TODO: We should definitely roll back the board as well!
             }
+            // Roll back to serverShadow+queue, now that sent are discarded
+            const board = state.queue
+                .filter(isBoardHistoryEntry)
+                .reduce((b, e) => boardReducer(b, e)[0], assertNotNull(state.serverShadow))
             return {
                 ...state,
+                board,
                 status: "offline",
                 sent: [], // Discard information about anything that was sent earlierly and to which we never got an ack for
                 users: [],
