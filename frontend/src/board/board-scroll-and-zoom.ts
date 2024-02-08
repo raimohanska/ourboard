@@ -51,11 +51,11 @@ export function boardScrollAndZoomHandler(
                 const storedScrollAndZoom = localStorage[key]
                 setTimeout(() => {
                     if (storedScrollAndZoom) {
-                        console.log("Restoring scroll and zoom for board from localStorage")
                         const parsed = JSON.parse(storedScrollAndZoom)
+                        console.log("Restoring scroll and zoom for board from localStorage", parsed.x, parsed.x)
+                        zoom.set({ zoom: parsed.zoom, quickZoom: 1 })
                         el.scrollTop = parsed.y
                         el.scrollLeft = parsed.x
-                        zoom.set({ zoom: parsed.zoom, quickZoom: 1 })
                     } else {
                         viewRect.set(boardContentArea(board.get(), viewRect.get()))
                     }
