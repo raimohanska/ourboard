@@ -197,7 +197,7 @@ export function BoardStore(
                     // Skip while not online.
                     return state
                 }
-                console.log("Processing batch of", event.updates.length, "events")
+                //console.log("Processing batch of", event.updates.length, "events")
                 return applyRemoteUpdates(state, event.updates)
             } else if (isPersistableBoardItemEvent(event)) {
                 try {
