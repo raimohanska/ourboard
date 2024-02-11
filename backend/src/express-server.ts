@@ -129,6 +129,8 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
     return stop
 }
 
+const setupWSConnection = require("y-websocket/bin/utils").setupWSConnection
+
 function startWs(http: any, app: express.Express) {
     const ws = expressWs(app, http)
 
@@ -140,5 +142,16 @@ function startWs(http: any, app: express.Express) {
     ws.app.ws("/socket/board/:boardId", (socket, req) => {
         const boardId = req.params.boardId
         connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, signedPutUrl))
+    })
+    ws.app.ws("/socket/yjs/board/:boardId/", (socket, req) => {
+        const boardId = req.params.boardId
+        console.log("Got YJS connection for board", boardId)
+        setupWSConnection(socket, req, {
+            gc: true,
+        })
+    })
+    ws.app.ws("*", (socket, req) => {
+        console.warn(`Unexpected WS connection: ${req.url} `)
+        socket.close()
     })
 }

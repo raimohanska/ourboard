@@ -27,6 +27,7 @@ import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
 import { ToolController } from "./tool-selection"
 import { itemZIndex } from "./zIndices"
+import { CollaborativeTextView } from "./CollaborativeTextView"
 
 export const ItemView = ({
     board,
@@ -136,8 +137,17 @@ export const ItemView = ({
                 })}
             />
 
-            {(type === "note" || type === "text" || type === "container") && (
-                <TextView item={item as L.Property<TextItem>} />
+            {type === "note" && <TextView item={item as L.Property<TextItem>} />}
+
+            {(type === "text" || type === "container") && (
+                <CollaborativeTextView
+                    item={item as L.Property<TextItem>}
+                    board={board}
+                    dispatch={dispatch}
+                    id={id}
+                    toolController={toolController}
+                    focus={focus}
+                />
             )}
 
             {type === "container" && (
