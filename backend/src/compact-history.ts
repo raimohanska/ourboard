@@ -2,7 +2,7 @@ import { format } from "date-fns"
 import _ from "lodash"
 import { PoolClient } from "pg"
 import { boardReducer } from "../../common/src/board-reducer"
-import { Board, BoardHistoryEntry, Id } from "../../common/src/domain"
+import { Board, BoardHistoryEntry, Id, Serial } from "../../common/src/domain"
 import { migrateBoard, mkBootStrapEvent } from "../../common/src/migration"
 import {
     getBoardHistoryBundleMetas,
@@ -13,6 +13,7 @@ import {
     storeEventHistoryBundle,
     verifyContinuity,
     verifyContinuityFromMetas,
+    verifyEventArrayContinuity,
 } from "./board-store"
 import { inTransaction } from "./db"
 
@@ -43,8 +44,10 @@ export async function quickCompactBoardHistory(id: Id) {
                     lastBundle.last_serial,
                 )
                 const eventArrays = bundlesWithData.map((b) => b.events.events)
-                const consistent = verifyContinuity(id, firstBundle.first_serial - 1, ...eventArrays)
                 const events: BoardHistoryEntry[] = eventArrays.flat()
+                const consistent =
+                    verifyContinuity(id, firstBundle.first_serial - 1, ...eventArrays) &&
+                    verifyEventArrayContinuity(id, firstBundle.first_serial - 1, events)
                 if (consistent && bundlesWithData.length == bs.length) {
                     // 1. delete existing bundles
                     const deleteResult = await client.query(

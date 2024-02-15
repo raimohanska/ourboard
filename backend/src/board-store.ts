@@ -292,6 +292,16 @@ export function verifyContinuity(boardId: Id, init: Serial, ...histories: BoardH
     return true
 }
 
+export function verifyEventArrayContinuity(boardId: Id, init: Serial, events: BoardHistoryEntry[]) {
+    for (let event of events) {
+        if (!verifyTwoPoints(boardId, init, event.serial!)) {
+            return false
+        }
+        init = event.serial!
+    }
+    return true
+}
+
 function verifyTwoPoints(boardId: Id, a: Serial, b: Serial) {
     if (b !== a + 1) {
         console.error(`History discontinuity: ${a} -> ${b} for board ${boardId}`)
