@@ -263,7 +263,7 @@ export function BoardStore(
         if (event.action === "board.join.denied") {
             state = { ...state, board: emptyBoard(event.boardId) }
             const loginStatus = sessionInfo.get().status
-            if (state.status !== "loading") {
+            if (state.status !== "loading" && state.status != "joining") {
                 console.error(`Got board.join.denied while in status ${state.status}`)
             }
             if (loginStatus === "logging-in-server") {
@@ -512,7 +512,6 @@ export function BoardStore(
     )
     ss.onChange(([prev, s]) => {
         if (s === "logged-out" && prev === "logged-in") {
-            console.log("Clearing private boards from local storage")
             localStore.clearAllPrivateBoards()
             const board = state.get().board
             if (board && board.accessPolicy) {

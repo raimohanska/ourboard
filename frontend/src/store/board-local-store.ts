@@ -73,6 +73,7 @@ async function clearStateByKey(localStorageKey: string) {
 }
 
 async function clearAllPrivateBoards(): Promise<void> {
+    console.log("Clearing all private boards from local storage")
     const keys = await localForage.keys()
     await Promise.all(
         keys.map(async (k) => {
