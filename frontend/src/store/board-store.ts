@@ -2,6 +2,7 @@ import _ from "lodash"
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { addOrReplaceEvent, foldActions } from "../../../common/src/action-folding"
+import { assertNotNull } from "../../../common/src/assertNotNull"
 import { boardReducer } from "../../../common/src/board-reducer"
 import {
     AccessLevel,
@@ -9,33 +10,31 @@ import {
     Board,
     BoardHistoryEntry,
     BoardStateSyncEvent,
-    canWrite,
     ClientToServerRequest,
     CursorMove,
-    defaultBoardSize,
     EventUserInfo,
     Id,
-    isBoardHistoryEntry,
-    isCursorMove,
-    isLocalUIEvent,
-    isPersistableBoardItemEvent,
     ItemLocks,
     JoinBoard,
     LocalUIEvent,
     LoginResponse,
-    newISOTimeStamp,
     PersistableBoardItemEvent,
     ServerConfig,
     SessionUserInfo,
     TransientBoardItemEvent,
     UIEvent,
     UserSessionInfo,
+    canWrite,
+    defaultBoardSize,
+    isBoardHistoryEntry,
+    isCursorMove,
+    isLocalUIEvent,
+    isPersistableBoardItemEvent,
+    newISOTimeStamp,
 } from "../../../common/src/domain"
-import { mkBootStrapEvent } from "../../../common/src/migration"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
-import { isLoginInProgress, UserSessionState } from "./user-session-store"
-import { assertNotNull } from "../../../common/src/assertNotNull"
+import { UserSessionState, isLoginInProgress } from "./user-session-store"
 export type Dispatch = (e: UIEvent) => void
 export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardAccessStatus =

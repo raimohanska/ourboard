@@ -2,15 +2,12 @@ import { OAuthAuthenticatedUser } from "../../common/src/authenticated-user"
 import {
     AccessLevel,
     AckJoinBoard,
-    UserLoggedIn,
     AuthLogout,
     BoardHistoryEntry,
     CURSOR_POSITIONS_ACTION_TYPE,
     EventFromServer,
     EventUserInfoAuthenticated,
-    getBoardAttributes,
     Id,
-    isBoardHistoryEntry,
     ItemLocks,
     JoinedBoard,
     Serial,
@@ -19,13 +16,14 @@ import {
     UnidentifiedUserInfo,
     UserCursorPosition,
     UserInfoUpdate,
+    getBoardAttributes,
+    isBoardHistoryEntry,
 } from "../../common/src/domain"
-import { maybeGetBoard, ServerSideBoardState } from "./board-state"
+import { ServerSideBoardState, maybeGetBoard } from "./board-state"
 import { getBoardHistory } from "./board-store"
-import { LoginInfo } from "./http-session"
 import { randomProfession } from "./professions"
 import { getUserIdForEmail } from "./user-store"
-import { toBuffer, WsWrapper } from "./ws-wrapper"
+import { WsWrapper, toBuffer } from "./ws-wrapper"
 
 export type UserSession = {
     readonly sessionId: Id

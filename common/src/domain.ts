@@ -1,10 +1,9 @@
-import _ from "lodash"
-import * as uuid from "uuid"
 import * as t from "io-ts"
-import { DEFAULT_NOTE_COLOR, LIGHT_BLUE, PINK, RED } from "./colors"
-import { arrayToRecordById } from "./arrays"
-import { Rect } from "./geometry"
+import * as uuid from "uuid"
 import { LocalStorageBoard } from "../../frontend/src/store/board-local-store"
+import { arrayToRecordById } from "./arrays"
+import { DEFAULT_NOTE_COLOR, LIGHT_BLUE, PINK, RED } from "./colors"
+import { Rect } from "./geometry"
 
 export type Id = string
 export type ISOTimeStamp = string

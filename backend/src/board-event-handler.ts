@@ -9,16 +9,14 @@ import {
     newISOTimeStamp,
 } from "../../common/src/domain"
 import { getBoard, maybeGetBoard, updateBoards } from "./board-state"
-import { updateBoard } from "./board-store"
-import { MessageHandlerResult } from "./connection-handler"
+import { getBoardInfo, updateBoard } from "./board-store"
 import { handleCommonEvent } from "./common-event-handler"
-import { obtainLock } from "./locker"
-import { addSessionToBoard, broadcastBoardEvent, getSession } from "./websocket-sessions"
-import { associateUserWithBoard } from "./user-store"
-import { getBoardInfo } from "./board-store"
-import { toBuffer, WsWrapper } from "./ws-wrapper"
-import { sleep } from "../../common/src/sleep"
+import { MessageHandlerResult } from "./connection-handler"
 import { WS_HOST_DEFAULT, WS_HOST_LOCAL, WS_PROTOCOL } from "./host-config"
+import { obtainLock } from "./locker"
+import { associateUserWithBoard } from "./user-store"
+import { addSessionToBoard, broadcastBoardEvent, getSession } from "./websocket-sessions"
+import { toBuffer, WsWrapper } from "./ws-wrapper"
 
 export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (key: string) => string) => async (
     socket: WsWrapper,

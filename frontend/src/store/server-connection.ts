@@ -1,7 +1,7 @@
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import { CURSORS_ONLY, addOrReplaceEvent } from "../../../common/src/action-folding"
-import { AppEvent, EventFromServer, EventWrapper, UIEvent } from "../../../common/src/domain"
+import { EventFromServer, EventWrapper, UIEvent } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
 
 export type Dispatch = (e: UIEvent) => void

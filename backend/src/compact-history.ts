@@ -1,5 +1,5 @@
 import { format } from "date-fns"
-import _, { last } from "lodash"
+import _ from "lodash"
 import { PoolClient } from "pg"
 import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardHistoryEntry, Id } from "../../common/src/domain"
@@ -15,7 +15,6 @@ import {
     verifyContinuityFromMetas,
 } from "./board-store"
 import { inTransaction } from "./db"
-import { sleep } from "../../common/src/sleep"
 
 export async function quickCompactBoardHistory(id: Id) {
     let fallback = false
