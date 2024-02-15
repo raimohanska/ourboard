@@ -5,6 +5,7 @@ import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardAccessPolicy, BoardHistoryEntry, Id, isBoardEmpty, Serial } from "../../common/src/domain"
 import { migrateBoard, migrateEvent, mkBootStrapEvent } from "../../common/src/migration"
 import { inTransaction, withDBClient } from "./db"
+import { assertNotNull } from "../../common/src/assertNotNull"
 
 export type BoardAndAccessTokens = {
     board: Board
@@ -315,8 +316,11 @@ export async function storeEventHistoryBundle(
     savedAt = new Date(),
 ) {
     if (events.length > 0) {
-        const firstSerial = events[0].serial!
-        const lastSerial = events[events.length - 1].serial!
+        if (events[0].firstSerial !== undefined) {
+            throw Error("Assertion failed: folded events not expected on the server side.")
+        }
+        const firstSerial = assertNotNull(events[0].serial)
+        const lastSerial = assertNotNull(events[events.length - 1].serial)
         await client.query(
             `INSERT INTO board_event(board_id, first_serial, last_serial, events, saved_at) VALUES ($1, $2, $3, $4, $5)`,
             [boardId, firstSerial, lastSerial, { events }, savedAt],
