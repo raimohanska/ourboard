@@ -50,16 +50,17 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             let board = snapshot
 
             let i = 0
+            let rebuildingSnapshot = false
             function updateBoardWithEventChunk(chunk: BoardHistoryEntry[]) {
                 board = chunk.reduce((b, e) => {
                     i++
                     if (e.action === "board.setAccessPolicy") {
                         // Don't process access policy event when fetching board
                         // Access policy may have been changed in the database after the event
-                        // And the database status is considered the master
+                        // And the board table status is considered the master
                         return b
                     }
-                    return boardReducer(b, e, { inplace: true, strictOnSerials: true })[0]
+                    return boardReducer(b, e, { inplace: true, strictOnSerials: !rebuildingSnapshot })[0]
                 }, board)
                 historyEventCount += chunk.length
                 lastSerial = chunk[chunk.length - 1].serial ?? snapshot.serial
@@ -68,10 +69,11 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             await getBoardHistory(id, snapshot.serial, updateBoardWithEventChunk).catch(async (error) => {
                 console.error(error.message)
                 console.error(
-                    `Error applying board history for snapshot update for board ${id}. Loop index ${i}. Rebooting snapshot...`,
+                    `Error applying board history for snapshot update for board ${id}. Loop index ${i}. Rebooting snapshot. This may be a lossy operation.`,
                 )
                 i = 0
                 board = { ...snapshot, items: {}, connections: [] }
+                rebuildingSnapshot = true
                 try {
                     await getFullBoardHistory(id, client, updateBoardWithEventChunk)
                 } catch (e) {
