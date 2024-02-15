@@ -59,7 +59,7 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
                         // Don't process access policy event when fetching board
                         // Access policy may have been changed in the database after the event
                         // And the board table status is considered the master
-                        return b
+                        return { ...b, serial: assertNotNull(e.serial) }
                     }
                     return boardReducer(b, e, { inplace: true, strictOnSerials: !rebuildingSnapshot })[0]
                 }, board)
