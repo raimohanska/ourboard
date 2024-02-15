@@ -18,77 +18,70 @@ import {
 import { inTransaction } from "./db"
 
 export async function quickCompactBoardHistory(id: Id) {
-    let fallback = false
-    const result = inTransaction(async (client) => {
-        // Lock the board to prevent loading the board while compacting
-        await client.query("select 1 from board where id=$1 for update", [id])
-        const bundleMetas = await getBoardHistoryBundleMetas(client, id)
-        if (bundleMetas.length === 0) return
-        const consistent = verifyContinuityFromMetas(id, 0, bundleMetas)
-        if (consistent) {
-            // Group in one-hour bundles
-            const groupedByHour = _.groupBy(bundleMetas, (b) => format(new Date(b.saved_at), "yyyy-MM-dd hh"))
-            //console.log("Grouped by date", groupedByHour)
-            const toCompact = Object.values(groupedByHour).filter((bs) => bs.length > 1)
-            let compactions = 0
-            for (let bs of toCompact) {
-                const firstBundle = bs[0]
-                const lastBundle = bs[bs.length - 1]
-                console.log(
-                    `Compacting ${bs.length} bundles into one for board ${id}, containing serials ${firstBundle.first_serial}...${lastBundle.last_serial}`,
-                )
-                const bundlesWithData = await getBoardHistoryBundlesWithLastSerialsBetween(
-                    client,
-                    id,
-                    firstBundle.last_serial,
-                    lastBundle.last_serial,
-                )
-                const eventArrays = bundlesWithData.map((b) => b.events.events)
-                const events: BoardHistoryEntry[] = eventArrays.flat()
-                const consistent =
-                    verifyContinuity(id, firstBundle.first_serial - 1, ...eventArrays) &&
-                    verifyEventArrayContinuity(id, firstBundle.first_serial - 1, events)
-                if (consistent && bundlesWithData.length == bs.length) {
-                    // 1. delete existing bundles
-                    const deleteResult = await client.query(
-                        `DELETE FROM board_event where board_id=$1 and last_serial in (${bundlesWithData
-                            .map((b) => b.last_serial)
-                            .join(",")})`,
-                        [id],
+    try {
+        await inTransaction(async (client) => {
+            // Lock the board to prevent loading the board while compacting
+            await client.query("select 1 from board where id=$1 for update", [id])
+            const bundleMetas = await getBoardHistoryBundleMetas(client, id)
+            if (bundleMetas.length === 0) return
+            const consistent = verifyContinuityFromMetas(id, 0, bundleMetas)
+            if (consistent) {
+                // Group in one-hour bundles
+                const groupedByHour = _.groupBy(bundleMetas, (b) => format(new Date(b.saved_at), "yyyy-MM-dd hh"))
+                //console.log("Grouped by date", groupedByHour)
+                const toCompact = Object.values(groupedByHour).filter((bs) => bs.length > 1)
+                let compactions = 0
+                for (let bs of toCompact) {
+                    const firstBundle = bs[0]
+                    const lastBundle = bs[bs.length - 1]
+                    console.log(
+                        `Compacting ${bs.length} bundles into one for board ${id}, containing serials ${firstBundle.first_serial}...${lastBundle.last_serial}`,
                     )
-                    if (deleteResult.rowCount != bs.length) {
-                        throw Error(
-                            `Unexpected rowcount when deleting on compaction: ${deleteResult.rowCount} for board ${id}`,
+                    const bundlesWithData = await getBoardHistoryBundlesWithLastSerialsBetween(
+                        client,
+                        id,
+                        firstBundle.last_serial,
+                        lastBundle.last_serial,
+                    )
+                    const eventArrays = bundlesWithData.map((b) => b.events.events)
+                    const events: BoardHistoryEntry[] = eventArrays.flat()
+                    const consistent =
+                        verifyContinuity(id, firstBundle.first_serial - 1, ...eventArrays) &&
+                        verifyEventArrayContinuity(id, firstBundle.first_serial - 1, events)
+                    if (consistent && bundlesWithData.length == bs.length) {
+                        // 1. delete existing bundles
+                        const deleteResult = await client.query(
+                            `DELETE FROM board_event where board_id=$1 and last_serial in (${bundlesWithData
+                                .map((b) => b.last_serial)
+                                .join(",")})`,
+                            [id],
                         )
+                        if (deleteResult.rowCount != bs.length) {
+                            throw Error(
+                                `Unexpected rowcount when deleting on compaction: ${deleteResult.rowCount} for board ${id}`,
+                            )
+                        }
+                        // 2. store as a single bundle
+                        await storeEventHistoryBundle(id, events, client, lastBundle.saved_at)
+                    } else {
+                        throw Error("Discontinuity detected in compacted history.")
                     }
-                    // 2. store as a single bundle
-                    await storeEventHistoryBundle(id, events, client, lastBundle.saved_at)
-                } else {
-                    fallback = true
-                    return
+                    compactions++
                 }
-                compactions++
-            }
-            if (compactions > 0) {
+                if (compactions > 0) {
+                } else {
+                    console.log(
+                        `Board ${id}: Verified ${bundleMetas.length} bundles containing ${
+                            bundleMetas[bundleMetas.length - 1].last_serial
+                        } events => no need to compact`,
+                    )
+                }
             } else {
-                console.log(
-                    `Board ${id}: Verified ${bundleMetas.length} bundles containing ${
-                        bundleMetas[bundleMetas.length - 1].last_serial
-                    } events => no need to compact`,
-                )
+                throw Error("Discontinuity detected in bundle metadata.")
             }
-            return compactions
-        } else {
-            fallback = true
-        }
-    })
-    if (fallback) {
-        console.warn(
-            `Aborting quick compaction of board ${id} due to inconsistent history, fallback to regular compaction`,
-        )
-        await compactBoardHistory(id)
-    } else {
-        return result
+        })
+    } catch (e) {
+        console.error(`Aborting compaction of board ${id} because of an error: ${e}`)
     }
 }
 
