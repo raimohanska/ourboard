@@ -93,7 +93,7 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
                 `Loaded board ${id} at serial ${serial} from snapshot at serial ${snapshot.serial} and ${historyEventCount} events after snapshot. Took ${elapsed}ms`,
             )
 
-            if (historyEventCount > 1000 /* time to create a new snapshot*/) {
+            if (historyEventCount > 1000 || rebuildingSnapshot /* time to create a new snapshot*/) {
                 console.log(
                     `Saving snapshot for board ${id} at serial ${serial}/${snapshot.serial} with ${historyEventCount} new events`,
                 )
