@@ -152,7 +152,7 @@ async function saveBoardChanges(state: ServerSideBoardState) {
         }
         state.storingEvents = []
     }
-    if (getBoardSessionCount(state.board.id) == 0) {
+    if (state.recentEvents.length === 0 && getBoardSessionCount(state.board.id) === 0) {
         console.log(`Purging board ${state.board.id} from memory`)
         boards.delete(state.board.id)
         await quickCompactBoardHistory(state.board.id)
