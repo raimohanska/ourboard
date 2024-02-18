@@ -6,10 +6,14 @@ import * as Http from "http"
 import * as Https from "https"
 import * as path from "path"
 import * as swaggerUi from "swagger-ui-express"
+import * as Y from "yjs"
 import apiRoutes from "./api/api-routes"
 import { handleBoardEvent } from "./board-event-handler"
+import { updateBoardCrdt } from "./board-state"
+import { getBoardHistoryCrdtUpdates } from "./board-store"
 import { getConfig } from "./config"
 import { connectionHandler } from "./connection-handler"
+import { withDBClient } from "./db"
 import { getEnv } from "./env"
 import { getSessionIdFromCookies } from "./http-session"
 import { authProvider, setupAuth } from "./oauth"
@@ -19,7 +23,6 @@ import { createGetSignedPutUrl } from "./storage"
 import { getSessionById } from "./websocket-sessions"
 import { WsWrapper } from "./ws-wrapper"
 import YWebSocketServer from "./y-websocket-server/YWebSocketServer"
-import { Persistence } from "./y-websocket-server/Persistence"
 
 dotenv.config()
 
@@ -146,7 +149,24 @@ function startWs(http: any, app: express.Express) {
     })
 
     const yWebSocketServer = new YWebSocketServer({
-        persistence: DummyPersistence(),
+        persistence: {
+            bindState: async (docName, ydoc) => {
+                const boardId = docName
+                ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
+                    updateBoardCrdt(boardId, update)
+                })
+                withDBClient(async (client) => {
+                    console.log(`Loading CRDT updates from DB for board ${boardId}`)
+                    const updates = await getBoardHistoryCrdtUpdates(client, boardId)
+                    for (const update of updates) {
+                        Y.applyUpdate(ydoc, update)
+                    }
+                })
+            },
+            writeState: async (docName, ydoc) => {
+                // TODO: needed?
+            },
+        },
     })
     ws.app.ws("/socket/yjs/board/:boardId/", (socket, req) => {
         const boardId = req.params.boardId
@@ -158,7 +178,7 @@ function startWs(http: any, app: express.Express) {
             return
         }
         console.log("Got YJS connection for board", boardId)
-        const docName = (req.url ?? "").slice(1).split("?")[0]
+        const docName = boardId
         try {
             yWebSocketServer.setupWSConnection(socket, docName)
         } catch (e) {
@@ -170,36 +190,4 @@ function startWs(http: any, app: express.Express) {
         console.warn(`Unexpected WS connection: ${req.url} `)
         socket.close()
     })
-}
-
-import * as Y from "yjs"
-function DummyPersistence(): Persistence {
-    const states = new Map<string, PState>()
-    type PState = {
-        update: Uint8Array | null
-    }
-
-    function getState(docName: string, yDoc: Y.Doc): PState {
-        let state = states.get(docName)
-        if (!state) {
-            console.log("CREATE PERSISTED DOC")
-            state = { update: null }
-            states.set(docName, state)
-        } else {
-            console.log("USE PERSISTED DOC")
-        }
-        return state
-    }
-
-    return {
-        bindState: async (docName, ydoc) => {
-            let state = getState(docName, ydoc)
-            state.update && Y.applyUpdate(ydoc, state.update)
-            ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
-                state.update = state.update ? Y.mergeUpdates([state.update, update]) : update
-                console.log("UPDATING PERSISTED DOC", state.update.length)
-            })
-        },
-        writeState: async (docName, ydoc) => {},
-    }
 }

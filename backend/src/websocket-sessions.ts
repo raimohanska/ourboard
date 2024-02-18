@@ -161,7 +161,7 @@ export async function addSessionToBoard(
 
             //console.log(`Starting session at ${initAtSerial}`)
             // 2. capture all board events that haven't yet been flushed to the DB
-            const inMemoryEvents = boardState.storingEvents
+            const inMemoryEvents = (boardState.currentlyStoring?.events ?? [])
                 .concat(boardState.recentEvents)
                 .filter((e) => e.serial! > initAtSerial)
 
@@ -203,7 +203,7 @@ export async function addSessionToBoard(
             entry.bufferedEvents = []
         } catch (e) {
             console.warn(
-                `Failed to bootstrap client on board ${boardId} at serial ${initAtSerial}. Sending full state.`,
+                `Failed to bootstrap client on board ${boardId} at serial ${initAtSerial}. Sending full state.`,
             )
             entry.status = "ready"
             entry.bufferedEvents = []

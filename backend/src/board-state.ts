@@ -1,16 +1,23 @@
+import { merge } from "lodash"
 import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardCursorPositions, BoardHistoryEntry, Id } from "../../common/src/domain"
 import { sleep } from "../../common/src/sleep"
 import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./board-store"
-import { compactBoardHistory, quickCompactBoardHistory } from "./compact-history"
+import { quickCompactBoardHistory } from "./compact-history"
 import { Locks } from "./locker"
 import { UserSession, broadcastItemLocks, getBoardSessionCount, getSessionCount } from "./websocket-sessions"
+import * as Y from "yjs"
+
 // A mutable state object for server side state
 export type ServerSideBoardState = {
     ready: true
     board: Board
     recentEvents: BoardHistoryEntry[]
-    storingEvents: BoardHistoryEntry[]
+    recentCrdtUpdate: Uint8Array | null
+    currentlyStoring: {
+        events: BoardHistoryEntry[]
+        crdtUpdate: Uint8Array | null
+    } | null
     locks: ReturnType<typeof Locks>
     cursorsMoved: boolean
     cursorPositions: BoardCursorPositions
@@ -40,7 +47,8 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState | null> {
                 board,
                 accessTokens,
                 recentEvents: [],
-                storingEvents: [],
+                recentCrdtUpdate: null,
+                currentlyStoring: null,
                 locks: Locks((changedLocks) => broadcastItemLocks(id, changedLocks)),
                 cursorsMoved: false,
                 cursorPositions: {},
@@ -65,8 +73,8 @@ export async function getBoard(id: Id): Promise<ServerSideBoardState | null> {
             }
         } catch (e) {
             boards.delete(id)
-            console.error(`Board load failed for board ${id}. Running compact/fix.`)
-            await compactBoardHistory(id)
+            // TODO: avoid retry loop
+            console.error(`Board load failed for board ${id}`)
             throw e
         }
     } else if (!state.ready) {
@@ -96,6 +104,13 @@ export function updateBoards(boardState: ServerSideBoardState, appEvent: BoardHi
     return serial
 }
 
+export function updateBoardCrdt(id: Id, crdtUpdate: Uint8Array) {
+    const boardState = maybeGetBoard(id)
+
+    if (!boardState) throw Error(`No state for board ${id}`)
+    boardState.recentCrdtUpdate = combineCrdtUpdates(boardState.recentCrdtUpdate, crdtUpdate)
+}
+
 export async function addBoard(board: Board, createToken?: boolean): Promise<ServerSideBoardState> {
     await createBoard(board)
     const accessTokens = createToken ? [await createAccessToken(board)] : []
@@ -104,7 +119,8 @@ export async function addBoard(board: Board, createToken?: boolean): Promise<Ser
         board,
         serial: 0,
         recentEvents: [],
-        storingEvents: [],
+        recentCrdtUpdate: null,
+        currentlyStoring: null,
         locks: Locks((changedLocks) => broadcastItemLocks(board.id, changedLocks)),
         cursorsMoved: false,
         cursorPositions: {},
@@ -135,27 +151,38 @@ export async function awaitSavingChanges() {
 
 async function saveBoardChanges(state: ServerSideBoardState) {
     if (state.recentEvents.length > 0) {
-        if (state.storingEvents.length > 0) {
+        if (state.currentlyStoring) {
             throw Error("Invariant failed: storingEvents not empty")
         }
-        state.storingEvents = state.recentEvents.splice(0)
+        state.currentlyStoring = {
+            events: state.recentEvents.splice(0),
+            crdtUpdate: state.recentCrdtUpdate,
+        }
+        state.recentCrdtUpdate = null
         console.log(
-            `Saving board ${state.board.id} at serial ${state.board.serial} with ${state.storingEvents.length} new events`,
+            `Saving board ${state.board.id} at serial ${state.board.serial} with ${state.currentlyStoring.events.length} new events`,
         )
         try {
-            await saveRecentEvents(state.board.id, state.storingEvents)
+            await saveRecentEvents(state.board.id, state.currentlyStoring.events, state.currentlyStoring.crdtUpdate)
         } catch (e) {
             // Push event back to the head of save list for retrying later
-            state.recentEvents = [...state.storingEvents, ...state.recentEvents]
+            state.recentEvents = [...state.currentlyStoring.events, ...state.recentEvents]
+            state.recentCrdtUpdate = merge(state.currentlyStoring.crdtUpdate, state.recentCrdtUpdate)
             console.error("Board save failed for board", state.board.id, e)
         }
-        state.storingEvents = []
+        state.currentlyStoring = null
     }
     if (state.recentEvents.length === 0 && getBoardSessionCount(state.board.id) === 0) {
         console.log(`Purging board ${state.board.id} from memory`)
         boards.delete(state.board.id)
         await quickCompactBoardHistory(state.board.id)
     }
+}
+
+export function combineCrdtUpdates(a: Uint8Array | null, b: Uint8Array | null) {
+    if (!a) return b
+    if (!b) return a
+    return Y.mergeUpdates([a, b])
 }
 
 export function getActiveBoardCount() {

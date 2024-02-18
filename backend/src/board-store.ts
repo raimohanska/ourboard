@@ -122,7 +122,7 @@ export async function createBoard(board: Board): Promise<void> {
 
         if (!isBoardEmpty(board)) {
             console.log(`Creating non-empty board ${board.id} -> bootstrapping history`)
-            storeEventHistoryBundle(board.id, [mkBootStrapEvent(board.id, board)], client)
+            storeEventHistoryBundle(board.id, [mkBootStrapEvent(board.id, board)], null, client)
         }
     })
 }
@@ -182,8 +182,8 @@ export async function createAccessToken(board: Board): Promise<string> {
     return token
 }
 
-export async function saveRecentEvents(id: Id, recentEvents: BoardHistoryEntry[]) {
-    await inTransaction(async (client) => storeEventHistoryBundle(id, recentEvents, client))
+export async function saveRecentEvents(id: Id, recentEvents: BoardHistoryEntry[], crdtUpdate: Uint8Array | null) {
+    await inTransaction(async (client) => storeEventHistoryBundle(id, recentEvents, crdtUpdate, client))
 }
 
 type StreamingBoardEventCallback = (chunk: BoardHistoryEntry[]) => void
@@ -322,6 +322,7 @@ export async function saveBoardSnapshot(board: Board, client: PoolClient) {
 export async function storeEventHistoryBundle(
     boardId: Id,
     events: BoardHistoryEntry[],
+    crdtUpdate: Uint8Array | null,
     client: PoolClient,
     savedAt = new Date(),
 ) {
@@ -332,8 +333,8 @@ export async function storeEventHistoryBundle(
         const firstSerial = assertNotNull(events[0].serial)
         const lastSerial = assertNotNull(events[events.length - 1].serial)
         await client.query(
-            `INSERT INTO board_event(board_id, first_serial, last_serial, events, saved_at) VALUES ($1, $2, $3, $4, $5)`,
-            [boardId, firstSerial, lastSerial, { events }, savedAt],
+            `INSERT INTO board_event(board_id, first_serial, last_serial, events, crdt_update, saved_at) VALUES ($1, $2, $3, $4, $5, $6)`,
+            [boardId, firstSerial, lastSerial, { events }, crdtUpdate, savedAt],
         )
     }
 }
@@ -344,15 +345,7 @@ export type BoardHistoryBundle = {
     events: {
         events: BoardHistoryEntry[]
     }
-}
-
-export async function getBoardHistoryBundles(client: PoolClient, id: Id): Promise<BoardHistoryBundle[]> {
-    return (
-        await client.query(
-            `SELECT board_id, last_serial, events FROM board_event WHERE board_id=$1 ORDER BY last_serial`,
-            [id],
-        )
-    ).rows.map(migrateBundle)
+    crdt_update: Uint8Array | null
 }
 
 export async function getBoardHistoryBundlesWithLastSerialsBetween(
@@ -363,10 +356,19 @@ export async function getBoardHistoryBundlesWithLastSerialsBetween(
 ): Promise<BoardHistoryBundle[]> {
     return (
         await client.query(
-            `SELECT board_id, last_serial, events FROM board_event WHERE board_id=$1 AND last_serial >= $2 AND last_serial <= $3 ORDER BY last_serial`,
+            `SELECT board_id, last_serial, events, crdt_update FROM board_event WHERE board_id=$1 AND last_serial >= $2 AND last_serial <= $3 ORDER BY last_serial`,
             [id, lsMin, lsMax],
         )
     ).rows.map(migrateBundle)
+}
+
+export async function getBoardHistoryCrdtUpdates(client: PoolClient, id: Id): Promise<Uint8Array[]> {
+    return (
+        await client.query(
+            `SELECT crdt_update FROM board_event WHERE board_id=$1 AND crdt_update IS NOT NULL ORDER BY last_serial`,
+            [id],
+        )
+    ).rows.map((row) => row.crdt_update)
 }
 
 function migrateBundle(b: BoardHistoryBundle): BoardHistoryBundle {
