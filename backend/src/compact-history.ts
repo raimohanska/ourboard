@@ -17,13 +17,13 @@ import {
 } from "./board-store"
 import { inTransaction } from "./db"
 
-export async function quickCompactBoardHistory(id: Id) {
+export async function quickCompactBoardHistory(id: Id): Promise<number> {
     try {
-        await inTransaction(async (client) => {
+        return await inTransaction(async (client) => {
             // Lock the board to prevent loading the board while compacting
             await client.query("select 1 from board where id=$1 for update", [id])
             const bundleMetas = await getBoardHistoryBundleMetas(client, id)
-            if (bundleMetas.length === 0) return
+            if (bundleMetas.length === 0) return 0
             const consistent = verifyContinuityFromMetas(id, 0, bundleMetas)
             if (consistent) {
                 // Group in one-hour bundles
@@ -76,12 +76,14 @@ export async function quickCompactBoardHistory(id: Id) {
                         } events => no need to compact`,
                     )
                 }
+                return compactions
             } else {
                 throw Error("Discontinuity detected in bundle metadata.")
             }
         })
     } catch (e) {
         console.error(`Aborting compaction of board ${id} because of an error: ${e}`)
+        return 0
     }
 }
 
