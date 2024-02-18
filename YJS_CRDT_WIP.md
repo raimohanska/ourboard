@@ -11,9 +11,11 @@ The Y.js based collaborative editing support is under construction.
 
 ## TODO
 
+-   Build: Jest fails with the lib0 imports
 -   Persistence: consider storing CRDT snapshot
 -   Persistence: make sure the compactor works
 -   Persistence: implement local/offline persistence
+-   Persistence: storing bundles with zero events (crdt only)
 -   Domain: Migrate existing boards to CRDT or only apply CRDTs for new boards?
 -   Domain: Consider if CRDT field values should also be included in the JSON presentation, maybe on save
 -   Domain: Currently the initial text "Hello" or "Unnamed area" doesn't get synced in a new text/area. Also the JSON data stays in its initial state
