@@ -80,17 +80,6 @@ export const ItemView = ({
         dispatch,
     )
 
-    const dataTest = L.combineTemplate({
-        text: L.view(item, (i) => (i.type === "note" || i.type === "text" ? i.text : "")),
-        type: L.view(item, "type"),
-        selected,
-    }).pipe(
-        L.map(({ text, selected, type }: { text: string; selected: boolean; type: ItemType }) => {
-            const textSuffix = text ? "-" + text : ""
-            return selected ? `${type}-selected${textSuffix}` : `${type}${textSuffix}`
-        }),
-    )
-
     function itemPadding(i: Item) {
         if (i.type != "note") return undefined
 
@@ -109,7 +98,6 @@ export const ItemView = ({
         <span
             title={L.view(isLocked, (l) => (l ? "Item is selected by another user" : ""))}
             ref={ref}
-            data-test={dataTest}
             data-itemid={id}
             draggable={L.view(itemFocus, (f) => f !== "editing")}
             onClick={onClick}

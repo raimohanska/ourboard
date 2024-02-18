@@ -104,7 +104,6 @@ export function BoardPage(page: Page) {
         },
         async createNoteWithText(x: number, y: number, text: string) {
             await createNew(this.newNoteOnPalette, x, y)
-            await expect(this.getNote("HELLO")).toBeVisible()
             await page.keyboard.type(`${text}`)
             await page.keyboard.press("Escape")
             await expect(this.getNote(text)).toBeVisible()
@@ -112,7 +111,6 @@ export function BoardPage(page: Page) {
         },
         async createText(x: number, y: number, text: string) {
             await createNew(this.newTextOnPalette, x, y)
-            await expect(this.getText("HELLO")).toBeVisible()
             await page.keyboard.type(`${text}`)
             await expect(this.getText(text)).toBeVisible()
             return this.getText(text)
@@ -132,13 +130,13 @@ export function BoardPage(page: Page) {
             await dragElementOnBoard(bottomCorner, x, y)
         },
         getNote(name: string) {
-            return page.locator(`[data-test^="note"][data-test*="${name}"]`)
+            return page.locator(`.board > .note`).filter({ hasText: name })
         },
         getText(name: string) {
-            return page.locator(`[data-test^="text"][data-test*="${name}"]`)
+            return page.locator(`.board > .text`).filter({ hasText: name })
         },
         getArea(name: string) {
-            return page.locator(`[data-test^="container"]`).filter({ hasText: name })
+            return page.locator(`.board > .container`).filter({ hasText: name })
         },
         async assertItemPosition(item: Locator, x: number, y: number) {
             const pos = await getElementPosition(item)
