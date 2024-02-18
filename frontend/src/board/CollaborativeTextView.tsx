@@ -69,7 +69,7 @@ export function CollaborativeTextView({
         // A Yjs document holds the shared data
         const ydoc = new Y.Doc()
         // Define a shared text type on the document
-        const ytext = ydoc.getText("quill")
+        const ytext = ydoc.getText(`${id}.text`)
 
         // connect to the public demo server (not in production!)
         const provider = new WebsocketProvider( // TODO: get socket address from server-connection.ts
