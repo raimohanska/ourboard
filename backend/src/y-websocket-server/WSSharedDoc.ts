@@ -10,8 +10,8 @@ import { messageAwareness, messageSync } from "./Protocol"
 
 export const wsReadyStateConnecting = 0
 export const wsReadyStateOpen = 1
-export const wsReadyStateClosing = 2 // eslint-disable-line
-export const wsReadyStateClosed = 3 // eslint-disable-line
+export const wsReadyStateClosing = 2
+export const wsReadyStateClosed = 3
 
 export class WSSharedDoc extends Y.Doc {
     private docs: Docs
@@ -23,9 +23,6 @@ export class WSSharedDoc extends Y.Doc {
         super({ gc: docs.gc })
         this.docs = docs
         this.name = name
-        /**
-         * Maps from conn to set of controlled user ids. Delete all user ids from awareness when this conn is closed
-         */
         this.awareness.setLocalState(null)
 
         const awarenessChangeHandler = (
@@ -44,7 +41,6 @@ export class WSSharedDoc extends Y.Doc {
                     })
                 }
             }
-            // broadcast awareness update
             const encoder = encoding.createEncoder()
             encoding.writeVarUint(encoder, messageAwareness)
             encoding.writeVarUint8Array(
