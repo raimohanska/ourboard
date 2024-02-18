@@ -20,6 +20,7 @@ interface CollaborativeTextViewProps {
     id: string
     toolController: ToolController
     focus: L.Atom<BoardFocus>
+    itemFocus: L.Property<"none" | "selected" | "dragging" | "editing">
 }
 export function CollaborativeTextView({
     id,
@@ -28,6 +29,7 @@ export function CollaborativeTextView({
     dispatch,
     toolController,
     focus,
+    itemFocus,
 }: CollaborativeTextViewProps) {
     const textAtom = L.atom(L.view(item, "text"), (text) =>
         dispatch({ action: "item.update", boardId: board.get().id, items: [{ id, text }] }),
@@ -45,6 +47,13 @@ export function CollaborativeTextView({
         )
     }
     const color = L.view(item, getItemBackground, contrastingColor)
+
+    const editingThis = L.atom(
+        L.view(itemFocus, (f) => f === "editing" || f === "selected"),
+        setEditing,
+    )
+
+    const quillEditor = L.atom<Quill | null>(null)
 
     function initQuill(el: HTMLElement) {
         const quill = new Quill(el, {
@@ -81,7 +90,13 @@ export function CollaborativeTextView({
         // Create an editor-binding which
         // "binds" the quill editor to a Y.Text type.
         const binding = new QuillBinding(ytext, quill, provider.awareness)
+
+        quillEditor.set(quill)
     }
+
+    L.combine(quillEditor, editingThis, (q, e) => (e ? q : null)).forEach((q) => {
+        q && q.focus()
+    })
 
     return (
         <div

@@ -147,6 +147,7 @@ export const ItemView = ({
                     id={id}
                     toolController={toolController}
                     focus={focus}
+                    itemFocus={itemFocus}
                 />
             )}
 
