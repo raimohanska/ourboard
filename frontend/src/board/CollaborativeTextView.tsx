@@ -63,7 +63,6 @@ export function CollaborativeTextView({
                     userOnly: true,
                 },
             },
-            placeholder: "Start collaborating...",
             theme: "snow", // 'bubble' is also great
         })
         // A Yjs document holds the shared data
