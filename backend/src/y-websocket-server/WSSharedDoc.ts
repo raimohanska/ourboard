@@ -3,7 +3,7 @@ import * as Y from "yjs"
 import * as awarenessProtocol from "y-protocols/dist/awareness.cjs"
 import * as syncProtocol from "y-protocols/dist/sync.cjs"
 
-import encoding from "lib0/encoding"
+import * as encoding from "lib0/encoding"
 import { debounce } from "lodash"
 import { messageAwareness, messageSync } from "./Protocol"
 import { callbackHandler, isCallbackSet } from "./callbackHandler"
@@ -86,6 +86,7 @@ export class WSSharedDoc extends Y.Doc {
                 err != null && this.closeConn(conn)
             })
         } catch (e) {
+            console.error("Failed to send message to client. Closing connection.", e)
             this.closeConn(conn)
         }
     }

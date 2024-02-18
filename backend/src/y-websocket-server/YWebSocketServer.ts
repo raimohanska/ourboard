@@ -1,8 +1,8 @@
 import * as awarenessProtocol from "y-protocols/dist/awareness.cjs"
 import * as syncProtocol from "y-protocols/dist/sync.cjs"
 
-import decoding from "lib0/decoding"
-import encoding from "lib0/encoding"
+import * as decoding from "lib0/decoding"
+import * as encoding from "lib0/encoding"
 import * as WebSocket from "ws"
 import { Docs, DocsOptions } from "./Docs"
 import { messageAwareness, messageSync } from "./Protocol"
@@ -22,10 +22,7 @@ export default class YWebSocketServer {
         const doc = this.docs.getYDoc(docName)
         doc.addConnection(conn)
         // listen and reply to events
-        conn.on(
-            "message",
-            /** @param {ArrayBuffer} message */ (message: any) => messageListener(conn, doc, new Uint8Array(message)),
-        )
+        conn.on("message", (message: ArrayBuffer) => messageListener(conn, doc, new Uint8Array(message)))
 
         // Check if connection is still alive
         let pongReceived = true
@@ -94,6 +91,9 @@ const messageListener = (conn: WebSocket, doc: WSSharedDoc, message: Uint8Array)
             case messageAwareness: {
                 awarenessProtocol.applyAwarenessUpdate(doc.awareness, decoding.readVarUint8Array(decoder), conn)
                 break
+            }
+            default: {
+                console.warn("Unexpected message type" + messageType)
             }
         }
     } catch (err) {

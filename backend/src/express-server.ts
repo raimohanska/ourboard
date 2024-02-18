@@ -156,7 +156,12 @@ function startWs(http: any, app: express.Express) {
         }
         console.log("Got YJS connection for board", boardId)
         const docName = (req.url ?? "").slice(1).split("?")[0]
-        yWebSocketServer.setupWSConnection(socket, docName)
+        try {
+            yWebSocketServer.setupWSConnection(socket, docName)
+        } catch (e) {
+            console.error("Error setting up YJS connection", e)
+            socket.close()
+        }
     })
     ws.app.ws("*", (socket, req) => {
         console.warn(`Unexpected WS connection: ${req.url} `)
