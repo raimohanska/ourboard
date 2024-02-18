@@ -11,6 +11,10 @@ export type LoginInfo = OAuthAuthenticatedUser & {
     timestamp: ISOTimeStamp | undefined
 }
 
+export function getSessionIdFromCookies(req: IncomingMessage): string | null {
+    return new Cookies(req, null as any).get("sessionId") ?? null
+}
+
 // Get / set authenticated user stored in cookies
 export function getAuthenticatedUser(req: IncomingMessage): LoginInfo | null {
     const userCookie = new Cookies(req, null as any).get("user")

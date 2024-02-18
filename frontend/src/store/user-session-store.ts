@@ -5,6 +5,7 @@ import { AppEvent, BoardAccessPolicy, Id } from "../../../common/src/domain"
 import { signIn } from "../google-auth"
 import { ServerConnection } from "./server-connection"
 import jwtDecode from "jwt-decode"
+import Cookies from "js-cookie"
 
 export type UserSessionState = Anonymous | LoggingInServer | LoggedIn | LoggedOut | LoginFailedDueToTechnicalProblem
 
@@ -60,6 +61,7 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
             if (event.action === "server.config" && state.status === "anonymous") {
                 return { ...state, loginSupported: event.authSupported }
             } else if (event.action === "board.join.ack") {
+                Cookies.set("sessionId", event.sessionId, { sameSite: "strict" })
                 return { ...state, sessionId: event.sessionId, nickname: state.nickname || event.nickname }
             } else if (event.action === "nickname.set") {
                 const nickname = storeNickName(event.nickname)
@@ -139,14 +141,6 @@ export function UserSessionStore(connection: ServerConnection, localStorage: Sto
     }
 }
 
-// Get / set authenticated user stored in cookies
-
-function getCookie(name: string) {
-    const value = `; ${document.cookie}`
-    const parts = value.split(`; ${name}=`)
-    if (parts.length === 2) return parts.pop()!.split(";").shift()
-}
-
 function getAuthenticatedUserFromCookie(): OAuthAuthenticatedUser | null {
     const userCookie = getUserJWT()
     if (userCookie) {
@@ -160,7 +154,7 @@ function getAuthenticatedUserFromCookie(): OAuthAuthenticatedUser | null {
 }
 
 function getUserJWT() {
-    return getCookie("user") ?? null
+    return Cookies.get("user") ?? null
 }
 
 export function canLogin(state: UserSessionState): boolean {

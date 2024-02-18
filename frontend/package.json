@@ -6,6 +6,7 @@
   "dependencies": {
     "@types/cookie": "^0.4.0",
     "@types/email-validator": "^1.0.6",
+    "@types/js-cookie": "^3.0.6",
     "@types/lodash": "^4.14.161",
     "@types/md5": "^2.2.1",
     "@types/path-to-regexp": "^1.7.0",
@@ -22,6 +23,7 @@
     "harmaja": "^0.24",
     "harmaja-router": "^0.3.3",
     "io-ts": "^2.2.15",
+    "js-cookie": "^3.0.5",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.2",
     "localforage": "^1.9.0",

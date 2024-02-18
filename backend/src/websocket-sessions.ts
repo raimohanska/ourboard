@@ -120,7 +120,11 @@ export function getBoardSessionCount(id: Id) {
     return everyoneOnTheBoard(id).length
 }
 export function getSession(socket: WsWrapper): UserSession | undefined {
-    return sessions[socket.id]
+    return getSessionById(socket.id)
+}
+
+export function getSessionById(sessionId: string): UserSession | undefined {
+    return sessions[sessionId]
 }
 
 export function terminateSessions() {

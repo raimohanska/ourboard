@@ -10,13 +10,14 @@ import apiRoutes from "./api/api-routes"
 import { handleBoardEvent } from "./board-event-handler"
 import { getConfig } from "./config"
 import { connectionHandler } from "./connection-handler"
+import { getEnv } from "./env"
+import { getSessionIdFromCookies } from "./http-session"
 import { authProvider, setupAuth } from "./oauth"
 import openapiDoc from "./openapi"
-import { createGetSignedPutUrl } from "./storage"
-import { WsWrapper } from "./ws-wrapper"
-import { getEnv } from "./env"
-import { getAuthenticatedUser } from "./http-session"
 import { possiblyRequireAuth } from "./require-auth"
+import { createGetSignedPutUrl } from "./storage"
+import { getSessionById } from "./websocket-sessions"
+import { WsWrapper } from "./ws-wrapper"
 
 dotenv.config()
 
@@ -145,6 +146,13 @@ function startWs(http: any, app: express.Express) {
     })
     ws.app.ws("/socket/yjs/board/:boardId/", (socket, req) => {
         const boardId = req.params.boardId
+        const sessionId = getSessionIdFromCookies(req)
+        const session = sessionId ? getSessionById(sessionId) : undefined
+        if (!session) {
+            console.warn("No session for YJS connection for board", boardId)
+            socket.close()
+            return
+        }
         console.log("Got YJS connection for board", boardId)
         setupWSConnection(socket, req, {
             gc: true,
