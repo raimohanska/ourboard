@@ -19,6 +19,7 @@ import { createGetSignedPutUrl } from "./storage"
 import { getSessionById } from "./websocket-sessions"
 import { WsWrapper } from "./ws-wrapper"
 import YWebSocketServer from "./y-websocket-server/YWebSocketServer"
+import { Persistence } from "./y-websocket-server/Persistence"
 
 dotenv.config()
 
@@ -144,13 +145,15 @@ function startWs(http: any, app: express.Express) {
         connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, signedPutUrl))
     })
 
-    const yWebSocketServer = new YWebSocketServer()
+    const yWebSocketServer = new YWebSocketServer({
+        persistence: DummyPersistence(),
+    })
     ws.app.ws("/socket/yjs/board/:boardId/", (socket, req) => {
         const boardId = req.params.boardId
         const sessionId = getSessionIdFromCookies(req)
         const session = sessionId ? getSessionById(sessionId) : undefined
         if (!session) {
-            console.warn("No session for YJS connection for board", boardId)
+            //console.warn("No session for YJS connection for board", boardId)
             socket.close()
             return
         }
@@ -167,4 +170,36 @@ function startWs(http: any, app: express.Express) {
         console.warn(`Unexpected WS connection: ${req.url} `)
         socket.close()
     })
+}
+
+import * as Y from "yjs"
+function DummyPersistence(): Persistence {
+    const states = new Map<string, PState>()
+    type PState = {
+        update: Uint8Array | null
+    }
+
+    function getState(docName: string, yDoc: Y.Doc): PState {
+        let state = states.get(docName)
+        if (!state) {
+            console.log("CREATE PERSISTED DOC")
+            state = { update: null }
+            states.set(docName, state)
+        } else {
+            console.log("USE PERSISTED DOC")
+        }
+        return state
+    }
+
+    return {
+        bindState: async (docName, ydoc) => {
+            let state = getState(docName, ydoc)
+            state.update && Y.applyUpdate(ydoc, state.update)
+            ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
+                state.update = state.update ? Y.mergeUpdates([state.update, update]) : update
+                console.log("UPDATING PERSISTED DOC", state.update.length)
+            })
+        },
+        writeState: async (docName, ydoc) => {},
+    }
 }
