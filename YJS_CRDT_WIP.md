@@ -17,6 +17,8 @@ The Y.js based collaborative editing support is under construction.
 -   Domain: Tag the CRDT based item (properties)
 -   Domain: Use a separate CRDT field for each item/property. All stored in the single document.
 -   Domain: Consider if CRDT field values should also be included in the JSON presentation, maybe on save
+-   UI: Show proper username by the cursor when hovering. Now shows some large number
+-   UI: Add a toolbar. Needs some styling - if you now enable toolbar in Quill, it looks broken
 -   Undo buffer integration
 -   Manage session on client side: connect only when we have a sessionId. When it changes, reconnect.
 -   Manage session on the server side: terminate YJS sockets when websocket session is terminated
