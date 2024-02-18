@@ -18,6 +18,7 @@ import { possiblyRequireAuth } from "./require-auth"
 import { createGetSignedPutUrl } from "./storage"
 import { getSessionById } from "./websocket-sessions"
 import { WsWrapper } from "./ws-wrapper"
+import YWebSocketServer from "./y-websocket-server/YWebSocketServer"
 
 dotenv.config()
 
@@ -130,8 +131,6 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
     return stop
 }
 
-const setupWSConnection = require("y-websocket/bin/utils").setupWSConnection
-
 function startWs(http: any, app: express.Express) {
     const ws = expressWs(app, http)
 
@@ -144,6 +143,8 @@ function startWs(http: any, app: express.Express) {
         const boardId = req.params.boardId
         connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, signedPutUrl))
     })
+
+    const yWebSocketServer = new YWebSocketServer()
     ws.app.ws("/socket/yjs/board/:boardId/", (socket, req) => {
         const boardId = req.params.boardId
         const sessionId = getSessionIdFromCookies(req)
@@ -154,9 +155,8 @@ function startWs(http: any, app: express.Express) {
             return
         }
         console.log("Got YJS connection for board", boardId)
-        setupWSConnection(socket, req, {
-            gc: true,
-        })
+        const docName = (req.url ?? "").slice(1).split("?")[0]
+        yWebSocketServer.setupWSConnection(socket, docName)
     })
     ws.app.ws("*", (socket, req) => {
         console.warn(`Unexpected WS connection: ${req.url} `)
