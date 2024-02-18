@@ -4,14 +4,9 @@ import * as awarenessProtocol from "y-protocols/dist/awareness.cjs"
 import * as syncProtocol from "y-protocols/dist/sync.cjs"
 
 import * as encoding from "lib0/encoding"
-import { debounce } from "lodash"
-import { messageAwareness, messageSync } from "./Protocol"
-import { callbackHandler, isCallbackSet } from "./callbackHandler"
 import * as WebSocket from "ws"
 import { Docs } from "./Docs"
-
-const CALLBACK_DEBOUNCE_WAIT = parseInt(process.env.CALLBACK_DEBOUNCE_WAIT ?? "") || 2000
-const CALLBACK_DEBOUNCE_MAXWAIT = parseInt(process.env.CALLBACK_DEBOUNCE_MAXWAIT ?? "") || 10000
+import { messageAwareness, messageSync } from "./Protocol"
 
 export const wsReadyStateConnecting = 0
 export const wsReadyStateOpen = 1
@@ -72,9 +67,6 @@ export class WSSharedDoc extends Y.Doc {
         }
 
         this.on("update", updateHandler)
-        if (isCallbackSet) {
-            this.on("update", debounce(callbackHandler, CALLBACK_DEBOUNCE_WAIT, { maxWait: CALLBACK_DEBOUNCE_MAXWAIT }))
-        }
     }
 
     send(conn: WebSocket, m: Uint8Array) {
