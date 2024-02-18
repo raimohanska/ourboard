@@ -111,13 +111,13 @@ export function BoardPage(page: Page) {
         },
         async createText(x: number, y: number, text: string) {
             await createNew(this.newTextOnPalette, x, y)
+            await expect(this.getText("HELLO")).toBeVisible()
             await page.keyboard.type(`${text}`)
             await expect(this.getText(text)).toBeVisible()
             return this.getText(text)
         },
         async createArea(x: number, y: number, text: string) {
             await createNew(this.newContainerOnPalette, x, y)
-            await this.getArea("Unnamed area").locator(".text").dblclick()
             await page.keyboard.type(`${text}`)
             await expect(this.getArea(text)).toBeVisible()
             return this.getArea(text)
