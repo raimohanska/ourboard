@@ -1,7 +1,7 @@
 import * as Y from "yjs"
 
 export interface Persistence {
-    bindState: (docName: string, ydoc: Y.Doc) => void
+    bindState: (docName: string, ydoc: Y.Doc) => Promise<void>
     writeState: (docName: string, ydoc: Y.Doc) => Promise<any>
 }
 

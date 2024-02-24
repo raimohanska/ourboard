@@ -20,19 +20,22 @@ export class Docs {
     /**
      * Gets a Y.Doc by name, whether in memory or on disk
      */
-    getYDoc(docname: string): WSSharedDoc {
-        return map.setIfUndefined(this.docs, docname, () => {
-            const doc = new WSSharedDoc(this, docname)
+    async getYDoc(docname: string): Promise<WSSharedDoc> {
+        let doc = this.docs.get(docname)
+        if (!doc) {
+            doc = new WSSharedDoc(this, docname)
+            console.log(`Loading document ${doc.name} into memory`)
             doc.gc = this.gc
             if (this.persistence !== null) {
-                this.persistence.bindState(docname, doc)
+                await this.persistence.bindState(docname, doc)
             }
             this.docs.set(docname, doc)
-            return doc
-        })
+        }
+        return doc
     }
 
     deleteYDoc(doc: WSSharedDoc) {
+        console.log(`Purging document ${doc.name} from memory`)
         this.docs.delete(doc.name)
     }
 }

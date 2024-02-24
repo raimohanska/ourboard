@@ -16,10 +16,13 @@ export default class YWebSocketServer {
         this.docs = new Docs(options)
     }
 
-    setupWSConnection(conn: WebSocket, docName: string) {
+    async setupWSConnection(conn: WebSocket, docName: string) {
         conn.binaryType = "arraybuffer"
         // get doc, initialize if it does not exist yet
-        const doc = this.docs.getYDoc(docName)
+        const doc = await this.docs.getYDoc(docName)
+
+        console.log(`YJS connection established for ${docName}`)
+
         doc.addConnection(conn)
         // listen and reply to events
         conn.on("message", (message: ArrayBuffer) => messageListener(conn, doc, new Uint8Array(message)))

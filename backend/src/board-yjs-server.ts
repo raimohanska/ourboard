@@ -15,12 +15,13 @@ export function BoardYJSServer(ws: expressWs.Instance, path: string) {
                 ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
                     updateBoardCrdt(boardId, update)
                 })
-                withDBClient(async (client) => {
+                await withDBClient(async (client) => {
                     console.log(`Loading CRDT updates from DB for board ${boardId}`)
                     const updates = await getBoardHistoryCrdtUpdates(client, boardId)
                     for (const update of updates) {
                         Y.applyUpdate(ydoc, update)
                     }
+                    console.log(`Loaded ${updates.length} CRDT updates from DB for board ${boardId}`)
                 })
             },
             writeState: async (docName, ydoc) => {
@@ -29,7 +30,7 @@ export function BoardYJSServer(ws: expressWs.Instance, path: string) {
         },
     })
 
-    ws.app.ws(path, (socket, req) => {
+    ws.app.ws(path, async (socket, req) => {
         const boardId = req.params.boardId
         const sessionId = getSessionIdFromCookies(req)
         const session = sessionId ? getSessionById(sessionId) : undefined
@@ -41,7 +42,7 @@ export function BoardYJSServer(ws: expressWs.Instance, path: string) {
         console.log("Got YJS connection for board", boardId)
         const docName = boardId
         try {
-            yWebSocketServer.setupWSConnection(socket, docName)
+            await yWebSocketServer.setupWSConnection(socket, docName)
         } catch (e) {
             console.error("Error setting up YJS connection", e)
             socket.close()
