@@ -12,8 +12,10 @@ export type ServerConnection = ReturnType<typeof GenericServerConnection>
 
 export type ConnectionStatus = "connecting" | "connected" | "sleeping" | "reconnecting"
 
-export const WS_PROTOCOL = location.protocol === "http:" ? "ws:" : "wss:"
-export const WS_ROOT = `${WS_PROTOCOL}//${location.host}`
+export function getWebSocketRootUrl() {
+    const WS_PROTOCOL = location.protocol === "http:" ? "ws:" : "wss:"
+    return `${WS_PROTOCOL}//${location.host}`
+}
 
 export function BrowserSideServerConnection() {
     const documentHidden = L.fromEvent(document, "visibilitychange").pipe(
@@ -22,7 +24,7 @@ export function BrowserSideServerConnection() {
 
     //const root = "wss://www.ourboard.io"
     //const root = "ws://localhost:1339"
-    return GenericServerConnection(`${WS_ROOT}/socket/lobby`, documentHidden, (s) => new WebSocket(s))
+    return GenericServerConnection(`${getWebSocketRootUrl()}/socket/lobby`, documentHidden, (s) => new WebSocket(s))
 }
 
 export function GenericServerConnection(

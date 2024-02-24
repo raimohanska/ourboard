@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest"
+
 describe("board state iteration", () => {
     it("is safe", () => {
         // Checking that map value iteration is safe when deleteting items on the way

@@ -19,7 +19,8 @@
     "prettier": "^2.2.1",
     "ts-jest": "^26.4.3",
     "tsx": "3.13.0",
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.2",
+    "vitest": "^1.3.1"
   },
   "private": true,
   "engines": {
@@ -45,7 +46,8 @@
     "build:frontend": "yarn --cwd frontend build",
     "build:backend": "yarn --cwd backend build",
     "build:perf-tester": "yarn --cwd perf-tester build",
-    "test:unit": "jest",
+    "test:unit": "vitest --run",
+    "test:unit:watch": "vitest",
     "test:integration": "TEST_TARGET=integration jest",
     "test:integration:watch": "TEST_TARGET=integration jest --watchAll",
     "test:watch": "jest --watchAll",

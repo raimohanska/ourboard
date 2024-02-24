@@ -13,7 +13,6 @@ The Y.js based collaborative editing support is under construction.
 
 Must-haves
 
--   Build: Jest fails with the lib0 imports
 -   Domain: Currently the initial text "Hello" or "Unnamed area" doesn't get synced in a new text/area. Also the JSON data stays in its initial state
 -   UI: Clean up CollaborativeTextView. Apply appropriate color etc.
 -   Undo buffer integration

@@ -1,9 +1,9 @@
+import * as L from "lonna"
 import { IndexeddbPersistence } from "y-indexeddb"
 import { WebsocketProvider } from "y-websocket"
 import * as Y from "yjs"
 import { Id } from "../../../common/src/domain"
-import { ServerConnection, WS_ROOT } from "./server-connection"
-import * as L from "lonna"
+import { getWebSocketRootUrl } from "./server-connection"
 
 type BoardCRDT = ReturnType<typeof BoardCRDT>
 
@@ -16,7 +16,7 @@ function BoardCRDT(boardId: Id, online: L.Property<boolean>) {
         console.log("CRDT data from indexedDB is loaded")
     })
 
-    const provider = new WebsocketProvider(`${WS_ROOT}/socket/yjs`, `board/${boardId}`, doc, {
+    const provider = new WebsocketProvider(`${getWebSocketRootUrl()}/socket/yjs`, `board/${boardId}`, doc, {
         connect: online.get(),
     })
 

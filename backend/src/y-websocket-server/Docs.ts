@@ -1,4 +1,3 @@
-import * as map from "lib0/map"
 import { WSSharedDoc } from "./WSSharedDoc"
 import { Persistence } from "./Persistence"
 

@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest"
 import { arrayToRecordById } from "./arrays"
 import {
     AddConnection,
@@ -5,12 +6,12 @@ import {
     Board,
     Connection,
     ConnectionEndPoint,
-    defaultBoardSize,
     DeleteConnection,
     DeleteItem,
-    exampleBoard,
     ModifyConnection,
     MoveItem,
+    defaultBoardSize,
+    exampleBoard,
     newISOTimeStamp,
 } from "./domain"
 import { migrateBoard, migrateEvent } from "./migration"
