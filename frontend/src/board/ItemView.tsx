@@ -96,6 +96,7 @@ export const ItemView = ({
             : undefined
     }
     const shape = L.view(item, getItemShape)
+    const itemNow = item.get()
 
     return (
         <span
@@ -139,9 +140,7 @@ export const ItemView = ({
                 })}
             />
 
-            {type === "note" && <TextView item={item as L.Property<TextItem>} />}
-
-            {(type === "text" || type === "container") && (
+            {isTextItem(itemNow) && itemNow.crdt ? (
                 <CollaborativeTextView
                     item={item as L.Property<TextItem>}
                     board={board}
@@ -152,6 +151,8 @@ export const ItemView = ({
                     itemFocus={itemFocus}
                     crdtStore={boardStore.crdtStore}
                 />
+            ) : (
+                <TextView item={item as L.Property<TextItem>} />
             )}
 
             {type === "container" && (

@@ -128,7 +128,7 @@ export const ITEM_TYPES = {
     CONTAINER: "container",
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
-export type TextItemProperties = ItemProperties & { text: string; fontSize?: number; align?: Align }
+export type TextItemProperties = ItemProperties & { text: string; fontSize?: number; align?: Align; crdt?: 1 }
 export type NoteShape = "round" | "square" | "rect" | "diamond"
 export type Note = TextItemProperties & {
     type: typeof ITEM_TYPES.NOTE
@@ -401,7 +401,7 @@ export function newText(
     height: number = 2,
     z: number = 0,
 ): Text {
-    return { id: uuid.v4(), type: "text", text, x, y, width, height, z, color: "none", locked: false }
+    return { id: uuid.v4(), type: "text", text, x, y, width, height, z, color: "none", locked: false, crdt: 1 }
 }
 
 export function newContainer(
@@ -422,6 +422,7 @@ export function newContainer(
         z,
         color: "white",
         locked: false,
+        crdt: 1,
     }
 }
 

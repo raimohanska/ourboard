@@ -94,6 +94,7 @@ export function CollaborativeTextView({
             onKeyDown={(e) => e.stopPropagation()}
             onKeyUp={(e) => e.stopPropagation()}
             onKeyPress={(e) => e.stopPropagation()}
+            onDoubleClick={(e) => e.stopPropagation()}
         >
             <div className="quill-editor" style={{ width: "100%", height: "100%" }} ref={initQuill} />
         </div>
