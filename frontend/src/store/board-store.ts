@@ -538,7 +538,12 @@ export function BoardStore(
         }
     }
 
-    const crdtStore = CRDTStore(L.view(state, (s) => s.status === "online"))
+    const localBoardItemEvents = uiEvents.pipe(L.filter(isPersistableBoardItemEvent, globalScope))
+
+    const crdtStore = CRDTStore(
+        L.view(state, (s) => s.status === "online"),
+        localBoardItemEvents,
+    )
 
     return {
         state,

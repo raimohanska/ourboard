@@ -14,7 +14,6 @@ The Y.js based collaborative editing support is under construction.
 Must-haves
 
 -   UI: Manage focus etc. Now selection goes directly to text edit mode, even in multiselect
--   Domain: Currently the initial text "Hello" or "Unnamed area" doesn't get synced in a new text/area. Also the JSON data stays in its initial state
 -   Undo buffer integration
 -   Manage session on the server side: terminate YJS sockets when websocket session is terminated
 -   Performance testing
