@@ -13,8 +13,9 @@ The Y.js based collaborative editing support is under construction.
 
 Must-haves
 
--   UI: Manage focus etc. Now selection goes directly to text edit mode, even in multiselect. Make test stricter on that the initial text is shown and correctly replaced. Select all text on click.
--   Undo buffer integration
+-   UI: Copy-pasting items should copy CRDT as well. Most likely we want to keep the item.text up to date locally with CRDT items, even though we do not dispatch updates to the server.
+-   Undo buffer integration. Editor has its own local undo but we should also add the full edit as a global undo item
+-   Mobile check
 -   Manage session on the server side: terminate YJS sockets when websocket session is terminated
 -   Performance testing
 -   Playwright tests

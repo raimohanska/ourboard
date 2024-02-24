@@ -165,10 +165,12 @@
             }
 
             > .quill-wrapper {
-                width: "100%";
-                height: "100%";
+                width: 100%;
+                height: 100%;
                 padding: 0;
                 > .quill-editor {
+                    width: 100%;
+                    height: 100%;
                     > .ql-editor {
                         padding: 0.1em;
                     }

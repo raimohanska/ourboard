@@ -36,21 +36,6 @@ export function CollaborativeTextView({
     const fontSize = L.view(item, (i) => `${i.fontSize ? i.fontSize : 1}em`)
     const color = L.view(item, getItemBackground, contrastingColor)
 
-    const setEditing = (e: boolean) => {
-        if (toolController.tool.get() === "connect") return // Don't switch to editing in middle of connecting
-        dispatch({ action: "item.front", boardId: board.get().id, itemIds: [id] })
-        focus.set(
-            e
-                ? { status: "editing", itemId: id }
-                : { status: "selected", itemIds: new Set([id]), connectionIds: emptySet() },
-        )
-    }
-
-    const editingThis = L.atom(
-        L.view(itemFocus, (f) => f === "editing" || f === "selected"),
-        setEditing,
-    )
-
     const quillEditor = L.atom<Quill | null>(null)
 
     function initQuill(el: HTMLElement) {
@@ -71,9 +56,30 @@ export function CollaborativeTextView({
         quillEditor.set(quill)
     }
 
-    L.combine(quillEditor, editingThis, (q, e) => (e ? q : null)).forEach((q) => {
-        q && q.focus()
+    const editingThis = L.view(itemFocus, (f) => f === "editing")
+
+    editingThis.forEach((e) => {
+        const q = quillEditor.get()
+        if (q) {
+            if (e) {
+                if (item.get().type === "container") {
+                    // For containers, select all text for quick rename
+                    q.setSelection(0, 1000000)
+                }
+            } else {
+                // Clear text selecting when not editing
+                q.setSelection(null as any)
+            }
+        }
     })
+
+    function handleClick() {
+        if (itemFocus.get() === "selected") {
+            focus.set({ status: "editing", itemId: id })
+        }
+    }
+
+    const pointerEvents = L.view(itemFocus, (f) => (f === "editing" || f === "selected" ? "auto" : "none"))
 
     return (
         <div
@@ -82,10 +88,11 @@ export function CollaborativeTextView({
             onKeyUp={(e) => e.stopPropagation()}
             onKeyPress={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
+            onClick={handleClick}
         >
             <div
                 className="quill-editor"
-                style={L.combineTemplate({ fontSize, color, width: "100%", height: "100%" })}
+                style={L.combineTemplate({ fontSize, color, pointerEvents })}
                 ref={initQuill}
             />
         </div>

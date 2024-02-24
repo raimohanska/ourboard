@@ -107,20 +107,27 @@ export function BoardPage(page: Page) {
             await page.keyboard.type(`${text}`)
             await page.keyboard.press("Escape")
             await expect(this.getNote(text)).toBeVisible()
-            return this.getNote(text)
+            const result = this.getNote(text)
+            await expect(result).toHaveText(text)
+            return result
         },
         async createText(x: number, y: number, text: string) {
             await createNew(this.newTextOnPalette, x, y)
-            await expect(this.getText("HELLO")).toBeVisible()
+            await this.getText("HELLO").locator(".text").dblclick()
             await page.keyboard.type(`${text}`)
             await expect(this.getText(text)).toBeVisible()
-            return this.getText(text)
+            const result = this.getText(text)
+            await expect(result).toHaveText(text)
+            return result
         },
         async createArea(x: number, y: number, text: string) {
             await createNew(this.newContainerOnPalette, x, y)
+            await this.getArea("Unnamed area").locator(".text").dblclick()
             await page.keyboard.type(`${text}`)
             await expect(this.getArea(text)).toBeVisible()
-            return this.getArea(text)
+            const result = this.getArea(text)
+            await expect(result).toHaveText(text)
+            return result
         },
         async dragItem(item: Locator, x: number, y: number) {
             await dragElementOnBoard(item, x, y)
