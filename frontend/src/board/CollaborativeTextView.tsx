@@ -6,10 +6,10 @@ import { QuillBinding } from "y-quill"
 import { Board, getItemBackground, TextItem } from "../../../common/src/domain"
 import { emptySet } from "../../../common/src/sets"
 import { Dispatch } from "../store/board-store"
-import { BoardFocus, getSelectedItemIds } from "./board-focus"
+import { CRDTStore } from "../store/crdt-store"
+import { BoardFocus } from "./board-focus"
 import { contrastingColor } from "./contrasting-color"
 import { ToolController } from "./tool-selection"
-import { CRDTStore } from "../store/crdt-store"
 
 Quill.register("modules/cursors", QuillCursors)
 
@@ -57,20 +57,12 @@ export function CollaborativeTextView({
         const quill = new Quill(el, {
             modules: {
                 cursors: true,
-                //toolbar: [
-                // adding some basic Quill content features
-                //[{ header: [1, 2, false] }],
-                //["bold", "italic", "underline"],
-                //["image", "code-block"],
-                //],
                 toolbar: false,
                 history: {
-                    // Local undo shouldn't undo changes
-                    // from remote users
-                    userOnly: true,
+                    userOnly: true, // Local undo shouldn't undo changes from remote users
                 },
             },
-            theme: "snow", // 'bubble' is also great
+            theme: "snow",
         })
 
         const crdt = crdtStore.getBoardCrdt(board.get().id)

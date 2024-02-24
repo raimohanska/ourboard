@@ -13,7 +13,7 @@ The Y.js based collaborative editing support is under construction.
 
 Must-haves
 
--   UI: Manage focus etc. Now selection goes directly to text edit mode, even in multiselect
+-   UI: Manage focus etc. Now selection goes directly to text edit mode, even in multiselect. Make test stricter on that the initial text is shown and correctly replaced. Select all text on click.
 -   Undo buffer integration
 -   Manage session on the server side: terminate YJS sockets when websocket session is terminated
 -   Performance testing
