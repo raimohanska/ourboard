@@ -32,19 +32,21 @@ export async function quickCompactBoardHistory(id: Id): Promise<number> {
                     console.log(
                         `Compacting ${bs.length} bundles into one for board ${id}, containing serials ${firstBundle.first_serial}...${lastBundle.last_serial}`,
                     )
+                    const lastSerial = lastBundle.last_serial
                     const bundlesWithData = await getBoardHistoryBundlesWithLastSerialsBetween(
                         client,
                         id,
                         firstBundle.last_serial,
-                        lastBundle.last_serial,
+                        lastSerial,
                     )
                     const eventArrays = bundlesWithData.map((b) => b.events.events)
                     const events: BoardHistoryEntry[] = eventArrays.flat()
                     const crdtUpdates = bundlesWithData.flatMap((d) => (d.crdt_update ? [d.crdt_update] : []))
                     const combinedCrdtUpdate = crdtUpdates.length ? Y.mergeUpdates(crdtUpdates) : null
+                    const initSerial = firstBundle.first_serial ? firstBundle.first_serial - 1 : firstBundle.last_serial
                     const consistent =
-                        verifyContinuity(id, firstBundle.first_serial - 1, ...eventArrays) &&
-                        verifyEventArrayContinuity(id, firstBundle.first_serial - 1, events)
+                        verifyContinuity(id, initSerial, ...eventArrays) &&
+                        verifyEventArrayContinuity(id, initSerial, events)
                     if (consistent && bundlesWithData.length == bs.length) {
                         // 1. delete existing bundles
                         const deleteResult = await client.query(
@@ -59,7 +61,14 @@ export async function quickCompactBoardHistory(id: Id): Promise<number> {
                             )
                         }
                         // 2. store as a single bundle
-                        await storeEventHistoryBundle(id, events, combinedCrdtUpdate, client, lastBundle.saved_at)
+                        await storeEventHistoryBundle(
+                            id,
+                            events,
+                            lastSerial,
+                            combinedCrdtUpdate,
+                            client,
+                            lastBundle.saved_at,
+                        )
                     } else {
                         throw Error("Discontinuity detected in compacted history.")
                     }

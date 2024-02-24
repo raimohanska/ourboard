@@ -116,5 +116,7 @@ async function addItems(boardId: Id, firstSerial: Serial, lastSerial: Serial, sa
         user,
         serial,
     }))
-    await inTransaction((client) => storeEventHistoryBundle(boardId, events, null, client, savedAt))
+    await inTransaction((client) =>
+        storeEventHistoryBundle(boardId, events, events[events.length - 1].serial!, null, client, savedAt),
+    )
 }

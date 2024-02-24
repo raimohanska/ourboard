@@ -53,6 +53,9 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             let i = 0
             let rebuildingSnapshot = false
             function updateBoardWithEventChunk(chunk: BoardHistoryEntry[]) {
+                if (chunk.length === 0) {
+                    return // CRDT-only bundle
+                }
                 board = chunk.reduce((b, e) => {
                     i++
                     if (e.action === "board.setAccessPolicy") {
@@ -122,7 +125,8 @@ export async function createBoard(board: Board): Promise<void> {
 
         if (!isBoardEmpty(board)) {
             console.log(`Creating non-empty board ${board.id} -> bootstrapping history`)
-            storeEventHistoryBundle(board.id, [mkBootStrapEvent(board.id, board)], null, client)
+            const event = mkBootStrapEvent(board.id, board)
+            storeEventHistoryBundle(board.id, [event], event.serial!, null, client)
         }
     })
 }
@@ -182,10 +186,6 @@ export async function createAccessToken(board: Board): Promise<string> {
     return token
 }
 
-export async function saveRecentEvents(id: Id, recentEvents: BoardHistoryEntry[], crdtUpdate: Uint8Array | null) {
-    await inTransaction(async (client) => storeEventHistoryBundle(id, recentEvents, crdtUpdate, client))
-}
-
 type StreamingBoardEventCallback = (chunk: BoardHistoryEntry[]) => void
 
 // Due to memory concerns we fetch board histories from DB as chunks,
@@ -216,7 +216,12 @@ function streamingBoardEventsQuery(text: string, values: any[], client: PoolClie
 
 export function getFullBoardHistory(id: Id, client: PoolClient, cb: StreamingBoardEventCallback) {
     return streamingBoardEventsQuery(
-        `SELECT events FROM board_event WHERE board_id=$1 ORDER BY last_serial`,
+        `
+        SELECT events 
+        FROM board_event 
+        WHERE board_id=$1 
+        ORDER BY last_serial
+        `,
         [id],
         client,
         cb,
@@ -229,10 +234,18 @@ export async function getBoardHistory(id: Id, afterSerial: Serial, cb: Streaming
         let lastSerial = -1
         let firstValidSerial = -1
         await streamingBoardEventsQuery(
-            `SELECT events FROM board_event WHERE board_id=$1 AND last_serial >= $2 ORDER BY last_serial`,
+            `
+            SELECT events 
+            FROM board_event 
+            WHERE board_id=$1 AND last_serial >= $2 
+            ORDER BY last_serial
+            `,
             [id, afterSerial],
             client,
             (chunk) => {
+                if (chunk.length === 0) {
+                    return // CRDT-only bundle
+                }
                 if (firstSerial === -1 && typeof chunk[0]?.serial === "number") {
                     firstSerial = chunk[0]?.serial
                 }
@@ -316,27 +329,56 @@ export function mkSnapshot(board: Board, serial: Serial) {
 
 export async function saveBoardSnapshot(board: Board, client: PoolClient) {
     console.log(`Save board snapshot ${board.id} at serial ${board.serial}`)
-    client.query(`UPDATE board set name=$2, content=$3 WHERE id=$1`, [board.id, board.name, board])
+    client.query(
+        `
+    UPDATE board 
+    SET name=$2, content=$3 
+    WHERE id=$1`,
+        [board.id, board.name, board],
+    )
 }
 
 export async function storeEventHistoryBundle(
     boardId: Id,
     events: BoardHistoryEntry[],
+    lastSerial: Serial, // Needed in case events is empty
     crdtUpdate: Uint8Array | null,
     client: PoolClient,
     savedAt = new Date(),
 ) {
-    if (events.length > 0) {
-        if (events[0].firstSerial !== undefined) {
-            throw Error("Assertion failed: folded events not expected on the server side.")
-        }
-        const firstSerial = assertNotNull(events[0].serial)
-        const lastSerial = assertNotNull(events[events.length - 1].serial)
-        await client.query(
-            `INSERT INTO board_event(board_id, first_serial, last_serial, events, crdt_update, saved_at) VALUES ($1, $2, $3, $4, $5, $6)`,
-            [boardId, firstSerial, lastSerial, { events }, crdtUpdate, savedAt],
-        )
+    if (events.length === 0 && crdtUpdate === null) {
+        throw Error("Trying to store a bundle without events or crdtUpdate")
     }
+    if (events[0]?.firstSerial !== undefined) {
+        throw Error("Assertion failed: folded events not expected on the server side.")
+    }
+    const firstSerial = events.length > 0 ? assertNotNull(events[0].serial) : null
+    if (events.length > 0 && events[events.length - 1].serial != lastSerial) {
+        throw Error("Serial mismatch between lastSerial and lastEvent.serial")
+    }
+    await client.query(
+        `
+        INSERT INTO board_event(board_id, first_serial, last_serial, events, crdt_update, saved_at) 
+        VALUES ($1, $2, $3, $4, $5, $6)
+        `,
+        [boardId, firstSerial, lastSerial, { events }, crdtUpdate, savedAt],
+    )
+}
+
+export async function storeCRDTOnlyEventHistoryBundle(
+    boardId: Id,
+    boardSerial: Serial,
+    crdtUpdate: Uint8Array | null,
+    client: PoolClient,
+    savedAt = new Date(),
+) {
+    await client.query(
+        `
+        INSERT INTO board_event(board_id, first_serial, last_serial, events, crdt_update, saved_at) 
+        VALUES ($1, $2, $3, $4, $5, $6)
+        `,
+        [boardId, null, boardSerial, null, crdtUpdate, savedAt],
+    )
 }
 
 export type BoardHistoryBundle = {
@@ -356,7 +398,12 @@ export async function getBoardHistoryBundlesWithLastSerialsBetween(
 ): Promise<BoardHistoryBundle[]> {
     return (
         await client.query(
-            `SELECT board_id, last_serial, events, crdt_update FROM board_event WHERE board_id=$1 AND last_serial >= $2 AND last_serial <= $3 ORDER BY last_serial`,
+            `
+            SELECT board_id, last_serial, events, crdt_update 
+            FROM board_event 
+            WHERE board_id=$1 AND last_serial >= $2 AND last_serial <= $3 
+            ORDER BY last_serial
+            `,
             [id, lsMin, lsMax],
         )
     ).rows.map(migrateBundle)
@@ -365,7 +412,12 @@ export async function getBoardHistoryBundlesWithLastSerialsBetween(
 export async function getBoardHistoryCrdtUpdates(client: PoolClient, id: Id): Promise<Uint8Array[]> {
     return (
         await client.query(
-            `SELECT crdt_update FROM board_event WHERE board_id=$1 AND crdt_update IS NOT NULL ORDER BY last_serial`,
+            `
+            SELECT crdt_update 
+            FROM board_event 
+            WHERE board_id=$1 AND crdt_update IS NOT NULL 
+            ORDER BY last_serial
+            `,
             [id],
         )
     ).rows.map((row) => row.crdt_update)
@@ -377,7 +429,7 @@ function migrateBundle(b: BoardHistoryBundle): BoardHistoryBundle {
 
 export type BoardHistoryBundleMeta = {
     board_id: Id
-    first_serial: Serial
+    first_serial: Serial | null
     last_serial: Serial
     saved_at: Date
 }
@@ -385,7 +437,12 @@ export type BoardHistoryBundleMeta = {
 export async function getBoardHistoryBundleMetas(client: PoolClient, id: Id): Promise<BoardHistoryBundleMeta[]> {
     return (
         await client.query(
-            `SELECT board_id, last_serial, first_serial, saved_at FROM board_event WHERE board_id=$1 ORDER BY last_serial`,
+            `
+            SELECT board_id, last_serial, first_serial, saved_at 
+            FROM board_event 
+            WHERE board_id=$1 
+            ORDER BY last_serial
+            `,
             [id],
         )
     ).rows
@@ -393,10 +450,20 @@ export async function getBoardHistoryBundleMetas(client: PoolClient, id: Id): Pr
 
 export function verifyContinuityFromMetas(boardId: Id, init: Serial, bundles: BoardHistoryBundleMeta[]) {
     for (let bundle of bundles) {
-        if (!verifyTwoPoints(boardId, init, bundle.first_serial)) {
-            return false
+        if (!bundle.first_serial) {
+            // CRDT only bundle
+            if (bundle.last_serial !== init) {
+                console.error(
+                    `History discontinuity:  ${init} -> ${bundle.last_serial} for CRDT-only bundle for board ${boardId}`,
+                )
+                return false
+            }
+        } else {
+            if (!verifyTwoPoints(boardId, init, bundle.first_serial)) {
+                return false
+            }
+            init = bundle.last_serial
         }
-        init = bundle.last_serial
     }
     return true
 }

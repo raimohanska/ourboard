@@ -2,11 +2,12 @@ import { merge } from "lodash"
 import { boardReducer } from "../../common/src/board-reducer"
 import { Board, BoardCursorPositions, BoardHistoryEntry, Id } from "../../common/src/domain"
 import { sleep } from "../../common/src/sleep"
-import { createAccessToken, createBoard, fetchBoard, saveRecentEvents } from "./board-store"
+import { createAccessToken, createBoard, fetchBoard, storeEventHistoryBundle } from "./board-store"
 import { quickCompactBoardHistory } from "./compact-history"
 import { Locks } from "./locker"
 import { UserSession, broadcastItemLocks, getBoardSessionCount, getSessionCount } from "./websocket-sessions"
 import * as Y from "yjs"
+import { inTransaction } from "./db"
 
 // A mutable state object for server side state
 export type ServerSideBoardState = {
@@ -150,20 +151,27 @@ export async function awaitSavingChanges() {
 }
 
 async function saveBoardChanges(state: ServerSideBoardState) {
-    if (state.recentEvents.length > 0) {
+    if (state.recentEvents.length > 0 || state.recentCrdtUpdate !== null) {
         if (state.currentlyStoring) {
             throw Error("Invariant failed: storingEvents not empty")
         }
+        const events = state.recentEvents.splice(0)
+        const crdtUpdate = state.recentCrdtUpdate
         state.currentlyStoring = {
-            events: state.recentEvents.splice(0),
-            crdtUpdate: state.recentCrdtUpdate,
+            events,
+            crdtUpdate,
         }
         state.recentCrdtUpdate = null
         console.log(
-            `Saving board ${state.board.id} at serial ${state.board.serial} with ${state.currentlyStoring.events.length} new events`,
+            `Saving board ${state.board.id} at serial ${state.board.serial} with ${
+                state.currentlyStoring.events.length
+            } new events ${crdtUpdate ? "and CRDT update of size " + crdtUpdate.length : ""}`,
         )
+        const lastSerial = state.board.serial
         try {
-            await saveRecentEvents(state.board.id, state.currentlyStoring.events, state.currentlyStoring.crdtUpdate)
+            await inTransaction((client) =>
+                storeEventHistoryBundle(state.board.id, events, lastSerial, crdtUpdate, client),
+            )
         } catch (e) {
             // Push event back to the head of save list for retrying later
             state.recentEvents = [...state.currentlyStoring.events, ...state.recentEvents]
