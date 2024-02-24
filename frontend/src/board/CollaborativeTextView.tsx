@@ -33,11 +33,8 @@ export function CollaborativeTextView({
     itemFocus,
     crdtStore,
 }: CollaborativeTextViewProps) {
-    const textAtom = L.atom(L.view(item, "text"), (text) =>
-        dispatch({ action: "item.update", boardId: board.get().id, items: [{ id, text }] }),
-    )
-    const showCoords = false
-    const focused = L.view(focus, (f) => getSelectedItemIds(f).has(id))
+    const fontSize = L.view(item, (i) => `${i.fontSize ? i.fontSize : 1}em`)
+    const color = L.view(item, getItemBackground, contrastingColor)
 
     const setEditing = (e: boolean) => {
         if (toolController.tool.get() === "connect") return // Don't switch to editing in middle of connecting
@@ -48,7 +45,6 @@ export function CollaborativeTextView({
                 : { status: "selected", itemIds: new Set([id]), connectionIds: emptySet() },
         )
     }
-    const color = L.view(item, getItemBackground, contrastingColor)
 
     const editingThis = L.atom(
         L.view(itemFocus, (f) => f === "editing" || f === "selected"),
@@ -79,7 +75,7 @@ export function CollaborativeTextView({
 
         const crdt = crdtStore.getBoardCrdt(board.get().id)
         const ytext = crdt.getField(id, "text")
-        const binding = new QuillBinding(ytext, quill, crdt.awareness)
+        new QuillBinding(ytext, quill, crdt.awareness)
         quillEditor.set(quill)
     }
 
@@ -89,14 +85,17 @@ export function CollaborativeTextView({
 
     return (
         <div
-            className="quill-wrapper"
-            style={{ width: "100%", height: "100%", padding: "0 1em" }}
+            className="quill-wrapper text"
             onKeyDown={(e) => e.stopPropagation()}
             onKeyUp={(e) => e.stopPropagation()}
             onKeyPress={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
         >
-            <div className="quill-editor" style={{ width: "100%", height: "100%" }} ref={initQuill} />
+            <div
+                className="quill-editor"
+                style={L.combineTemplate({ fontSize, color, width: "100%", height: "100%" })}
+                ref={initQuill}
+            />
         </div>
     )
 }

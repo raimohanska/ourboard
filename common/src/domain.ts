@@ -393,6 +393,8 @@ export function newSimilarNote(note: Note) {
     return newNote("HELLO", note.color, 20, 20, note.width, note.height, note.shape)
 }
 
+const CRDT_CURRENT = 1
+
 export function newText(
     text: string = "HELLO",
     x: number = 20,
@@ -401,7 +403,19 @@ export function newText(
     height: number = 2,
     z: number = 0,
 ): Text {
-    return { id: uuid.v4(), type: "text", text, x, y, width, height, z, color: "none", locked: false, crdt: 1 }
+    return {
+        id: uuid.v4(),
+        type: "text",
+        text,
+        x,
+        y,
+        width,
+        height,
+        z,
+        color: "none",
+        locked: false,
+        crdt: CRDT_CURRENT,
+    }
 }
 
 export function newContainer(
@@ -422,7 +436,7 @@ export function newContainer(
         z,
         color: "white",
         locked: false,
-        crdt: 1,
+        crdt: CRDT_CURRENT,
     }
 }
 
