@@ -15,10 +15,13 @@ Must-haves
 
 -   UI: Copy-pasting items should copy CRDT as well. Most likely we want to keep the item.text up to date locally with CRDT items, even though we do not dispatch updates to the server.
 -   Undo buffer integration. Editor has its own local undo but we should also add the full edit as a global undo item
+-   Board level flag for CRDT or other controlled way of rolling this out
 -   Mobile check
 -   Manage session on the server side: terminate YJS sockets when websocket session is terminated
+-   APIs
 -   Performance testing
--   Playwright tests
+-   Playwright tests (create text, reload, change, reload, use two clients, clear indexeddb and reload...)
+-   Include API basic tests in Playwright tests
 
 Nice-to-haves
 

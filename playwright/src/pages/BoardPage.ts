@@ -113,7 +113,14 @@ export function BoardPage(page: Page) {
         },
         async createText(x: number, y: number, text: string) {
             await createNew(this.newTextOnPalette, x, y)
-            await this.getText("HELLO").locator(".text").dblclick()
+            await this.getText("HELLO")
+                .locator(".text")
+                .click({ position: { x: 5, y: 5 } })
+            await page.keyboard.press("Delete")
+            await page.keyboard.press("Delete")
+            await page.keyboard.press("Delete")
+            await page.keyboard.press("Delete")
+            await page.keyboard.press("Delete")
             await page.keyboard.type(`${text}`)
             await expect(this.getText(text)).toBeVisible()
             const result = this.getText(text)
