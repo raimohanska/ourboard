@@ -3,7 +3,6 @@ import * as L from "lonna"
 import {
     AccessLevel,
     Board,
-    canWrite,
     Connection,
     getAlign,
     getHorizontalAlign,
@@ -15,19 +14,16 @@ import {
     ItemType,
     TextItem,
 } from "../../../common/src/domain"
-import { emptySet } from "../../../common/src/sets"
-import { HTMLEditableSpan } from "../components/HTMLEditableSpan"
 import { BoardStore, Dispatch } from "../store/board-store"
-import { autoFontSize } from "./autoFontSize"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { BoardFocus, getSelectedItemIds } from "./board-focus"
-import { contrastingColor } from "./contrasting-color"
+import { BoardFocus } from "./board-focus"
+import { CollaborativeTextView } from "./CollaborativeTextView"
 import { DragBorder } from "./DragBorder"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
+import { TextView } from "./TextView"
 import { ToolController } from "./tool-selection"
 import { itemZIndex } from "./zIndices"
-import { CollaborativeTextView } from "./CollaborativeTextView"
 
 export const ItemView = ({
     board,
@@ -152,7 +148,18 @@ export const ItemView = ({
                     crdtStore={boardStore.crdtStore}
                 />
             ) : (
-                <TextView item={item as L.Property<TextItem>} />
+                <TextView
+                    id={id}
+                    item={item as L.Property<TextItem>}
+                    dispatch={dispatch}
+                    board={board}
+                    toolController={toolController}
+                    accessLevel={accessLevel}
+                    focus={focus}
+                    itemFocus={itemFocus}
+                    coordinateHelper={coordinateHelper}
+                    element={element}
+                />
             )}
 
             {type === "container" && (
@@ -160,52 +167,6 @@ export const ItemView = ({
             )}
         </span>
     )
-
-    function TextView({ item }: { item: L.Property<TextItem> }) {
-        const textAtom = L.atom(L.view(item, "text"), (text) =>
-            dispatch({ action: "item.update", boardId: board.get().id, items: [{ id, text }] }),
-        )
-        const showCoords = false
-        const focused = L.view(focus, (f) => getSelectedItemIds(f).has(id))
-
-        const setEditing = (e: boolean) => {
-            if (toolController.tool.get() === "connect") return // Don't switch to editing in middle of connecting
-            dispatch({ action: "item.front", boardId: board.get().id, itemIds: [id] })
-            focus.set(
-                e
-                    ? { status: "editing", itemId: id }
-                    : { status: "selected", itemIds: new Set([id]), connectionIds: emptySet() },
-            )
-        }
-        const color = L.view(item, getItemBackground, contrastingColor)
-        const fontSize = autoFontSize(
-            item,
-            L.view(item, (i) => (i.fontSize ? i.fontSize : 1)),
-            L.view(item, "text"),
-            focused,
-            coordinateHelper,
-            element,
-        )
-        return (
-            <span
-                className="text"
-                onDoubleClick={(e) => e.stopPropagation()}
-                style={L.combineTemplate({ fontSize, color })}
-            >
-                <HTMLEditableSpan
-                    {...{
-                        value: textAtom,
-                        editingThis: L.atom(
-                            L.view(itemFocus, (f) => f === "editing"),
-                            setEditing,
-                        ),
-                        editable: L.view(accessLevel, canWrite),
-                    }}
-                />
-                {showCoords && <small>{L.view(item, (p) => Math.floor(p.x) + ", " + Math.floor(p.y))}</small>}
-            </span>
-        )
-    }
 }
 
 function getJustifyContent(item: Item) {

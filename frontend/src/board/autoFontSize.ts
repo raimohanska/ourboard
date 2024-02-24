@@ -35,7 +35,7 @@ export function autoFontSize(
     text: L.Property<string>,
     focused: L.Property<boolean>,
     coordinateHelper: BoardCoordinateHelper,
-    element: L.Atom<HTMLElement | null>,
+    element: L.Property<HTMLElement | null>,
     options: Partial<AutoFontSizeOptions> = {},
 ): L.Property<string> {
     let fullOptions = { ...defaultOptions, ...options }
