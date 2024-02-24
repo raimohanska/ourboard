@@ -12,9 +12,6 @@ export function BoardYJSServer(ws: expressWs.Instance, path: string) {
         persistence: {
             bindState: async (docName, ydoc) => {
                 const boardId = docName
-                ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
-                    updateBoardCrdt(boardId, update)
-                })
                 await withDBClient(async (client) => {
                     console.log(`Loading CRDT updates from DB for board ${boardId}`)
                     const updates = await getBoardHistoryCrdtUpdates(client, boardId)
@@ -22,6 +19,9 @@ export function BoardYJSServer(ws: expressWs.Instance, path: string) {
                         Y.applyUpdate(ydoc, update)
                     }
                     console.log(`Loaded ${updates.length} CRDT updates from DB for board ${boardId}`)
+                })
+                ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
+                    updateBoardCrdt(boardId, update)
                 })
             },
             writeState: async (docName, ydoc) => {

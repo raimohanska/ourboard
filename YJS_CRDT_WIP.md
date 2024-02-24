@@ -11,16 +11,21 @@ The Y.js based collaborative editing support is under construction.
 
 ## TODO
 
+Must-haves
+
 -   Build: Jest fails with the lib0 imports
--   Persistence: consider storing CRDT snapshot
--   Persistence: make sure the compactor works
 -   Domain: Currently the initial text "Hello" or "Unnamed area" doesn't get synced in a new text/area. Also the JSON data stays in its initial state
--   UI: Show proper username by the cursor when hovering. Now shows some large number
--   UI: Add a toolbar. Needs some styling - if you now enable toolbar in Quill, it looks broken
 -   UI: Clean up CollaborativeTextView. Apply appropriate color etc.
 -   Undo buffer integration
 -   Manage session on the server side: terminate YJS sockets when websocket session is terminated
 -   Performance testing
--   Storage requirement measurements
 -   Playwright tests
+
+Nice-to-haves
+
+-   Persistence: consider storing CRDT snapshot
+-   Persistence: make sure the compactor works
+-   UI: Show proper username by the cursor when hovering. Now shows some large number
+-   UI: Add a formatting toolbar. Needs some styling - if you now enable toolbar in Quill, it looks broken
+-   Storage requirement measurements
 -   Sharing: split the TypeScript y-websocket server into a separate shared module for others to enjoy
