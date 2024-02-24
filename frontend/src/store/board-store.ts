@@ -35,6 +35,8 @@ import {
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
 import { ServerConnection } from "./server-connection"
 import { UserSessionState, isLoginInProgress } from "./user-session-store"
+import { CRDTStore } from "./crdt-store"
+import { serve } from "esbuild"
 export type Dispatch = (e: UIEvent) => void
 export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardAccessStatus =
@@ -536,6 +538,8 @@ export function BoardStore(
         }
     }
 
+    const crdtStore = CRDTStore(L.view(state, (s) => s.status === "online"))
+
     return {
         state,
         events,
@@ -543,6 +547,7 @@ export function BoardStore(
         dispatch,
         canUndo: undoStack.canPop,
         canRedo: redoStack.canPop,
+        crdtStore,
     }
 }
 

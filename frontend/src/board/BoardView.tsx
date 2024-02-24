@@ -383,6 +383,7 @@ export const BoardView = ({
                                 dispatch,
                                 toolController,
                                 accessLevel,
+                                boardStore,
                             }}
                         />
                     )

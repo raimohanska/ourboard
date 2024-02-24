@@ -14,7 +14,6 @@ The Y.js based collaborative editing support is under construction.
 -   Build: Jest fails with the lib0 imports
 -   Persistence: consider storing CRDT snapshot
 -   Persistence: make sure the compactor works
--   Persistence: implement local/offline persistence
 -   Persistence: storing bundles with zero events (crdt only)
 -   Domain: Migrate existing boards to CRDT or only apply CRDTs for new boards?
 -   Domain: Consider if CRDT field values should also be included in the JSON presentation, maybe on save
@@ -23,7 +22,6 @@ The Y.js based collaborative editing support is under construction.
 -   UI: Add a toolbar. Needs some styling - if you now enable toolbar in Quill, it looks broken
 -   UI: Clean up CollaborativeTextView. Apply appropriate color etc.
 -   Undo buffer integration
--   Manage session on client side: connect only when we have a sessionId. When it changes, reconnect.
 -   Manage session on the server side: terminate YJS sockets when websocket session is terminated
 -   Performance testing
 -   Storage requirement measurements

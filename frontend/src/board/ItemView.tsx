@@ -17,7 +17,7 @@ import {
 } from "../../../common/src/domain"
 import { emptySet } from "../../../common/src/sets"
 import { HTMLEditableSpan } from "../components/HTMLEditableSpan"
-import { Dispatch } from "../store/board-store"
+import { BoardStore, Dispatch } from "../store/board-store"
 import { autoFontSize } from "./autoFontSize"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedItemIds } from "./board-focus"
@@ -41,6 +41,7 @@ export const ItemView = ({
     latestConnection,
     dispatch,
     toolController,
+    boardStore,
 }: {
     board: L.Property<Board>
     accessLevel: L.Property<AccessLevel>
@@ -53,6 +54,7 @@ export const ItemView = ({
     latestConnection: L.Property<Connection | null>
     dispatch: Dispatch
     toolController: ToolController
+    boardStore: BoardStore
 }) => {
     const element = L.atom<HTMLElement | null>(null)
 
@@ -148,6 +150,7 @@ export const ItemView = ({
                     toolController={toolController}
                     focus={focus}
                     itemFocus={itemFocus}
+                    crdtStore={boardStore.crdtStore}
                 />
             )}
 

@@ -1,16 +1,16 @@
 import { h } from "harmaja"
 import * as L from "lonna"
+import Quill from "quill"
+import QuillCursors from "quill-cursors"
+import { QuillBinding } from "y-quill"
 import { Board, getItemBackground, TextItem } from "../../../common/src/domain"
 import { emptySet } from "../../../common/src/sets"
 import { Dispatch } from "../store/board-store"
 import { BoardFocus, getSelectedItemIds } from "./board-focus"
 import { contrastingColor } from "./contrasting-color"
 import { ToolController } from "./tool-selection"
-import * as Y from "yjs"
-import { QuillBinding } from "y-quill"
-import Quill from "quill"
-import QuillCursors from "quill-cursors"
-import { WebsocketProvider } from "y-websocket"
+import { CRDTStore } from "../store/crdt-store"
+
 Quill.register("modules/cursors", QuillCursors)
 
 interface CollaborativeTextViewProps {
@@ -21,6 +21,7 @@ interface CollaborativeTextViewProps {
     toolController: ToolController
     focus: L.Atom<BoardFocus>
     itemFocus: L.Property<"none" | "selected" | "dragging" | "editing">
+    crdtStore: CRDTStore
 }
 export function CollaborativeTextView({
     id,
@@ -30,6 +31,7 @@ export function CollaborativeTextView({
     toolController,
     focus,
     itemFocus,
+    crdtStore,
 }: CollaborativeTextViewProps) {
     const textAtom = L.atom(L.view(item, "text"), (text) =>
         dispatch({ action: "item.update", boardId: board.get().id, items: [{ id, text }] }),
@@ -74,23 +76,10 @@ export function CollaborativeTextView({
             },
             theme: "snow", // 'bubble' is also great
         })
-        // A Yjs document holds the shared data
-        const ydoc = new Y.Doc()
-        // Define a shared text type on the document
-        const ytext = ydoc.getText(`${id}.text`)
 
-        // connect to the public demo server (not in production!)
-        const provider = new WebsocketProvider( // TODO: get socket address from server-connection.ts
-        `ws://localhost:1337/socket/yjs`, `board/${board.get().id}`, ydoc, { connect: true })
-
-        provider.on("status", (event: any) => {
-            console.log("YJS Provider status", event.status)
-        })
-
-        // Create an editor-binding which
-        // "binds" the quill editor to a Y.Text type.
-        const binding = new QuillBinding(ytext, quill, provider.awareness)
-
+        const crdt = crdtStore.getBoardCrdt(board.get().id)
+        const ytext = crdt.getField(id, "text")
+        const binding = new QuillBinding(ytext, quill, crdt.awareness)
         quillEditor.set(quill)
     }
 
