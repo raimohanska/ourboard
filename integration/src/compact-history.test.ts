@@ -1,3 +1,4 @@
+import { describe, expect, it, beforeAll, afterAll } from "vitest"
 import { addHours, addSeconds } from "date-fns"
 import _ from "lodash"
 import { createBoard, getBoardHistoryBundleMetas, storeEventHistoryBundle } from "../../backend/src/board-store"
@@ -6,7 +7,9 @@ import { closeConnectionPool, initDB, inTransaction, withDBClient } from "../../
 import { BoardHistoryEntry, EventUserInfo, Id, newBoard, newISOTimeStamp, Serial } from "../../common/src/domain"
 type BundleDesc = [Date, Serial, Serial]
 describe("quick compact", () => {
-    beforeAll(() => initDB("./backend"))
+    beforeAll(async () => {
+        await initDB("./backend")
+    })
     it("Compacts nearby events into single bundle", async () => {
         const board = newBoard("testboard")
         const boardId = board.id
