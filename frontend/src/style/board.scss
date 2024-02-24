@@ -173,6 +173,10 @@
                     height: 100%;
                     > .ql-editor {
                         padding: 0.1em;
+                        ol,
+                        ul {
+                            padding: 0;
+                        }
                     }
                 }
             }
