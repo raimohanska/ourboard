@@ -6,23 +6,17 @@ import * as Http from "http"
 import * as Https from "https"
 import * as path from "path"
 import * as swaggerUi from "swagger-ui-express"
-import * as Y from "yjs"
 import apiRoutes from "./api/api-routes"
 import { handleBoardEvent } from "./board-event-handler"
-import { updateBoardCrdt } from "./board-state"
-import { getBoardHistoryCrdtUpdates } from "./board-store"
+import { BoardYJSServer } from "./board-yjs-server"
 import { getConfig } from "./config"
 import { connectionHandler } from "./connection-handler"
-import { withDBClient } from "./db"
 import { getEnv } from "./env"
-import { getSessionIdFromCookies } from "./http-session"
 import { authProvider, setupAuth } from "./oauth"
 import openapiDoc from "./openapi"
 import { possiblyRequireAuth } from "./require-auth"
 import { createGetSignedPutUrl } from "./storage"
-import { getSessionById } from "./websocket-sessions"
 import { WsWrapper } from "./ws-wrapper"
-import YWebSocketServer from "./y-websocket-server/YWebSocketServer"
 
 dotenv.config()
 
@@ -136,7 +130,7 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
 }
 
 function startWs(http: any, app: express.Express) {
-    const ws = expressWs(app, http)
+    const ws: expressWs.Instance = expressWs(app, http)
 
     const signedPutUrl = createGetSignedPutUrl(getConfig().storageBackend)
 
@@ -148,44 +142,8 @@ function startWs(http: any, app: express.Express) {
         connectionHandler(WsWrapper(socket), handleBoardEvent(boardId, signedPutUrl))
     })
 
-    const yWebSocketServer = new YWebSocketServer({
-        persistence: {
-            bindState: async (docName, ydoc) => {
-                const boardId = docName
-                ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
-                    updateBoardCrdt(boardId, update)
-                })
-                withDBClient(async (client) => {
-                    console.log(`Loading CRDT updates from DB for board ${boardId}`)
-                    const updates = await getBoardHistoryCrdtUpdates(client, boardId)
-                    for (const update of updates) {
-                        Y.applyUpdate(ydoc, update)
-                    }
-                })
-            },
-            writeState: async (docName, ydoc) => {
-                // TODO: needed?
-            },
-        },
-    })
-    ws.app.ws("/socket/yjs/board/:boardId/", (socket, req) => {
-        const boardId = req.params.boardId
-        const sessionId = getSessionIdFromCookies(req)
-        const session = sessionId ? getSessionById(sessionId) : undefined
-        if (!session) {
-            //console.warn("No session for YJS connection for board", boardId)
-            socket.close()
-            return
-        }
-        console.log("Got YJS connection for board", boardId)
-        const docName = boardId
-        try {
-            yWebSocketServer.setupWSConnection(socket, docName)
-        } catch (e) {
-            console.error("Error setting up YJS connection", e)
-            socket.close()
-        }
-    })
+    BoardYJSServer(ws, "/socket/yjs/board/:boardId/")
+
     ws.app.ws("*", (socket, req) => {
         console.warn(`Unexpected WS connection: ${req.url} `)
         socket.close()
