@@ -19,14 +19,14 @@ export class Docs {
     /**
      * Gets a Y.Doc by name, whether in memory or on disk
      */
-    async getYDoc(docname: string): Promise<WSSharedDoc> {
+    getYDoc(docname: string): WSSharedDoc {
         let doc = this.docs.get(docname)
         if (!doc) {
             doc = new WSSharedDoc(this, docname)
             console.log(`Loading document ${doc.name} into memory`)
             doc.gc = this.gc
             if (this.persistence !== null) {
-                await this.persistence.bindState(docname, doc)
+                void this.persistence.bindState(docname, doc)
             }
             this.docs.set(docname, doc)
         }
