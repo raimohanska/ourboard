@@ -405,6 +405,7 @@ export function newSimilarNote(note: Note) {
 }
 
 export function newText(
+    crdt: CrdtMode,
     text: string = "HELLO",
     x: number = 20,
     y: number = 20,
@@ -423,10 +424,12 @@ export function newText(
         z,
         color: "none",
         locked: false,
+        crdt,
     }
 }
 
 export function newContainer(
+    crdt: CrdtMode,
     x: number = 20,
     y: number = 20,
     width: number = 30,
@@ -444,6 +447,7 @@ export function newContainer(
         z,
         color: "white",
         locked: false,
+        crdt,
     }
 }
 

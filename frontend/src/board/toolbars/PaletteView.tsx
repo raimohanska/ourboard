@@ -1,6 +1,6 @@
 import { h, Fragment, HarmajaChild } from "harmaja"
 import * as L from "lonna"
-import { Item, newContainer, newSimilarNote, newText, Note } from "../../../../common/src/domain"
+import { Board, Item, newContainer, newSimilarNote, newText, Note } from "../../../../common/src/domain"
 import { BoardFocus } from "../board-focus"
 import { Tool } from "../tool-selection"
 
@@ -9,17 +9,19 @@ export const PaletteView = ({
     addItem,
     focus,
     tool,
+    board,
 }: {
     latestNote: L.Property<Note>
     addItem: (item: Item) => void
     focus: L.Atom<BoardFocus>
     tool: L.Atom<Tool>
+    board: L.Property<Board>
 }) => {
     return (
         <>
             <NewNote {...{ addItem, latestNote, focus, tool }} />
-            <NewContainer {...{ addItem, focus, tool }} />
-            <NewText {...{ addItem, focus, tool }} />
+            <NewContainer {...{ addItem, focus, tool, board }} />
+            <NewText {...{ addItem, focus, tool, board }} />
         </>
     )
 }
@@ -28,10 +30,12 @@ export const NewText = ({
     addItem: onAdd,
     focus,
     tool,
+    board,
 }: {
     addItem: (i: Item) => void
     focus: L.Atom<BoardFocus>
     tool: L.Atom<Tool>
+    board: L.Property<Board>
 }) => {
     const svg = () => (
         <svg viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -53,7 +57,7 @@ export const NewText = ({
             tooltip="Drag to add new text area"
             svg={svg}
             focus={focus}
-            createItem={newText}
+            createItem={() => newText(board.get().crdt)}
             addItem={onAdd}
             tool={tool}
         />
@@ -116,10 +120,12 @@ export const NewContainer = ({
     addItem: onAdd,
     focus,
     tool,
+    board,
 }: {
     addItem: (i: Item) => void
     focus: L.Atom<BoardFocus>
     tool: L.Atom<Tool>
+    board: L.Property<Board>
 }) => {
     const svg = () => (
         <svg viewBox="0 0 44 49" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -142,7 +148,7 @@ export const NewContainer = ({
             tooltip="Drag to add new area for organizing items"
             svg={svg}
             focus={focus}
-            createItem={newContainer}
+            createItem={() => newContainer(board.get().crdt)}
             addItem={onAdd}
             tool={tool}
         />

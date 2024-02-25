@@ -201,7 +201,7 @@ export function cutCopyPasteHandler(
                         const currentCenter = coordinateHelper.currentBoardCoordinates.get()
                         let toCreate
                         if (sanitized.length > 50) {
-                            toCreate = [newText(sanitized, currentCenter.x, currentCenter.y)]
+                            toCreate = [newText(board.get().crdt, sanitized, currentCenter.x, currentCenter.y)]
                         } else {
                             toCreate = [newNote(sanitized, DEFAULT_NOTE_COLOR, currentCenter.x, currentCenter.y)]
                         }

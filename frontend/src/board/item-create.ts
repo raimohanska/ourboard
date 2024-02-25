@@ -12,8 +12,8 @@ export function itemCreateHandler(
     onAdd: (item: Item) => void,
 ) {
     installKeyboardShortcut(plainKey("n"), () => onAdd(newSimilarNote(latestNote.get())))
-    installKeyboardShortcut(plainKey("a"), () => onAdd(newContainer()))
-    installKeyboardShortcut(plainKey("t"), () => onAdd(newText()))
+    installKeyboardShortcut(plainKey("a"), () => onAdd(newContainer(board.get().crdt)))
+    installKeyboardShortcut(plainKey("t"), () => onAdd(newText(board.get().crdt)))
 
     installDoubleClickHandler((e) => {
         shouldCreateOnDblClick(e) && onAdd(newSimilarNote(latestNote.get()))
