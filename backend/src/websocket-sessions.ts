@@ -21,6 +21,7 @@ import {
 } from "../../common/src/domain"
 import { ServerSideBoardState, maybeGetBoard } from "./board-state"
 import { getBoardHistory } from "./board-store"
+import { closeYjsSocketsBySessionId } from "./board-yjs-server"
 import { randomProfession } from "./professions"
 import { getUserIdForEmail } from "./user-store"
 import { WsWrapper, toBuffer } from "./ws-wrapper"
@@ -115,6 +116,7 @@ export function endSession(socket: WsWrapper) {
         }
     }
     delete sessions[socket.id]
+    closeYjsSocketsBySessionId(sessionId)
 }
 export function getBoardSessionCount(id: Id) {
     return everyoneOnTheBoard(id).length
@@ -129,11 +131,6 @@ export function getSessionById(sessionId: string): UserSession | undefined {
 
 export function terminateSessions() {
     Object.values(sessions).forEach((session) => session.close())
-}
-
-function describeRange(events: BoardHistoryEntry[]) {
-    if (events.length === 0) return "[]"
-    return `${events[0].serial}..${events[events.length - 1].serial}`
 }
 
 export async function addSessionToBoard(

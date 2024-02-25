@@ -11,12 +11,16 @@ The Y.js based collaborative editing support is under construction.
 
 ## TODO
 
-Must-haves
+Must-haves, experimental flagged rollout
 
--   APIs
--   Manage session on the server side: terminate YJS sockets when websocket session is terminated
+-   None?
+
+Must-haves, enable by default
+
 -   Mobile check
 -   Performance testing
+-   Storage requirement measurements
+-   APIs
 -   Playwright tests (create text, reload, change, reload, use two clients, clear indexeddb and reload...)
 -   Include API basic tests in Playwright tests
 
@@ -24,8 +28,6 @@ Nice-to-haves
 
 -   Undo buffer integration. Editor has its own local undo but we should also add the full edit as a global undo item
 -   Persistence: consider storing CRDT snapshot
--   Persistence: make sure the compactor works
 -   UI: Show proper username by the cursor when hovering. Now shows some large number
 -   UI: Add a formatting toolbar. Needs some styling - if you now enable toolbar in Quill, it looks broken
--   Storage requirement measurements
 -   Sharing: split the TypeScript y-websocket server into a separate shared module for others to enjoy

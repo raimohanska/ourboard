@@ -6,6 +6,24 @@ import { withDBClient } from "./db"
 import { getSessionIdFromCookies } from "./http-session"
 import { getSessionById } from "./websocket-sessions"
 import YWebSocketServer from "./y-websocket-server/YWebSocketServer"
+import * as WebSocket from "ws"
+
+const socketsBySessionId: Record<string, WebSocket[]> = {}
+
+export function closeYjsSocketsBySessionId(sessionId: string) {
+    const sockets = socketsBySessionId[sessionId]
+    if (sockets) {
+        for (const socket of sockets) {
+            socket.close()
+        }
+        delete socketsBySessionId[sessionId]
+        console.log(
+            `CLOSED ${sockets.length} y.js sockets by session id ${sessionId} - remaining sockets exist for ${
+                Object.keys(socketsBySessionId).length
+            } other sessions`,
+        )
+    }
+}
 
 export function BoardYJSServer(ws: expressWs.Instance, path: string) {
     const yWebSocketServer = new YWebSocketServer({
@@ -34,12 +52,31 @@ export function BoardYJSServer(ws: expressWs.Instance, path: string) {
         const boardId = req.params.boardId
         const sessionId = getSessionIdFromCookies(req)
         const session = sessionId ? getSessionById(sessionId) : undefined
-        if (!session) {
+        if (!sessionId || !session) {
             //console.warn("No session for YJS connection for board", boardId)
             socket.close()
             return
         }
-        console.log("Got YJS connection for board", boardId)
+        if (!socketsBySessionId[sessionId]) {
+            socketsBySessionId[sessionId] = []
+        }
+        socketsBySessionId[sessionId].push(socket)
+        console.log(
+            `OPENED y.js connection for session ${sessionId}. Now sockets exist for ${
+                Object.keys(socketsBySessionId).length
+            } sessions`,
+        )
+        socket.addEventListener("close", () => {
+            if (socketsBySessionId[sessionId]) {
+                socketsBySessionId[sessionId] = socketsBySessionId[sessionId].filter((s) => s !== socket)
+                if (socketsBySessionId[sessionId].length === 0) {
+                    delete socketsBySessionId[sessionId]
+                }
+                console.log(
+                    `CLOSED y.js connection. Now sockets exist for ${Object.keys(socketsBySessionId).length} sessions`,
+                )
+            }
+        })
         const docName = boardId
         try {
             await yWebSocketServer.setupWSConnection(socket, docName)
