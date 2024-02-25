@@ -13,8 +13,6 @@ The Y.js based collaborative editing support is under construction.
 
 Must-haves
 
--   Undo buffer integration. Editor has its own local undo but we should also add the full edit as a global undo item
--   Board level flag for CRDT or other controlled way of rolling this out
 -   APIs
 -   Manage session on the server side: terminate YJS sockets when websocket session is terminated
 -   Mobile check
@@ -24,6 +22,7 @@ Must-haves
 
 Nice-to-haves
 
+-   Undo buffer integration. Editor has its own local undo but we should also add the full edit as a global undo item
 -   Persistence: consider storing CRDT snapshot
 -   Persistence: make sure the compactor works
 -   UI: Show proper username by the cursor when hovering. Now shows some large number

@@ -147,6 +147,9 @@ export function boardReducer(
                 board.items,
                 (items) => {
                     event.items.forEach((item) => {
+                        if (board.crdt && isTextItem(item)) {
+                            item = { ...item, crdt: board.crdt }
+                        }
                         if (
                             item.containerId &&
                             !findItem(board)(item.containerId) &&

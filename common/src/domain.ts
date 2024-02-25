@@ -16,12 +16,15 @@ export function optional<T extends t.Type<any>>(c: T) {
     return t.union([c, t.undefined, t.null])
 }
 
+type CrdtMode = undefined | 1
+
 export type BoardAttributes = {
     id: Id
     name: string
     width: number
     height: number
     accessPolicy?: BoardAccessPolicy
+    crdt?: CrdtMode
 }
 
 export type BoardContents = {
@@ -34,7 +37,7 @@ export type Board = BoardAttributes &
         serial: Serial
     }
 
-export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy"> & { templateId?: Id }
+export type BoardStub = Pick<Board, "id" | "name" | "accessPolicy" | "crdt"> & { templateId?: Id }
 
 export const AccessLevelCodec = t.union([
     t.literal("admin"),
@@ -134,7 +137,7 @@ export type TextItemProperties = ItemProperties & {
     text: string
     fontSize?: number
     align?: Align
-    crdt?: 1
+    crdt?: CrdtMode
     textAsDelta?: QuillDelta
 }
 export type NoteShape = "round" | "square" | "rect" | "diamond"
@@ -401,8 +404,6 @@ export function newSimilarNote(note: Note) {
     return newNote("HELLO", note.color, 20, 20, note.width, note.height, note.shape)
 }
 
-const CRDT_CURRENT = 1
-
 export function newText(
     text: string = "HELLO",
     x: number = 20,
@@ -422,7 +423,6 @@ export function newText(
         z,
         color: "none",
         locked: false,
-        crdt: CRDT_CURRENT,
     }
 }
 
@@ -444,7 +444,6 @@ export function newContainer(
         z,
         color: "white",
         locked: false,
-        crdt: CRDT_CURRENT,
     }
 }
 

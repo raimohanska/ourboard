@@ -3,7 +3,14 @@ import { getNavigator, Link } from "harmaja-router"
 import * as L from "lonna"
 import * as R from "ramda"
 import * as uuid from "uuid"
-import { BoardAccessPolicy, EventFromServer, exampleBoard, RecentBoard } from "../../../common/src/domain"
+import {
+    Board,
+    BoardAccessPolicy,
+    BoardStub,
+    EventFromServer,
+    exampleBoard,
+    RecentBoard,
+} from "../../../common/src/domain"
 import { BOARD_PATH, createBoardAndNavigate, Routes } from "../board-navigation"
 import { localStorageAtom } from "../board/local-storage-atom"
 import { IS_TOUCHSCREEN } from "../board/touchScreen"
@@ -13,6 +20,7 @@ import { signIn, signOut } from "../google-auth"
 import { Dispatch } from "../store/board-store"
 import { RecentBoards } from "../store/recent-boards"
 import { canLogin, defaultAccessPolicy, UserSessionState } from "../store/user-session-store"
+import { BoardCrdtModeSelector } from "../components/BoardCrdtModeSelector"
 
 export const DashboardView = ({
     sessionState,
@@ -255,13 +263,18 @@ const Welcome = ({
 const CreateBoardOptions = ({
     accessPolicy,
     sessionState,
+    useCollaborativeEditing,
 }: {
     accessPolicy: L.Atom<BoardAccessPolicy | undefined>
     sessionState: L.Property<UserSessionState>
+    useCollaborativeEditing: L.Atom<boolean>
 }) => {
     return L.view(sessionState, (s) =>
         s.status === "logged-in" ? (
-            <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />
+            <>
+                <BoardCrdtModeSelector {...{ useCollaborativeEditing }} />
+                <BoardAccessPolicyEditor {...{ accessPolicy, user: s }} />
+            </>
         ) : (
             <small className="anonymousBoardDisclaimer">
                 Anonymously created boards are accessible to anyone with a link. You may <a onClick={signIn}>sign in</a>{" "}
@@ -291,10 +304,16 @@ const CreateBoard = ({
         accessPolicy.set(defaultAccessPolicy(s, false))
     })
     const hasRecentBoards = L.view(recentBoards.recentboards, (bs) => bs.length > 0)
+    const useCollaborativeEditing = L.atom(false)
 
     function onSubmit(e: JSX.FormEvent) {
         e.preventDefault()
-        const newBoard = { name: boardName.get(), id: uuid.v4(), accessPolicy: accessPolicy.get() }
+        const newBoard: BoardStub = {
+            name: boardName.get(),
+            id: uuid.v4(),
+            accessPolicy: accessPolicy.get(),
+            crdt: useCollaborativeEditing.get() ? 1 : undefined,
+        }
         createBoardAndNavigate(newBoard, dispatch, navigator, eventsFromServer)
     }
 
@@ -307,7 +326,10 @@ const CreateBoard = ({
                     Create
                 </button>
             </div>
-            {L.view(disabled, (d) => !d && <CreateBoardOptions {...{ accessPolicy, sessionState }} />)}
+            {L.view(
+                disabled,
+                (d) => !d && <CreateBoardOptions {...{ accessPolicy, sessionState, useCollaborativeEditing }} />,
+            )}
         </form>
     )
 }
