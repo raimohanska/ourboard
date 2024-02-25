@@ -14,6 +14,7 @@ import {
     CursorMove,
     EventUserInfo,
     Id,
+    Item,
     ItemLocks,
     JoinBoard,
     LocalUIEvent,
@@ -30,6 +31,7 @@ import {
     isCursorMove,
     isLocalUIEvent,
     isPersistableBoardItemEvent,
+    isTextItem,
     newISOTimeStamp,
 } from "../../../common/src/domain"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
@@ -543,6 +545,7 @@ export function BoardStore(
     const crdtStore = CRDTStore(
         L.view(state, (s) => s.status === "online"),
         localBoardItemEvents,
+        dispatch,
     )
 
     return {

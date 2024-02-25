@@ -4,23 +4,24 @@ import * as uuid from "uuid"
 import { DEFAULT_NOTE_COLOR } from "../../../common/src/colors"
 import { connectionRect, resolveEndpoint } from "../../../common/src/connection-utils"
 import {
-    Board,
     BOARD_ITEM_BORDER_MARGIN,
+    Board,
     Connection,
     ConnectionEndPoint,
+    Id,
+    Item,
+    Point,
     findItemsRecursively,
     getEndPointItemId,
-    Id,
     isItemEndPoint,
-    Item,
     newNote,
     newText,
-    Point,
 } from "../../../common/src/domain"
 import * as G from "../../../common/src/geometry"
 import { emptySet } from "../../../common/src/sets"
 import { sanitizeHTML } from "../components/sanitizeHTML"
 import { Dispatch } from "../store/board-store"
+import { CRDTStore } from "../store/crdt-store"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus, getSelectedConnectionIds, getSelectedItemIds } from "./board-focus"
 
@@ -29,6 +30,17 @@ const CLIPBOARD_EVENTS = ["cut", "copy", "paste"] as const
 export type ItemsAndConnections = {
     items: Item[]
     connections: Connection[]
+}
+
+export function augmentWithCRDT(
+    boardId: Id,
+    itemsAndConnections: ItemsAndConnections,
+    crdtStore: CRDTStore,
+): ItemsAndConnections {
+    return {
+        ...itemsAndConnections,
+        items: crdtStore.augmentItems(boardId, itemsAndConnections.items),
+    }
 }
 
 export function findSelectedItemsAndConnections(currentFocus: BoardFocus, currentBoard: Board): ItemsAndConnections {
@@ -133,6 +145,7 @@ export function makeCopies(
 
 export function cutCopyPasteHandler(
     board: L.Property<Board>,
+    crdtStore: CRDTStore,
     focus: L.Atom<BoardFocus>,
     coordinateHelper: BoardCoordinateHelper,
     dispatch: Dispatch,
@@ -144,7 +157,11 @@ export function cutCopyPasteHandler(
         switch (e.type) {
             case "cut": {
                 if (currentFocus.status !== "selected") return
-                const clipboard = findSelectedItemsAndConnections(currentFocus, currentBoard)
+                const clipboard = augmentWithCRDT(
+                    board.get().id,
+                    findSelectedItemsAndConnections(currentFocus, currentBoard),
+                    crdtStore,
+                )
                 dispatch({
                     action: "item.delete",
                     boardId: currentBoard.id,
@@ -157,7 +174,12 @@ export function cutCopyPasteHandler(
             }
             case "copy": {
                 if (currentFocus.status !== "selected") return
-                const clipboard = findSelectedItemsAndConnections(currentFocus, currentBoard)
+                console.log("Copying to clipboard", currentBoard)
+                const clipboard = augmentWithCRDT(
+                    board.get().id,
+                    findSelectedItemsAndConnections(currentFocus, currentBoard),
+                    crdtStore,
+                )
                 e.clipboardData!.setData("application/rboard", JSON.stringify(clipboard))
                 e.preventDefault()
                 break

@@ -14,6 +14,7 @@ import { localStorageAtom } from "../local-storage-atom"
 import { ToolController } from "../tool-selection"
 import { PaletteView } from "./PaletteView"
 import { ToolSelector } from "./ToolSelector"
+import { CRDTStore } from "../../store/crdt-store"
 
 export const MainToolBar = ({
     coordinateHelper,
@@ -112,7 +113,7 @@ export const MainToolBar = ({
             <PaletteView {...{ latestNote, addItem: onAdd, focus, tool: toolController.tool }} />
             <ToolSelector {...{ toolController }} />
             <DeleteIcon {...{ focus, dispatch, board }} />
-            <DuplicateIcon {...{ focus, dispatch, board }} />
+            <DuplicateIcon {...{ focus, dispatch, board, crdtStore: boardStore.crdtStore }} />
             <UndoToolIcon {...{ boardStore, dispatch }} />
             <RedoToolIcon {...{ boardStore, dispatch }} />
         </div>
@@ -171,9 +172,16 @@ const DeleteIcon = ({ focus, board, dispatch }: DeleteProps) => {
     )
 }
 
-const DuplicateIcon = ({ focus, board, dispatch }: DeleteProps) => {
+type DuplicateProps = {
+    focus: L.Atom<BoardFocus>
+    board: L.Property<Board>
+    dispatch: Dispatch
+    crdtStore: CRDTStore
+}
+
+const DuplicateIcon = ({ focus, board, dispatch, crdtStore }: DuplicateProps) => {
     const enabled = L.view(focus, (f) => getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0)
-    const duplicateItems = () => dispatchDuplication(focus, board.get(), dispatch)
+    const duplicateItems = () => dispatchDuplication(focus, board.get(), dispatch, crdtStore)
     return (
         <span
             className="tool duplicate"

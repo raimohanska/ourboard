@@ -142,7 +142,9 @@ export const BoardView = ({
     }
     const uploadImageFile = imageUploadHandler(assets, coordinateHelper, onAdd, onURL)
 
-    doOnUnmount.push(cutCopyPasteHandler(board, focus, coordinateHelper, dispatch, uploadImageFile))
+    doOnUnmount.push(
+        cutCopyPasteHandler(board, boardStore.crdtStore, focus, coordinateHelper, dispatch, uploadImageFile),
+    )
 
     const zoomControls = boardScrollAndZoomHandler(
         board,
@@ -164,7 +166,7 @@ export const BoardView = ({
     imageDropHandler(boardElement, assets, focus, uploadImageFile)
     itemCreateHandler(board, focus, latestNote, boardElement, onAdd)
     itemDeleteHandler(boardId, dispatch, focus)
-    itemDuplicateHandler(board, dispatch, focus)
+    itemDuplicateHandler(board, boardStore.crdtStore, dispatch, focus)
     itemMoveWithArrowKeysHandler(board, dispatch, focus)
     itemUndoHandler(dispatch)
     itemSelectAllHandler(board, focus)
