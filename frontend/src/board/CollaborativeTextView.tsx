@@ -1,9 +1,9 @@
-import { h } from "harmaja"
+import { componentScope, h } from "harmaja"
 import * as L from "lonna"
 import Quill from "quill"
 import QuillCursors from "quill-cursors"
 import { QuillBinding } from "y-quill"
-import { Board, getItemBackground, TextItem } from "../../../common/src/domain"
+import { Board, getAlign, getHorizontalAlign, getItemBackground, TextItem } from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
 import { CRDTStore } from "../store/crdt-store"
 import { BoardFocus } from "./board-focus"
@@ -80,6 +80,11 @@ export function CollaborativeTextView({
     }
 
     const pointerEvents = L.view(itemFocus, (f) => (f === "editing" || f === "selected" ? "auto" : "none"))
+    const hAlign = L.view(item, getAlign, getHorizontalAlign).applyScope(componentScope())
+    hAlign.onChange((align) => {
+        console.log(align)
+        quillEditor.get()?.formatText(0, 10000000, "align", align === "left" ? "" : align)
+    })
 
     return (
         <div
