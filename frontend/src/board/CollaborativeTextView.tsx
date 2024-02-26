@@ -4,11 +4,11 @@ import Quill from "quill"
 import QuillCursors from "quill-cursors"
 import { QuillBinding } from "y-quill"
 import { Board, getItemBackground, TextItem } from "../../../common/src/domain"
-import { emptySet } from "../../../common/src/sets"
 import { Dispatch } from "../store/board-store"
 import { CRDTStore } from "../store/crdt-store"
 import { BoardFocus } from "./board-focus"
 import { contrastingColor } from "./contrasting-color"
+import { getAlignItems } from "./ItemView"
 import { ToolController } from "./tool-selection"
 
 Quill.register("modules/cursors", QuillCursors)
@@ -87,8 +87,12 @@ export function CollaborativeTextView({
             onKeyDown={(e) => e.stopPropagation()}
             onKeyUp={(e) => e.stopPropagation()}
             onKeyPress={(e) => e.stopPropagation()}
-            onDoubleClick={(e) => e.stopPropagation()}
+            onDoubleClick={(e) => {
+                e.stopPropagation()
+                quillEditor.get()?.focus()
+            }}
             onClick={handleClick}
+            style={L.combineTemplate({ alignItems: L.view(item, getAlignItems) })}
         >
             <div
                 className="quill-editor"

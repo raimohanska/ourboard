@@ -169,7 +169,7 @@ export const ItemView = ({
     )
 }
 
-function getJustifyContent(item: Item) {
+export function getJustifyContent(item: Item) {
     if (isTextItem(item)) {
         switch (getHorizontalAlign(getAlign(item))) {
             case "left":
@@ -183,7 +183,7 @@ function getJustifyContent(item: Item) {
     return null
 }
 
-function getAlignItems(item: Item) {
+export function getAlignItems(item: Item) {
     if (isTextItem(item)) {
         switch (getVerticalAlign(getAlign(item))) {
             case "top":
