@@ -2,7 +2,7 @@ import * as H from "harmaja"
 import { h } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
-import { RecentBoardAttributes } from "../../common/src/domain"
+import { EventFromServer, RecentBoardAttributes, ServerConfig } from "../../common/src/domain"
 import "./app.scss"
 import { BoardNavigation } from "./board-navigation"
 import { BoardView } from "./board/BoardView"
@@ -26,6 +26,11 @@ const App = () => {
     const assets = assetStore(connection, L.view(boardStore.state, "board"), boardStore.events)
     const title = L.view(boardStore.state, (s) => (s.board && s.board.name ? `${s.board.name} - OurBoard` : "OurBoard"))
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
+    const serverConfig = connection.bufferedServerEvents
+        .pipe(
+            L.scan<EventFromServer, ServerConfig | null>(null, (c, e) => (e.action === "server.config" ? e : c)),
+        )
+        .applyScope(H.componentScope())
 
     boardStore.state
         .pipe(
@@ -67,6 +72,7 @@ const App = () => {
                                     sessionState: sessionStore.sessionState,
                                     recentBoards,
                                     eventsFromServer: connection.bufferedServerEvents,
+                                    serverConfig,
                                 }}
                             />
                         )

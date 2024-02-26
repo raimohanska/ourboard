@@ -16,7 +16,9 @@ export function optional<T extends t.Type<any>>(c: T) {
     return t.union([c, t.undefined, t.null])
 }
 
-type CrdtMode = undefined | 1
+export const CrdtDisabled = undefined
+export const CrdtEnabled = 1 as const
+export type CrdtMode = typeof CrdtDisabled | typeof CrdtEnabled
 
 export type BoardAttributes = {
     id: Id
@@ -210,6 +212,7 @@ export type ServerConfig = {
     action: "server.config"
     authSupported: boolean
     assetStorageURL: string
+    crdt: "true" | "false" | "opt-in" | "opt-in-authenticated"
 }
 export type Serial = number
 export type AppEvent =

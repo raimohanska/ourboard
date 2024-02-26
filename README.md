@@ -307,6 +307,12 @@ AWS_SECRET_ACCESS_KEY   Secret access key
 AWS_ASSETS_BUCKET_URL   URL to the AWS bucket. For example https://r-board-assets.s3.eu-north-1.amazonaws.com
 ```
 
+The experimental collaborative editing feature is controlled using environment variables as well:
+
+```
+COLLABORATIVE_EDITING   `true` to enable for all new boards, `false` to disable for new boards, `opt-in` to allow opt-in on creation (default), `opt-in-authenticated` to allow opt-in for authenticated users only
+```
+
 And finally some more settings you're unlikely to need.
 
 ```

@@ -17,6 +17,7 @@ export const connectionHandler = (socket: WsWrapper, handleMessage: MessageHandl
             action: "server.config",
             assetStorageURL: config.storageBackend.assetStorageURL,
             authSupported: config.authSupported,
+            crdt: config.crdt,
         }),
     )
     socket.onError(() => {
