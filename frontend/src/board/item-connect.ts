@@ -253,6 +253,7 @@ function findTarget(
     const targetItem =
         options.allowConnect &&
         Object.values(items)
+            .filter((i) => !i.hidden)
             .filter((i) => containedBy({ ...currentPos, width: 0, height: 0 }, i)) // match coordinates
             .filter((i) => isConnectionAttachmentPoint(currentPos, i))
             .filter((i) =>
