@@ -123,7 +123,7 @@ export type Color = string
 
 export type ItemBounds = { x: number; y: number; width: number; height: number; z: number }
 export type LockState = false | "locked" | "read-only"
-export type ItemProperties = { id: string; containerId?: string; locked: LockState } & ItemBounds
+export type ItemProperties = { id: string; containerId?: string; locked: LockState; hidden?: boolean } & ItemBounds
 
 export const ITEM_TYPES = {
     NOTE: "note",
@@ -151,7 +151,11 @@ export type Note = TextItemProperties & {
 export type Text = TextItemProperties & { type: typeof ITEM_TYPES.TEXT; color: Color }
 export type Image = ItemProperties & { type: typeof ITEM_TYPES.IMAGE; assetId: string; src?: string }
 export type Video = ItemProperties & { type: typeof ITEM_TYPES.VIDEO; assetId: string; src?: string }
-export type Container = TextItemProperties & { type: typeof ITEM_TYPES.CONTAINER; color: Color }
+export type Container = TextItemProperties & {
+    type: typeof ITEM_TYPES.CONTAINER
+    color: Color
+    contentsHidden?: boolean
+}
 
 export type Point = { x: number; y: number }
 export function Point(x: number, y: number) {

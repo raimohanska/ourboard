@@ -93,7 +93,7 @@ export function boardDragHandler({
 
                         const itemIds = new Set([
                             ...Object.values(b.items)
-                                .filter((i) => overlaps(i, bounds) && !containedBy(startPoint, i)) // Do not select container if drag originates from within container
+                                .filter((i) => overlaps(i, bounds) && !containedBy(startPoint, i) && !i.hidden) // Do not select container if drag originates from within container
                                 .map((i) => i.id),
                             ...getSelectedItemIds(da.selectedAtStart),
                         ])

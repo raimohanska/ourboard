@@ -35,16 +35,19 @@ export const SelectionBorder = ({
         }
     })
 
-    return L.view(item, canMove, (m) =>
-        m ? (
-            <span className="selection-control" style={style}>
-                <span className="corner-resize-drag top left"></span>
-                <DragCorner {...{ horizontal: "left", vertical: "top" }} />
-                <DragCorner {...{ horizontal: "left", vertical: "bottom" }} />
-                <DragCorner {...{ horizontal: "right", vertical: "top" }} />
-                <DragCorner {...{ horizontal: "right", vertical: "bottom" }} />
-            </span>
-        ) : null,
+    return L.view(
+        item,
+        (i) => !i.hidden && canMove(i),
+        (m) =>
+            m ? (
+                <span className="selection-control" style={style}>
+                    <span className="corner-resize-drag top left"></span>
+                    <DragCorner {...{ horizontal: "left", vertical: "top" }} />
+                    <DragCorner {...{ horizontal: "left", vertical: "bottom" }} />
+                    <DragCorner {...{ horizontal: "right", vertical: "top" }} />
+                    <DragCorner {...{ horizontal: "right", vertical: "bottom" }} />
+                </span>
+            ) : null,
     )
 
     function DragCorner({ vertical, horizontal }: { vertical: Vertical; horizontal: Horizontal }) {

@@ -272,7 +272,7 @@ export const BoardView = ({
         (status) => `board-container ${isEmbedded() ? "embedded" : ""} ${status}`,
     )
 
-    const items = L.view(L.view(board, "items"), Object.values)
+    const items = L.view(L.view(board, "items"), Object.values, (items) => items.filter((i) => !i.hidden))
     const selectedItems = L.view(board, focus, (b, f) => getSelectedItems(b)(f))
     const modalContent = L.atom<any>(null)
 

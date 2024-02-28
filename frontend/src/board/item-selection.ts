@@ -64,6 +64,6 @@ export function itemSelectionHandler(
         itemFocus,
         selected,
         onClick,
-        onTouchStart: onTouchStart,
+        onTouchStart,
     }
 }

@@ -32,11 +32,11 @@ export function textAlignmentsMenu({ board, focusedItems, dispatch }: SubmenuPro
     const allText = L.view(focusedItems, textItems, (f, t) => f.items.length > 0 && t.length === f.items.length)
 
     const currentHAlign = L.view(focusedItems, (f) => {
-        return getIfSame(f.items, getHorizontalAlign, "left")
+        return getIfSame(f.items, (item) => (isTextItem(item) ? getHorizontalAlign(getAlign(item)) : null), "left")
     })
 
     const currentVAlign = L.view(focusedItems, (f) => {
-        return getIfSame(f.items, getVerticalAlign, "top")
+        return getIfSame(f.items, (item) => (isTextItem(item) ? getVerticalAlign(getAlign(item)) : null), "top")
     })
 
     function setAlign(modifyAlign: (i: TextItem) => ItemUpdate<TextItem>) {
@@ -98,12 +98,12 @@ const verticalIcons: Record<VerticalAlign, (color: Color) => HarmajaOutput> = {
 const hAligns: HorizontalAlign[] = ["left", "center", "right"]
 const vAligns: VerticalAlign[] = ["top", "middle", "bottom"]
 
-function getIfSame<A>(items: Item[], get: (item: Align) => A | null, defaultValue: A) {
-    let align: A | null = null
+export function getIfSame<I, P>(items: I[], get: (item: I) => P | null, defaultValue: P) {
+    let align: P | null = null
     items.forEach((item) => {})
     for (let i = 0; i < items.length; i++) {
         const item = items[i]
-        const itemAlign = isTextItem(item) ? get(getAlign(item)) : null
+        const itemAlign = get(item)
         if (align != null && itemAlign !== align) {
             // If not all share the same, exit
             align = null

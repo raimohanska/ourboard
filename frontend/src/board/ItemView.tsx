@@ -9,6 +9,7 @@ import {
     getItemBackground,
     getItemShape,
     getVerticalAlign,
+    isContainer,
     isTextItem,
     Item,
     ItemType,
@@ -24,6 +25,7 @@ import { itemSelectionHandler } from "./item-selection"
 import { TextView } from "./TextView"
 import { ToolController } from "./tool-selection"
 import { itemZIndex } from "./zIndices"
+import { VisibilityOffIcon } from "../components/Icons"
 
 export const ItemView = ({
     board,
@@ -160,6 +162,18 @@ export const ItemView = ({
                     coordinateHelper={coordinateHelper}
                     element={element}
                 />
+            )}
+
+            {L.view(
+                item,
+                (i) => isContainer(i) && i.contentsHidden,
+                (hidden) =>
+                    (hidden && (
+                        <div className="hidden-contents-indicator">
+                            <VisibilityOffIcon />
+                        </div>
+                    )) ??
+                    null,
             )}
 
             {type === "container" && (
