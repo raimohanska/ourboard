@@ -604,7 +604,18 @@ function moveItems(board: Board, event: MoveItem, inplace: boolean) {
         (items, [id, move]) => {
             const item = items[id]
             const updated = { ...item, x: item.x + move.xDiff, y: item.y + move.yDiff }
-            if (move.containerChanged) updated.containerId = move.containerId
+            if (move.containerChanged) {
+                updated.containerId = move.containerId
+                if (move.containerId) {
+                    const newContainer = board.items[move.containerId]
+                    if (
+                        newContainer &&
+                        (newContainer.hidden || (isContainer(newContainer) && newContainer.contentsHidden))
+                    ) {
+                        updated.hidden = true
+                    }
+                }
+            }
             items[id] = updated
             return items
         },
