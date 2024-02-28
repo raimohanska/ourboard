@@ -103,8 +103,8 @@ export const ContextMenuView = ({
         textAlignmentsMenu(props),
         areaTilingMenu(props),
         connectionEndsMenu(props),
-        lockMenu(props),
         hideContentsMenu(props),
+        lockMenu(props),
     ]
     const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
     const captureEvents = (e: JSX.MouseEvent) => {
