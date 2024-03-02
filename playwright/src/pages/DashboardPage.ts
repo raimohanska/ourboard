@@ -11,6 +11,7 @@ export function DashboardPage(page: Page) {
     return {
         async createNewBoard(name: string) {
             await page.getByPlaceholder("Enter board name").fill(name)
+            await page.getByText("use collaborative text editor").click()
             await page.getByRole("button", { name: "Create" }).click()
             const board = BoardPage(page)
             await board.assertBoardName(name)

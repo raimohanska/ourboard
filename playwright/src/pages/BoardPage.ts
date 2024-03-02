@@ -90,6 +90,7 @@ export function BoardPage(page: Page) {
         newNoteOnPalette,
         newTextOnPalette,
         newContainerOnPalette,
+        cloneButton: page.locator(".tool.duplicate"),
         getBoardId() {
             return assertNotNull(page.url().split("/").pop())
         },
