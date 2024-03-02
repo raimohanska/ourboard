@@ -29,7 +29,7 @@ export const getConfig = (): Config => {
         } catch (e) {}
     }
 
-    const crdt = decodeOrThrow(CrdtConfigString, process.env.COLLABORATIVE_EDITING ?? "opt-in-authenticated")
+    const crdt = decodeOrThrow(CrdtConfigString, process.env.COLLABORATIVE_EDITING ?? "opt-in")
 
     return {
         storageBackend,
