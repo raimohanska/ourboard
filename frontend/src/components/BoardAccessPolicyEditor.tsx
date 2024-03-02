@@ -18,10 +18,9 @@ export const BoardAccessPolicyEditor = ({ accessPolicy, user }: BoardAccessPolic
     return (
         <div className="board-access-editor">
             <div className="restrict-toggle">
-                <Checkbox checked={restrictAccessToggle} />
-                <span>
-                    <label htmlFor="domain-restrict">Restrict access to specific domains / email addresses</label>
-                </span>
+                <Checkbox checked={restrictAccessToggle}>
+                    Restrict access to specific domains / email addresses
+                </Checkbox>
             </div>
             <div className="domain-restrict-details">
                 {L.view(
@@ -118,8 +117,7 @@ const BoardAccessPolicyDetailsEditor = ({
             />
 
             <p className="allow-public-read">
-                <Checkbox checked={allowPublicRead} />
-                Anyone with the link can view
+                <Checkbox checked={allowPublicRead}>Anyone with the link can view</Checkbox>
             </p>
         </>
     )

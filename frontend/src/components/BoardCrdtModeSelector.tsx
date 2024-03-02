@@ -9,10 +9,7 @@ export const BoardCrdtModeSelector = ({ useCollaborativeEditing }: BoardCrdtMode
     return (
         <div className="board-access-editor">
             <div className="restrict-toggle">
-                <Checkbox checked={useCollaborativeEditing} />
-                <span>
-                    <label htmlFor="domain-restrict">Experimental: use collaborative text editor</label>
-                </span>
+                <Checkbox checked={useCollaborativeEditing}>Experimental: use collaborative text editor</Checkbox>
             </div>
         </div>
     )

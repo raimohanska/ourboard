@@ -15,16 +15,18 @@
 }
 
 .checkbox {
-    @extend .icon;
-    background-image: url(img/unchecked-checkbox.png);
+    display: flex;
     cursor: pointer;
-    &.checked {
-        background-image: url(img/checked-checkbox.png);
-    }
-    width: initial;
+    width: 100%;
     min-width: 1em;
-    padding-left: 1.5em;
-    color: $black; /* to prevent link-like coloring for contained text */
+    gap: 1em;
+
+    > .icon {
+        background-image: url(img/unchecked-checkbox.png);
+        &.checked {
+            background-image: url(img/checked-checkbox.png);
+        }
+    }
 }
 
 .icon {

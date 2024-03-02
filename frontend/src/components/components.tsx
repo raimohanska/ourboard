@@ -31,14 +31,17 @@ export const TextArea = (props: { value: L.Atom<string> } & any) => {
     )
 }
 
-export const Checkbox = (props: { checked: L.Atom<boolean> }) => {
+export const Checkbox = (props: { checked: L.Atom<boolean>; children?: H.HarmajaChildOrChildren }) => {
     return (
-        <a
-            className={props.checked.pipe(L.map((c) => (c ? "checkbox checked" : "checkbox")))}
+        <div
+            className="checkbox"
             onClick={(e) => {
                 props.checked.modify((c: boolean) => !c)
                 e.stopPropagation()
             }}
-        />
+        >
+            <span className={props.checked.pipe(L.map((c) => (c ? "icon checked" : "icon")))} />
+            {props.children}
+        </div>
     )
 }
