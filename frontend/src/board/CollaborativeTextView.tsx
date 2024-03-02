@@ -90,7 +90,12 @@ export function CollaborativeTextView({
         <div
             className="quill-wrapper text"
             onKeyDown={(e) => e.stopPropagation()}
-            onKeyUp={(e) => e.stopPropagation()}
+            onKeyUp={(e) => {
+                e.stopPropagation()
+                if (e.key === "Escape") {
+                    focus.set({ status: "selected", itemIds: new Set([id]), connectionIds: new Set() })
+                }
+            }}
             onKeyPress={(e) => e.stopPropagation()}
             onDoubleClick={(e) => {
                 e.stopPropagation()
