@@ -30,14 +30,19 @@ export function BoardYJSServer(ws: expressWs.Instance, path: string) {
         persistence: {
             bindState: async (docName, ydoc) => {
                 const boardId = docName
-                await withDBClient(async (client) => {
-                    console.log(`Loading CRDT updates from DB for board ${boardId}`)
-                    const updates = await getBoardHistoryCrdtUpdates(client, boardId)
+                const updates = await withDBClient(async (client) => getBoardHistoryCrdtUpdates(client, boardId))
+
+                if (updates.length === 0) {
+                    const initUpdate = Y.encodeStateAsUpdate(ydoc)
+                    console.log(`Storing initial CRDT state to DB for board ${boardId}`)
+                    updateBoardCrdt(boardId, initUpdate)
+                } else {
+                    console.log(`Loaded ${updates.length} CRDT updates from DB for board ${boardId}`)
                     for (const update of updates) {
                         Y.applyUpdate(ydoc, update)
                     }
-                    console.log(`Loaded ${updates.length} CRDT updates from DB for board ${boardId}`)
-                })
+                }
+
                 ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
                     updateBoardCrdt(boardId, update)
                 })

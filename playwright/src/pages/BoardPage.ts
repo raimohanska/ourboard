@@ -1,17 +1,17 @@
-import { Locator, Page, expect, selectors } from "@playwright/test"
+import { Browser, Locator, Page, expect, selectors } from "@playwright/test"
 import { navigateToDashboard } from "./DashboardPage"
 import { sleep } from "../../../common/src/sleep"
 import { assertNotNull } from "../../../common/src/assertNotNull"
 
-export async function navigateToBoard(page: Page, boardId: string) {
+export async function navigateToBoard(page: Page, browser: Browser, boardId: string) {
     selectors.setTestIdAttribute("data-test")
     await page.goto("http://localhost:1337/b/" + boardId)
-    return BoardPage(page)
+    return BoardPage(page, browser)
 }
 
-export async function navigateToNewBoard(page: Page, boardName?: string) {
+export async function navigateToNewBoard(page: Page, browser: Browser, boardName?: string) {
     boardName = boardName || `Test board ${semiUniqueId()}`
-    const dashboard = await navigateToDashboard(page)
+    const dashboard = await navigateToDashboard(page, browser)
     return await dashboard.createNewBoard(boardName)
 }
 
@@ -20,7 +20,7 @@ export const semiUniqueId = () => {
     return now.substring(now.length - 5)
 }
 
-export function BoardPage(page: Page) {
+export function BoardPage(page: Page, browser: Browser) {
     const board = page.locator(".online .board")
     const newNoteOnPalette = page.getByTestId("palette-new-note")
     const newTextOnPalette = page.getByTestId("palette-new-text")
@@ -231,6 +231,28 @@ export function BoardPage(page: Page) {
             },
         },
         contextMenu: ContextMenu(page),
+        async deleteIndexedDb() {
+            await page.evaluate(async (boardId) => {
+                const request = indexedDB.deleteDatabase(`b/${boardId}`)
+                await new Promise((resolve, reject) => {
+                    request.onsuccess = resolve
+                    request.onerror = reject
+                })
+            }, this.getBoardId())
+            expect
+                .poll(async () => {
+                    const databases = await page.evaluate(async (boardId) => {
+                        return await indexedDB.databases()
+                    }, this.getBoardId())
+                    return databases
+                })
+                .not.toContain(expect.objectContaining({ name: `b/${this.getBoardId()}` }))
+        },
+        async openBoardInNewBrowser() {
+            const boardId = this.getBoardId()
+            const newBoard = await navigateToBoard(await (await browser.newContext()).newPage(), browser, boardId)
+            return newBoard
+        },
     }
 }
 

@@ -3,26 +3,26 @@ import { sleep } from "../../../common/src/sleep"
 import { navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
 
 test.describe("Basic board functionality", () => {
-    test("Can create note by dragging from palette", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Create note by dragging from palette", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const userPageNoteText = `note-${semiUniqueId()}`
         await board.createNoteWithText(100, 200, userPageNoteText)
     })
 
-    test("Can create text by dragging from palette", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Create text by dragging from palette", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const userPageNoteText = `note-${semiUniqueId()}`
         await board.createText(100, 200, userPageNoteText)
     })
 
-    test("Can create container by dragging from palette", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Create container by dragging from palette", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const userPageNoteText = `note-${semiUniqueId()}`
         await board.createArea(100, 200, userPageNoteText)
     })
 
-    test("Dragging notes", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Drag notes", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
         const semigroups = await board.createNoteWithText(200, 200, "Semigroups")
 
@@ -37,14 +37,12 @@ test.describe("Basic board functionality", () => {
             await board.assertItemPosition(monoids, 400, 300)
             await board.assertItemPosition(semigroups, 300, 200)
         })
-
-        // TODO: test persistence
     })
 
     // TODO: test creating and modifying connections
 
-    test("Changing note color", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Change note color", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
         const colorsAndShapes = await board.contextMenu.openColorsAndShapes()
         await colorsAndShapes.selectColor("pink")
@@ -52,8 +50,8 @@ test.describe("Basic board functionality", () => {
     })
 
     test.describe("Duplicate items", () => {
-        test("Duplicate text by Ctrl+D", async ({ page }) => {
-            const board = await navigateToNewBoard(page)
+        test("Duplicate text by Ctrl+D", async ({ page, browser }) => {
+            const board = await navigateToNewBoard(page, browser)
             const monoids = await board.createText(100, 200, "Monoids")
             const functors = await board.createNoteWithText(300, 200, "Functors")
             await board.selectItems(monoids, functors)
@@ -62,8 +60,8 @@ test.describe("Basic board functionality", () => {
             await expect(functors).toHaveCount(2)
         })
 
-        test("Duplicating a container with child items", async ({ page }) => {
-            const board = await navigateToNewBoard(page)
+        test("Duplicate a container with child items", async ({ page, browser }) => {
+            const board = await navigateToNewBoard(page, browser)
             const container = await board.createArea(100, 200, "Container")
             const text = await board.createText(150, 250, "text")
             await board.selectItems(container)
@@ -72,8 +70,8 @@ test.describe("Basic board functionality", () => {
             await expect(clonedText).toHaveText("text")
         })
 
-        test("Duplicating deeper hierarchy", async ({ page }) => {
-            const board = await navigateToNewBoard(page)
+        test("Duplicate deeper hierarchy", async ({ page, browser }) => {
+            const board = await navigateToNewBoard(page, browser)
             const container = await board.createArea(100, 200, "Top")
             await board.dragSelectionBottomCorner(550, 550)
             const container2 = await board.createArea(110, 220, "Middle")
@@ -85,9 +83,9 @@ test.describe("Basic board functionality", () => {
         })
     })
 
-    test.skip("Copy, paste and cut", async ({ page }) => {
+    test.skip("Copy, paste and cut", async ({ page, browser }) => {
         // TODO: not sure how to trigger native copy, paste events
-        const board = await navigateToNewBoard(page)
+        const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
         await page.keyboard.press("Control+c", {})
         await board.clickOnBoard({ x: 500, y: 300 })
@@ -98,8 +96,8 @@ test.describe("Basic board functionality", () => {
         await expect(board.getNote("Monads")).toBeVisible()
     })
 
-    test("Move items with arrow keys", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Move items with arrow keys", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
         const origPos = await board.getItemPosition(monoids)
         await test.step("Normally", async () => {
@@ -116,8 +114,8 @@ test.describe("Basic board functionality", () => {
         })
     })
 
-    test("Deleting notes", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Delete notes", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
 
         await test.step("With delete key", async () => {
@@ -132,8 +130,8 @@ test.describe("Basic board functionality", () => {
         })
     })
 
-    test("Aligning notes", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Align notes", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const n1 = await board.createNoteWithText(250, 120, "ALIGN")
         const n2 = await board.createNoteWithText(450, 100, "ALL")
         const n3 = await board.createNoteWithText(320, 250, "THESE")
@@ -145,27 +143,57 @@ test.describe("Basic board functionality", () => {
         expect(newCoordinates.every((c) => c.x === originalCoordinates[0].x)).toBeTruthy()
     })
 
-    test("Can edit note text", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Edit note text", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
         const semigroups = await board.createNoteWithText(200, 200, "Semigroups")
 
         await test.step("Change text", async () => {
             await board.changeItemText(board.getNote("Monoids"), "Monads")
             await expect(board.getNote("Monads")).toBeVisible()
-            await board.changeItemText(board.getNote("Monads"), "Monoids")
         })
 
         await test.step("Check persistence", async () => {
             await sleep(1000) // Time for persistence
             await page.reload()
-            await expect(monoids).toBeVisible()
+            await expect(board.getNote("Monads")).toBeVisible()
             await expect(semigroups).toBeVisible()
+        })
+
+        await test.step("Check with new session", async () => {
+            const newBoard = await board.openBoardInNewBrowser()
+            await newBoard.userInfo.dismiss()
+            await expect(newBoard.getNote("Monads")).toBeVisible()
         })
     })
 
-    test("Resizing notes", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Edit area text", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
+        const monoids = await board.createArea(100, 200, "Monoids")
+        const semigroups = await board.createArea(500, 200, "Semigroups")
+
+        await test.step("Change text", async () => {
+            await board.changeItemText(board.getArea("Monoids"), "Monads")
+            await expect(board.getArea("Monads")).toBeVisible()
+        })
+
+        await test.step("Check persistence", async () => {
+            await sleep(1000) // Time for persistence
+            await page.reload()
+            await expect(board.getArea("Monads")).toBeVisible()
+            await expect(semigroups).toBeVisible()
+        })
+
+        await test.step("Check with new session", async () => {
+            await board.deleteIndexedDb()
+            const newBoard = await board.openBoardInNewBrowser()
+            await newBoard.userInfo.dismiss()
+            await expect(newBoard.getArea("Monads")).toBeVisible()
+        })
+    })
+
+    test("Resize notes", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
 
         await test.step("Can drag to resize items", async () => {
@@ -175,8 +203,8 @@ test.describe("Basic board functionality", () => {
         })
     })
 
-    test("Selecting notes", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
+    test("Select notes", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(150, 200, "Monoids")
         const semigroups = await board.createNoteWithText(250, 200, "SemiGroups")
 

@@ -1,5 +1,5 @@
 import { Browser, Page, expect, test } from "@playwright/test"
-import { navigateToBoard, navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
+import { navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
 
 test.describe("Two simultaneous users", () => {
     test("two anonymous users can see each other notes", async ({ page, browser }) => {
@@ -59,10 +59,10 @@ test.describe("Two simultaneous users", () => {
     })
 
     async function createBoardWithTwoUsers(page: Page, browser: Browser) {
-        const user1Page = await navigateToNewBoard(page, "Collab test board")
+        const user1Page = await navigateToNewBoard(page, browser, "Collab test board")
 
         const boardId = user1Page.getBoardId()
-        const user2Page = await navigateToBoard(await (await browser.newContext()).newPage(), boardId)
+        const user2Page = await user1Page.openBoardInNewBrowser()
 
         await user1Page.userInfo.dismiss()
         await user2Page.userInfo.dismiss()

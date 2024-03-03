@@ -108,8 +108,11 @@ export function updateBoards(boardState: ServerSideBoardState, appEvent: BoardHi
 export function updateBoardCrdt(id: Id, crdtUpdate: Uint8Array) {
     const boardState = maybeGetBoard(id)
 
-    if (!boardState) throw Error(`No state for board ${id}`)
-    boardState.recentCrdtUpdate = combineCrdtUpdates(boardState.recentCrdtUpdate, crdtUpdate)
+    if (!boardState) {
+        console.warn("CRDT update for board not loaded into memory", id)
+    } else {
+        boardState.recentCrdtUpdate = combineCrdtUpdates(boardState.recentCrdtUpdate, crdtUpdate)
+    }
 }
 
 export async function addBoard(board: Board, createToken?: boolean): Promise<ServerSideBoardState> {
