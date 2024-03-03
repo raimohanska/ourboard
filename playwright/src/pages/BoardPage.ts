@@ -241,10 +241,15 @@ export function BoardPage(page: Page, browser: Browser) {
             }, this.getBoardId())
             expect
                 .poll(async () => {
-                    const databases = await page.evaluate(async (boardId) => {
-                        return await indexedDB.databases()
-                    }, this.getBoardId())
-                    return databases
+                    try {
+                        const databases = await page.evaluate(async (boardId) => {
+                            return await indexedDB.databases()
+                        }, this.getBoardId())
+                        return databases
+                    } catch (e) {
+                        console.warn("indexedDB.databases call failed. This is not supported in Firefox")
+                        return []
+                    }
                 })
                 .not.toContain(expect.objectContaining({ name: `b/${this.getBoardId()}` }))
         },
