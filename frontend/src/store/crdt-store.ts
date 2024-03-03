@@ -20,30 +20,6 @@ function BoardCRDT(
         return doc.getText(`items.${itemId}.${fieldName}`)
     }
 
-    doc.on("afterTransaction", (transaction, remote) => {
-        // TODO: rethink crdt.update structure - for the purpose of undo buffers now.
-
-        // This is not the most efficient way as we need to iterate through all document root entries.
-        // Haven't figured out a way to get changed keys directly from Yjs.
-        const items: Record<Id, Record<string, QuillDelta>> = {}
-        let hasChanges = false
-        for (const [fieldKey, field] of doc.share.entries()) {
-            const textField = (field as any) as Y.Text
-            if (transaction.changed.has(field) && field instanceof Y.Text) {
-                const delta = textField.toDelta() as QuillDelta
-                const [_, itemId, fieldName] = fieldKey.split(".")
-                hasChanges = true
-                if (!items[itemId]) {
-                    items[itemId] = {}
-                }
-                items[itemId][fieldName] = delta
-            }
-        }
-        if (hasChanges) {
-            dispatch({ action: "crdt.update", boardId, items })
-        }
-    })
-
     localBoardItemEvents.forEach((event) => {
         if (event.action === "item.add") {
             for (const item of event.items) {

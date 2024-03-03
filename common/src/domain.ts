@@ -133,7 +133,6 @@ export const ITEM_TYPES = {
     CONTAINER: "container",
 } as const
 export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
-export type CrdtDeltaEvent = { action: "crdt.update"; boardId: Id; items: Record<Id, Record<string, QuillDelta>> }
 export type QuillDelta = any // TODO: define this properly
 export type TextItemProperties = ItemProperties & {
     text: string
@@ -209,8 +208,8 @@ export type RecentBoardAttributes = { id: Id; name: string }
 export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEmail: string | null }
 
 export type BoardEvent = { boardId: Id }
-export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent | CrdtDeltaEvent
-export type LocalUIEvent = Undo | Redo | SetLocalBoard | GoOnline | BoardLoggedOut | GoOffline | CrdtDeltaEvent
+export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
+export type LocalUIEvent = Undo | Redo | SetLocalBoard | GoOnline | BoardLoggedOut | GoOffline
 export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse | AckAddBoard | ServerConfig
 export type ServerConfig = {
     action: "server.config"
