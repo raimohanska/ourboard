@@ -173,6 +173,7 @@ export function BoardPage(page: Page) {
         async assertItemColor(item: Locator, color: string) {
             await expect(item.locator(".shape")).toHaveCSS("background-color", color)
         },
+
         async changeItemText(item: Locator, text: string) {
             await item.click()
             await item.locator(".text").dblclick()
@@ -183,6 +184,13 @@ export function BoardPage(page: Page) {
                 await expect(item).toHaveClass(/selected/)
             } else {
                 await expect(item).not.toHaveClass(/selected/)
+            }
+        },
+        async assertLocked(item: Locator, locked: boolean = true) {
+            if (locked) {
+                await expect(item).toHaveClass(/locked/)
+            } else {
+                await expect(item).not.toHaveClass(/locked/)
             }
         },
         async clickOnBoard(position: { x: number; y: number }) {
@@ -208,11 +216,13 @@ export function BoardPage(page: Page) {
         },
         async selectItems(...items: Locator[]) {
             for (let i = 0; i < items.length; i++) {
+                await this.assertLocked(items[i], false)
                 if (i === 0) {
-                    await items[i].click()
+                    await items[i].click({ position: { x: 5, y: 5 } })
                 } else {
-                    await items[i].click({ modifiers: ["Shift"] })
+                    await items[i].click({ modifiers: ["Shift"], position: { x: 5, y: 5 } })
                 }
+                await this.assertSelected(items[i], true)
             }
         },
         userInfo: {

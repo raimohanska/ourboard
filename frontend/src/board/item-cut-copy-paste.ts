@@ -90,13 +90,14 @@ export function makeCopies(
     yDiff: number,
 ): { toCreate: Item[]; toSelect: Item[]; connections: Connection[] } {
     const items = itemsAndConnections.items
-    const containerIds = items.map((i) => i.id)
-    const contained = items.filter((i) => !!i.containerId && containerIds.includes(i.containerId))
+    const ids = new Set(items.map((i) => i.id))
+    const contained = items.filter((i) => !!i.containerId && ids.has(i.containerId))
     const notContained = items.filter((i) => !contained.some((c) => c.id === i.id))
     const oldToNewId: Record<Id, Id> = {}
     let toCreate: Item[] = []
     // As a side effect makeCopy adds items to toCreate
     const toSelect = notContained.map(makeCopy)
+    // As a result, the top-level (notContained) copied items will be selected
     const connections = itemsAndConnections.connections.map((c) => {
         return {
             ...c,
@@ -127,11 +128,10 @@ export function makeCopies(
         const containerId = i.id
         const newContainer = flatCopy(i)
         toCreate.push(newContainer)
-        // TODO: this won't work for deep containment hierarchies
         contained
             .filter((ctd) => ctd.containerId === containerId)
             .forEach((ctd) => {
-                toCreate.push(makeCopy({ ...ctd, containerId: newContainer.id }))
+                makeCopy({ ...ctd, containerId: newContainer.id })
             })
         return newContainer
     }

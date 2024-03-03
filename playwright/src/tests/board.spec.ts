@@ -42,7 +42,6 @@ test.describe("Basic board functionality", () => {
     })
 
     // TODO: test creating and modifying connections
-    // TODO: test duplicating multiple items
 
     test("Changing note color", async ({ page }) => {
         const board = await navigateToNewBoard(page)
@@ -52,11 +51,38 @@ test.describe("Basic board functionality", () => {
         await board.assertItemColor(monoids, "rgb(253, 196, 231)")
     })
 
-    test("Duplicate note by Ctrl+D", async ({ page }) => {
-        const board = await navigateToNewBoard(page)
-        const monoids = await board.createNoteWithText(100, 200, "Monoids")
-        await page.keyboard.press("Escape")
-        await page.keyboard.press("Control+d")
+    test.describe("Duplicate items", () => {
+        test("Duplicate text by Ctrl+D", async ({ page }) => {
+            const board = await navigateToNewBoard(page)
+            const monoids = await board.createText(100, 200, "Monoids")
+            const functors = await board.createNoteWithText(300, 200, "Functors")
+            await board.selectItems(monoids, functors)
+            await monoids.press("Control+d")
+            await expect(monoids).toHaveCount(2)
+            await expect(functors).toHaveCount(2)
+        })
+
+        test("Duplicating a container with child items", async ({ page }) => {
+            const board = await navigateToNewBoard(page)
+            const container = await board.createArea(100, 200, "Container")
+            const text = await board.createText(150, 250, "text")
+            await board.selectItems(container)
+            await container.press("Control+d")
+            const clonedText = board.getText("text").nth(1)
+            await expect(clonedText).toHaveText("text")
+        })
+
+        test("Duplicating deeper hierarchy", async ({ page }) => {
+            const board = await navigateToNewBoard(page)
+            const container = await board.createArea(100, 200, "Top")
+            await board.dragSelectionBottomCorner(550, 550)
+            const container2 = await board.createArea(110, 220, "Middle")
+            const text = await board.createText(150, 250, "Bottom")
+            await board.selectItems(container)
+            await container.press("Control+d")
+            const clonedText = board.getText("Bottom").nth(1)
+            await expect(clonedText).toHaveText("Bottom")
+        })
     })
 
     test.skip("Copy, paste and cut", async ({ page }) => {
