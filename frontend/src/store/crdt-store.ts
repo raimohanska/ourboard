@@ -19,7 +19,7 @@ function BoardCRDT(
         return doc.getText(`items.${itemId}.${fieldName}`)
     }
 
-    localBoardItemEvents.forEach((event) => {
+    localBoardItemEvents.pipe(L.filter((e) => e.boardId === boardId)).forEach((event) => {
         if (event.action === "item.add") {
             for (const item of event.items) {
                 if (isTextItem(item) && item.crdt) {

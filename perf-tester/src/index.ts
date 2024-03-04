@@ -123,7 +123,7 @@ const BOARD_IDS = BOARD_ID.split(",")
 const DOMAIN = process.env.DOMAIN
 
 const NOTES_PER_SEC = parseFloat(process.env.NOTES_PER_SEC ?? "0.1")
-const TEXTS_PER_SEC = parseFloat(process.env.TEXSTS_PER_SEC ?? "0.0")
+const TEXTS_PER_SEC = parseFloat(process.env.TEXTS_PER_SEC ?? "0.0")
 const EDITS_PER_SEC = parseFloat(process.env.EDITS_PER_SEC ?? "0")
 const CURSOR_MOVES_PER_SEC = parseFloat(process.env.CURSOR_MOVES_PER_SEC ?? "10")
 
