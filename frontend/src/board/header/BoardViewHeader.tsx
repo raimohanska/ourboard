@@ -1,7 +1,6 @@
 import { Fragment, h } from "harmaja"
 import { getNavigator } from "harmaja-router"
 import * as L from "lonna"
-import * as uuid from "uuid"
 import { AccessLevel, Board, EventFromServer, UserSessionInfo } from "../../../../common/src/domain"
 import { Routes, createBoardAndNavigate } from "../../board-navigation"
 import { EditableSpan } from "../../components/EditableSpan"
@@ -12,6 +11,7 @@ import { OtherUsersView } from "./OtherUsersView"
 import { SharingModalDialog } from "./SharingModalDialog"
 import { UserInfoView } from "./UserInfoView"
 import { Rect } from "../../../../common/src/geometry"
+import { CRDTStore } from "../../store/crdt-store"
 
 export function BoardViewHeader({
     usersOnBoard,
@@ -23,6 +23,7 @@ export function BoardViewHeader({
     eventsFromServer,
     viewRect,
     online,
+    crdtStore,
 }: {
     usersOnBoard: L.Property<UserSessionInfo[]>
     board: L.Property<Board>
@@ -33,6 +34,7 @@ export function BoardViewHeader({
     eventsFromServer: L.EventStream<EventFromServer>
     viewRect: L.Property<Rect>
     online: L.Property<boolean>
+    crdtStore: CRDTStore
 }) {
     const editingAtom = L.atom(false)
     const nameAtom = L.atom(
@@ -42,9 +44,8 @@ export function BoardViewHeader({
     const navigator = getNavigator<Routes>()
     function makeCopy() {
         const newBoard = {
-            ...board.get(),
+            ...crdtStore.cloneBoard(board.get()),
             name: `${nameAtom.get()} copy`,
-            id: uuid.v4(),
             accessPolicy: defaultAccessPolicy(sessionState.get(), false),
         }
         createBoardAndNavigate(newBoard, dispatch, navigator, eventsFromServer)

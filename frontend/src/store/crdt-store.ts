@@ -2,9 +2,10 @@ import * as L from "lonna"
 import { IndexeddbPersistence } from "y-indexeddb"
 import { WebsocketProvider } from "y-websocket"
 import * as Y from "yjs"
-import { Id, Item, PersistableBoardItemEvent, QuillDelta, isTextItem } from "../../../common/src/domain"
+import { Board, Id, Item, PersistableBoardItemEvent, QuillDelta, isTextItem } from "../../../common/src/domain"
 import { getWebSocketRootUrl } from "./server-connection"
 import { Dispatch } from "./board-store"
+import * as uuid from "uuid"
 
 type BoardCRDT = ReturnType<typeof BoardCRDT>
 
@@ -44,6 +45,18 @@ function BoardCRDT(
         })
     }
 
+    function importItems(items: Item[]) {
+        for (const item of items) {
+            if (isTextItem(item) && item.crdt) {
+                if (item.textAsDelta) {
+                    getField(item.id, "text").applyDelta(item.textAsDelta)
+                } else {
+                    throw Error("textAsDelta is missing ")
+                }
+            }
+        }
+    }
+
     const persistence = new IndexeddbPersistence(`b/${boardId}`, doc)
 
     persistence.on("synced", () => {
@@ -64,6 +77,7 @@ function BoardCRDT(
         doc,
         getField,
         augmentItems,
+        importItems,
         awareness: provider.awareness,
     }
 }
@@ -93,8 +107,28 @@ export function CRDTStore(
         return boardCrdt.augmentItems(items)
     }
 
+    function cloneBoard(board: Board): Board {
+        const boardCrdt = boards.get(board.id)
+        if (!boardCrdt) {
+            throw Error("Assertion failed: board not found")
+        }
+
+        const newId = uuid.v4()
+        const items = boardCrdt.augmentItems(Object.values(board.items))
+        const newBoard = {
+            ...board,
+            items: Object.fromEntries(items.map((i) => [i.id, i])),
+            id: newId,
+        }
+
+        const newBoardCrdt = getBoardCrdt(newId)
+        newBoardCrdt.importItems(items)
+        return newBoard
+    }
+
     return {
         getBoardCrdt,
         augmentItems,
+        cloneBoard,
     }
 }

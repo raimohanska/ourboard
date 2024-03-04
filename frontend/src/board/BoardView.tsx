@@ -298,6 +298,7 @@ export const BoardView = ({
                     eventsFromServer: boardStore.eventsFromServer,
                     viewRect,
                     online: L.view(boardStore.state, (s) => s.status === "online"),
+                    crdtStore: boardStore.crdtStore,
                 }}
             />
             <div className="content-container" ref={containerElement.set}>

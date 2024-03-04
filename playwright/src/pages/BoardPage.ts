@@ -100,6 +100,9 @@ export function BoardPage(page: Page, browser: Browser) {
         async assertStatusMessage(message: string) {
             await expect(page.locator(".board-status-message")).toHaveText(message)
         },
+        async cloneBoard() {
+            await page.getByTitle("Make a copy").click()
+        },
         async goToDashBoard() {
             await page.getByRole("link", { name: "All boards" }).click()
         },

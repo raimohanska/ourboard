@@ -253,4 +253,25 @@ test.describe("Basic board functionality", () => {
             await board.assertSelected(semigroups)
         })
     })
+    test("Clone the board", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser, "clone this board")
+        const semigroups = await board.createArea(500, 200, "Semigroups")
+        const functors = await board.createNoteWithText(200, 200, "Functors")
+        await board.cloneBoard()
+        await board.assertBoardName("clone this board copy")
+        await expect(semigroups).toBeVisible()
+        await expect(functors).toBeVisible()
+
+        await test.step("Check persistence", async () => {
+            await page.reload()
+            await expect(semigroups).toBeVisible()
+        })
+
+        await test.step("Check with new session", async () => {
+            await board.deleteIndexedDb()
+            const newBoard = await board.openBoardInNewBrowser()
+            await newBoard.userInfo.dismiss()
+            await expect(newBoard.getArea("Semigroups")).toBeVisible()
+        })
+    })
 })
