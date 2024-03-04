@@ -290,5 +290,8 @@ function ContextMenu(page: Page) {
                 bottom: submenu.getByTitle("Align bottom"),
             }
         },
+        async toggleContentsHidden() {
+            await contextMenu.locator(".visibility .icon").click()
+        },
     }
 }

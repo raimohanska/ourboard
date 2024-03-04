@@ -34,7 +34,7 @@ export function lockMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     return L.view(hasItems, nextLockState, (hasItems, nextState) => {
         return hasItems
             ? [
-                  <div className="icon-group">
+                  <div className="icon-group lock">
                       <span
                           className={L.view(enabled, (e) => (e ? "icon" : "icon disabled"))}
                           title={nextState === "locked" ? "Lock item(s)" : "Unlock item(s)"}

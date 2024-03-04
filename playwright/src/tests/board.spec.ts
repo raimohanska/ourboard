@@ -142,7 +142,10 @@ test.describe("Basic board functionality", () => {
         const originalCoordinates = await Promise.all([n1, n2, n3].map((n) => board.getItemPosition(n)))
         await (await board.contextMenu.openHorizontalAlign()).left.click()
         const newCoordinates = await Promise.all([n1, n2, n3].map((n) => board.getItemPosition(n)))
-        expect(newCoordinates.every((c) => c.x === originalCoordinates[0].x)).toBeTruthy()
+        const expectedX = originalCoordinates[0].x
+        for (let i = 1; i < newCoordinates.length; i++) {
+            expect(newCoordinates[i].x).toEqual(expectedX)
+        }
     })
 
     test("Edit note text", async ({ page, browser }) => {
@@ -191,6 +194,28 @@ test.describe("Basic board functionality", () => {
             const newBoard = await board.openBoardInNewBrowser()
             await newBoard.userInfo.dismiss()
             await expect(newBoard.getArea("Monads")).toBeVisible()
+        })
+    })
+
+    test("Hide area contents", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
+        const area = await board.createArea(100, 200, "Area")
+        const text = await board.createNoteWithText(150, 250, "text")
+        await board.selectItems(area)
+        await board.contextMenu.toggleContentsHidden()
+        await expect(text).not.toBeVisible()
+
+        await test.step("Check persistence", async () => {
+            await sleep(1000) // Time for persistence
+            await page.reload()
+            await expect(text).not.toBeVisible()
+        })
+
+        await test.step("Check with new session", async () => {
+            await board.deleteIndexedDb()
+            const newBoard = await board.openBoardInNewBrowser()
+            await newBoard.userInfo.dismiss()
+            await expect(newBoard.getNote("text")).not.toBeVisible()
         })
     })
 

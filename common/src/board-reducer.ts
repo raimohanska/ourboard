@@ -415,22 +415,23 @@ function updateItems(board: Board, updateList: ItemUpdate[], inplace: boolean): 
         }
     })
 
-    function setVisibilityRecursively(parent: Item, allItems: Record<Id, Item>, hidden: boolean) {
-        const children = Object.values(allItems).filter((i) => i.containerId === parent.id)
+    function setVisibilityRecursively(parent: Item, hidden: boolean) {
+        const children = Object.values(resultItems).filter((i) => i.containerId === parent.id)
         children.forEach((child) => {
-            allItems[child.id] = { ...child, hidden }
-            setVisibilityRecursively(child, allItems, hidden)
+            resultItems[child.id] = { ...child, hidden }
+            setVisibilityRecursively(child, hidden)
         })
     }
 
     updateList.forEach((update) => {
         if ("contentsHidden" in update) {
             const container = board.items[update.id]
-            if (container && isContainer(container) && container.contentsHidden !== update.contentsHidden) {
-                setVisibilityRecursively(container, resultItems, update.contentsHidden ?? false)
+            if (container) {
+                setVisibilityRecursively(container, update.contentsHidden ?? false)
             }
         }
     })
+
     return resultItems
 }
 

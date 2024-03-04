@@ -323,12 +323,6 @@
             }
         }
 
-        .lock {
-            position: absolute;
-            bottom: 0.1em;
-            left: 0.1em;
-        }
-
         .cursor {
             z-index: $z-index-cursors;
             pointer-events: none;
