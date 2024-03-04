@@ -1,11 +1,10 @@
 import * as L from "lonna"
+import * as uuid from "uuid"
 import { IndexeddbPersistence } from "y-indexeddb"
 import { WebsocketProvider } from "y-websocket"
 import * as Y from "yjs"
 import { Board, Id, Item, PersistableBoardItemEvent, QuillDelta, isTextItem } from "../../../common/src/domain"
 import { getWebSocketRootUrl } from "./server-connection"
-import { Dispatch } from "./board-store"
-import * as uuid from "uuid"
 
 type BoardCRDT = ReturnType<typeof BoardCRDT>
 
@@ -13,7 +12,6 @@ function BoardCRDT(
     boardId: Id,
     online: L.Property<boolean>,
     localBoardItemEvents: L.EventStream<PersistableBoardItemEvent>,
-    dispatch: Dispatch,
 ) {
     const doc = new Y.Doc()
 
@@ -84,16 +82,12 @@ function BoardCRDT(
 
 export type CRDTStore = ReturnType<typeof CRDTStore>
 
-export function CRDTStore(
-    online: L.Property<boolean>,
-    localBoardItemEvents: L.EventStream<PersistableBoardItemEvent>,
-    dispatch: Dispatch,
-) {
+export function CRDTStore(online: L.Property<boolean>, localBoardItemEvents: L.EventStream<PersistableBoardItemEvent>) {
     const boards = new Map<Id, BoardCRDT>()
     function getBoardCrdt(boardId: Id): BoardCRDT {
         let boardCrdt = boards.get(boardId)
         if (!boardCrdt) {
-            boardCrdt = BoardCRDT(boardId, online, localBoardItemEvents, dispatch)
+            boardCrdt = BoardCRDT(boardId, online, localBoardItemEvents)
             boards.set(boardId, boardCrdt)
         }
         return boardCrdt

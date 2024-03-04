@@ -140,7 +140,9 @@ export function GenericServerConnection(
         }
     }
     const sentUIEvents = L.bus<UIEvent>()
-    ;(window as any).forceOffline = forceOffline
+    if (typeof window !== "undefined") {
+        ;(window as any).forceOffline = forceOffline
+    }
 
     return {
         send,
@@ -148,6 +150,5 @@ export function GenericServerConnection(
         sentUIEvents: sentUIEvents as L.EventStream<UIEvent>,
         connected: L.view(connectionStatus, (s) => s === "connected"),
         newSocket,
-        forceOffline,
     }
 }

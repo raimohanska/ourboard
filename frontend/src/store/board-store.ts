@@ -554,7 +554,6 @@ export function BoardStore(
     const crdtStore = CRDTStore(
         L.view(state, (s) => s.status === "online"),
         localBoardItemEvents,
-        dispatch,
     )
 
     return {

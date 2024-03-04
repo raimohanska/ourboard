@@ -516,6 +516,10 @@ export function isContainer(i: Item): i is Container {
     return i.type === "container"
 }
 
+export function isText(i: Item): i is Text {
+    return i.type === "text"
+}
+
 export function isItem(i: Item | Point | Connection): i is Item {
     return "type" in i
 }

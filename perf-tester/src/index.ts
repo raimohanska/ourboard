@@ -1,6 +1,18 @@
 import { sleep } from "../../common/src/sleep"
-import { defaultBoardSize, isNote, newNote, Point } from "../../common/src/domain"
+import {
+    CrdtEnabled,
+    defaultBoardSize,
+    isNote,
+    isPersistableBoardItemEvent,
+    isText,
+    UIEvent,
+    newNote,
+    newText,
+    Point,
+    EventWrapper,
+} from "../../common/src/domain"
 import { GenericServerConnection } from "../../frontend/src/store/server-connection"
+import { CRDTStore } from "../../frontend/src/store/crdt-store"
 import WebSocket from "ws"
 import _ from "lodash"
 import * as L from "lonna"
@@ -23,6 +35,13 @@ function createTester(nickname: string, boardId: string) {
     const WS_ADDRESS = `${DOMAIN ? "wss" : "ws"}://${DOMAIN ?? "localhost:1337"}/socket/board/${boardId}`
 
     let connection = GenericServerConnection(WS_ADDRESS, L.constant(false), (s) => new WebSocket(s) as any)
+    const localEvents = L.bus<UIEvent>()
+    localEvents.forEach(connection.send)
+
+    const crdtStore = CRDTStore(
+        connection.connected,
+        localEvents.pipe(L.filter(isPersistableBoardItemEvent)).applyScope(L.globalScope),
+    )
 
     connection.connected
         .pipe(
@@ -30,29 +49,40 @@ function createTester(nickname: string, boardId: string) {
             L.filter((c) => c),
         )
         .forEach(() => {
-            connection.send({ action: "board.join", boardId })
+            localEvents.push({ action: "board.join", boardId })
         })
     connection.bufferedServerEvents.forEach((event) => {
         if (event.action === "board.init" && "board" in event) {
             const boardAtInit = event.board
             const notes = Object.values(boardAtInit.items).filter(isNote)
+            const texts = Object.values(boardAtInit.items).filter(isText)
             setInterval(() => {
                 counter += increment
                 const position = add(center, {
                     x: radius * Math.sin(counter / 100),
                     y: radius * Math.cos(counter / 100),
                 })
-                connection.send({ action: "cursor.move", position, boardId })
+                localEvents.push({ action: "cursor.move", position, boardId })
                 if (Math.random() < notesPerInterval) {
                     const note = newNote("NOTE " + counter, "black", position.x, position.y)
                     notes.push(note)
-                    connection.send({
+                    localEvents.push({
                         action: "item.add",
                         boardId,
                         items: [note],
                         connections: [],
                     })
                 }
+                if (Math.random() < textsPerInterval) {
+                    const text = newText(CrdtEnabled, "TEXT " + counter, position.x, position.y)
+                    localEvents.push({
+                        action: "item.add",
+                        boardId,
+                        items: [text],
+                        connections: [],
+                    })
+                }
+                // TODO: add crdt edits
                 if (Math.random() < editsPerInterval && notes.length > 0) {
                     const target = _.sample(notes)!
                     if (!target) {
@@ -78,7 +108,7 @@ function createTester(nickname: string, boardId: string) {
             }, interval)
         }
         if (event.action === "board.join.ack") {
-            connection.send({ action: "nickname.set", nickname })
+            localEvents.push({ action: "nickname.set", nickname })
         }
     })
 }
@@ -93,12 +123,14 @@ const BOARD_IDS = BOARD_ID.split(",")
 const DOMAIN = process.env.DOMAIN
 
 const NOTES_PER_SEC = parseFloat(process.env.NOTES_PER_SEC ?? "0.1")
+const TEXTS_PER_SEC = parseFloat(process.env.TEXSTS_PER_SEC ?? "0.0")
 const EDITS_PER_SEC = parseFloat(process.env.EDITS_PER_SEC ?? "0")
 const CURSOR_MOVES_PER_SEC = parseFloat(process.env.CURSOR_MOVES_PER_SEC ?? "10")
 
 // Calculated vars
 const interval = 1000 / CURSOR_MOVES_PER_SEC
 const notesPerInterval = (NOTES_PER_SEC / 1000) * interval
+const textsPerInterval = (TEXTS_PER_SEC / 1000) * interval
 const editsPerInterval = (EDITS_PER_SEC / 1000) * interval
 console.log(
     `Starting ${USER_COUNT} testers, moving cursors ${CURSOR_MOVES_PER_SEC}/sec, creating notes ${NOTES_PER_SEC}`,
