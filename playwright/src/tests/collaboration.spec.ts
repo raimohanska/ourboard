@@ -93,7 +93,7 @@ test.describe("Two simultaneous users", () => {
         })
     })
 
-    test("Offline changes are synced on re-connection (board initialized offline)", async ({ page, browser }) => {
+    test("Offline changes are synced on re-connection (first event offline)", async ({ page, browser }) => {
         const user1Page = await navigateToNewBoard(page, browser, "Collab test board")
 
         await user1Page.setOfflineMode(true)
