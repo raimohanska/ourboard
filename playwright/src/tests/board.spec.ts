@@ -21,6 +21,18 @@ test.describe("Basic board functionality", () => {
         await board.createArea(100, 200, userPageNoteText)
     })
 
+    test("Create note by double clicking on board", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
+        await board.board.dblclick({ position: { x: 200, y: 200 } })
+        await expect(board.getNote("HELLO")).toBeVisible()
+
+        await test.step("Also inside an Area", async () => {
+            await board.createArea(300, 200, "Container")
+            await board.board.dblclick({ position: { x: 350, y: 250 } })
+            await expect(board.getNote("HELLO")).toHaveCount(2)
+        })
+    })
+
     test("Drag notes", async ({ page, browser }) => {
         const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
@@ -31,11 +43,19 @@ test.describe("Basic board functionality", () => {
             await board.assertItemPosition(monoids, 300, 300)
         })
 
+        const area = await board.createArea(450, 100, "Container")
         await test.step("Drag multiple items", async () => {
             await board.selectItems(monoids, semigroups)
-            await board.dragItem(monoids, 400, 300)
-            await board.assertItemPosition(monoids, 400, 300)
-            await board.assertItemPosition(semigroups, 300, 200)
+            await board.dragItem(monoids, 600, 300)
+            await board.assertItemPosition(monoids, 600, 300)
+            await board.assertItemPosition(semigroups, 500, 200)
+        })
+
+        await test.step("Drag area to move contained items", async () => {
+            await board.dragItem(area, 300, 300)
+            await board.assertItemPosition(area, 300, 300)
+            await board.assertItemPosition(monoids, 240, 360)
+            await board.assertItemPosition(semigroups, 140, 260)
         })
     })
 
