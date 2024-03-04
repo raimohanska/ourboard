@@ -166,7 +166,6 @@
 
             > .quill-wrapper {
                 width: 100%;
-                height: 100%;
                 display: flex;
                 padding: 0;
                 > .quill-editor {
@@ -179,6 +178,12 @@
                             padding: 0;
                         }
                     }
+                }
+            }
+
+            &.text {
+                > .quill-wrapper {
+                    height: 100%;
                 }
             }
         }
