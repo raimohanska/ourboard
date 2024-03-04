@@ -10,7 +10,7 @@ const SERVER_EVENTS_BUFFERING_MILLIS = 20
 
 export type ServerConnection = ReturnType<typeof GenericServerConnection>
 
-export type ConnectionStatus = "connecting" | "connected" | "sleeping" | "reconnecting"
+export type ConnectionStatus = "connecting" | "connected" | "sleeping" | "reconnecting" | "offline"
 
 export function getWebSocketRootUrl() {
     const WS_PROTOCOL = location.protocol === "http:" ? "ws:" : "wss:"
@@ -43,11 +43,12 @@ export function GenericServerConnection(
     )
 
     const connectionStatus = L.atom<ConnectionStatus>("connecting")
+    const forceOffline = L.atom<boolean>(false)
     let currentSocketAddress = initialSocketAddress
     let socket = initSocket()
 
     setInterval(() => {
-        if (documentHidden.get() && connectionStatus.get() === "connected") {
+        if (documentHidden.get() && connectionStatus.get() === "connected" && socket) {
             console.log("Document hidden, closing socket")
             connectionStatus.set("sleeping")
             socket.close()
@@ -57,13 +58,16 @@ export function GenericServerConnection(
     }, 30000)
 
     documentHidden.onChange((hidden) => {
-        if (!hidden && connectionStatus.get() === "sleeping") {
+        if (!hidden && connectionStatus.get() === "sleeping" && !forceOffline.get()) {
             console.log("Document shown, reconnecting.")
             newSocket()
         }
     })
 
     function initSocket() {
+        if (forceOffline.get()) {
+            return null
+        }
         connectionStatus.set("connecting")
         console.log("Connecting to " + currentSocketAddress)
         const ws = createSocket(currentSocketAddress)
@@ -94,10 +98,13 @@ export function GenericServerConnection(
             }
         })
 
+        forceOffline.pipe(L.changes, L.take(1)).forEach((f) => f && ws.close())
         return ws
 
         async function reconnect() {
-            if (documentHidden.get()) {
+            if (forceOffline.get()) {
+                connectionStatus.set("offline")
+            } else if (documentHidden.get()) {
                 connectionStatus.set("sleeping")
             } else {
                 connectionStatus.set("reconnecting")
@@ -111,9 +118,11 @@ export function GenericServerConnection(
     }
 
     function newSocket() {
-        socket.close()
+        socket?.close()
         socket = initSocket()
     }
+
+    forceOffline.pipe(L.changes).forEach((f) => !f && newSocket())
 
     function send(e: UIEvent | EventWrapper) {
         //console.log("Sending", e)
@@ -125,12 +134,13 @@ export function GenericServerConnection(
             wrapper = e
         }
         try {
-            socket.send(JSON.stringify(wrapper))
+            socket?.send(JSON.stringify(wrapper))
         } catch (e) {
             console.error("Failed to send", e) // TODO
         }
     }
     const sentUIEvents = L.bus<UIEvent>()
+    ;(window as any).forceOffline = forceOffline
 
     return {
         send,
@@ -138,5 +148,6 @@ export function GenericServerConnection(
         sentUIEvents: sentUIEvents as L.EventStream<UIEvent>,
         connected: L.view(connectionStatus, (s) => s === "connected"),
         newSocket,
+        forceOffline,
     }
 }

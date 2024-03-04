@@ -85,6 +85,7 @@ export function BoardPage(page: Page, browser: Browser) {
     }
 
     return {
+        page,
         board,
         scrollContainer,
         newNoteOnPalette,
@@ -260,6 +261,16 @@ export function BoardPage(page: Page, browser: Browser) {
             const boardId = this.getBoardId()
             const newBoard = await navigateToBoard(await (await browser.newContext()).newPage(), browser, boardId)
             return newBoard
+        },
+        async setOfflineMode(offline: boolean) {
+            await page.evaluate((offline) => {
+                ;(window as any).forceOffline.set(offline)
+            }, offline)
+            if (offline) {
+                await expect(page.locator(".offline-status")).toBeVisible()
+            } else {
+                await expect(page.locator(".offline-status")).not.toBeVisible()
+            }
         },
     }
 }

@@ -348,12 +348,16 @@ export function BoardStore(
             return { ...state, users }
         } else if (event.action === "board.init") {
             console.log(`Going to online mode. Init as new board at serial ${event.board.serial}`)
+            const newServerShadow = event.board
+            // Local board = server shadow + local queue
+            const queue = state.queue.filter(isBoardHistoryEntry)
+            const board = queue.reduce((b, e) => boardReducer(b, e)[0], newServerShadow)
             return {
                 ...state,
                 status: "online",
-                board: event.board,
+                board,
                 accessLevel: event.accessLevel,
-                serverShadow: event.board,
+                serverShadow: newServerShadow,
                 sent: [],
             }
         } else if (event.action === "board.init.diff") {
@@ -484,10 +488,15 @@ export function BoardStore(
 
     const localBoardToSave = state.pipe(
         L.changes,
-        L.filter((state) => state.board !== undefined && state.board.serial > 0 && state.status === "online"),
+        L.filter((state) => {
+            if (state.serverShadow !== undefined && (state.status === "online" || state.status === "offline")) {
+                return true
+            }
+            return false
+        }),
         L.map((state) => {
             return {
-                serverShadow: state.serverShadow!,
+                serverShadow: assertNotNull(state.serverShadow),
                 queue: state.queue.filter(isBoardHistoryEntry),
             }
         }),

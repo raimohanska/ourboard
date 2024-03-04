@@ -1,8 +1,9 @@
 import { Browser, Page, expect, test } from "@playwright/test"
 import { navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
+import { sleep } from "../../../common/src/sleep"
 
 test.describe("Two simultaneous users", () => {
-    test("two anonymous users can see each other notes", async ({ page, browser }) => {
+    test("Two anonymous users can see each other notes", async ({ page, browser }) => {
         const { user1Page: userPage, user2Page } = await createBoardWithTwoUsers(page, browser)
         // create 2 notes, one on each page
         const userPageNoteText = `note-${semiUniqueId()}`
@@ -16,7 +17,7 @@ test.describe("Two simultaneous users", () => {
 
     const onTopPart = { position: { x: 9, y: 15 } } as const
 
-    test("users can collaboratively edit a text area", async ({ page, browser }) => {
+    test("Users can collaboratively edit a text area", async ({ page, browser }) => {
         const { user1Page, user2Page } = await createBoardWithTwoUsers(page, browser)
         await user1Page.createArea(100, 200, "initialText")
         await test.step("Both users edit text", async () => {
@@ -59,6 +60,50 @@ test.describe("Two simultaneous users", () => {
             await expect(user1Page.getArea("NewText")).not.toBeVisible()
             await expect(user2Page.getArea("User2Text")).toBeVisible()
             await expect(user1Page.getArea("User2Text")).toBeVisible()
+        })
+    })
+
+    test("Offline changes are synced on re-connection", async ({ page, browser }) => {
+        const { user1Page, user2Page } = await createBoardWithTwoUsers(page, browser)
+        await user1Page.createNoteWithText(100, 400, "basetext")
+        await sleep(1000)
+        await user1Page.setOfflineMode(true)
+        await user2Page.setOfflineMode(true)
+
+        await sleep(1000)
+        await user1Page.createArea(100, 200, "user 1 offline text")
+        await user2Page.createArea(500, 200, "user 2 offline text")
+
+        await test.step("Verify that changes are not synced while offline", async () => {
+            await sleep(1000)
+            await expect(user1Page.getArea("user 2 offline text")).not.toBeVisible()
+        })
+
+        await test.step("Reload page to verify offline persistence", async () => {
+            await user1Page.page.reload()
+            await expect(user1Page.getArea("user 1 offline text")).toBeVisible()
+        })
+
+        await test.step("Reconnect and verify that changes are synced", async () => {
+            await user1Page.setOfflineMode(false)
+            await user2Page.setOfflineMode(false)
+            await sleep(1000)
+            await expect(user1Page.getArea("user 2 offline text")).toBeVisible()
+            await expect(user2Page.getArea("user 1 offline text")).toBeVisible()
+        })
+    })
+
+    test("Offline changes are synced on re-connection (board initialized offline)", async ({ page, browser }) => {
+        const user1Page = await navigateToNewBoard(page, browser, "Collab test board")
+
+        await user1Page.setOfflineMode(true)
+
+        await sleep(1000)
+        await user1Page.createArea(100, 200, "user 1 offline text")
+
+        await test.step("Reload page to verify offline persistence", async () => {
+            await user1Page.page.reload()
+            await expect(user1Page.getArea("user 1 offline text")).toBeVisible()
         })
     })
 
