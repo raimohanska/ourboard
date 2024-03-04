@@ -1,22 +1,23 @@
-import { sleep } from "../../common/src/sleep"
+import dotenv from "dotenv"
+dotenv.config({ path: "../backend/.env" })
+
+import _ from "lodash"
+import * as L from "lonna"
+import WebSocket from "ws"
+import { NOTE_COLORS } from "../../common/src/colors"
 import {
     CrdtEnabled,
+    Point,
+    UIEvent,
     defaultBoardSize,
     isNote,
     isPersistableBoardItemEvent,
     isText,
-    UIEvent,
     newNote,
     newText,
-    Point,
-    EventWrapper,
 } from "../../common/src/domain"
-import { GenericServerConnection } from "../../frontend/src/store/server-connection"
 import { CRDTStore } from "../../frontend/src/store/crdt-store"
-import WebSocket from "ws"
-import _ from "lodash"
-import * as L from "lonna"
-import { NOTE_COLORS } from "../../common/src/colors"
+import { GenericServerConnection } from "../../frontend/src/store/server-connection"
 
 // hack, sue me
 // @ts-ignore
@@ -32,16 +33,34 @@ function createTester(nickname: string, boardId: string) {
     const center = { x: width / 2 - 30 + Math.random() * 60, y: height / 2 - 20 + Math.random() * 40 }
     const radius = 10 + Math.random() * 10
     const increment = Math.random() * 4 - 2
-    const WS_ADDRESS = `${DOMAIN ? "wss" : "ws"}://${DOMAIN ?? "localhost:1337"}/socket/board/${boardId}`
+    const WS_ROOT = `${DOMAIN ? "wss" : "ws"}://${DOMAIN ?? "localhost:1337"}`
+    const WS_ADDRESS = `${WS_ROOT}/socket/board/${boardId}`
 
     let connection = GenericServerConnection(WS_ADDRESS, L.constant(false), (s) => new WebSocket(s) as any)
+    let sessionId = ""
+    connection.bufferedServerEvents.forEach((event) => {
+        if (event.action === "board.join.ack") {
+            console.log("Got session id", sessionId)
+            sessionId = event.sessionId
+        }
+    })
     const localEvents = L.bus<UIEvent>()
     localEvents.forEach(connection.send)
+
+    class MyWebSocket extends WebSocket {
+        constructor(url: string | URL, protocols?: string | string[] | undefined) {
+            console.log("Creating websocket", url, protocols)
+            super(url as any, protocols, { headers: { Cookie: `sessionId=${sessionId}` } })
+        }
+    }
 
     const crdtStore = CRDTStore(
         connection.connected,
         localEvents.pipe(L.filter(isPersistableBoardItemEvent)).applyScope(L.globalScope),
+        () => WS_ROOT,
+        MyWebSocket as any,
     )
+    crdtStore.getBoardCrdt(boardId)
 
     connection.connected
         .pipe(
@@ -74,7 +93,7 @@ function createTester(nickname: string, boardId: string) {
                     })
                 }
                 if (Math.random() < textsPerInterval) {
-                    const text = newText(CrdtEnabled, "TEXT " + counter, position.x, position.y)
+                    const text = newText(CrdtEnabled, "TEXT " + counter, position.x, position.y, 5, 5)
                     localEvents.push({
                         action: "item.add",
                         boardId,

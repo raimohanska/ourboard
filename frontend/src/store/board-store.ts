@@ -35,9 +35,9 @@ import {
     newISOTimeStamp,
 } from "../../../common/src/domain"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
-import { ServerConnection } from "./server-connection"
+import { ServerConnection, getWebSocketRootUrl } from "./server-connection"
 import { UserSessionState, isLoginInProgress } from "./user-session-store"
-import { CRDTStore } from "./crdt-store"
+import { CRDTStore, WebSocketPolyfill } from "./crdt-store"
 import { serve } from "esbuild"
 export type Dispatch = (e: UIEvent) => void
 export type BoardStore = ReturnType<typeof BoardStore>
@@ -71,6 +71,7 @@ export function BoardStore(
     connection: ServerConnection,
     sessionInfo: L.Property<UserSessionState>,
     localStore: BoardLocalStore,
+    WebSocketPolyfill: WebSocketPolyfill = WebSocket,
 ) {
     type BoardStoreEvent =
         | BoardHistoryEntry
@@ -554,6 +555,8 @@ export function BoardStore(
     const crdtStore = CRDTStore(
         L.view(state, (s) => s.status === "online"),
         localBoardItemEvents,
+        getWebSocketRootUrl,
+        WebSocketPolyfill,
     )
 
     return {

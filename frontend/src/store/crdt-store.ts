@@ -7,11 +7,23 @@ import { Board, Id, Item, PersistableBoardItemEvent, QuillDelta, isTextItem } fr
 import { getWebSocketRootUrl } from "./server-connection"
 
 type BoardCRDT = ReturnType<typeof BoardCRDT>
+export type WebSocketPolyfill =
+    | {
+          new (url: string | URL, protocols?: string | string[] | undefined): WebSocket
+          prototype: WebSocket
+          readonly CLOSED: number
+          readonly CLOSING: number
+          readonly CONNECTING: number
+          readonly OPEN: number
+      }
+    | undefined
 
 function BoardCRDT(
     boardId: Id,
     online: L.Property<boolean>,
     localBoardItemEvents: L.EventStream<PersistableBoardItemEvent>,
+    getSocketRoot: () => string,
+    WebSocketPolyfill: WebSocketPolyfill,
 ) {
     const doc = new Y.Doc()
 
@@ -55,14 +67,17 @@ function BoardCRDT(
         }
     }
 
-    const persistence = new IndexeddbPersistence(`b/${boardId}`, doc)
+    if (typeof indexedDB != "undefined") {
+        const persistence = new IndexeddbPersistence(`b/${boardId}`, doc)
 
-    persistence.on("synced", () => {
-        console.log("CRDT data from indexedDB is loaded")
-    })
+        persistence.on("synced", () => {
+            console.log("CRDT data from indexedDB is loaded")
+        })
+    }
 
-    const provider = new WebsocketProvider(`${getWebSocketRootUrl()}/socket/yjs`, `board/${boardId}`, doc, {
+    const provider = new WebsocketProvider(`${getSocketRoot()}/socket/yjs`, `board/${boardId}`, doc, {
         connect: online.get(),
+        WebSocketPolyfill,
     })
 
     online.onChange((c) => (c ? provider.connect() : provider.disconnect()))
@@ -82,12 +97,17 @@ function BoardCRDT(
 
 export type CRDTStore = ReturnType<typeof CRDTStore>
 
-export function CRDTStore(online: L.Property<boolean>, localBoardItemEvents: L.EventStream<PersistableBoardItemEvent>) {
+export function CRDTStore(
+    online: L.Property<boolean>,
+    localBoardItemEvents: L.EventStream<PersistableBoardItemEvent>,
+    getSocketRoot: () => string = getWebSocketRootUrl,
+    WebSocketPolyfill: WebSocketPolyfill = WebSocket,
+) {
     const boards = new Map<Id, BoardCRDT>()
     function getBoardCrdt(boardId: Id): BoardCRDT {
         let boardCrdt = boards.get(boardId)
         if (!boardCrdt) {
-            boardCrdt = BoardCRDT(boardId, online, localBoardItemEvents)
+            boardCrdt = BoardCRDT(boardId, online, localBoardItemEvents, getSocketRoot, WebSocketPolyfill)
             boards.set(boardId, boardCrdt)
         }
         return boardCrdt

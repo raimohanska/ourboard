@@ -18,6 +18,7 @@ import { UserSessionState } from "./user-session-store"
 import { LocalStorageBoard } from "./board-local-store"
 import { sleep } from "../../../common/src/sleep"
 import { mkBootStrapEvent } from "../../../common/src/migration"
+import * as WebSocket from "ws"
 
 const otherUserEventAttributes = { user: { userType: "unidentified", nickname: "joe" }, timestamp: "0" } as const
 const localUser = { userType: "unidentified", nickname: "" } as const
@@ -303,7 +304,7 @@ async function initBoardStore({
         storeBoardState: async (newState: LocalStorageBoard) => {},
     }
 
-    const store = BoardStore(boardId, connection, sessionInfo, localStore)
+    const store = BoardStore(boardId, connection, sessionInfo, localStore, WebSocket as any)
 
     expect(store.state.get().board).toEqual(undefined)
     expect(store.state.get().queue).toEqual([])
