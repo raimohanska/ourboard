@@ -101,7 +101,7 @@ export function CRDTStore(
     online: L.Property<boolean>,
     localBoardItemEvents: L.EventStream<PersistableBoardItemEvent>,
     getSocketRoot: () => string = getWebSocketRootUrl,
-    WebSocketPolyfill: WebSocketPolyfill = WebSocket,
+    WebSocketPolyfill: WebSocketPolyfill = WebSocket as any,
 ) {
     const boards = new Map<Id, BoardCRDT>()
     function getBoardCrdt(boardId: Id): BoardCRDT {
