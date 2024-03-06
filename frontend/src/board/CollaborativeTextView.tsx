@@ -90,24 +90,37 @@ export function CollaborativeTextView({
         quillEditor.get()?.formatText(0, 10000000, "align", align === "left" ? "" : align)
     })
 
+    let touchMoves = 0
+
     return (
         <div
             className="quill-wrapper text"
-            onKeyDown={(e) => e.stopPropagation()}
             onKeyUp={(e) => {
                 e.stopPropagation()
                 if (e.key === "Escape") {
                     focus.set({ status: "selected", itemIds: new Set([id]), connectionIds: new Set() })
                 }
             }}
-            onKeyPress={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+                e.stopPropagation()
+            }}
+            onKeyPress={(e) => {
+                e.stopPropagation()
+            }}
             onDoubleClick={(e) => {
                 e.stopPropagation()
                 quillEditor.get()?.focus()
             }}
             onTouchStart={(e) => {
                 preventDoubleClick(e)
-                quillEditor.get()?.focus()
+                touchMoves = 0
+            }}
+            onTouchMove={() => touchMoves++}
+            onTouchEnd={() => {
+                if (touchMoves === 0) {
+                    // This is a way to detect a tap (vs swipe)
+                    quillEditor.get()?.focus()
+                }
             }}
             onClick={handleClick}
             style={L.combineTemplate({ alignItems: L.view(item, getAlignItems) })}
