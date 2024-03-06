@@ -65,8 +65,13 @@ export function CollaborativeTextView({
         const q = quillEditor.get()
         if (q) {
             if (e) {
-                if (item.get().type === "container") {
-                    // For containers, select all text for quick rename
+                const multipleLines =
+                    q
+                        .getText()
+                        .split("\n")
+                        .filter((x) => x).length > 1
+                if (!multipleLines) {
+                    // For one-liners, select the whole text on double click
                     q.setSelection(0, 1000000)
                 }
             } else {
