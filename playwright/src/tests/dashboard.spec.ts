@@ -5,12 +5,12 @@ import { navigateToDashboard } from "../pages/DashboardPage"
 test.describe("Dashboard", () => {
     test("Creating a new board", async ({ page, browser }) => {
         const dashboard = await navigateToDashboard(page, browser)
-        const board = await dashboard.createNewBoard("My new board")
+        const board = await dashboard.createNewBoard({ boardName: "My new board" })
         await board.assertBoardName("My new board")
         await board.goToDashBoard()
 
         await test.step("Do it again to make sure it works", async () => {
-            await dashboard.createNewBoard("My new board")
+            await dashboard.createNewBoard({ boardName: "My new board" })
             await board.assertBoardName("My new board")
         })
 

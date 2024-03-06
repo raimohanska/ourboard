@@ -82,6 +82,16 @@ test.describe("Basic board functionality", () => {
             await expect(functors).toHaveCount(2)
         })
 
+        test("Duplicate text by Ctrl+D (legacy board)", async ({ page, browser }) => {
+            const board = await navigateToNewBoard(page, browser, { useCRDT: false })
+            const monoids = await board.createText(100, 200, "Monoids")
+            const functors = await board.createNoteWithText(300, 200, "Functors")
+            await board.selectItems(monoids, functors)
+            await monoids.press("Control+d")
+            await expect(monoids).toHaveCount(2)
+            await expect(functors).toHaveCount(2)
+        })
+
         test("Duplicate a container with child items", async ({ page, browser }) => {
             const board = await navigateToNewBoard(page, browser)
             const container = await board.createArea(100, 200, "Container")
@@ -274,7 +284,7 @@ test.describe("Basic board functionality", () => {
         })
     })
     test("Clone the board", async ({ page, browser }) => {
-        const board = await navigateToNewBoard(page, browser, "clone this board")
+        const board = await navigateToNewBoard(page, browser, { boardName: "clone this board" })
         const semigroups = await board.createArea(500, 200, "Semigroups")
         const functors = await board.createNoteWithText(200, 200, "Functors")
         await board.cloneBoard()
@@ -292,6 +302,21 @@ test.describe("Basic board functionality", () => {
             const newBoard = await board.openBoardInNewBrowser()
             await newBoard.userInfo.dismiss()
             await expect(newBoard.getArea("Semigroups")).toBeVisible()
+        })
+    })
+
+    test("Clone the board (legacy board)", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser, { boardName: "clone this board", useCRDT: false })
+        const semigroups = await board.createArea(500, 200, "Semigroups")
+        const functors = await board.createNoteWithText(200, 200, "Functors")
+        await board.cloneBoard()
+        await board.assertBoardName("clone this board copy")
+        await expect(semigroups).toBeVisible()
+        await expect(functors).toBeVisible()
+
+        await test.step("Check persistence", async () => {
+            await page.reload()
+            await expect(semigroups).toBeVisible()
         })
     })
 })

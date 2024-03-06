@@ -94,7 +94,7 @@ test.describe("Two simultaneous users", () => {
     })
 
     test("Offline changes are synced on re-connection (first event offline)", async ({ page, browser }) => {
-        const user1Page = await navigateToNewBoard(page, browser, "Collab test board")
+        const user1Page = await navigateToNewBoard(page, browser, { boardName: "Collab test board" })
 
         await user1Page.setOfflineMode(true)
 
@@ -108,7 +108,7 @@ test.describe("Two simultaneous users", () => {
     })
 
     async function createBoardWithTwoUsers(page: Page, browser: Browser) {
-        const user1Page = await navigateToNewBoard(page, browser, "Collab test board")
+        const user1Page = await navigateToNewBoard(page, browser, { boardName: "Collab test board" })
 
         const boardId = user1Page.getBoardId()
         const user2Page = await user1Page.openBoardInNewBrowser()

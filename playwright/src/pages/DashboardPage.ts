@@ -1,5 +1,5 @@
 import { Browser, Page, selectors } from "@playwright/test"
-import { BoardPage } from "./BoardPage"
+import { BoardPage, semiUniqueId, NewBoardOptions } from "./BoardPage"
 
 export async function navigateToDashboard(page: Page, browser: Browser) {
     selectors.setTestIdAttribute("data-test")
@@ -9,9 +9,14 @@ export async function navigateToDashboard(page: Page, browser: Browser) {
 
 export function DashboardPage(page: Page, browser: Browser) {
     return {
-        async createNewBoard(name: string) {
+        async createNewBoard(options?: NewBoardOptions) {
+            const name = options?.boardName ?? `Test board ${semiUniqueId()}`
+            const useCRDT = options?.useCRDT ?? true
+
             await page.getByPlaceholder("Enter board name").fill(name)
-            await page.getByText("use collaborative text editor").click()
+            if (useCRDT) {
+                await page.getByText("use collaborative text editor").click()
+            }
             await page.getByRole("button", { name: "Create" }).click()
             const board = BoardPage(page, browser)
             await board.assertBoardName(name)

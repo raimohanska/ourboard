@@ -9,10 +9,14 @@ export async function navigateToBoard(page: Page, browser: Browser, boardId: str
     return BoardPage(page, browser)
 }
 
-export async function navigateToNewBoard(page: Page, browser: Browser, boardName?: string) {
-    boardName = boardName || `Test board ${semiUniqueId()}`
+export type NewBoardOptions = Partial<{
+    boardName: string
+    useCRDT: boolean
+}>
+
+export async function navigateToNewBoard(page: Page, browser: Browser, options?: NewBoardOptions) {
     const dashboard = await navigateToDashboard(page, browser)
-    return await dashboard.createNewBoard(boardName)
+    return await dashboard.createNewBoard(options)
 }
 
 export const semiUniqueId = () => {
