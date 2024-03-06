@@ -1,6 +1,6 @@
 import { componentScope } from "harmaja"
 import * as L from "lonna"
-import { isSingleTouch, IS_TOUCHSCREEN } from "./touchScreen"
+import { IS_TOUCHSCREEN, isSingleTouch } from "./touchScreen"
 
 export function installDoubleClickHandler(action: (e: JSX.UIEvent) => void) {
     if (IS_TOUCHSCREEN) {
@@ -9,6 +9,9 @@ export function installDoubleClickHandler(action: (e: JSX.UIEvent) => void) {
             .pipe(L.applyScope(componentScope()))
             .forEach((e) => {
                 if (isSingleTouch(e)) {
+                    if (!!(e as any).PREVENT_DBL_CLICK) {
+                        return
+                    }
                     const now = new Date().getTime()
                     if (now - previousClick < 300) {
                         action(e)
@@ -24,4 +27,8 @@ export function installDoubleClickHandler(action: (e: JSX.UIEvent) => void) {
                 action(e)
             })
     }
+}
+
+export function preventDoubleClick(e: JSX.TouchEvent) {
+    ;(e as any).PREVENT_DBL_CLICK = true
 }

@@ -10,6 +10,7 @@ import { BoardFocus } from "./board-focus"
 import { contrastingColor } from "./contrasting-color"
 import { getAlignItems } from "./ItemView"
 import { ToolController } from "./tool-selection"
+import { preventDoubleClick } from "./double-click"
 
 Quill.register("modules/cursors", QuillCursors)
 
@@ -86,7 +87,6 @@ export function CollaborativeTextView({
     )
     const hAlign = L.view(item, getAlign, getHorizontalAlign).applyScope(componentScope())
     hAlign.onChange((align) => {
-        console.log(align)
         quillEditor.get()?.formatText(0, 10000000, "align", align === "left" ? "" : align)
     })
 
@@ -103,6 +103,10 @@ export function CollaborativeTextView({
             onKeyPress={(e) => e.stopPropagation()}
             onDoubleClick={(e) => {
                 e.stopPropagation()
+                quillEditor.get()?.focus()
+            }}
+            onTouchStart={(e) => {
+                preventDoubleClick(e)
                 quillEditor.get()?.focus()
             }}
             onClick={handleClick}
