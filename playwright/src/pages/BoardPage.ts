@@ -1,4 +1,4 @@
-import { Browser, Locator, Page, expect, selectors } from "@playwright/test"
+import { Browser, Locator, Page, expect, selectors, test } from "@playwright/test"
 import { navigateToDashboard } from "./DashboardPage"
 import { sleep } from "../../../common/src/sleep"
 import { assertNotNull } from "../../../common/src/assertNotNull"
@@ -14,10 +14,11 @@ export type NewBoardOptions = Partial<{
     useCRDT: boolean
 }>
 
-export async function navigateToNewBoard(page: Page, browser: Browser, options?: NewBoardOptions) {
-    const dashboard = await navigateToDashboard(page, browser)
-    return await dashboard.createNewBoard(options)
-}
+export const navigateToNewBoard = (page: Page, browser: Browser, options?: NewBoardOptions) =>
+    test.step("Create new board", async () => {
+        const dashboard = await navigateToDashboard(page, browser)
+        return await dashboard.createNewBoard(options)
+    })
 
 export const semiUniqueId = () => {
     const now = String(Date.now())
@@ -69,7 +70,6 @@ export function BoardPage(page: Page, browser: Browser) {
 
     async function createNew(paletteItem: Locator, x: number, y: number) {
         await expect(paletteItem).toBeVisible()
-
         await paletteItem.dispatchEvent("dragstart")
         await paletteItem.dispatchEvent("dragover")
         await moveMouseTo({ x, y })
@@ -77,16 +77,18 @@ export function BoardPage(page: Page, browser: Browser) {
     }
 
     async function dragElementOnBoard(element: Locator, x: number, y: number) {
-        const itemPos = await getElementPosition(element)
-        await moveMouseTo(itemPos)
-        await element.dispatchEvent("dragstart", await itemToClientPos(itemPos))
-        await element.dispatchEvent("drag")
-        page.locator(`.online .board`).dispatchEvent("dragover", await itemToClientPos(itemPos))
-        await moveMouseTo({ x, y })
-        page.locator(`.online .board`).dispatchEvent("dragover", await itemToClientPos({ x, y }))
-        await waitForThrottle()
-        await element.dispatchEvent("drag")
-        await element.dispatchEvent("dragend")
+        return await test.step(`Drag item to (${x}, ${y})`, async () => {
+            const itemPos = await getElementPosition(element)
+            await moveMouseTo(itemPos)
+            await element.dispatchEvent("dragstart", await itemToClientPos(itemPos))
+            await element.dispatchEvent("drag")
+            page.locator(`.online .board`).dispatchEvent("dragover", await itemToClientPos(itemPos))
+            await moveMouseTo({ x, y })
+            page.locator(`.online .board`).dispatchEvent("dragover", await itemToClientPos({ x, y }))
+            await waitForThrottle()
+            await element.dispatchEvent("drag")
+            await element.dispatchEvent("dragend")
+        })
     }
 
     return {
@@ -113,38 +115,44 @@ export function BoardPage(page: Page, browser: Browser) {
             await page.getByRole("link", { name: "All boards" }).click()
         },
         async createNoteWithText(x: number, y: number, text: string) {
-            await createNew(this.newNoteOnPalette, x, y)
-            await page.keyboard.type(`${text}`)
-            await page.keyboard.press("Escape")
-            await expect(this.getNote(text)).toBeVisible()
-            const result = this.getNote(text)
-            await expect(result).toHaveText(text)
-            return result
+            return await test.step("Create note " + text, async () => {
+                await createNew(this.newNoteOnPalette, x, y)
+                await page.keyboard.type(`${text}`)
+                await page.keyboard.press("Escape")
+                await expect(this.getNote(text)).toBeVisible()
+                const result = this.getNote(text)
+                await expect(result).toHaveText(text)
+                return result
+            })
         },
         async createText(x: number, y: number, text: string) {
-            await createNew(this.newTextOnPalette, x, y)
-            await this.getText("HELLO")
-                .locator(".text")
-                .click({ position: { x: 5, y: 5 } })
-            await page.keyboard.press("Delete")
-            await page.keyboard.press("Delete")
-            await page.keyboard.press("Delete")
-            await page.keyboard.press("Delete")
-            await page.keyboard.press("Delete")
-            await page.keyboard.type(`${text}`)
-            await expect(this.getText(text)).toBeVisible()
-            const result = this.getText(text)
-            await expect(result).toHaveText(text)
-            return result
+            return await test.step("Create text " + text, async () => {
+                await createNew(this.newTextOnPalette, x, y)
+                await this.getText("HELLO")
+                    .locator(".text")
+                    .click({ position: { x: 5, y: 5 } })
+                await page.keyboard.press("Delete")
+                await page.keyboard.press("Delete")
+                await page.keyboard.press("Delete")
+                await page.keyboard.press("Delete")
+                await page.keyboard.press("Delete")
+                await page.keyboard.type(`${text}`)
+                await expect(this.getText(text)).toBeVisible()
+                const result = this.getText(text)
+                await expect(result).toHaveText(text)
+                return result
+            })
         },
         async createArea(x: number, y: number, text: string) {
-            await createNew(this.newContainerOnPalette, x, y)
-            await this.getArea("Unnamed area").locator(".text").dblclick()
-            await page.keyboard.type(`${text}`)
-            await expect(this.getArea(text)).toBeVisible()
-            const result = this.getArea(text)
-            await expect(result).toHaveText(text)
-            return result
+            return await test.step("Create area " + text, async () => {
+                await createNew(this.newContainerOnPalette, x, y)
+                await this.getArea("Unnamed area").locator(".text").dblclick()
+                await page.keyboard.type(`${text}`)
+                await expect(this.getArea(text)).toBeVisible()
+                const result = this.getArea(text)
+                await expect(result).toHaveText(text)
+                return result
+            })
         },
         async dragItem(item: Locator, x: number, y: number) {
             await dragElementOnBoard(item, x, y)
@@ -163,18 +171,22 @@ export function BoardPage(page: Page, browser: Browser) {
             return page.locator(`.board > .container`).filter({ hasText: name })
         },
         async assertItemPosition(item: Locator, x: number, y: number) {
-            const pos = await getElementPosition(item)
-            expect(pos.x).toBeGreaterThan(x - 5)
-            expect(pos.x).toBeLessThan(x + 5)
-            expect(pos.y).toBeGreaterThan(y - 5)
-            expect(pos.y).toBeLessThan(y + 5)
+            return await test.step(`Assert item position at (${x}, ${y})`, async () => {
+                const pos = await getElementPosition(item)
+                expect(pos.x).toBeGreaterThan(x - 5)
+                expect(pos.x).toBeLessThan(x + 5)
+                expect(pos.y).toBeGreaterThan(y - 5)
+                expect(pos.y).toBeLessThan(y + 5)
+            })
         },
         async assertItemSize(item: Locator, width: number, height: number) {
-            const size = await getElementSize(item)
-            expect(size.width).toBeGreaterThan(width - 5)
-            expect(size.width).toBeLessThan(width + 5)
-            expect(size.height).toBeGreaterThan(height - 5)
-            expect(size.height).toBeLessThan(height + 5)
+            return await test.step(`Assert item size (${width}, ${height})`, async () => {
+                const size = await getElementSize(item)
+                expect(size.width).toBeGreaterThan(width - 5)
+                expect(size.width).toBeLessThan(width + 5)
+                expect(size.height).toBeGreaterThan(height - 5)
+                expect(size.height).toBeLessThan(height + 5)
+            })
         },
         async getItemPosition(item: Locator) {
             return await getElementPosition(item)
