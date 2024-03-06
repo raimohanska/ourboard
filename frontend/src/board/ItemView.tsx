@@ -148,6 +148,7 @@ export const ItemView = ({
                     focus={focus}
                     itemFocus={itemFocus}
                     crdtStore={boardStore.crdtStore}
+                    isLocked={isLocked}
                 />
             ) : (
                 <TextView

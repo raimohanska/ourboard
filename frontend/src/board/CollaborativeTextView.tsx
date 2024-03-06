@@ -22,6 +22,7 @@ interface CollaborativeTextViewProps {
     focus: L.Atom<BoardFocus>
     itemFocus: L.Property<"none" | "selected" | "dragging" | "editing">
     crdtStore: CRDTStore
+    isLocked: L.Property<boolean>
 }
 export function CollaborativeTextView({
     id,
@@ -31,6 +32,7 @@ export function CollaborativeTextView({
     toolController,
     focus,
     itemFocus,
+    isLocked,
     crdtStore,
 }: CollaborativeTextViewProps) {
     const fontSize = L.view(item, (i) => `${i.fontSize ? i.fontSize : 1}em`)
@@ -79,7 +81,9 @@ export function CollaborativeTextView({
         }
     }
 
-    const pointerEvents = L.view(itemFocus, (f) => (f === "editing" || f === "selected" ? "auto" : "none"))
+    const pointerEvents = L.view(itemFocus, isLocked, (f, l) =>
+        f === "editing" || f === "selected" || l ? "auto" : "none",
+    )
     const hAlign = L.view(item, getAlign, getHorizontalAlign).applyScope(componentScope())
     hAlign.onChange((align) => {
         console.log(align)
