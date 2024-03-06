@@ -116,7 +116,7 @@ export function CRDTStore(
     function augmentItems(boardId: Id, items: Item[]): Item[] {
         const boardCrdt = boards.get(boardId)
         if (!boardCrdt) {
-            throw Error("Assertion failed: board not found")
+            return items
         }
         return boardCrdt.augmentItems(items)
     }
