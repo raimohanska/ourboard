@@ -168,6 +168,11 @@
                 width: 100%;
                 display: flex;
                 padding: 0;
+
+                * {
+                    user-select: initial;
+                }
+
                 > .quill-editor {
                     width: 100%;
                     height: fit-content;
