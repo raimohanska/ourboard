@@ -24,6 +24,7 @@ export const semiUniqueId = () => {
     return now.substring(now.length - 5)
 }
 
+export type BoardPage = ReturnType<typeof BoardPage>
 export function BoardPage(page: Page, browser: Browser) {
     const board = page.locator(".online .board")
     const newNoteOnPalette = page.getByTestId("palette-new-note")

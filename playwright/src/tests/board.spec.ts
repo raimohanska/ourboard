@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test"
+import { Browser, Page, expect, test } from "@playwright/test"
 import { sleep } from "../../../common/src/sleep"
-import { navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
+import { BoardPage, navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
 
 test.describe("Basic board functionality", () => {
     test("Create note by dragging from palette", async ({ page, browser }) => {
@@ -9,13 +9,13 @@ test.describe("Basic board functionality", () => {
         await board.createNoteWithText(100, 200, userPageNoteText)
     })
 
-    test("Create text by dragging from palette", async ({ page, browser }) => {
+    testWithBothBoardTypes("Create text by dragging from palette", async ({ page, browser }) => {
         const board = await navigateToNewBoard(page, browser)
         const userPageNoteText = `note-${semiUniqueId()}`
         await board.createText(100, 200, userPageNoteText)
     })
 
-    test("Create container by dragging from palette", async ({ page, browser }) => {
+    testWithBothBoardTypes("Create container by dragging from palette", async ({ page, browser }) => {
         const board = await navigateToNewBoard(page, browser)
         const userPageNoteText = `note-${semiUniqueId()}`
         await board.createArea(100, 200, userPageNoteText)
@@ -33,7 +33,7 @@ test.describe("Basic board functionality", () => {
         })
     })
 
-    test("Drag notes", async ({ page, browser }) => {
+    testWithBothBoardTypes("Drag notes", async ({ page, browser }) => {
         const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
         const semigroups = await board.createNoteWithText(200, 200, "Semigroups")
@@ -72,8 +72,7 @@ test.describe("Basic board functionality", () => {
     })
 
     test.describe("Duplicate items", () => {
-        test("Duplicate text by Ctrl+D", async ({ page, browser }) => {
-            const board = await navigateToNewBoard(page, browser)
+        testWithBothBoardTypes("Duplicate text by Ctrl+D", async ({ board }) => {
             const monoids = await board.createText(100, 200, "Monoids")
             const functors = await board.createNoteWithText(300, 200, "Functors")
             await board.selectItems(monoids, functors)
@@ -82,18 +81,7 @@ test.describe("Basic board functionality", () => {
             await expect(functors).toHaveCount(2)
         })
 
-        test("Duplicate text by Ctrl+D (legacy board)", async ({ page, browser }) => {
-            const board = await navigateToNewBoard(page, browser, { useCRDT: false })
-            const monoids = await board.createText(100, 200, "Monoids")
-            const functors = await board.createNoteWithText(300, 200, "Functors")
-            await board.selectItems(monoids, functors)
-            await monoids.press("Control+d")
-            await expect(monoids).toHaveCount(2)
-            await expect(functors).toHaveCount(2)
-        })
-
-        test("Duplicate a container with child items", async ({ page, browser }) => {
-            const board = await navigateToNewBoard(page, browser)
+        testWithBothBoardTypes("Duplicate a container with child items", async ({ board }) => {
             const container = await board.createArea(100, 200, "Container")
             const text = await board.createText(150, 250, "text")
             await board.selectItems(container)
@@ -202,8 +190,7 @@ test.describe("Basic board functionality", () => {
         })
     })
 
-    test("Edit area text", async ({ page, browser }) => {
-        const board = await navigateToNewBoard(page, browser)
+    testWithBothBoardTypes("Edit area text", async ({ board, page }) => {
         const monoids = await board.createArea(100, 200, "Monoids")
         const semigroups = await board.createArea(500, 200, "Semigroups")
 
@@ -227,7 +214,7 @@ test.describe("Basic board functionality", () => {
         })
     })
 
-    test("Hide area contents", async ({ page, browser }) => {
+    testWithBothBoardTypes("Hide area contents", async ({ page, browser }) => {
         const board = await navigateToNewBoard(page, browser)
         const area = await board.createArea(100, 200, "Area")
         const text = await board.createNoteWithText(150, 250, "text")
@@ -283,12 +270,11 @@ test.describe("Basic board functionality", () => {
             await board.assertSelected(semigroups)
         })
     })
-    test("Clone the board", async ({ page, browser }) => {
-        const board = await navigateToNewBoard(page, browser, { boardName: "clone this board" })
+    testWithBothBoardTypes("Clone the board", async ({ board, page }) => {
         const semigroups = await board.createArea(500, 200, "Semigroups")
         const functors = await board.createNoteWithText(200, 200, "Functors")
         await board.cloneBoard()
-        await board.assertBoardName("clone this board copy")
+        await board.assertBoardName("Clone the board copy")
         await expect(semigroups).toBeVisible()
         await expect(functors).toBeVisible()
 
@@ -304,19 +290,18 @@ test.describe("Basic board functionality", () => {
             await expect(newBoard.getArea("Semigroups")).toBeVisible()
         })
     })
-
-    test("Clone the board (legacy board)", async ({ page, browser }) => {
-        const board = await navigateToNewBoard(page, browser, { boardName: "clone this board", useCRDT: false })
-        const semigroups = await board.createArea(500, 200, "Semigroups")
-        const functors = await board.createNoteWithText(200, 200, "Functors")
-        await board.cloneBoard()
-        await board.assertBoardName("clone this board copy")
-        await expect(semigroups).toBeVisible()
-        await expect(functors).toBeVisible()
-
-        await test.step("Check persistence", async () => {
-            await page.reload()
-            await expect(semigroups).toBeVisible()
-        })
-    })
 })
+
+function testWithBothBoardTypes(
+    name: string,
+    runTest: (options: { board: BoardPage; page: Page; browser: Browser }) => Promise<void>,
+) {
+    test(`${name}`, async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser, { boardName: name })
+        await runTest({ board, page, browser })
+    })
+    test(`${name} (legacy board)`, async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser, { useCRDT: false, boardName: name })
+        await runTest({ board, page, browser })
+    })
+}
