@@ -123,11 +123,14 @@ export function CRDTStore(
 
     function cloneBoard(board: Board): Board {
         const boardCrdt = boards.get(board.id)
+        const newId = uuid.v4()
         if (!boardCrdt) {
-            throw Error("Assertion failed: board not found")
+            return {
+                ...board,
+                id: newId,
+            }
         }
 
-        const newId = uuid.v4()
         const items = boardCrdt.augmentItems(Object.values(board.items))
         const newBoard = {
             ...board,
