@@ -15,7 +15,7 @@ export const boardUpdate = route
     .put("/api/v1/board/:boardId")
     .use(apiTokenHeader, body(t.type({ name: NonEmptyString, accessPolicy: BoardAccessPolicyCodec })))
     .handler((request) =>
-        checkBoardAPIAccess(request, async () => {
+        checkBoardAPIAccess("write", request, async () => {
             const { boardId } = request.routeParams
             const { name, accessPolicy } = request.body
             await updateBoard({ boardId, name, accessPolicy })

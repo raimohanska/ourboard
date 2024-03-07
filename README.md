@@ -87,8 +87,9 @@ For a full list of API endpoints, see https://ourboard.io/api-docs.
 
 All POST and PUT endpoints accept application/json content.
 
-API requests against boards with restricted access require you to supply an API_TOKEN header with a valid API token.
-The token is returned in the response of the POST request used to create the board.
+API requests against boards with restricted access require you to supply a board-specific API_TOKEN
+as a HTTP header. The token is returned in the response of the POST request used to create the board.
+As a result, only boards created using the API can have an API_TOKEN at the moment.
 
 ### POST /api/v1/board
 

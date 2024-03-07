@@ -11,7 +11,7 @@ export const boardHierarchyGet = route
     .get("/api/v1/board/:boardId/hierarchy")
     .use(apiTokenHeader)
     .handler((request) =>
-        checkBoardAPIAccess(request, async (boardState) => {
+        checkBoardAPIAccess("read", request, async (boardState) => {
             const board = boardState.board
             return ok({ board: getBoardHierarchy(boardState.board) })
         }),

@@ -9,6 +9,9 @@ import {
     AppEvent,
     Board,
     BoardHistoryEntry,
+    canRead,
+    canWrite,
+    checkBoardAccess,
     Color,
     Container,
     EventUserInfo,
@@ -24,6 +27,7 @@ export const route = applyMiddleware(wrapNative(bodyParser.json()))
 export const apiTokenHeader = headers(t.partial({ API_TOKEN: t.string }))
 
 export async function checkBoardAPIAccess<T>(
+    accessType: "read" | "write",
     request: { routeParams: { boardId: string }; headers: { API_TOKEN?: string | undefined } },
     fn: (board: ServerSideBoardState) => Promise<T>,
 ) {
@@ -32,9 +36,14 @@ export async function checkBoardAPIAccess<T>(
     try {
         const board = await getBoard(boardId)
         if (!board) return notFound()
-        if (board.board.accessPolicy || board.accessTokens.length) {
+        const accessLevel = checkBoardAccess(board.board.accessPolicy, {
+            nickname: "anonymous",
+            userType: "unidentified",
+        })
+        const publicAccessOk = accessType === "read" ? canRead(accessLevel) : canWrite(accessLevel)
+        if (!publicAccessOk) {
             if (!apiToken) {
-                return badRequest("API_TOKEN header is missing")
+                return badRequest("API_TOKEN header required for this board")
             }
             if (!board.accessTokens.some((t) => t === apiToken)) {
                 console.log(`API_TOKEN ${apiToken} not on list ${board.accessTokens}`)

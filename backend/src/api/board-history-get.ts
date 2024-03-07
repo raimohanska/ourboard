@@ -12,7 +12,7 @@ export const boardHistoryGet = route
     .get("/api/v1/board/:boardId/history")
     .use(apiTokenHeader)
     .handler((request) =>
-        checkBoardAPIAccess(request, async (board) => {
+        checkBoardAPIAccess("read", request, async (board) => {
             return ok(
                 streamingJSONBody("history", async (callback) => {
                     await withDBClient(

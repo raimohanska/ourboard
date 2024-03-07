@@ -10,7 +10,7 @@ export const boardGet = route
     .get("/api/v1/board/:boardId")
     .use(apiTokenHeader)
     .handler((request) =>
-        checkBoardAPIAccess(request, async (boardState) => {
+        checkBoardAPIAccess("read", request, async (boardState) => {
             return ok({ board: boardState.board })
         }),
     )
