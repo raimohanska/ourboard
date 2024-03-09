@@ -336,8 +336,9 @@ function verifyTwoPoints(boardId: Id, a: Serial, b: Serial) {
     return true
 }
 
-export function mkSnapshot(board: Board, serial: Serial) {
-    return migrateBoard({ ...board, serial })
+function mkSnapshot(board: Board, serial: Serial) {
+    const { accessPolicy, ...result } = migrateBoard({ ...board, serial })
+    return result
 }
 
 export async function saveBoardSnapshot(board: Board, client: PoolClient) {
