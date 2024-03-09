@@ -17,6 +17,8 @@ import openapiDoc from "./openapi"
 import { possiblyRequireAuth } from "./require-auth"
 import { createGetSignedPutUrl } from "./storage"
 import { WsWrapper } from "./ws-wrapper"
+import Cookies from "cookies"
+import { removeAuthenticatedUser, setAuthenticatedUser } from "./http-session"
 
 dotenv.config()
 
@@ -27,7 +29,18 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
 
     if (authProvider) {
         setupAuth(app, authProvider)
+    } else {
+        app.get("/logout", async (req, res) => {
+            removeAuthenticatedUser(req, res)
+            res.redirect("/")
+        })
     }
+    app.get("/test-callback", async (req, res) => {
+        const cookies = new Cookies(req, res)
+        const returnTo = cookies.get("returnTo") || "/"
+        setAuthenticatedUser(req, res, { domain: null, email: "ourboardtester@test.com", name: "Ourboard tester" })
+        res.redirect(returnTo)
+    })
 
     possiblyRequireAuth(app)
 
