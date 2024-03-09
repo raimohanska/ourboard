@@ -1,6 +1,8 @@
 import { ok } from "typera-common/response"
 import { Board, Item } from "../../../common/src/domain"
 import { apiTokenHeader, checkBoardAPIAccess, route } from "./utils"
+import { augmentBoardWithCRDT } from "../../../common/src/board-crdt-helper"
+import { yWebSocketServer } from "../board-yjs-server"
 
 /**
  * Gets board current contents
@@ -12,8 +14,11 @@ export const boardHierarchyGet = route
     .use(apiTokenHeader)
     .handler((request) =>
         checkBoardAPIAccess(request, async (boardState) => {
-            const board = boardState.board
-            return ok({ board: getBoardHierarchy(boardState.board) })
+            const board = augmentBoardWithCRDT(
+                await yWebSocketServer.docs.getYDocAndWaitForFetch(boardState.board.id),
+                boardState.board,
+            )
+            return ok({ board: getBoardHierarchy(board) })
         }),
     )
 

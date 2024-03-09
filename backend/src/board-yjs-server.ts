@@ -25,34 +25,34 @@ export function closeYjsSocketsBySessionId(sessionId: string) {
     }
 }
 
-export function BoardYJSServer(ws: expressWs.Instance, path: string) {
-    const yWebSocketServer = new YWebSocketServer({
-        persistence: {
-            bindState: async (docName, ydoc) => {
-                const boardId = docName
-                const updates = await withDBClient(async (client) => getBoardHistoryCrdtUpdates(client, boardId))
+export const yWebSocketServer = new YWebSocketServer({
+    persistence: {
+        bindState: async (docName, ydoc) => {
+            const boardId = docName
+            const updates = await withDBClient(async (client) => getBoardHistoryCrdtUpdates(client, boardId))
 
-                if (updates.length === 0) {
-                    const initUpdate = Y.encodeStateAsUpdate(ydoc)
-                    console.log(`Storing initial CRDT state to DB for board ${boardId}`)
-                    updateBoardCrdt(boardId, initUpdate)
-                } else {
-                    console.log(`Loaded ${updates.length} CRDT updates from DB for board ${boardId}`)
-                    for (const update of updates) {
-                        Y.applyUpdate(ydoc, update)
-                    }
+            if (updates.length === 0) {
+                const initUpdate = Y.encodeStateAsUpdate(ydoc)
+                console.log(`Storing initial CRDT state to DB for board ${boardId}`)
+                updateBoardCrdt(boardId, initUpdate)
+            } else {
+                console.log(`Loaded ${updates.length} CRDT updates from DB for board ${boardId}`)
+                for (const update of updates) {
+                    Y.applyUpdate(ydoc, update)
                 }
+            }
 
-                ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
-                    updateBoardCrdt(boardId, update)
-                })
-            },
-            writeState: async (docName, ydoc) => {
-                // TODO: needed?
-            },
+            ydoc.on("update", (update: Uint8Array, origin: any, doc: Y.Doc) => {
+                updateBoardCrdt(boardId, update)
+            })
         },
-    })
+        writeState: async (docName, ydoc) => {
+            // TODO: needed?
+        },
+    },
+})
 
+export function BoardYJSServer(ws: expressWs.Instance, path: string) {
     ws.app.ws(path, async (socket, req) => {
         const boardId = req.params.boardId
         const sessionId = getSessionIdFromCookies(req)

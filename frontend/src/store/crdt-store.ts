@@ -3,7 +3,13 @@ import * as uuid from "uuid"
 import { IndexeddbPersistence } from "y-indexeddb"
 import { WebsocketProvider } from "y-websocket"
 import * as Y from "yjs"
-import { Board, Id, Item, PersistableBoardItemEvent, QuillDelta, isTextItem } from "../../../common/src/domain"
+import { Board, Id, Item, PersistableBoardItemEvent } from "../../../common/src/domain"
+import {
+    augmentBoardWithCRDT,
+    augmentItemsWithCRDT,
+    getCRDTField,
+    importItemsIntoCRDT,
+} from "../../../common/src/board-crdt-helper"
 import { getWebSocketRootUrl } from "./server-connection"
 
 type BoardCRDT = ReturnType<typeof BoardCRDT>
@@ -28,43 +34,17 @@ function BoardCRDT(
     const doc = new Y.Doc()
 
     function getField(itemId: Id, fieldName: string) {
-        return doc.getText(`items.${itemId}.${fieldName}`)
+        return getCRDTField(doc, itemId, fieldName)
     }
 
     localBoardItemEvents.pipe(L.filter((e) => e.boardId === boardId)).forEach((event) => {
         if (event.action === "item.add") {
-            for (const item of event.items) {
-                if (isTextItem(item) && item.crdt) {
-                    if (item.textAsDelta) {
-                        getField(item.id, "text").applyDelta(item.textAsDelta)
-                    } else {
-                        getField(item.id, "text").insert(0, item.text)
-                    }
-                }
-            }
+            importItemsIntoCRDT(doc, event.items, { fallbackToText: true })
         }
     })
 
     function augmentItems(items: Item[]): Item[] {
-        return items.map((item) => {
-            if (isTextItem(item) && item.crdt) {
-                const textAsDelta = getField(item.id, "text").toDelta() as QuillDelta
-                return { ...item, textAsDelta }
-            }
-            return item
-        })
-    }
-
-    function importItems(items: Item[]) {
-        for (const item of items) {
-            if (isTextItem(item) && item.crdt) {
-                if (item.textAsDelta) {
-                    getField(item.id, "text").applyDelta(item.textAsDelta)
-                } else {
-                    throw Error("textAsDelta is missing ")
-                }
-            }
-        }
+        return augmentItemsWithCRDT(doc, items)
     }
 
     if (typeof indexedDB != "undefined") {
@@ -90,7 +70,6 @@ function BoardCRDT(
         doc,
         getField,
         augmentItems,
-        importItems,
         awareness: provider.awareness,
     }
 }
@@ -131,15 +110,12 @@ export function CRDTStore(
             }
         }
 
-        const items = boardCrdt.augmentItems(Object.values(board.items))
         const newBoard = {
-            ...board,
-            items: Object.fromEntries(items.map((i) => [i.id, i])),
+            ...augmentBoardWithCRDT(boardCrdt.doc, board),
             id: newId,
         }
 
-        const newBoardCrdt = getBoardCrdt(newId)
-        newBoardCrdt.importItems(items)
+        importItemsIntoCRDT(getBoardCrdt(newId).doc, Object.values(newBoard.items))
         return newBoard
     }
 

@@ -1,6 +1,8 @@
 import { Browser, Page, expect, test } from "@playwright/test"
 import { sleep } from "../../../common/src/sleep"
 import { BoardPage, navigateToBoard, navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
+import { assertNotNull } from "../../../common/src/assertNotNull"
+import { Note } from "../../../common/src/domain"
 
 async function loginAsTester(page: Page) {
     await test.step("Login as tester", async () => {
@@ -116,6 +118,19 @@ test.describe("API endpoints", () => {
                     items: expect.anything(),
                 },
             })
+
+            expect(Object.values(content.board.items)).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        type: "container",
+                        text: "API notes",
+                    }),
+                    expect.objectContaining({
+                        type: "note",
+                        text: "Updated item",
+                    }),
+                ]),
+            )
         })
 
         await test.step("Get board state hierarchy", async () => {
@@ -275,5 +290,60 @@ test.describe("API endpoints", () => {
         })
     })
 
-    test("Get board contents with CRDT text", async ({ page, browser }) => {})
+    test("Get board contents with CRDT text", async ({ page, browser }) => {
+        const { id, accessToken } = await test.step("Create board", async () => {
+            const response = await page.request.post("/api/v1/board", {
+                data: {
+                    name: "API test board",
+                    crdt: true,
+                },
+            })
+            return await response.json()
+        })
+
+        const board = await navigateToBoard(page, browser, id)
+        await board.createText(100, 200, "CRDT text")
+        await board.createNoteWithText(100, 400, "Simple note")
+
+        await test.step("Get board state", async () => {
+            const response = await page.request.get(`/api/v1/board/${id}`, {
+                headers: {
+                    API_TOKEN: accessToken,
+                },
+            })
+            const content = await response.json()
+            expect(Object.values(content.board.items)).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        type: "text",
+                        text: "CRDT text",
+                        textAsDelta: [{ insert: "CRDT text" }],
+                    }),
+                    expect.objectContaining({
+                        type: "note",
+                        text: "Simple note",
+                    }),
+                ]),
+            )
+            expect((Object.values(content.board.items)[1] as Note).textAsDelta).toBeUndefined()
+        })
+
+        await test.step("Get board hierarchy", async () => {
+            const response = await page.request.get(`/api/v1/board/${id}/hierarchy`, {
+                headers: {
+                    API_TOKEN: accessToken,
+                },
+            })
+            const content = await response.json()
+            expect(Object.values(content.board.items)).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        type: "text",
+                        text: "CRDT text",
+                        textAsDelta: [{ insert: "CRDT text" }],
+                    }),
+                ]),
+            )
+        })
+    })
 })

@@ -389,8 +389,8 @@ export const exampleBoard: Board = {
     serial: 0,
 }
 
-export function newBoard(name: string, accessPolicy?: BoardAccessPolicy): Board {
-    return { id: uuid.v4(), name, items: {}, accessPolicy, connections: [], ...defaultBoardSize, serial: 0 }
+export function newBoard(name: string, crdt?: CrdtMode, accessPolicy?: BoardAccessPolicy): Board {
+    return { id: uuid.v4(), name, items: {}, accessPolicy, connections: [], ...defaultBoardSize, serial: 0, crdt }
 }
 
 export function newNote(

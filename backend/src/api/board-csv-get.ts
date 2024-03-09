@@ -3,6 +3,8 @@ import _ from "lodash"
 import { ok } from "typera-common/response"
 import { Board, Container, Item, TextItem } from "../../../common/src/domain"
 import { apiTokenHeader, checkBoardAPIAccess, route } from "./utils"
+import { augmentBoardWithCRDT } from "../../../common/src/board-crdt-helper"
+import { yWebSocketServer } from "../board-yjs-server"
 
 /**
  * Gets board current contents
@@ -14,7 +16,10 @@ export const boardCSVGet = route
     .use(apiTokenHeader)
     .handler((request) =>
         checkBoardAPIAccess(request, async (boardState) => {
-            const board = boardState.board
+            const board = augmentBoardWithCRDT(
+                await yWebSocketServer.docs.getYDocAndWaitForFetch(boardState.board.id),
+                boardState.board,
+            )
             const textItemsWithParent = Object.values(board.items).filter(
                 (i) => i.containerId !== undefined && (i.type === "text" || i.type === "note"),
             )
