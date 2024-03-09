@@ -11,7 +11,7 @@ const config: PlaywrightTestConfig = {
     timeout: 60000, // Timeout per test file (default 30000)
     retries: ci ? 2 : 0,
     use: {
-        baseURL: "http://localhost:8080",
+        baseURL: "http://localhost:1337",
         actionTimeout: 15000,
         trace: "retain-on-failure",
     },

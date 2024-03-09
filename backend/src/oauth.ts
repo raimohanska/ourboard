@@ -48,6 +48,13 @@ export function setupAuth(app: Express, provider: AuthProvider) {
         }
     })
 
+    app.get("/test-callback", async (req, res) => {
+        const cookies = new Cookies(req, res)
+        const returnTo = cookies.get("returnTo") || "/"
+        setAuthenticatedUser(req, res, { domain: null, email: "ourboardtester@test.com", name: "Ourboard tester" })
+        res.redirect(returnTo)
+    })
+
     function parseReturnPath(req: Request) {
         return (req.query.returnTo as string) || "/"
     }
