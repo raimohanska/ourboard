@@ -13,9 +13,10 @@ The user guide here is bound to be incomplete and out-of-date. Feel welcome to i
 
 ### Basics
 
-Setting your nickname
+Setting your nickname or sign in
 
--   Click on the top right corner nickname field to change
+-   Click on the top right corner nickname field to change your nickname
+-   Optionally, log in with your Google user account. This allows you to create private boards and to track your favorite boards across devices
 
 Adding items
 
@@ -40,9 +41,16 @@ Organizing your board
 -   Lock items in place to prevent accidental moves of static items and lines
 -   Use "structured stickies": 1. Create an Area to be used as a template, choose a nice color 2. Add template content, e.g.. labels like "size" 3. Lock the labels in place. Now you can clone the whole area with a single click on the Clone button (or Cmd-D).
 
+Copy and paste
+
+-   You can cut/copy/paste contents on the board using keyboard shortcuts
+-   Copy-paste works across boards, so you can do a "backup" by selecting all notes and pasting on another board
+-   You should be able to paste text and images on the board from other applications as well
+-   You can create a full clone of your current board by clicking on the Clone button beside board name
+
 Keyboard shortcuts
 
-These are for Mac. For other OS, replace command with control.
+These are for Mac. For other Linux/Windows, replace Command with Control.
 
 ```
 DEL/Backspace       Delete item
@@ -51,6 +59,7 @@ N                   Create new note
 T                   Create new text box
 C                   Select the Connect tool
 Esc                 Select the default tool
+Command-A           Select all items
 Command-V           Paste
 Command-C           Copy
 Command-X           Cut
@@ -71,17 +80,9 @@ Pro tips
 
 All boards created accessible to anyone with the link by default. If you Sign In using Google authentication, you'll also be able to create boards with restricted access. It's possible to grant access to certain emails or to people with an email in a given domain.
 
-## Github Issues Integration
-
-1. Create a board and an Area named "new issues" (case insensitive) on the board.
-2. Add a webhook to a git repo, namely
-    1. Use URL https://www.ourboard.io/api/v1/webhook/github/{board-id}, with board-id from the URL of you board.
-    2. Use content type to application/json
-    3. Select "Let me select individual events" and pick Issues only.
-3. Create a new issue or change labels of an existing issue.
-4. You should see new notes appear on your board
-
 ## API
+
+Ourboard has a limited HTTP API for creating, exporting and updating boards.
 
 All POST and PUT endpoints accept application/json content.
 
@@ -192,6 +193,16 @@ Return board current state in CSV format, where
 ### GET /api/v1/board/:boardId/history
 
 Returns the full history of given board as JSON.
+
+## Github Issues Integration
+
+1. Create a board and an Area named "new issues" (case insensitive) on the board.
+2. Add a webhook to a git repo, namely
+    1. Use URL https://www.ourboard.io/api/v1/webhook/github/{board-id}, with board-id from the URL of you board.
+    2. Use content type to application/json
+    3. Select "Let me select individual events" and pick Issues only.
+3. Create a new issue or change labels of an existing issue.
+4. You should see new notes appear on your board
 
 ## Development
 
