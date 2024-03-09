@@ -73,7 +73,7 @@ export function getItemAttributesForContainer(container: string | undefined, boa
     const containerItem = findContainer(container, board)
     if (containerItem) {
         return {
-            containedId: containerItem.id,
+            containerId: containerItem.id,
             x: containerItem.x + 2,
             y: containerItem.y + 2,
         }
@@ -108,6 +108,7 @@ export function addItem(
     const item: Note = { ...newNote(text, color || DEFAULT_NOTE_COLOR), ...itemAttributes }
     const appEvent: AppEvent = { action: "item.add", boardId: board.board.id, items: [item], connections: [] }
     dispatchSystemAppEvent(board, appEvent)
+    return item
 }
 
 export class InvalidRequest extends Error {

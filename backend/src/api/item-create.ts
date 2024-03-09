@@ -20,7 +20,7 @@ export const itemCreate = route
         checkBoardAPIAccess(request, async (board) => {
             const { type, text, color, container } = request.body
             console.log(`POST item for board ${board.board.id}: ${JSON.stringify(request.req.body)}`)
-            addItem(board, type, text, color, container)
-            return ok({ ok: true })
+            const item = addItem(board, type, text, color, container)
+            return ok(item)
         }),
     )
