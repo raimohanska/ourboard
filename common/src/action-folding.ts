@@ -1,22 +1,15 @@
 import { arrayEquals, arrayIdAndKeysMatch, arrayIdMatch, idsOf } from "./arrays"
-import { boardReducer } from "./board-reducer"
 import {
-    actionNamespaceIs,
     AppEvent,
     BoardHistoryEntry,
     CURSOR_POSITIONS_ACTION_TYPE,
-    getItem,
-    getItemIds,
-    isBoardHistoryEntry,
-    isPersistableBoardItemEvent,
-    isSameUser,
     MoveItem,
-    newBoard,
+    isBoardHistoryEntry,
+    isSameUser,
 } from "./domain"
 
 type FoldOptions = {
     cursorsOnly?: boolean
-    foldAddUpdate: boolean
 }
 
 const defaultOptions = {
@@ -24,7 +17,7 @@ const defaultOptions = {
     cursorsOnly: false,
 }
 
-export const CURSORS_ONLY: FoldOptions = { cursorsOnly: true, foldAddUpdate: false }
+export const CURSORS_ONLY: FoldOptions = { cursorsOnly: true }
 
 export function foldActions(a: AppEvent, b: AppEvent, options: FoldOptions = defaultOptions): AppEvent | null {
     if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
@@ -55,31 +48,7 @@ export function foldActions_(a: AppEvent, b: AppEvent, options: FoldOptions = de
     if (isBoardHistoryEntry(a) && isBoardHistoryEntry(b)) {
         if (!isSameUser(a.user, b.user)) return null
     }
-    if (options.foldAddUpdate && a.action === "item.add") {
-        if (
-            isPersistableBoardItemEvent(b) &&
-            b.action !== "item.delete" &&
-            !actionNamespaceIs("connection", b) && // Notice that getItemIds is empty for connection events and thus the function would attempt to fold them with the item.add.
-            a.boardId === b.boardId
-        ) {
-            const createdItemIds = new Set(getItemIds(a))
-            if (getItemIds(b).every((id) => createdItemIds.has(id))) {
-                try {
-                    let tmp = newBoard("tmp")
-                    if (isBoardHistoryEntry(a) && a.serial !== undefined) {
-                        tmp.serial = a.serial - 1
-                    }
-                    const [tmp2] = boardReducer(tmp, a)
-                    const [tmp3] = boardReducer(tmp2, b)
-                    const updatedItems = a.items.map((i) => i.id).map(getItem(tmp3))
-                    return { ...a, items: updatedItems }
-                } catch (e) {
-                    console.error("Failed to combine add+modify", a, b, e)
-                    return null
-                }
-            }
-        }
-    } else if (a.action === "item.front") {
+    if (a.action === "item.front") {
         if (b.action === "item.front" && b.boardId === a.boardId && arrayEquals(b.itemIds, a.itemIds)) return b
     } else if (a.action === "item.move") {
         if (b.action === "item.move" && b.boardId === a.boardId && everyMovedItemMatches(b, a)) return b

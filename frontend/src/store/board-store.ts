@@ -156,7 +156,7 @@ export function BoardStore(
         ): PersistableBoardItemEvent[] {
             const latest = b[b.length - 1]
             if (latest) {
-                const folded = foldActions(event, latest, { foldAddUpdate: false }) // The order is like this, because when applied the new event would be applied before the one in the stack
+                const folded = foldActions(event, latest)
                 if (folded) {
                     // Replace top of stack with folded
                     return [...b.slice(0, b.length - 1), folded] as any // TODO: can we get better types?
