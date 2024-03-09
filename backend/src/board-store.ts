@@ -24,17 +24,21 @@ export async function getBoardInfo(id: Id): Promise<BoardInfo | null> {
 }
 
 const selectBoardQuery = `
-with allow_lists as (
-	select id, content, public_read, public_write, (
-	  select jsonb_agg(jsonb_build_object('domain', domain, 'access', access, 'email', email)) 
-	  from board_access a
-	  where a.board_id = b.id
-	) as allow_list
-	from board b for update
-)
 select id,
-    jsonb_set (content - 'accessPolicy', '{accessPolicy}', cast(case when allow_list is null then 'null' else (json_build_object('allowList', allow_list, 'publicRead', public_read, 'publicWrite', public_write)) end as jsonb)) as content
-    from allow_lists
+    jsonb_set (content - 'accessPolicy', '{accessPolicy}', 
+    		cast(json_build_object(
+    			'allowList', (    			
+    				coalesce((
+					  select jsonb_agg(jsonb_strip_nulls(jsonb_build_object('domain', domain, 'access', access, 'email', email))) 
+					  from board_access
+					  where board_access.board_id = board.id
+					), '[]')    			
+    			), 
+    			'publicRead', public_read, 
+    			'publicWrite', public_write
+    		) as jsonb)) 
+    		as content
+from board
 where id=$1
 `
 
@@ -46,6 +50,15 @@ export async function fetchBoard(id: Id): Promise<BoardAndAccessTokens | null> {
             return null
         } else {
             const snapshot = result.rows[0].content as Board
+            if (
+                snapshot.accessPolicy &&
+                snapshot.accessPolicy.allowList.length === 0 &&
+                snapshot.accessPolicy.publicRead &&
+                snapshot.accessPolicy.publicWrite
+            ) {
+                // Effectively no access policy
+                delete snapshot.accessPolicy
+            }
             let historyEventCount = 0
             let lastSerial = 0
             let board = snapshot
