@@ -28,6 +28,7 @@ export const semiUniqueId = () => {
 export type BoardPage = ReturnType<typeof BoardPage>
 export function BoardPage(page: Page, browser: Browser) {
     const board = page.locator(".online .board")
+    const boardName = page.locator("#board-name").locator(`[contentEditable]`)
     const newNoteOnPalette = page.getByTestId("palette-new-note")
     const newTextOnPalette = page.getByTestId("palette-new-text")
     const newContainerOnPalette = page.getByTestId("palette-new-container")
@@ -91,6 +92,33 @@ export function BoardPage(page: Page, browser: Browser) {
         })
     }
 
+    async function selectText(el: Locator, text: string) {
+        await test.step("Select text " + text, async () => {
+            // below code selects the given word from the line. text is the word I want to //select
+            await el.evaluate((element, text: string) => {
+                const selection = window.getSelection()!
+                const content = (element as HTMLElement).innerText
+                const range = document.createRange()
+                const index = content.indexOf(text)
+                if (index === -1) {
+                    throw Error(`Text ${text} not found in ${content}`)
+                }
+                const textNode = element.firstChild!
+                console.log("Textnode", textNode.textContent)
+                range.setStart(textNode, index)
+                console.log("Length", (textNode.textContent as any).length)
+                range.setEnd(textNode, index + text.length)
+                selection.removeAllRanges()
+                selection.addRange(range)
+            }, text)
+        })
+    }
+
+    async function selectAll(el: Locator) {
+        const textToSelect = (await el.textContent()) ?? ""
+        selectText(el, textToSelect)
+    }
+
     return {
         page,
         board,
@@ -103,7 +131,16 @@ export function BoardPage(page: Page, browser: Browser) {
             return assertNotNull(page.url().split("/").pop())
         },
         async assertBoardName(name: string) {
-            await expect(page.locator("#board-name")).toHaveText(name)
+            await expect(boardName).toHaveText(name)
+        },
+        async renameBoard(name: string) {
+            await test.step("Rename board", async () => {
+                await boardName.click()
+                await selectAll(boardName)
+                await boardName.pressSequentially(name)
+                await boardName.press("Enter")
+                await this.assertBoardName(name)
+            })
         },
         async assertStatusMessage(message: string) {
             await expect(page.locator(".board-status-message")).toHaveText(message)

@@ -167,26 +167,19 @@ async function updateAccessPolicy(boardId: string, accessPolicy: BoardAccessPoli
     }
 }
 
-export async function updateBoard({
-    boardId,
-    name,
-    accessPolicy,
-}: {
-    boardId: Id
-    name: string
-    accessPolicy?: BoardAccessPolicy
-}) {
+// Updates the name column, which is there for admin convenience (not used by application logic)
+export async function renameBoardConvenienceColumnOnly(boardId: Id, name: string) {
     await inTransaction(async (client) => {
         const result = await client.query("SELECT content FROM board WHERE id=$1", [boardId])
         if (result.rows.length !== 1) throw Error("Board not found: " + boardId)
-        let content = result.rows[0].content
-        if (name) {
-            content = { ...content, name }
-        } else {
-            name = content.name
-        }
-        if (accessPolicy) content = { ...content, accessPolicy }
-        await client.query("UPDATE board SET content=$1, name=$2 WHERE id=$3", [content, name, boardId])
+        await client.query("UPDATE board SET name=$1 WHERE id=$2", [name, boardId])
+    })
+}
+
+export async function updateBoardAccessPolicy(boardId: Id, accessPolicy: BoardAccessPolicy) {
+    await inTransaction(async (client) => {
+        const result = await client.query("SELECT content FROM board WHERE id=$1", [boardId])
+        if (result.rows.length !== 1) throw Error("Board not found: " + boardId)
         await updateAccessPolicy(boardId, accessPolicy, client)
     })
 }

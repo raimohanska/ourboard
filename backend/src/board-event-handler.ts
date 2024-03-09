@@ -9,7 +9,7 @@ import {
     newISOTimeStamp,
 } from "../../common/src/domain"
 import { getBoard, maybeGetBoard, updateBoards } from "./board-state"
-import { getBoardInfo, updateBoard } from "./board-store"
+import { getBoardInfo, renameBoardConvenienceColumnOnly, updateBoardAccessPolicy } from "./board-store"
 import { handleCommonEvent } from "./common-event-handler"
 import { MessageHandlerResult } from "./connection-handler"
 import { WS_HOST_DEFAULT, WS_HOST_LOCAL, WS_PROTOCOL } from "./host-config"
@@ -122,19 +122,14 @@ export const handleBoardEvent = (allowedBoardId: Id | null, getSignedPutUrl: (ke
                     broadcastBoardEvent(historyEntry, session)
                     if (appEvent.action === "board.rename") {
                         // special case: keeping name up to date as it's in a separate column
-                        await updateBoard({ boardId: appEvent.boardId, name: appEvent.name })
+                        await renameBoardConvenienceColumnOnly(appEvent.boardId, appEvent.name)
                     }
                     if (appEvent.action === "board.setAccessPolicy") {
                         if (session.boardSession.accessLevel !== "admin") {
                             console.warn("Trying to change access policy without admin access")
                             return true
                         }
-
-                        await updateBoard({
-                            boardId: appEvent.boardId,
-                            name: state.board.name,
-                            accessPolicy: appEvent.accessPolicy,
-                        })
+                        await updateBoardAccessPolicy(appEvent.boardId, appEvent.accessPolicy)
                     }
                     return { boardId, serial }
                 } catch (e) {

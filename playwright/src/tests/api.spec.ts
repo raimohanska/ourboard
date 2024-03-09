@@ -287,6 +287,19 @@ test.describe("API endpoints", () => {
                 await page.reload()
                 await board.assertBoardName("API restricted board")
             })
+
+            await test.step("Rename board through UI", async () => {
+                await board.renameBoard("API restricted board renamed")
+                await sleep(1000)
+                await page.reload()
+                await board.assertBoardName("API restricted board renamed")
+            })
+
+            await test.step("Verify restricted access", async () => {
+                await logout(page)
+                await page.reload()
+                await board.assertStatusMessage("This board is for authorized users only. Click here to sign in.")
+            })
         })
     })
 
