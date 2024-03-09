@@ -1,0 +1,1 @@
+alter table board drop column history;
