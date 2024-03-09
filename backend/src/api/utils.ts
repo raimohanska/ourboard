@@ -73,7 +73,7 @@ export function getItemAttributesForContainer(container: string | undefined, boa
     const containerItem = findContainer(container, board)
     if (containerItem) {
         return {
-            containedId: containerItem.id,
+            containerId: containerItem.id,
             x: containerItem.x + 2,
             y: containerItem.y + 2,
         }
