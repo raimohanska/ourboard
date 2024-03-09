@@ -214,6 +214,32 @@ test.describe("Basic board functionality", () => {
         })
     })
 
+    /*
+    testWithBothBoardTypes("Simulate typing lot of text", async ({ board, page }) => {
+        const textArea = await board.createText(100, 200, "Initial text")
+        await board.selectItems(textArea)
+        await board.dragSelectionBottomCorner(600, 600)
+        const item = board.board.locator(".text").first()
+        await board.changeItemText(item, "New chapter in life\n")
+
+        await test.step("Change text", async () => {
+            for (let i = 0; i < 10; i++) {
+                await item.pressSequentially("New chapter in life\n")
+                await sleep(100)
+            }
+        })
+
+        // This is just to check stored data size - compare the legacy approach vs CRDT storage.
+        //
+        // Results:
+
+        // Legacy: 	2159b JSON,	            1 event row, 45 events
+        // CRDT:    904b CRDT + 740b JSON,  1 event row, 2 events
+
+        // SQL query: select coalesce(sum(pg_column_size(crdt_update)), 0) as crdt_size, sum(pg_column_size(events)) as json_size, count(*) as rows, sum(last_serial - first_serial - 1) as event_count from board_event where board_id ='2bc90b97-8304-4cd6-8954-b87878db6ff3';
+    })
+    */
+
     testWithBothBoardTypes("Hide area contents", async ({ page, browser }) => {
         const board = await navigateToNewBoard(page, browser)
         const area = await board.createArea(100, 200, "Area")
