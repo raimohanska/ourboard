@@ -83,8 +83,6 @@ All boards created accessible to anyone with the link by default. If you Sign In
 
 ## API
 
-For a full list of API endpoints, see https://ourboard.io/api-docs.
-
 All POST and PUT endpoints accept application/json content.
 
 API requests against boards with restricted access require you to supply an API_TOKEN header with a valid API token.
@@ -144,6 +142,14 @@ Payload:
     "text": "text on note",
     "container": "container element text or id",
     "color": "hexadecimal color code"
+}
+```
+
+Response:
+
+```js
+{
+    "id": "ITEM_ID"
 }
 ```
 

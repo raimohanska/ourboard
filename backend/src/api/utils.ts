@@ -108,6 +108,7 @@ export function addItem(
     const item: Note = { ...newNote(text, color || DEFAULT_NOTE_COLOR), ...itemAttributes }
     const appEvent: AppEvent = { action: "item.add", boardId: board.board.id, items: [item], connections: [] }
     dispatchSystemAppEvent(board, appEvent)
+    return item
 }
 
 export class InvalidRequest extends Error {
