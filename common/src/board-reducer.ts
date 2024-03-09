@@ -418,7 +418,11 @@ function updateItems(board: Board, updateList: ItemUpdate[], inplace: boolean): 
     function setVisibilityRecursively(parent: Item, hidden: boolean) {
         const children = Object.values(resultItems).filter((i) => i.containerId === parent.id)
         children.forEach((child) => {
-            resultItems[child.id] = { ...child, hidden }
+            const resultItem = { ...child, hidden }
+            if (!hidden && isContainer(resultItem) && resultItem.contentsHidden) {
+                resultItem.contentsHidden = false
+            }
+            resultItems[child.id] = resultItem
             setVisibilityRecursively(child, hidden)
         })
     }
