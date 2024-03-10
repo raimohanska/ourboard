@@ -142,9 +142,8 @@ export const ItemView = ({
                 <CollaborativeTextView
                     item={item as L.Property<TextItem>}
                     board={board}
-                    dispatch={dispatch}
                     id={id}
-                    toolController={toolController}
+                    accessLevel={accessLevel}
                     focus={focus}
                     itemFocus={itemFocus}
                     crdtStore={boardStore.crdtStore}

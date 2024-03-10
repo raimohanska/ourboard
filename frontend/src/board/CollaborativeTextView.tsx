@@ -3,7 +3,15 @@ import * as L from "lonna"
 import Quill from "quill"
 import QuillCursors from "quill-cursors"
 import { QuillBinding } from "y-quill"
-import { Board, getAlign, getHorizontalAlign, getItemBackground, TextItem } from "../../../common/src/domain"
+import {
+    AccessLevel,
+    Board,
+    canWrite,
+    getAlign,
+    getHorizontalAlign,
+    getItemBackground,
+    TextItem,
+} from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
 import { CRDTStore } from "../store/crdt-store"
 import { BoardFocus } from "./board-focus"
@@ -17,9 +25,8 @@ Quill.register("modules/cursors", QuillCursors)
 interface CollaborativeTextViewProps {
     item: L.Property<TextItem>
     board: L.Property<Board>
-    dispatch: Dispatch
     id: string
-    toolController: ToolController
+    accessLevel: L.Property<AccessLevel>
     focus: L.Atom<BoardFocus>
     itemFocus: L.Property<"none" | "selected" | "dragging" | "editing">
     crdtStore: CRDTStore
@@ -29,8 +36,7 @@ export function CollaborativeTextView({
     id,
     item,
     board,
-    dispatch,
-    toolController,
+    accessLevel,
     focus,
     itemFocus,
     isLocked,
@@ -40,6 +46,10 @@ export function CollaborativeTextView({
     const color = L.view(item, getItemBackground, contrastingColor)
 
     const quillEditor = L.atom<Quill | null>(null)
+
+    accessLevel.applyScope(componentScope()).forEach((al) => {
+        quillEditor.get()?.enable(canWrite(al))
+    })
 
     function initQuill(el: HTMLElement) {
         const quill = new Quill(el, {
@@ -51,8 +61,8 @@ export function CollaborativeTextView({
                 },
             },
             theme: "snow",
+            readOnly: !canWrite(accessLevel.get()),
         })
-
         const crdt = crdtStore.getBoardCrdt(board.get().id)
         const ytext = crdt.getField(id, "text")
         new QuillBinding(ytext, quill, crdt.awareness)
