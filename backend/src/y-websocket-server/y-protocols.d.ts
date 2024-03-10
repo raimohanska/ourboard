@@ -1,7 +1,13 @@
 declare module "y-protocols/dist/sync.cjs" {
     export function writeSyncStep1(encoder: any, doc: Y.Doc): void
-    export function readSyncMessage(decoder: any, encoder: any, doc: Y.Doc, conn: any): void
+    export function readSyncMessage(decoder: any, encoder: any, doc: Y.Doc, transactionOrigin: any): void
     export function writeUpdate(encoder: any, update: Uint8Array): void
+    export const messageYjsSyncStep1 = 0
+    export const messageYjsSyncStep2 = 1
+    export const messageYjsUpdate = 2
+    export function readSyncStep1(decoder: any, encoder: any, doc: Y.Doc): void
+    export function readSyncStep2(decoder: any, doc: Y.Doc, transactionOrigin: any): void
+    export function readUpdate(decoder: any, doc: Y.Doc, transactionOrigin: any): void
 }
 
 declare module "y-protocols/dist/awareness.cjs" {

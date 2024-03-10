@@ -16,7 +16,7 @@ export default class YWebSocketServer {
         this.docs = new Docs(options)
     }
 
-    async setupWSConnection(conn: WebSocket, docName: string) {
+    async setupWSConnection(conn: WebSocket, docName: string, readOnly: boolean) {
         conn.binaryType = "arraybuffer"
         // get doc, initialize if it does not exist yet
         const doc = this.docs.getYDoc(docName)
@@ -25,7 +25,7 @@ export default class YWebSocketServer {
 
         doc.addConnection(conn)
         // listen and reply to events
-        conn.on("message", (message: ArrayBuffer) => messageListener(conn, doc, new Uint8Array(message)))
+        conn.on("message", (message: ArrayBuffer) => messageListener(conn, doc, readOnly, new Uint8Array(message)))
 
         // Check if connection is still alive
         let pongReceived = true
@@ -74,7 +74,32 @@ export default class YWebSocketServer {
     }
 }
 
-const messageListener = (conn: WebSocket, doc: WSSharedDoc, message: Uint8Array) => {
+// Read-only implementation found at https://discuss.yjs.dev/t/read-only-or-one-way-only-sync/135/3
+const readSyncMessage = (
+    decoder: decoding.Decoder,
+    encoder: encoding.Encoder,
+    doc: WSSharedDoc,
+    readOnly = false,
+    transactionOrigin: any,
+) => {
+    const messageType = decoding.readVarUint(decoder)
+    switch (messageType) {
+        case syncProtocol.messageYjsSyncStep1:
+            syncProtocol.readSyncStep1(decoder, encoder, doc)
+            break
+        case syncProtocol.messageYjsSyncStep2:
+            if (!readOnly) syncProtocol.readSyncStep2(decoder, doc, transactionOrigin)
+            break
+        case syncProtocol.messageYjsUpdate:
+            if (!readOnly) syncProtocol.readUpdate(decoder, doc, transactionOrigin)
+            break
+        default:
+            throw new Error("Unknown message type")
+    }
+    return messageType
+}
+
+const messageListener = (conn: WebSocket, doc: WSSharedDoc, readOnly: boolean, message: Uint8Array) => {
     try {
         const encoder = encoding.createEncoder()
         const decoder = decoding.createDecoder(message)
@@ -82,7 +107,7 @@ const messageListener = (conn: WebSocket, doc: WSSharedDoc, message: Uint8Array)
         switch (messageType) {
             case messageSync:
                 encoding.writeVarUint(encoder, messageSync)
-                syncProtocol.readSyncMessage(decoder, encoder, doc, conn)
+                readSyncMessage(decoder, encoder, doc, readOnly, conn)
 
                 // If the `encoder` only contains the type of reply message and no
                 // message, there is no need to send the message. When `encoder` only

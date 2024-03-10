@@ -7,7 +7,7 @@ import { getSessionIdFromCookies } from "./http-session"
 import { getSessionById } from "./websocket-sessions"
 import YWebSocketServer from "./y-websocket-server/YWebSocketServer"
 import * as WebSocket from "ws"
-import { canWrite } from "../../common/src/domain"
+import { canRead, canWrite } from "../../common/src/domain"
 
 const socketsBySessionId: Record<string, WebSocket[]> = {}
 
@@ -63,7 +63,7 @@ export function BoardYJSServer(ws: expressWs.Instance, path: string) {
             !session ||
             !session.boardSession ||
             session.boardSession.boardId !== boardId ||
-            !canWrite(session.boardSession.accessLevel)
+            !canRead(session.boardSession.accessLevel)
         ) {
             // TODO: implement read-only YJS connections
             //console.warn("No session for YJS connection for board", boardId)
@@ -90,9 +90,10 @@ export function BoardYJSServer(ws: expressWs.Instance, path: string) {
                 )
             }
         })
+        const readOnly = !canWrite(session.boardSession.accessLevel)
         const docName = boardId
         try {
-            await yWebSocketServer.setupWSConnection(socket, docName)
+            await yWebSocketServer.setupWSConnection(socket, docName, readOnly)
         } catch (e) {
             console.error("Error setting up YJS connection", e)
             socket.close()
