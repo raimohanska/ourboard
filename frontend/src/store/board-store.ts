@@ -507,10 +507,10 @@ export function BoardStore(
     })
 
     boardId.forEach(async (boardId) => {
+        // Reset board id in state, until we have fetched the local state
+        dispatch({ action: "ui.board.setLocal", boardId: undefined, storedInitialState: undefined })
         if (boardId) {
             console.log("Got board id, fetching local state", boardId)
-            // Reset board id in state, until we have fetched the local state
-            dispatch({ action: "ui.board.setLocal", boardId: undefined, storedInitialState: undefined })
             const storedInitialState = await localStore.getInitialBoardState(boardId)
             dispatch({ action: "ui.board.setLocal", boardId, storedInitialState }) // This is for the reducer locally to start offline mode
             checkReadyToJoin()
