@@ -107,6 +107,23 @@ test.describe("Two simultaneous users", () => {
         })
     })
 
+    test("Switching between boards", async ({ page, browser }) => {
+        const { user1Page, user2Page } = await createBoardWithTwoUsers(page, browser)
+
+        const boardName1 = await user1Page.getBoardName()
+        const monoids = await user1Page.createText(100, 200, "Monoids")
+        const dashboard = await user1Page.goToDashBoard()
+        await dashboard.createNewBoard({ boardName: "Another board" })
+        const semigroups = await user1Page.createArea(500, 200, "Semigroups")
+        await user1Page.goToDashBoard()
+        await dashboard.goToBoard(boardName1)
+        await expect(monoids).toBeVisible()
+        await user2Page.createNoteWithText(100, 400, "User 2 note")
+        await expect(user1Page.getNote("User 2 note")).toBeVisible()
+        await user2Page.createText(300, 200, "User 2 text")
+        await expect(user1Page.getText("User 2 text")).toBeVisible()
+    })
+
     async function createBoardWithTwoUsers(page: Page, browser: Browser) {
         const user1Page = await navigateToNewBoard(page, browser, { boardName: "Collab test board" })
 

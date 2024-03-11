@@ -1,6 +1,7 @@
 import { Browser, Page, expect, test } from "@playwright/test"
 import { sleep } from "../../../common/src/sleep"
 import { BoardPage, navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
+import { BoardApi } from "../pages/BoardApi"
 
 test.describe("Basic board functionality", () => {
     test("Create note by dragging from palette", async ({ page, browser }) => {
@@ -313,19 +314,6 @@ test.describe("Basic board functionality", () => {
             await newBoard.userInfo.dismiss()
             await expect(newBoard.getArea("Semigroups")).toBeVisible()
         })
-    })
-
-    test("Switching between boards", async ({ page, browser }) => {
-        const board = await navigateToNewBoard(page, browser)
-        const boardName1 = await board.getBoardName()
-        board.assertBoardName
-        const monoids = await board.createNoteWithText(100, 200, "Monoids")
-        const dashboard = await board.goToDashBoard()
-        await dashboard.createNewBoard({ boardName: "Another board" })
-        const semigroups = await board.createArea(500, 200, "Semigroups")
-        await board.goToDashBoard()
-        await dashboard.goToBoard(boardName1)
-        await expect(monoids).toBeVisible()
     })
 })
 
