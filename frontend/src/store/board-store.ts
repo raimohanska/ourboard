@@ -348,6 +348,10 @@ export function BoardStore(
             const users = state.users.map((u) => (u.sessionId === event.sessionId ? event : u))
             return { ...state, users }
         } else if (event.action === "board.init") {
+            if (event.board.id !== state.board?.id) {
+                console.warn(`Got board.init for non-matching board ${event.board.id} != ${boardId.get()}`)
+                return state
+            }
             console.log(`Going to online mode. Init as new board at serial ${event.board.serial}`)
             const newServerShadow = event.board
             // Local board = server shadow + local queue
@@ -362,6 +366,10 @@ export function BoardStore(
                 sent: [],
             }
         } else if (event.action === "board.init.diff") {
+            if (event.boardAttributes.id !== state.board?.id) {
+                console.warn(`Got board.init for non-matching board ${event.boardAttributes.id} != ${state.board?.id}`)
+                return state
+            }
             if (event.first) {
                 // Ensure local buffer empty on first chunk even if an earlier init was aborted.
                 initialServerSyncEventBuffer = []
@@ -512,6 +520,10 @@ export function BoardStore(
         if (boardId) {
             console.log("Got board id, fetching local state", boardId)
             const storedInitialState = await localStore.getInitialBoardState(boardId)
+            if (storedInitialState && storedInitialState.serverShadow.id !== boardId) {
+                console.log("Abort: board id already changed")
+                return
+            }
             dispatch({ action: "ui.board.setLocal", boardId, storedInitialState }) // This is for the reducer locally to start offline mode
             checkReadyToJoin()
         }
