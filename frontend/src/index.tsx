@@ -18,7 +18,7 @@ import { UserSessionStore } from "./store/user-session-store"
 
 const App = () => {
     const { boardId, page } = BoardNavigation()
-    const connection = BrowserSideServerConnection()
+    const connection = BrowserSideServerConnection(boardId)
     const sessionStore = UserSessionStore(connection, localStorage)
     const boardStore = BoardStore(boardId, connection, sessionStore.sessionState, boardLocalStore)
     const cursorsStore = CursorsStore(connection, sessionStore)

@@ -36,7 +36,7 @@ function createTester(nickname: string, boardId: string) {
     const WS_ROOT = `${DOMAIN ? "wss" : "ws"}://${DOMAIN ?? "localhost:1337"}`
     const WS_ADDRESS = `${WS_ROOT}/socket/board/${boardId}`
 
-    let connection = GenericServerConnection(WS_ADDRESS, L.constant(false), (s) => new WebSocket(s) as any)
+    let connection = GenericServerConnection(L.constant(WS_ADDRESS), L.constant(false), (s) => new WebSocket(s) as any)
     let sessionId = ""
     connection.bufferedServerEvents.forEach((event) => {
         if (event.action === "board.join.ack") {

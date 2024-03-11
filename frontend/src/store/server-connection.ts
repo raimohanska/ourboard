@@ -17,18 +17,22 @@ export function getWebSocketRootUrl() {
     return `${WS_PROTOCOL}//${location.host}`
 }
 
-export function BrowserSideServerConnection() {
+export function BrowserSideServerConnection(boardId: L.Property<string | undefined>) {
     const documentHidden = L.fromEvent(document, "visibilitychange").pipe(
         L.toStatelessProperty(() => document.hidden || false),
     )
 
+    const socketAddress = L.view(boardId, (id) =>
+        id ? `${getWebSocketRootUrl()}/socket/board/${id}` : `${getWebSocketRootUrl()}/socket/lobby`,
+    )
+
     //const root = "wss://www.ourboard.io"
     //const root = "ws://localhost:1339"
-    return GenericServerConnection(`${getWebSocketRootUrl()}/socket/lobby`, documentHidden, (s) => new WebSocket(s))
+    return GenericServerConnection(socketAddress, documentHidden, (s) => new WebSocket(s))
 }
 
 export function GenericServerConnection(
-    initialSocketAddress: string,
+    initialSocketAddress: L.Property<string>,
     documentHidden: L.Property<boolean>,
     createSocket: (address: string) => WebSocket,
 ) {
@@ -44,8 +48,12 @@ export function GenericServerConnection(
 
     const connectionStatus = L.atom<ConnectionStatus>("connecting")
     const forceOffline = L.atom<boolean>(false)
-    let currentSocketAddress = initialSocketAddress
-    let socket = initSocket()
+    let currentSocketAddress: string | undefined = undefined
+    let socket: WebSocket | null = null
+    initialSocketAddress.forEach((newAddress) => {
+        currentSocketAddress = newAddress
+        newSocket()
+    })
 
     setInterval(() => {
         if (documentHidden.get() && connectionStatus.get() === "connected" && socket) {
@@ -65,7 +73,7 @@ export function GenericServerConnection(
     })
 
     function initSocket() {
-        if (forceOffline.get()) {
+        if (forceOffline.get() || currentSocketAddress === undefined) {
             return null
         }
         connectionStatus.set("connecting")
