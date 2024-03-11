@@ -184,7 +184,7 @@ test.describe("Basic board functionality", () => {
 
         await test.step("Check with new session", async () => {
             const newBoard = await board.openBoardInNewBrowser()
-            await newBoard.userInfo.dismiss()
+            await newBoard.setNickname("User 2")
             await expect(newBoard.getNote("Monads")).toBeVisible()
         })
     })
@@ -208,7 +208,7 @@ test.describe("Basic board functionality", () => {
         await test.step("Check with new session", async () => {
             await board.deleteIndexedDb()
             const newBoard = await board.openBoardInNewBrowser()
-            await newBoard.userInfo.dismiss()
+            await newBoard.setNickname("User 2")
             await expect(newBoard.getArea("Monads")).toBeVisible()
         })
     })
@@ -256,7 +256,7 @@ test.describe("Basic board functionality", () => {
         await test.step("Check with new session", async () => {
             await board.deleteIndexedDb()
             const newBoard = await board.openBoardInNewBrowser()
-            await newBoard.userInfo.dismiss()
+            await newBoard.setNickname("User 2")
             await expect(newBoard.getNote("text")).not.toBeVisible()
         })
     })
@@ -311,7 +311,7 @@ test.describe("Basic board functionality", () => {
         await test.step("Check with new session", async () => {
             await board.deleteIndexedDb()
             const newBoard = await board.openBoardInNewBrowser()
-            await newBoard.userInfo.dismiss()
+            await newBoard.setNickname("User 2")
             await expect(newBoard.getArea("Semigroups")).toBeVisible()
         })
     })

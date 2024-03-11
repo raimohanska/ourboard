@@ -15,6 +15,13 @@ test.describe("Two simultaneous users", () => {
         await expect(userPage.getNote(anotherUserPageNoteText)).toBeVisible()
     })
 
+    test("Change board name", async ({ page, browser }) => {
+        const { user1Page: userPage, user2Page } = await createBoardWithTwoUsers(page, browser)
+        // create 2 notes, one on each page
+        await userPage.renameBoard("Renamed board")
+        await user2Page.assertBoardName("Renamed board")
+    })
+
     const onTopPart = { position: { x: 9, y: 15 } } as const
 
     test("Users can collaboratively edit a text area", async ({ page, browser }) => {
@@ -126,12 +133,14 @@ test.describe("Two simultaneous users", () => {
 
     async function createBoardWithTwoUsers(page: Page, browser: Browser) {
         const user1Page = await navigateToNewBoard(page, browser, { boardName: "Collab test board" })
+        await user1Page.setNickname("User 1")
 
         const boardId = user1Page.getBoardId()
         const user2Page = await user1Page.openBoardInNewBrowser()
+        await user2Page.setNickname("User 2")
 
-        await user1Page.userInfo.dismiss()
-        await user2Page.userInfo.dismiss()
+        await user1Page.assertBoardName("Collab test board")
+        await user2Page.assertBoardName("Collab test board")
 
         return { user1Page, user2Page, boardId }
     }

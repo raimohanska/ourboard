@@ -287,10 +287,14 @@ export function BoardPage(page: Page, browser: Browser) {
                 await this.assertSelected(items[i], true)
             }
         },
-        userInfo: {
-            async dismiss() {
-                await page.locator(".user-info button").click()
-            },
+        async setNickname(nickname: string) {
+            await page
+                .locator(".user-info .icon")
+                .or(page.locator(".user-info .nickname"))
+                .first()
+                .click({ force: true })
+            await page.locator(".user-info .nickname input").fill(nickname)
+            await page.locator(".user-info button").click()
         },
         contextMenu: ContextMenu(page),
         async deleteIndexedDb() {

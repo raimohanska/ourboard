@@ -1,4 +1,4 @@
-import { Browser, Page, selectors } from "@playwright/test"
+import { Browser, Page, selectors, test } from "@playwright/test"
 import { BoardPage, semiUniqueId, NewBoardOptions } from "./BoardPage"
 
 export async function navigateToDashboard(page: Page, browser: Browser) {
@@ -10,17 +10,20 @@ export async function navigateToDashboard(page: Page, browser: Browser) {
 export function DashboardPage(page: Page, browser: Browser) {
     return {
         async createNewBoard(options?: NewBoardOptions) {
-            const name = options?.boardName ?? `Test board ${semiUniqueId()}`
-            const useCRDT = options?.useCRDT ?? true
+            return await test.step("Create new board", async () => {
+                const name = options?.boardName ?? `Test board ${semiUniqueId()}`
+                const useCRDT = options?.useCRDT ?? true
 
-            await page.getByPlaceholder("Enter board name").fill(name)
-            if (useCRDT) {
-                await page.getByText("use collaborative text editor").click()
-            }
-            await page.getByRole("button", { name: "Create" }).click()
-            const board = BoardPage(page, browser)
-            await board.assertBoardName(name)
-            return board
+                await page.getByPlaceholder("Enter board name").fill(name)
+                if (useCRDT) {
+                    await page.getByText("use collaborative text editor").click()
+                }
+                await page.getByRole("button", { name: "Create" }).click()
+                const board = BoardPage(page, browser)
+                // TODO: this is flaky in at least "Switching between boards"
+                await board.assertBoardName(name)
+                return board
+            })
         },
         async goToBoard(name: string) {
             await page.locator(".recent-boards li").filter({ hasText: name }).first().click()
