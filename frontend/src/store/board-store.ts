@@ -553,6 +553,7 @@ export function BoardStore(
     const localBoardItemEvents = uiEvents.pipe(L.filter(isPersistableBoardItemEvent, globalScope))
 
     const crdtStore = CRDTStore(
+        L.view(state, (s) => s.board?.id),
         L.view(state, (s) => s.status === "online"),
         localBoardItemEvents,
         getWebSocketRootUrl,

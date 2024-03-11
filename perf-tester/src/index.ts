@@ -55,6 +55,7 @@ function createTester(nickname: string, boardId: string) {
     }
 
     const crdtStore = CRDTStore(
+        L.constant(boardId),
         connection.connected,
         localEvents.pipe(L.filter(isPersistableBoardItemEvent)).applyScope(L.globalScope),
         () => WS_ROOT,

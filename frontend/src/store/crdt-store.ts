@@ -37,12 +37,6 @@ function BoardCRDT(
         return getCRDTField(doc, itemId, fieldName)
     }
 
-    localBoardItemEvents.pipe(L.filter((e) => e.boardId === boardId)).forEach((event) => {
-        if (event.action === "item.add") {
-            importItemsIntoCRDT(doc, event.items, { fallbackToText: true })
-        }
-    })
-
     function augmentItems(items: Item[]): Item[] {
         return augmentItemsWithCRDT(doc, items)
     }
@@ -60,16 +54,35 @@ function BoardCRDT(
         WebSocketPolyfill,
     })
 
-    online.onChange((c) => (c ? provider.connect() : provider.disconnect()))
+    const disconnected = L.bus()
+    online.pipe(L.changes, L.takeUntil(disconnected)).forEach((c) => (c ? provider.connect() : provider.disconnect()))
+
+    localBoardItemEvents
+        .pipe(
+            L.takeUntil(disconnected),
+            L.filter((e) => e.boardId === boardId),
+        )
+        .forEach((event) => {
+            if (event.action === "item.add") {
+                importItemsIntoCRDT(doc, event.items, { fallbackToText: true })
+            }
+        })
 
     provider.on("status", (event: any) => {
-        console.log("YJS Provider status", event.status)
+        console.log("YJS Provider status", boardId, event.status)
     })
 
+    function disconnect() {
+        console.log("Disconnecting YJS provider for board", boardId)
+        provider.destroy()
+    }
+
     return {
+        boardId,
         doc,
         getField,
         augmentItems,
+        disconnect,
         awareness: provider.awareness,
     }
 }
@@ -77,33 +90,42 @@ function BoardCRDT(
 export type CRDTStore = ReturnType<typeof CRDTStore>
 
 export function CRDTStore(
+    currentBoardId: L.Property<Id | undefined>,
     online: L.Property<boolean>,
     localBoardItemEvents: L.EventStream<PersistableBoardItemEvent>,
     getSocketRoot: () => string = getWebSocketRootUrl,
     WebSocketPolyfill: WebSocketPolyfill = WebSocket as any,
 ) {
-    const boards = new Map<Id, BoardCRDT>()
+    let boardCrdt: BoardCRDT | undefined = undefined
+
+    currentBoardId.forEach((boardId) => {
+        if (boardCrdt && boardCrdt.boardId !== boardId) {
+            boardCrdt.disconnect()
+            boardCrdt = undefined
+        }
+    })
+
     function getBoardCrdt(boardId: Id): BoardCRDT {
-        let boardCrdt = boards.get(boardId)
-        if (!boardCrdt) {
+        if (boardId != currentBoardId.get()) {
+            throw Error(`Requested CRDT for board ${boardId} but current board is ${currentBoardId.get()}`)
+        }
+
+        if (!boardCrdt || boardCrdt.boardId !== boardId) {
             boardCrdt = BoardCRDT(boardId, online, localBoardItemEvents, getSocketRoot, WebSocketPolyfill)
-            boards.set(boardId, boardCrdt)
         }
         return boardCrdt
     }
 
     function augmentItems(boardId: Id, items: Item[]): Item[] {
-        const boardCrdt = boards.get(boardId)
-        if (!boardCrdt) {
+        if (!boardCrdt || boardCrdt.boardId !== boardId) {
             return items
         }
         return boardCrdt.augmentItems(items)
     }
 
     function cloneBoard(board: Board): Board {
-        const boardCrdt = boards.get(board.id)
         const newId = uuid.v4()
-        if (!boardCrdt) {
+        if (!boardCrdt || boardCrdt.boardId !== board.id) {
             return {
                 ...board,
                 id: newId,
@@ -115,7 +137,9 @@ export function CRDTStore(
             id: newId,
         }
 
-        importItemsIntoCRDT(getBoardCrdt(newId).doc, Object.values(newBoard.items))
+        const temporaryBoardCrdt = BoardCRDT(newId, online, localBoardItemEvents, getSocketRoot, WebSocketPolyfill)
+        importItemsIntoCRDT(temporaryBoardCrdt.doc, Object.values(newBoard.items))
+        temporaryBoardCrdt.disconnect()
         return newBoard
     }
 
