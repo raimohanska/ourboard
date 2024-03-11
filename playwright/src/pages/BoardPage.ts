@@ -1,5 +1,5 @@
 import { Browser, Locator, Page, expect, selectors, test } from "@playwright/test"
-import { navigateToDashboard } from "./DashboardPage"
+import { DashboardPage, navigateToDashboard } from "./DashboardPage"
 import { sleep } from "../../../common/src/sleep"
 import { assertNotNull } from "../../../common/src/assertNotNull"
 
@@ -133,6 +133,9 @@ export function BoardPage(page: Page, browser: Browser) {
         async assertBoardName(name: string) {
             await expect(boardName).toHaveText(name)
         },
+        async getBoardName() {
+            return assertNotNull(await boardName.textContent())
+        },
         async renameBoard(name: string) {
             await test.step("Rename board", async () => {
                 await boardName.click()
@@ -150,6 +153,7 @@ export function BoardPage(page: Page, browser: Browser) {
         },
         async goToDashBoard() {
             await page.getByRole("link", { name: "All boards" }).click()
+            return DashboardPage(page, browser)
         },
         async createNoteWithText(x: number, y: number, text: string) {
             return await test.step("Create note " + text, async () => {

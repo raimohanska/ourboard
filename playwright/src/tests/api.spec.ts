@@ -2,29 +2,12 @@ import { Page, expect, test } from "@playwright/test"
 import { Note } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
 import { navigateToBoard, semiUniqueId } from "../pages/BoardPage"
-
-async function loginAsTester(page: Page) {
-    await test.step("Login as tester", async () => {
-        await page.request.get("/test-callback")
-    })
-}
-
-async function logout(page: Page) {
-    await test.step("Logout", async () => {
-        await page.request.get("/logout")
-    })
-}
+import { BoardApi } from "../pages/BoardApi"
 
 test.describe("API endpoints", () => {
     test("Create and update board", async ({ page, browser }) => {
-        const { id, accessToken } = await test.step("Create board", async () => {
-            const response = await page.request.post("/api/v1/board", {
-                data: {
-                    name: "API test board",
-                },
-            })
-            return await response.json()
-        })
+        const Api = BoardApi(page)
+        const { id, accessToken } = await Api.createBoard({ name: "API test board" })
 
         const board = await navigateToBoard(page, browser, id)
 
@@ -37,75 +20,39 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Set board name", async () => {
-            const response = await page.request.put(`/api/v1/board/${id}`, {
-                data: {
-                    name: "Updated board name",
-                },
-                headers: {
-                    API_TOKEN: accessToken,
-                },
+            await Api.updateBoard(accessToken, id, {
+                name: "Updated board name",
             })
-            expect(response.status()).toEqual(200)
             await board.assertBoardName("Updated board name")
         })
 
-        const item = await test.step("Add item", async () => {
-            const response = await page.request.post(`/api/v1/board/${id}/item`, {
-                data: {
-                    type: "note",
-                    text: "API note",
-                    container: "API notes",
-                    color: "#000000",
-                },
-                headers: {
-                    API_TOKEN: accessToken,
-                },
-            })
-            expect(response.status()).toEqual(200)
-            await expect(board.getNote("API note")).toBeVisible()
-            return await response.json()
-        })
+        const item = await Api.createNote(accessToken, id, "API note")
+
+        await expect(board.getNote("API note")).toBeVisible()
 
         await test.step("Update item", async () => {
-            const response = await page.request.put(`/api/v1/board/${id}/item/${item.id}`, {
-                data: {
-                    type: "note",
-                    text: "Updated item",
-                    color: "#000000",
-                },
-                headers: {
-                    API_TOKEN: accessToken,
-                },
+            await Api.updateItem(accessToken, id, item.id, {
+                type: "note",
+                text: "Updated item",
+                color: "#000000",
             })
-            expect(response.status()).toEqual(200)
             await expect(board.getNote("Updated item")).toBeVisible()
         })
 
         await test.step("Change item container", async () => {
             await board.assertItemPosition(board.getNote("Updated item"), 163, 460)
-            const response = await page.request.put(`/api/v1/board/${id}/item/${item.id}`, {
-                data: {
-                    type: "note",
-                    text: "Updated item",
-                    color: "#000000",
-                    container: "More API notes",
-                },
-                headers: {
-                    API_TOKEN: accessToken,
-                },
+            await Api.updateItem(accessToken, id, item.id, {
+                type: "note",
+                text: "Updated item",
+                color: "#000000",
+                container: "More API notes",
             })
-            expect(response.status()).toEqual(200)
             await sleep(1000)
             await board.assertItemPosition(board.getNote("Updated item"), 613, 460)
         })
 
         await test.step("Get board state", async () => {
-            const response = await page.request.get(`/api/v1/board/${id}`, {
-                headers: {
-                    API_TOKEN: accessToken,
-                },
-            })
-            const content = await response.json()
+            const content = await Api.getBoard(accessToken, id)
             expect(content).toEqual({
                 board: {
                     id,
@@ -133,12 +80,7 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board state hierarchy", async () => {
-            const response = await page.request.get(`/api/v1/board/${id}/hierarchy`, {
-                headers: {
-                    API_TOKEN: accessToken,
-                },
-            })
-            const content = await response.json()
+            const content = await Api.getBoardHierarchy(accessToken, id)
             expect(content).toEqual({
                 board: {
                     id,
@@ -153,54 +95,26 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board history", async () => {
-            const response = await page.request.get(`/api/v1/board/${id}/history`, {
-                headers: {
-                    API_TOKEN: accessToken,
-                },
-            })
-            const content = await response.json()
-            expect(content).toEqual(expect.arrayContaining([]))
+            expect(await Api.getBoardHistory(accessToken, id)).toEqual(expect.arrayContaining([]))
         })
 
         await test.step("Get board as CSV", async () => {
-            const response = await page.request.get(`/api/v1/board/${id}/csv`, {
-                headers: {
-                    API_TOKEN: accessToken,
-                },
-            })
-            const content = await response.text()
-            expect(content).toEqual("More API notes,Updated item\n")
+            expect(await Api.getBoardCsv(accessToken, id)).toEqual("More API notes,Updated item\n")
         })
 
         await test.step("Set accessPolicy", async () => {
-            const response = await page.request.put(`/api/v1/board/${id}`, {
-                data: {
-                    name: "Updated board name",
-                    accessPolicy: {
-                        allowList: [],
-                        publicRead: false,
-                        publicWrite: false,
-                    },
-                },
-                headers: {
-                    API_TOKEN: accessToken,
+            await Api.updateBoard(accessToken, id, {
+                name: "Updated board name",
+                accessPolicy: {
+                    allowList: [],
+                    publicRead: false,
+                    publicWrite: false,
                 },
             })
-            expect(response.status()).toEqual(200)
             await page.reload()
             await board.assertStatusMessage("This board is for authorized users only. Click here to sign in.")
 
-            expect(
-                (
-                    await (
-                        await page.request.get(`/api/v1/board/${id}`, {
-                            headers: {
-                                API_TOKEN: accessToken,
-                            },
-                        })
-                    ).json()
-                ).board.accessPolicy,
-            ).toEqual({
+            expect((await Api.getBoard(accessToken, id)).board.accessPolicy).toEqual({
                 allowList: [],
                 publicRead: false,
                 publicWrite: false,
@@ -213,55 +127,27 @@ test.describe("API endpoints", () => {
                 publicRead: true,
                 publicWrite: true,
             }
-            const response = await page.request.put(`/api/v1/board/${id}`, {
-                data: {
-                    name: "Updated board name",
-                    accessPolicy: newAccessPolicy,
-                },
-                headers: {
-                    API_TOKEN: accessToken,
-                },
+            await Api.updateBoard(accessToken, id, {
+                name: "Updated board name",
+                accessPolicy: newAccessPolicy,
             })
-            expect(response.status()).toEqual(200)
             await page.reload()
             await expect(board.getNote("Updated item")).toBeVisible()
 
-            expect(
-                (
-                    await (
-                        await page.request.get(`/api/v1/board/${id}`, {
-                            headers: {
-                                API_TOKEN: accessToken,
-                            },
-                        })
-                    ).json()
-                ).board.accessPolicy,
-            ).toEqual(newAccessPolicy)
+            expect((await Api.getBoard(accessToken, id)).board.accessPolicy).toEqual(newAccessPolicy)
         })
     })
 
     test("Get board contents with CRDT text", async ({ page, browser }) => {
-        const { id, accessToken } = await test.step("Create board", async () => {
-            const response = await page.request.post("/api/v1/board", {
-                data: {
-                    name: "API test board",
-                    crdt: true,
-                },
-            })
-            return await response.json()
-        })
+        const Api = BoardApi(page)
+        const { id, accessToken } = await Api.createBoard({ name: "API test board", crdt: true })
 
         const board = await navigateToBoard(page, browser, id)
         await board.createText(100, 200, "CRDT text")
         await board.createNoteWithText(100, 400, "Simple note")
 
         await test.step("Get board state", async () => {
-            const response = await page.request.get(`/api/v1/board/${id}`, {
-                headers: {
-                    API_TOKEN: accessToken,
-                },
-            })
-            const content = await response.json()
+            const content = await Api.getBoard(accessToken, id)
             expect(Object.values(content.board.items)).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
@@ -279,12 +165,8 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board hierarchy", async () => {
-            const response = await page.request.get(`/api/v1/board/${id}/hierarchy`, {
-                headers: {
-                    API_TOKEN: accessToken,
-                },
-            })
-            const content = await response.json()
+            const content = await Api.getBoardHierarchy(accessToken, id)
+
             expect(Object.values(content.board.items)).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({

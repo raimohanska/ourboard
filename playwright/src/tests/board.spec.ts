@@ -61,8 +61,6 @@ test.describe("Basic board functionality", () => {
 
     // TODO: test creating and modifying connections
 
-    // TODO: test offline usage. Requires some way to simulate offline mode
-
     test("Change note color", async ({ page, browser }) => {
         const board = await navigateToNewBoard(page, browser)
         const monoids = await board.createNoteWithText(100, 200, "Monoids")
@@ -315,6 +313,19 @@ test.describe("Basic board functionality", () => {
             await newBoard.userInfo.dismiss()
             await expect(newBoard.getArea("Semigroups")).toBeVisible()
         })
+    })
+
+    test("Switching between boards", async ({ page, browser }) => {
+        const board = await navigateToNewBoard(page, browser)
+        const boardName1 = await board.getBoardName()
+        board.assertBoardName
+        const monoids = await board.createNoteWithText(100, 200, "Monoids")
+        const dashboard = await board.goToDashBoard()
+        await dashboard.createNewBoard({ boardName: "Another board" })
+        const semigroups = await board.createArea(500, 200, "Semigroups")
+        await board.goToDashBoard()
+        await dashboard.goToBoard(boardName1)
+        await expect(monoids).toBeVisible()
     })
 })
 
