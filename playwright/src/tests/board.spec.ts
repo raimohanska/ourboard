@@ -298,6 +298,7 @@ test.describe("Basic board functionality", () => {
     testWithBothBoardTypes("Clone the board", async ({ board, page }) => {
         const semigroups = await board.createArea(500, 200, "Semigroups")
         const functors = await board.createNoteWithText(200, 200, "Functors")
+        await sleep(1000)
         await board.cloneBoard()
         await board.assertBoardName("Clone the board copy")
         await expect(semigroups).toBeVisible()

@@ -1,15 +1,9 @@
 import * as L from "lonna"
-import * as uuid from "uuid"
 import { IndexeddbPersistence } from "y-indexeddb"
 import { WebsocketProvider } from "y-websocket"
 import * as Y from "yjs"
-import { Board, Id, Item, PersistableBoardItemEvent } from "../../../common/src/domain"
-import {
-    augmentBoardWithCRDT,
-    augmentItemsWithCRDT,
-    getCRDTField,
-    importItemsIntoCRDT,
-} from "../../../common/src/board-crdt-helper"
+import { augmentItemsWithCRDT, getCRDTField, importItemsIntoCRDT } from "../../../common/src/board-crdt-helper"
+import { Id, Item, PersistableBoardItemEvent } from "../../../common/src/domain"
 import { getWebSocketRootUrl } from "./server-connection"
 
 type BoardCRDT = ReturnType<typeof BoardCRDT>
@@ -123,29 +117,8 @@ export function CRDTStore(
         return boardCrdt.augmentItems(items)
     }
 
-    function cloneBoard(board: Board): Board {
-        const newId = uuid.v4()
-        if (!boardCrdt || boardCrdt.boardId !== board.id) {
-            return {
-                ...board,
-                id: newId,
-            }
-        }
-
-        const newBoard = {
-            ...augmentBoardWithCRDT(boardCrdt.doc, board),
-            id: newId,
-        }
-
-        const temporaryBoardCrdt = BoardCRDT(newId, online, localBoardItemEvents, getSocketRoot, WebSocketPolyfill)
-        importItemsIntoCRDT(temporaryBoardCrdt.doc, Object.values(newBoard.items))
-        temporaryBoardCrdt.disconnect()
-        return newBoard
-    }
-
     return {
         getBoardCrdt,
         augmentItems,
-        cloneBoard,
     }
 }

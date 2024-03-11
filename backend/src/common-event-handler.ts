@@ -1,6 +1,8 @@
-import { AppEvent, Board, checkBoardAccess, defaultBoardSize } from "../../common/src/domain"
+import * as Y from "yjs"
+import { AppEvent, Board, CrdtEnabled, checkBoardAccess, defaultBoardSize } from "../../common/src/domain"
 import { addBoard } from "./board-state"
 import { fetchBoard } from "./board-store"
+import { yWebSocketServer } from "./board-yjs-server"
 import { MessageHandlerResult } from "./connection-handler"
 import { getAuthenticatedUserFromJWT } from "./http-session"
 import {
@@ -94,6 +96,11 @@ export async function handleCommonEvent(socket: WsWrapper, appEvent: AppEvent): 
                     }
                 }
                 const board = { ...defaultBoardSize, items: {}, connections: [], ...template, ...payload, serial: 0 }
+                if (template && template.crdt === CrdtEnabled) {
+                    const templateDoc = await yWebSocketServer.docs.getYDocAndWaitForFetch(template.id)
+                    const newDoc = await yWebSocketServer.docs.getYDocAndWaitForFetch(board.id)
+                    Y.applyUpdate(newDoc, Y.encodeStateAsUpdate(templateDoc))
+                }
                 await addBoard(board)
                 socket.send(toBuffer({ action: "board.add.ack", boardId: board.id }))
             }

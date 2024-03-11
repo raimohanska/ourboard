@@ -12,6 +12,7 @@ import { SharingModalDialog } from "./SharingModalDialog"
 import { UserInfoView } from "./UserInfoView"
 import { Rect } from "../../../../common/src/geometry"
 import { CRDTStore } from "../../store/crdt-store"
+import * as uuid from "uuid"
 
 export function BoardViewHeader({
     usersOnBoard,
@@ -44,8 +45,9 @@ export function BoardViewHeader({
     const navigator = getNavigator<Routes>()
     function makeCopy() {
         const newBoard = {
-            ...crdtStore.cloneBoard(board.get()),
+            id: uuid.v4(),
             name: `${nameAtom.get()} copy`,
+            templateId: board.get()!.id,
             accessPolicy: defaultAccessPolicy(sessionState.get(), false),
         }
         createBoardAndNavigate(newBoard, dispatch, navigator, eventsFromServer)
