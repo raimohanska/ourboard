@@ -75,13 +75,18 @@ export function removeFromSelection(
     }
 }
 
-export function removeNonExistingFromSelection(
-    selection: BoardFocus,
-    existingItemIds: Set<Id>,
-    existingConnectionIds: Set<Id>,
-): BoardFocus {
-    const toRemoveItems = difference(getSelectedItemIds(selection), existingItemIds)
-    const toRemoveConnections = difference(getSelectedConnectionIds(selection), existingConnectionIds)
+export function removeNonExistingFromSelection(selection: BoardFocus, board: Board): BoardFocus {
+    const toRemoveItems = new Set(
+        [...getSelectedItemIds(selection)].filter((id) => {
+            if (!board.items[id]) return true
+            if (board.items[id].hidden) return true
+        }),
+    )
+    const selectedConnectionIds = getSelectedConnectionIds(selection)
+    const toRemoveConnections =
+        selectedConnectionIds.size > 0
+            ? difference(selectedConnectionIds, new Set(board.connections.filter((c) => !c.hidden).map((c) => c.id)))
+            : emptySet<Id>()
     return removeFromSelection(selection, toRemoveItems, toRemoveConnections)
 }
 

@@ -62,9 +62,7 @@ export function synchronizeFocusWithServer(
         // TODO consider selected connection in locking as well maybe
         const itemsWhereSomeoneElseHasLock = new Set(Object.keys(locks).filter((itemId) => locks[itemId] !== sessionId))
         const nonLocked = removeFromSelection(focus, itemsWhereSomeoneElseHasLock, emptySet())
-        const existingItemIds = new Set(Object.keys(board.items))
-        const existingConnectionIds = new Set(board.connections.map((c) => c.id))
-        return removeNonExistingFromSelection(nonLocked, existingItemIds, existingConnectionIds)
+        return removeNonExistingFromSelection(nonLocked, board)
     }
 
     resolvedFocus.forEach(unlockUnselectedItems)
