@@ -173,6 +173,7 @@ export type Connection = {
     toStyle: ConnectionEndStyle
     pointStyle: "none" | "black-dot"
     action: "connect" | "line"
+    hidden?: boolean
 }
 export type ConnectionEndPoint = Point | ConnectionEndPointToItem
 export type ConnectionEndPointToItem = Id | ConectionEndPointDirectedToItem

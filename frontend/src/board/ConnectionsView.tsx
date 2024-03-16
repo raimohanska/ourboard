@@ -50,18 +50,20 @@ export const ConnectionsView = ({
         focus,
         L.view(zoom, "zoom"),
         ({ is, cs }, f, z) => {
-            return cs.map((c) => {
-                const fromItem: Point = resolveEndpoint(c.from, is)
-                const toItemOrPoint = resolveEndpoint(c.to, is)
-                const firstControlPoint = c.controlPoints[0] || fromItem
-                const lastControlPoint = c.controlPoints[c.controlPoints.length - 1] || toItemOrPoint
-                return {
-                    ...c,
-                    from: determineAttachmenLocation(c.from, firstControlPoint, is),
-                    to: determineAttachmenLocation(c.to, lastControlPoint, is),
-                    selected: getSelectedConnectionIds(f).has(c.id),
-                }
-            })
+            return cs
+                .filter((c) => !c.hidden)
+                .map((c) => {
+                    const fromItem: Point = resolveEndpoint(c.from, is)
+                    const toItemOrPoint = resolveEndpoint(c.to, is)
+                    const firstControlPoint = c.controlPoints[0] || fromItem
+                    const lastControlPoint = c.controlPoints[c.controlPoints.length - 1] || toItemOrPoint
+                    return {
+                        ...c,
+                        from: determineAttachmenLocation(c.from, firstControlPoint, is),
+                        to: determineAttachmenLocation(c.to, lastControlPoint, is),
+                        selected: getSelectedConnectionIds(f).has(c.id),
+                    }
+                })
         },
     )
 

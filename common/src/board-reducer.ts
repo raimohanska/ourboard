@@ -18,6 +18,7 @@ import {
     isBoardHistoryEntry,
     isContainedBy,
     isContainer,
+    isItem,
     isItemEndPoint,
     isTextItem,
     Item,
@@ -226,7 +227,7 @@ export function boardReducer(
             ]
         case "item.update": {
             const updatedConnections = updateConnections(board, event.connections || [])
-            const updatedItems = updateItems(board, event.items, inplace)
+            const updatedItems = updateItems(board, event.items, updatedConnections, inplace)
             return [
                 {
                     ...board,
@@ -384,7 +385,12 @@ function updateConnections(board: Board, updates: ConnectionUpdate[]): Connectio
     })
 }
 
-function updateItems(board: Board, updateList: ItemUpdate[], inplace: boolean): Record<Id, Item> {
+function updateItems(
+    board: Board,
+    updateList: ItemUpdate[],
+    updatedConnections: Connection[],
+    inplace: boolean,
+): Record<Id, Item> {
     updateList = filterItemUpdatesByPermissions(updateList, board)
     const updatedItems: Item[] = updateList.map((update) => ({ ...board.items[update.id], ...update } as Item))
 
@@ -427,11 +433,32 @@ function updateItems(board: Board, updateList: ItemUpdate[], inplace: boolean): 
         })
     }
 
+    function adjustConnectionVisibility() {
+        updatedConnections.forEach((c, i) => {
+            let shouldHide: boolean
+            if (c.containerId) {
+                // When a connection has containerId, it should be hidden if the container is hidden (or has contentsHidden)
+                // A connection practically has containerId in case its endpoints are not attached to an item and it's contained by a container
+                const container = resultItems[c.containerId]
+                shouldHide = (container?.hidden || (isContainer(container) && container.contentsHidden)) ?? false
+            } else {
+                // In other cases, hide connections in case either end is connected to a hidden item
+                const from = resolveEndpoint(c.from, resultItems)
+                const to = resolveEndpoint(c.to, resultItems)
+                shouldHide = ((isItem(from) && from.hidden) || (isItem(to) && to.hidden)) ?? false
+            }
+            if (shouldHide !== c.hidden ?? false) {
+                updatedConnections[i] = { ...c, hidden: shouldHide }
+            }
+        })
+    }
+
     updateList.forEach((update) => {
         if ("contentsHidden" in update) {
             const container = board.items[update.id]
             if (container) {
                 setVisibilityRecursively(container, update.contentsHidden ?? false)
+                adjustConnectionVisibility()
             }
         }
     })
