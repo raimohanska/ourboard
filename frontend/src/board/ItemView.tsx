@@ -1,4 +1,4 @@
-import { h } from "harmaja"
+import { componentScope, h } from "harmaja"
 import * as L from "lonna"
 import {
     AccessLevel,
@@ -10,6 +10,7 @@ import {
     getItemShape,
     getVerticalAlign,
     isContainer,
+    isLocalUIEvent,
     isTextItem,
     Item,
     ItemType,
@@ -148,6 +149,7 @@ export const ItemView = ({
                     itemFocus={itemFocus}
                     crdtStore={boardStore.crdtStore}
                     isLocked={isLocked}
+                    uiEvents={boardStore.events.pipe(L.filter(isLocalUIEvent), L.applyScope(componentScope()))}
                 />
             ) : (
                 <TextView

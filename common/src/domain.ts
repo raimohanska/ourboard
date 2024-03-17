@@ -210,7 +210,7 @@ export type RecentBoard = RecentBoardAttributes & { opened: ISOTimeStamp; userEm
 
 export type BoardEvent = { boardId: Id }
 export type UIEvent = BoardItemEvent | ClientToServerRequest | LocalUIEvent
-export type LocalUIEvent = Undo | Redo | SetLocalBoard | GoOnline | BoardLoggedOut | GoOffline
+export type LocalUIEvent = Undo | Redo | SetLocalBoard | GoOnline | BoardLoggedOut | GoOffline | TextFormat
 export type EventFromServer = BoardHistoryEntry | BoardStateSyncEvent | LoginResponse | AckAddBoard | ServerConfig
 export type ServerConfig = {
     action: "server.config"
@@ -364,6 +364,7 @@ export type AssetPutUrlRequest = { action: "asset.put.request"; assetId: string 
 export type AssetPutUrlResponse = { action: "asset.put.response"; assetId: string; signedUrl: string }
 export type Undo = { action: "ui.undo" }
 export type Redo = { action: "ui.redo" }
+export type TextFormat = { action: "ui.text.format"; itemIds: Id[]; format: "bold" | "italic" | "underline" }
 
 export type SetLocalBoard = {
     action: "ui.board.setLocal"

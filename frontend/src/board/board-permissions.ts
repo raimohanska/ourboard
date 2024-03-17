@@ -3,6 +3,7 @@ import { Connection, Item } from "../../../common/src/domain"
 export const canChangeFont: BoardPermission = (item) => !item.locked
 export const canChangeShapeAndColor: BoardPermission = (item): boolean => !item.locked
 export const canChangeTextAlign: BoardPermission = (item): boolean => !item.locked
+export const canChangeTextFormat: BoardPermission = (item): boolean => !item.locked
 export const canChangeVisibility: BoardPermission = (item): boolean => !item.locked
 export const canChangeText: BoardPermission = (item): boolean => true
 export const canMove: BoardPermission = (item): boolean => !item.locked

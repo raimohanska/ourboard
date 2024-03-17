@@ -6,6 +6,7 @@ import { QuillBinding } from "y-quill"
 import {
     AccessLevel,
     Board,
+    LocalUIEvent,
     TextItem,
     canWrite,
     getAlign,
@@ -33,6 +34,7 @@ interface CollaborativeTextViewProps {
     itemFocus: L.Property<"none" | "selected" | "dragging" | "editing">
     crdtStore: CRDTStore
     isLocked: L.Property<boolean>
+    uiEvents: L.EventStream<LocalUIEvent>
 }
 export function CollaborativeTextView({
     id,
@@ -43,6 +45,7 @@ export function CollaborativeTextView({
     itemFocus,
     isLocked,
     crdtStore,
+    uiEvents,
 }: CollaborativeTextViewProps) {
     const fontSize = L.view(item, (i) => `${i.fontSize ? i.fontSize : 1}em`)
     const color = L.view(item, getItemBackground, contrastingColor)
@@ -106,6 +109,16 @@ export function CollaborativeTextView({
     const hAlign = L.view(item, getAlign, getHorizontalAlign).applyScope(componentScope())
     hAlign.onChange((align) => {
         quillEditor.get()?.formatText(0, 10000000, "align", align === "left" ? "" : align)
+    })
+
+    uiEvents.applyScope(componentScope()).forEach((e) => {
+        if (e.action === "ui.text.format" && e.itemIds.includes(id)) {
+            const quill = quillEditor.get()
+            const selection = quill?.getSelection()
+            const format = selection && quill?.getFormat(selection)
+            const newValue = !(format && format[e.format])
+            quill?.format(e.format, newValue)
+        }
     })
 
     let touchMoves = 0
