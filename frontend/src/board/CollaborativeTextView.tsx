@@ -6,21 +6,23 @@ import { QuillBinding } from "y-quill"
 import {
     AccessLevel,
     Board,
+    TextItem,
     canWrite,
     getAlign,
     getHorizontalAlign,
     getItemBackground,
-    TextItem,
 } from "../../../common/src/domain"
-import { Dispatch } from "../store/board-store"
 import { CRDTStore } from "../store/crdt-store"
+import { getAlignItems } from "./ItemView"
 import { BoardFocus } from "./board-focus"
 import { contrastingColor } from "./contrasting-color"
-import { getAlignItems } from "./ItemView"
-import { ToolController } from "./tool-selection"
 import { preventDoubleClick } from "./double-click"
+import PasteLinkOverText from "./quillPasteLinkOverText"
+import ClickableLink from "./quillClickableLink"
 
 Quill.register("modules/cursors", QuillCursors)
+Quill.register("modules/pasteLinkOverText", PasteLinkOverText)
+Quill.register(ClickableLink)
 
 interface CollaborativeTextViewProps {
     item: L.Property<TextItem>
@@ -56,6 +58,7 @@ export function CollaborativeTextView({
             modules: {
                 cursors: true,
                 toolbar: false,
+                pasteLinkOverText: true,
                 history: {
                     userOnly: true, // Local undo shouldn't undo changes from remote users
                 },
