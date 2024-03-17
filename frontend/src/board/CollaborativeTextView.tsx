@@ -18,9 +18,11 @@ import { BoardFocus } from "./board-focus"
 import { contrastingColor } from "./contrasting-color"
 import { preventDoubleClick } from "./double-click"
 import PasteLinkOverText from "./quillPasteLinkOverText"
+import ClickableLink from "./quillClickableLink"
 
 Quill.register("modules/cursors", QuillCursors)
 Quill.register("modules/pasteLinkOverText", PasteLinkOverText)
+Quill.register(ClickableLink)
 
 interface CollaborativeTextViewProps {
     item: L.Property<TextItem>
