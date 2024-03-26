@@ -59,6 +59,7 @@ import { VideoView } from "./VideoView"
 import { startConnecting } from "./item-connect"
 import { emptySet } from "../../../common/src/sets"
 import { installZoomKeyboardShortcuts } from "./zoom-shortcuts"
+import { itemHideContentsHandler } from "./item-hide-contents"
 
 const emptyNote = newNote("")
 
@@ -167,6 +168,7 @@ export const BoardView = ({
     itemCreateHandler(board, focus, latestNote, boardElement, onAdd)
     itemDeleteHandler(boardId, dispatch, focus)
     itemDuplicateHandler(board, boardStore.crdtStore, dispatch, focus)
+    itemHideContentsHandler(board, focus, dispatch)
     itemMoveWithArrowKeysHandler(board, dispatch, focus)
     itemUndoHandler(dispatch)
     itemSelectAllHandler(board, focus)

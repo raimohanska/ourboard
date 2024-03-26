@@ -59,6 +59,7 @@ N                   Create new note
 T                   Create new text box
 C                   Select the Connect tool
 Esc                 Select the default tool
+H                   Hide contents of an area
 Command-A           Select all items
 Command-V           Paste
 Command-C           Copy
