@@ -5,6 +5,7 @@ import * as Y from "yjs"
 import { augmentItemsWithCRDT, getCRDTField, importItemsIntoCRDT } from "../../../common/src/board-crdt-helper"
 import { Id, Item, PersistableBoardItemEvent } from "../../../common/src/domain"
 import { getWebSocketRootUrl } from "./server-connection"
+import { UserSessionState } from "./user-session-store"
 
 type BoardCRDT = ReturnType<typeof BoardCRDT>
 export type WebSocketPolyfill =
@@ -87,15 +88,29 @@ export function CRDTStore(
     currentBoardId: L.Property<Id | undefined>,
     online: L.Property<boolean>,
     localBoardItemEvents: L.EventStream<PersistableBoardItemEvent>,
+    sessionState: L.Property<UserSessionState>,
     getSocketRoot: () => string = getWebSocketRootUrl,
     WebSocketPolyfill: WebSocketPolyfill = WebSocket as any,
 ) {
-    let boardCrdt: BoardCRDT | undefined = undefined
+    let boardCrdt = L.atom<BoardCRDT | undefined>(undefined)
 
     currentBoardId.forEach((boardId) => {
-        if (boardCrdt && boardCrdt.boardId !== boardId) {
-            boardCrdt.disconnect()
-            boardCrdt = undefined
+        boardCrdt.modify((prev) => {
+            if (!prev || prev.boardId === boardId) {
+                return prev
+            }
+            prev.disconnect()
+        })
+    })
+
+    const userInfo = L.view(sessionState, (state) => ({
+        name: state.nickname,
+        color: "#35b2dc",
+    }))
+
+    L.view(userInfo, boardCrdt, (u, c) => [u, c] as const).forEach(([u, c]) => {
+        if (c) {
+            c.awareness.setLocalStateField("user", u)
         }
     })
 
@@ -104,17 +119,21 @@ export function CRDTStore(
             throw Error(`Requested CRDT for board ${boardId} but current board is ${currentBoardId.get()}`)
         }
 
-        if (!boardCrdt || boardCrdt.boardId !== boardId) {
-            boardCrdt = BoardCRDT(boardId, online, localBoardItemEvents, getSocketRoot, WebSocketPolyfill)
-        }
-        return boardCrdt
+        boardCrdt.modify((prev) => {
+            if (prev) {
+                return prev
+            }
+            return BoardCRDT(boardId, online, localBoardItemEvents, getSocketRoot, WebSocketPolyfill)
+        })
+        return boardCrdt.get()!
     }
 
     function augmentItems(boardId: Id, items: Item[]): Item[] {
-        if (!boardCrdt || boardCrdt.boardId !== boardId) {
+        const bc = boardCrdt.get()
+        if (!bc || bc.boardId !== boardId) {
             return items
         }
-        return boardCrdt.augmentItems(items)
+        return bc.augmentItems(items)
     }
 
     return {

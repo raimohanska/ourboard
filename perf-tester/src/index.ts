@@ -58,6 +58,13 @@ function createTester(nickname: string, boardId: string) {
         L.constant(boardId),
         connection.connected,
         localEvents.pipe(L.filter(isPersistableBoardItemEvent)).applyScope(L.globalScope),
+        L.constant({
+            status: "anonymous",
+            sessionId: null,
+            nickname: nickname,
+            nicknameSetByUser: true,
+            loginSupported: false,
+        }),
         () => WS_ROOT,
         MyWebSocket as any,
     )

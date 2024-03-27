@@ -176,11 +176,18 @@
                 > .quill-editor {
                     width: 100%;
                     height: fit-content;
+                    overflow: visible;
                     > .ql-editor {
                         padding: 0.1em;
                         ol,
                         ul {
                             padding: 0;
+                        }
+                    }
+                    .ql-cursors {
+                        .ql-cursor-name {
+                            margin: 0.1em 0.4em 0.05em;
+                            font-size: min(1rem, 0.7em);
                         }
                     }
                 }

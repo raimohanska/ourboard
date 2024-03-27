@@ -568,6 +568,7 @@ export function BoardStore(
         L.view(state, (s) => s.board?.id),
         L.view(state, (s) => s.status === "online"),
         localBoardItemEvents,
+        sessionInfo,
         getWebSocketRootUrl,
         WebSocketPolyfill,
     )
