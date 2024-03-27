@@ -18,7 +18,10 @@ export const CursorsView = ({
     const transitionFromCursorDelay = cursors.cursorDelay.pipe(
         L.changes,
         L.throttle(2000, componentScope()),
-        L.map((d) => `all ${(Math.min(d, 1000) / 1000).toFixed(1)}s`),
+        L.map((d) => {
+            const t = (Math.min(d, 1000) / 1000).toFixed(1)
+            return `all ${t}s, top ${t}s`
+        }),
     )
     const transitionFromZoom = viewRect.pipe(
         L.changes,
@@ -28,10 +31,22 @@ export const CursorsView = ({
         L.toProperty("none", componentScope()),
     )
 
+    const scope = componentScope()
+
     return (
         <ListView<UserCursorPosition, string>
             observable={cursors.cursors}
-            renderObservable={(sessionId: string, pos: L.Property<UserCursorPosition>) => {
+            renderObservable={(sessionId: string, pos_: L.Property<UserCursorPosition>) => {
+                const pos = pos_.pipe(L.skipDuplicates(_.isEqual), L.applyScope(scope))
+                const changes = pos.pipe(L.changes)
+                const stale = L.merge(
+                    changes.pipe(
+                        L.debounce(1000),
+                        L.map(() => true),
+                    ),
+                    changes.pipe(L.map(() => false)),
+                ).pipe(L.toProperty(false, scope))
+                const className = L.view(stale, (s) => (s ? "cursor stale" : "cursor"))
                 const style = L.view(pos, transition, viewRect, (p, t, vr) => {
                     const x = _.clamp(p.x, vr.x, vr.x + vr.width - 1)
                     const y = _.clamp(p.y, vr.y, vr.y + vr.height - 1)
@@ -50,7 +65,7 @@ export const CursorsView = ({
                 })
 
                 return (
-                    <span className="cursor" style={style}>
+                    <span className={className} style={style}>
                         <span className="arrow" />
                         <span className="userInfo">
                             {L.view(userInfo, "picture")}
