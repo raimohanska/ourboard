@@ -52,35 +52,6 @@ export async function checkBoardAPIAccess<T>(
     }
 }
 
-export function findContainer(container: string | undefined, board: Board): Container | null {
-    if (container !== undefined) {
-        if (typeof container !== "string") {
-            throw new InvalidRequest("Expecting container to be undefined, or an id or name of an Container item")
-        }
-        const containerItem = Object.values(board.items).find(
-            (i) => i.type === "container" && (i.text.toLowerCase() === container.toLowerCase() || i.id === container),
-        )
-        if (!containerItem) {
-            throw new InvalidRequest(`Container "${container}" not found by id or name`)
-        }
-        return containerItem as Container
-    } else {
-        return null
-    }
-}
-
-export function getItemAttributesForContainer(container: string | undefined, board: Board) {
-    const containerItem = findContainer(container, board)
-    if (containerItem) {
-        return {
-            containerId: containerItem.id,
-            x: containerItem.x + 2,
-            y: containerItem.y + 2,
-        }
-    }
-    return {}
-}
-
 export function dispatchSystemAppEvent(board: ServerSideBoardState, appEvent: PersistableBoardItemEvent) {
     const user: EventUserInfo = { userType: "system", nickname: "Github webhook" }
     let historyEntry: BoardHistoryEntry = { ...appEvent, user, timestamp: newISOTimeStamp() }
@@ -93,19 +64,19 @@ export function dispatchSystemAppEvent(board: ServerSideBoardState, appEvent: Pe
 
 export function addItem(
     board: ServerSideBoardState,
+    x: number,
+    y: number,
     type: "note",
     text: string,
     color: Color,
-    container: string | undefined,
+    width: number,
+    height: number,
     itemId?: string,
 ) {
     if (type !== "note") throw new InvalidRequest("Expecting type: note")
     if (typeof text !== "string" || text.length === 0) throw new InvalidRequest("Expecting non zero-length text")
 
-    let itemAttributes: object = getItemAttributesForContainer(container, board.board)
-    if (itemId) itemAttributes = { ...itemAttributes, id: itemId }
-
-    const item: Note = { ...newNote(text, color || DEFAULT_NOTE_COLOR), ...itemAttributes }
+    const item: Note = { ...newNote(text, color || DEFAULT_NOTE_COLOR, x, y, width, height) }
     const appEvent: AppEvent = { action: "item.add", boardId: board.board.id, items: [item], connections: [] }
     dispatchSystemAppEvent(board, appEvent)
     return item

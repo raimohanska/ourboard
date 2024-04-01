@@ -162,8 +162,7 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
         },
         "/api/v1/board/{boardId}/item": {
             post: {
-                description:
-                    "Creates a new item on given board. If you want to add the item onto a\nspecific area/container element on the board, you can find the id of the\ncontainer by inspecting with your browser.",
+                description: "Creates a new item on given board.",
                 tags: ["Board"],
                 parameters: [
                     { name: "boardId", in: "path", required: true },
@@ -174,12 +173,15 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
                         "application/json": {
                             schema: {
                                 type: "object",
-                                required: ["type", "text", "color", "container"],
+                                required: ["x", "y", "type", "text", "color", "width", "height"],
                                 properties: {
+                                    x: { type: "number" },
+                                    y: { type: "number" },
                                     type: { type: "string", enum: ["note"] },
                                     text: { type: "string" },
                                     color: { type: "string" },
-                                    container: { type: "string" },
+                                    width: { type: "number" },
+                                    height: { type: "number" },
                                 },
                             },
                         },
@@ -202,8 +204,7 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
         },
         "/api/v1/board/{boardId}/item/{itemId}": {
             put: {
-                description:
-                    "Creates a new item on given board or updates an existing one.\nIf you want to add the item onto a specific area/container element on the board, you can\nfind the id of the container by inspecting with your browser.",
+                description: "Creates a new item on given board or updates an existing one.",
                 tags: ["Board"],
                 parameters: [
                     { name: "boardId", in: "path", required: true },
@@ -215,15 +216,21 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
                         "application/json": {
                             schema: {
                                 type: "object",
-                                required: ["type", "text", "color"],
+                                required: ["x", "y", "type", "text", "color", "width", "height"],
                                 properties: {
+                                    x: { type: "number" },
+                                    y: { type: "number" },
                                     type: { type: "string", enum: ["note"] },
                                     text: { type: "string" },
                                     color: { type: "string" },
-                                    container: { type: "string" },
+                                    width: { type: "number" },
+                                    height: { type: "number" },
+                                    replaceXIfExists: { type: "boolean" },
+                                    replaceYIfExists: { type: "boolean" },
                                     replaceTextIfExists: { type: "boolean" },
                                     replaceColorIfExists: { type: "boolean" },
-                                    replaceContainerIfExists: { type: "boolean" },
+                                    replaceWidthIfExists: { type: "boolean" },
+                                    replaceHeightIfExists: { type: "boolean" },
                                 },
                             },
                         },
