@@ -32,9 +32,13 @@ test.describe("API endpoints", () => {
 
         await test.step("Update item", async () => {
             await Api.updateItem(accessToken, id, item.id, {
+                x: 163,
+                y: 460,
                 type: "note",
                 text: "Updated item",
                 color: "#000000",
+                width: 5,
+                height: 5,
             })
             await expect(board.getNote("Updated item")).toBeVisible()
         })
@@ -42,10 +46,14 @@ test.describe("API endpoints", () => {
         await test.step("Change item container", async () => {
             await board.assertItemPosition(board.getNote("Updated item"), 163, 460)
             await Api.updateItem(accessToken, id, item.id, {
+                x: 613,
+                y: 460,
                 type: "note",
                 text: "Updated item",
                 color: "#000000",
                 container: "More API notes",
+                width: 5,
+                height: 5,
             })
             await sleep(1000)
             await board.assertItemPosition(board.getNote("Updated item"), 613, 460)

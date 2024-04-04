@@ -38,12 +38,13 @@ export function BoardApi(page: Page) {
             return await test.step("Add item " + text, async () => {
                 const response = await page.request.post(`/api/v1/board/${boardId}/item`, {
                     data: {
-                        x: 0,
-                        y: 15,
+                        x: 10,
+                        y: 40,
                         type: "note",
                         text,
+                        container: "API notes",
                         color: "#000000",
-                        width: 10,
+                        width: 5,
                         height: 5,
                     },
                     headers: {

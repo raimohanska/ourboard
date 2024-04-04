@@ -5,9 +5,20 @@ import { ok } from "typera-common/response"
 import { body } from "typera-express/parser"
 import { Color, isNote, Note } from "../../../common/src/domain"
 import { ServerSideBoardState } from "../board-state"
-import { addItem, apiTokenHeader, checkBoardAPIAccess, dispatchSystemAppEvent, InvalidRequest, route } from "./utils"
+import {
+    addItem,
+    apiTokenHeader,
+    checkBoardAPIAccess,
+    dispatchSystemAppEvent,
+    findContainer,
+    getItemAttributesForContainer,
+    InvalidRequest,
+    route,
+} from "./utils"
 /**
  * Creates a new item on given board or updates an existing one.
+ * If you want to add the item onto a specific area/container element on the board, you can
+ * find the id of the container by inspecting with your browser.
  *
  * @tags Board
  */
@@ -27,10 +38,12 @@ export const itemCreateOrUpdate = route
                     height: t.number,
                 }),
                 t.partial({
+                    container: t.string,
                     replaceXIfExists: t.boolean,
                     replaceYIfExists: t.boolean,
                     replaceTextIfExists: t.boolean,
                     replaceColorIfExists: t.boolean,
+                    replaceContainerIfExists: t.boolean,
                     replaceWidthIfExists: t.boolean,
                     replaceHeightIfExists: t.boolean,
                 }),
@@ -46,12 +59,14 @@ export const itemCreateOrUpdate = route
                 type,
                 text,
                 color,
+                container,
                 width,
                 height,
                 replaceXIfExists,
                 replaceYIfExists,
                 replaceTextIfExists,
                 replaceColorIfExists,
+                replaceContainerIfExists = true,
                 replaceWidthIfExists,
                 replaceHeightIfExists,
             } = request.body
@@ -65,6 +80,7 @@ export const itemCreateOrUpdate = route
                     type,
                     text,
                     color,
+                    container,
                     width,
                     height,
                     itemId,
@@ -72,12 +88,13 @@ export const itemCreateOrUpdate = route
                     replaceYIfExists,
                     replaceTextIfExists,
                     replaceColorIfExists,
+                    replaceContainerIfExists,
                     replaceWidthIfExists,
                     replaceHeightIfExists,
                 )
             } else {
                 console.log(`Adding new item`)
-                addItem(board, x, y, type, text, color, width, height, itemId)
+                addItem(board, x, y, type, text, color, container, width, height, itemId)
             }
             return ok({ ok: true })
         }),
@@ -90,6 +107,7 @@ function updateItem(
     type: "note",
     text: string,
     color: Color,
+    container: string | undefined,
     width: number,
     height: number,
     itemId: string,
@@ -97,6 +115,7 @@ function updateItem(
     replaceYIfExists: boolean | undefined,
     replaceTextIfExists: boolean | undefined,
     replaceColorIfExists: boolean | undefined,
+    replaceContainerIfExists: boolean | undefined,
     replaceWidthIfExists: boolean | undefined,
     replaceHeightIfExists: boolean | undefined,
 ) {
@@ -104,9 +123,16 @@ function updateItem(
     if (!isNote(existingItem)) {
         throw new InvalidRequest("Unexpected item type")
     }
+    const containerItem = findContainer(container, board.board)
+    const currentContainer = findContainer(existingItem.containerId, board.board)
+    const containerAttrs =
+        replaceContainerIfExists && containerItem !== currentContainer
+            ? getItemAttributesForContainer(container, board.board)
+            : {}
 
     let updatedItem: Note = {
         ...existingItem,
+        ...containerAttrs,
         x: replaceXIfExists !== false ? x : existingItem.x,
         y: replaceYIfExists !== false ? y : existingItem.y,
         text: replaceTextIfExists !== false ? text : existingItem.text,

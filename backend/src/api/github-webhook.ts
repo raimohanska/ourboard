@@ -54,7 +54,7 @@ export const githubWebhook = route
                     const color = isBug ? RED : YELLOW
                     if (!existingItem) {
                         console.log(`Github webhook call board ${boardId}: New item`)
-                        addItem(board, 5, 5, "note", linkHTML, color, 5, 5, "New issues")
+                        addItem(board, 80, 80, "note", linkHTML, color, "New issues", 5, 5)
                     } else {
                         console.log(`Github webhook call board ${boardId}: Item exists`)
                         const updatedItem: Note = { ...existingItem, color }
