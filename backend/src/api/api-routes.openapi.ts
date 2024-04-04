@@ -174,12 +174,16 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
                         "application/json": {
                             schema: {
                                 type: "object",
-                                required: ["type", "text", "color", "container"],
+                                required: ["x", "y", "type", "text", "color", "width", "height"],
                                 properties: {
+                                    x: { type: "number" },
+                                    y: { type: "number" },
                                     type: { type: "string", enum: ["note"] },
                                     text: { type: "string" },
                                     color: { type: "string" },
                                     container: { type: "string" },
+                                    width: { type: "number" },
+                                    height: { type: "number" },
                                 },
                             },
                         },
@@ -215,15 +219,23 @@ const spec: { paths: OpenAPIV3.PathsObject } = {
                         "application/json": {
                             schema: {
                                 type: "object",
-                                required: ["type", "text", "color"],
+                                required: ["x", "y", "type", "text", "color", "width", "height"],
                                 properties: {
+                                    x: { type: "number" },
+                                    y: { type: "number" },
                                     type: { type: "string", enum: ["note"] },
                                     text: { type: "string" },
                                     color: { type: "string" },
                                     container: { type: "string" },
+                                    width: { type: "number" },
+                                    height: { type: "number" },
+                                    replaceXIfExists: { type: "boolean" },
+                                    replaceYIfExists: { type: "boolean" },
                                     replaceTextIfExists: { type: "boolean" },
                                     replaceColorIfExists: { type: "boolean" },
                                     replaceContainerIfExists: { type: "boolean" },
+                                    replaceWidthIfExists: { type: "boolean" },
+                                    replaceHeightIfExists: { type: "boolean" },
                                 },
                             },
                         },

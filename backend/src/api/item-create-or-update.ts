@@ -29,15 +29,23 @@ export const itemCreateOrUpdate = route
         body(
             t.intersection([
                 t.type({
+                    x: t.number,
+                    y: t.number,
                     type: t.literal("note"),
                     text: NonEmptyString,
                     color: t.string,
+                    width: t.number,
+                    height: t.number,
                 }),
                 t.partial({
                     container: t.string,
+                    replaceXIfExists: t.boolean,
+                    replaceYIfExists: t.boolean,
                     replaceTextIfExists: t.boolean,
                     replaceColorIfExists: t.boolean,
                     replaceContainerIfExists: t.boolean,
+                    replaceWidthIfExists: t.boolean,
+                    replaceHeightIfExists: t.boolean,
                 }),
             ]),
         ),
@@ -46,31 +54,47 @@ export const itemCreateOrUpdate = route
         checkBoardAPIAccess(request, async (board) => {
             const { itemId } = request.routeParams
             let {
+                x,
+                y,
                 type,
                 text,
                 color,
                 container,
+                width,
+                height,
+                replaceXIfExists,
+                replaceYIfExists,
                 replaceTextIfExists,
                 replaceColorIfExists,
                 replaceContainerIfExists = true,
+                replaceWidthIfExists,
+                replaceHeightIfExists,
             } = request.body
             console.log(`PUT item for board ${board.board.id} item ${itemId}: ${JSON.stringify(request.req.body)}`)
             const existingItem = board.board.items[itemId]
             if (existingItem) {
                 updateItem(
                     board,
+                    x,
+                    y,
                     type,
                     text,
                     color,
                     container,
+                    width,
+                    height,
                     itemId,
+                    replaceXIfExists,
+                    replaceYIfExists,
                     replaceTextIfExists,
                     replaceColorIfExists,
                     replaceContainerIfExists,
+                    replaceWidthIfExists,
+                    replaceHeightIfExists,
                 )
             } else {
                 console.log(`Adding new item`)
-                addItem(board, type, text, color, container, itemId)
+                addItem(board, x, y, type, text, color, container, width, height, itemId)
             }
             return ok({ ok: true })
         }),
@@ -78,14 +102,22 @@ export const itemCreateOrUpdate = route
 
 function updateItem(
     board: ServerSideBoardState,
+    x: number,
+    y: number,
     type: "note",
     text: string,
     color: Color,
     container: string | undefined,
+    width: number,
+    height: number,
     itemId: string,
+    replaceXIfExists: boolean | undefined,
+    replaceYIfExists: boolean | undefined,
     replaceTextIfExists: boolean | undefined,
     replaceColorIfExists: boolean | undefined,
     replaceContainerIfExists: boolean | undefined,
+    replaceWidthIfExists: boolean | undefined,
+    replaceHeightIfExists: boolean | undefined,
 ) {
     const existingItem = board.board.items[itemId]
     if (!isNote(existingItem)) {
@@ -101,8 +133,12 @@ function updateItem(
     let updatedItem: Note = {
         ...existingItem,
         ...containerAttrs,
+        x: replaceXIfExists !== false ? x : existingItem.x,
+        y: replaceYIfExists !== false ? y : existingItem.y,
         text: replaceTextIfExists !== false ? text : existingItem.text,
         color: replaceColorIfExists !== false ? color || existingItem.color : existingItem.color,
+        width: replaceWidthIfExists !== false ? width : existingItem.width,
+        height: replaceHeightIfExists !== false ? height : existingItem.height,
     }
     if (!_.isEqual(updatedItem, existingItem)) {
         console.log(`Updating existing item`)

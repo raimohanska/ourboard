@@ -140,10 +140,14 @@ Payload:
 
 ```js
 {
+    "x": "x position of the note",
+    "y": "y position of the note",
     "type": "note",
     "text": "text on note",
     "container": "container element text or id",
-    "color": "hexadecimal color code"
+    "color": "hexadecimal color code",
+    "width": "width of the note",
+    "height": "height of the note"
 }
 ```
 
@@ -165,13 +169,21 @@ Payload:
 
 ```js
 {
+    "x": "x position of the note",
+    "y": "y position of the note",
     "type": "note",
     "text": "text on note",
     "container": "container element text or id",
     "color": "hexadecimal color code",
+    "width": "width of the note",
+    "height": "height of the note",
+    "replaceXIfExists": boolean,         // Override x if item with this id exists. Defaults to false.
+    "replaceYIfExists": boolean,         // Override y if item with this id exists. Defaults to false.
     "replaceTextIfExists": boolean,      // Override text if item with this id exists. Defaults to false.
     "replaceColorIfExists": boolean,     // Override color if item with this id exists. Defaults to false.
-    "replaceContainerIfExists": boolean, // Override container in item with this id exists. Defaults to true.
+    "replaceContainerIfExists": boolean, // Override container in item with this id exists. Defaults to false.
+    "replaceWidthIfExists": boolean,     // Override width if item with this id exists. Defaults to false.
+    "replaceHeightIfExists": boolean     // Override height if item with this id exists. Defaults to false.
 }
 ```
 

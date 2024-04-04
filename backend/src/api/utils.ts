@@ -93,10 +93,14 @@ export function dispatchSystemAppEvent(board: ServerSideBoardState, appEvent: Pe
 
 export function addItem(
     board: ServerSideBoardState,
+    x: number,
+    y: number,
     type: "note",
     text: string,
     color: Color,
     container: string | undefined,
+    width: number,
+    height: number,
     itemId?: string,
 ) {
     if (type !== "note") throw new InvalidRequest("Expecting type: note")
@@ -105,7 +109,7 @@ export function addItem(
     let itemAttributes: object = getItemAttributesForContainer(container, board.board)
     if (itemId) itemAttributes = { ...itemAttributes, id: itemId }
 
-    const item: Note = { ...newNote(text, color || DEFAULT_NOTE_COLOR), ...itemAttributes }
+    const item: Note = { ...newNote(text, color || DEFAULT_NOTE_COLOR, x, y, width, height), ...itemAttributes }
     const appEvent: AppEvent = { action: "item.add", boardId: board.board.id, items: [item], connections: [] }
     dispatchSystemAppEvent(board, appEvent)
     return item
