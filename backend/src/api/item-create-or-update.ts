@@ -34,7 +34,11 @@ export const itemCreateOrUpdate = route
                     color: t.string,
                 }),
                 t.partial({
+                    x: t.number,
+                    y: t.number,
                     container: t.string,
+                    width: t.number,
+                    height: t.number,
                     replaceTextIfExists: t.boolean,
                     replaceColorIfExists: t.boolean,
                     replaceContainerIfExists: t.boolean,
@@ -46,10 +50,14 @@ export const itemCreateOrUpdate = route
         checkBoardAPIAccess(request, async (board) => {
             const { itemId } = request.routeParams
             let {
+                x,
+                y,
                 type,
                 text,
                 color,
                 container,
+                width,
+                height,
                 replaceTextIfExists,
                 replaceColorIfExists,
                 replaceContainerIfExists = true,
@@ -59,10 +67,14 @@ export const itemCreateOrUpdate = route
             if (existingItem) {
                 updateItem(
                     board,
+                    x ?? existingItem.x,
+                    y ?? existingItem.y,
                     type,
                     text,
                     color,
                     container,
+                    width ?? existingItem.width,
+                    height ?? existingItem.height,
                     itemId,
                     replaceTextIfExists,
                     replaceColorIfExists,
@@ -70,7 +82,12 @@ export const itemCreateOrUpdate = route
                 )
             } else {
                 console.log(`Adding new item`)
-                addItem(board, type, text, color, container, itemId)
+                const partialParams = { x, y, width, height }
+                if (x !== undefined || y !== undefined || width !== undefined || height !== undefined) {
+                    addItem(board, type, text, color, container, itemId, partialParams)
+                } else {
+                    addItem(board, type, text, color, container, itemId)
+                }
             }
             return ok({ ok: true })
         }),
@@ -78,32 +95,47 @@ export const itemCreateOrUpdate = route
 
 function updateItem(
     board: ServerSideBoardState,
+    x: number,
+    y: number,
     type: "note",
     text: string,
     color: Color,
     container: string | undefined,
+    width: number,
+    height: number,
     itemId: string,
     replaceTextIfExists: boolean | undefined,
     replaceColorIfExists: boolean | undefined,
     replaceContainerIfExists: boolean | undefined,
 ) {
     const existingItem = board.board.items[itemId]
+
     if (!isNote(existingItem)) {
         throw new InvalidRequest("Unexpected item type")
     }
-    const containerItem = findContainer(container, board.board)
-    const currentContainer = findContainer(existingItem.containerId, board.board)
-    const containerAttrs =
-        replaceContainerIfExists && containerItem !== currentContainer
-            ? getItemAttributesForContainer(container, board.board)
-            : {}
 
     let updatedItem: Note = {
         ...existingItem,
-        ...containerAttrs,
+        x: x !== undefined ? x : existingItem.x,
+        y: y !== undefined ? y : existingItem.y,
         text: replaceTextIfExists !== false ? text : existingItem.text,
         color: replaceColorIfExists !== false ? color || existingItem.color : existingItem.color,
+        width: width !== undefined ? width : existingItem.width,
+        height: height !== undefined ? height : existingItem.height,
     }
+
+    if (container && replaceContainerIfExists !== false) {
+        const containerItem = findContainer(container, board.board)
+        const currentContainer = findContainer(existingItem.containerId, board.board)
+        const containerAttrs =
+            containerItem !== currentContainer ? getItemAttributesForContainer(container, board.board) : {}
+
+        updatedItem = {
+            ...updatedItem,
+            ...containerAttrs,
+        }
+    }
+
     if (!_.isEqual(updatedItem, existingItem)) {
         console.log(`Updating existing item`)
         dispatchSystemAppEvent(board, { action: "item.update", boardId: board.board.id, items: [updatedItem] })
