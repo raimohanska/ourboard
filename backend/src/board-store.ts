@@ -226,7 +226,7 @@ export function getFullBoardHistory(id: Id, client: PoolClient, cb: StreamingBoa
         SELECT events 
         FROM board_event 
         WHERE board_id=$1 
-        ORDER BY last_serial
+        ORDER BY last_serial, first_serial
         `,
         [id],
         client,
@@ -244,7 +244,7 @@ export async function getBoardHistory(id: Id, afterSerial: Serial, cb: Streaming
             SELECT events 
             FROM board_event 
             WHERE board_id=$1 AND last_serial >= $2 
-            ORDER BY last_serial
+            ORDER BY last_serial, first_serial
             `,
             [id, afterSerial],
             client,
@@ -409,7 +409,7 @@ export async function getBoardHistoryBundlesWithLastSerialsBetween(
             SELECT board_id, last_serial, events, crdt_update 
             FROM board_event 
             WHERE board_id=$1 AND last_serial >= $2 AND last_serial <= $3 
-            ORDER BY last_serial
+            ORDER BY last_serial, first_serial
             `,
             [id, lsMin, lsMax],
         )
@@ -423,7 +423,7 @@ export async function getBoardHistoryCrdtUpdates(client: PoolClient, id: Id): Pr
             SELECT crdt_update 
             FROM board_event 
             WHERE board_id=$1 AND crdt_update IS NOT NULL 
-            ORDER BY last_serial
+            ORDER BY last_serial, first_serial
             `,
             [id],
         )
@@ -448,7 +448,7 @@ export async function getBoardHistoryBundleMetas(client: PoolClient, id: Id): Pr
             SELECT board_id, last_serial, first_serial, saved_at 
             FROM board_event 
             WHERE board_id=$1 
-            ORDER BY last_serial
+            ORDER BY last_serial, first_serial
             `,
             [id],
         )
