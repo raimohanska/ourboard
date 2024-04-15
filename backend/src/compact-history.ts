@@ -2,6 +2,7 @@ import { format } from "date-fns"
 import _ from "lodash"
 import { BoardHistoryEntry, Id } from "../../common/src/domain"
 import {
+    BoardHistoryBundleMeta,
     getBoardHistoryBundleMetas,
     getBoardHistoryBundlesWithLastSerialsBetween,
     storeEventHistoryBundle,
@@ -11,6 +12,23 @@ import {
 } from "./board-store"
 import * as Y from "yjs"
 import { inTransaction } from "./db"
+
+function chunkBy<T>(arr: T[], shouldSplit: (a: T, b: T) => boolean) {
+    const result = []
+    let currentChunk = []
+    for (let i = 0; i < arr.length; i++) {
+        if (i > 0 && shouldSplit(arr[i - 1], arr[i])) {
+            result.push(currentChunk)
+            currentChunk = []
+        }
+        currentChunk.push(arr[i])
+    }
+    result.push(currentChunk)
+    return result
+}
+function getHour(b: BoardHistoryBundleMeta) {
+    return format(new Date(b.saved_at), "yyyy-MM-dd hh")
+}
 
 export async function quickCompactBoardHistory(id: Id): Promise<number> {
     try {
@@ -22,9 +40,11 @@ export async function quickCompactBoardHistory(id: Id): Promise<number> {
             const consistent = verifyContinuityFromMetas(id, 0, bundleMetas)
             if (consistent) {
                 // Group in one-hour bundles
-                const groupedByHour = _.groupBy(bundleMetas, (b) => format(new Date(b.saved_at), "yyyy-MM-dd hh"))
                 //console.log("Grouped by date", groupedByHour)
-                const toCompact = Object.values(groupedByHour).filter((bs) => bs.length > 1)
+                const toCompact = chunkBy(
+                    bundleMetas,
+                    (a, b) => getHour(a) !== getHour(b) && a.last_serial !== b.last_serial,
+                ).filter((chunk) => chunk.length > 1)
                 let compactions = 0
                 for (let bs of toCompact) {
                     const firstBundle = bs[0]
@@ -39,11 +59,16 @@ export async function quickCompactBoardHistory(id: Id): Promise<number> {
                         firstBundle.last_serial,
                         lastSerial,
                     )
+                    for (const b of bundlesWithData) {
+                        console.log(b.events.events[0]?.serial, b.events.events[b.events.events.length - 1]?.serial)
+                    }
                     const eventArrays = bundlesWithData.map((b) => b.events.events)
                     const events: BoardHistoryEntry[] = eventArrays.flat()
                     const crdtUpdates = bundlesWithData.flatMap((d) => (d.crdt_update ? [d.crdt_update] : []))
                     const combinedCrdtUpdate = crdtUpdates.length ? Y.mergeUpdates(crdtUpdates) : null
-                    const initSerial = firstBundle.first_serial ? firstBundle.first_serial - 1 : firstBundle.last_serial
+                    const initSerial = firstBundle.first_serial
+                        ? firstBundle.first_serial - 1
+                        : firstBundle.last_serial - 1
                     const consistent =
                         verifyContinuity(id, initSerial, ...eventArrays) &&
                         verifyEventArrayContinuity(id, initSerial, events)
