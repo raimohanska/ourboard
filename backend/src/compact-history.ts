@@ -59,9 +59,6 @@ export async function quickCompactBoardHistory(id: Id): Promise<number> {
                         firstBundle.last_serial,
                         lastSerial,
                     )
-                    for (const b of bundlesWithData) {
-                        console.log(b.events.events[0]?.serial, b.events.events[b.events.events.length - 1]?.serial)
-                    }
                     const eventArrays = bundlesWithData.map((b) => b.events.events)
                     const events: BoardHistoryEntry[] = eventArrays.flat()
                     const crdtUpdates = bundlesWithData.flatMap((d) => (d.crdt_update ? [d.crdt_update] : []))
