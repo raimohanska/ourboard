@@ -1,7 +1,7 @@
 import * as Y from "yjs"
 
-import * as awarenessProtocol from "y-protocols/dist/awareness.cjs"
-import * as syncProtocol from "y-protocols/dist/sync.cjs"
+import * as awarenessProtocol from "y-protocols/awareness.js"
+import * as syncProtocol from "y-protocols/sync.js"
 
 import * as encoding from "lib0/encoding"
 import * as WebSocket from "ws"

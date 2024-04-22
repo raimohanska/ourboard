@@ -112,7 +112,8 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board history", async () => {
-            expect(await Api.getBoardHistory(accessToken, id)).toEqual(expect.arrayContaining([]))
+            const history = (await Api.getBoardHistory(accessToken, id)).history
+            expect(history.length).toBeGreaterThan(0)
         })
 
         await test.step("Get board as CSV", async () => {
