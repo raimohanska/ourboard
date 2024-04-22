@@ -404,8 +404,9 @@ export function newNote(
     height: number = 5,
     shape: NoteShape = "square",
     z: number = 0,
+    fontSize: number = 1,
 ): Note {
-    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z, shape, locked: false }
+    return { id: uuid.v4(), type: "note", text, color, x, y, width, height, z, shape, locked: false, fontSize }
 }
 
 export function newSimilarNote(note: Note) {
