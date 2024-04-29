@@ -51,6 +51,23 @@ test.describe("API endpoints", () => {
             await board.assertItemPosition(board.getNote("Updated item"), 613, 460)
         })
 
+        const itemnew = await Api.createNote(accessToken, id, "API New note")
+
+        await expect(board.getNote("API New note")).toBeVisible()
+
+        await test.step("Update new item", async () => {
+            await Api.updateItem(accessToken, id, itemnew.id, {
+                x: 20,
+                y: 20,
+                type: "note",
+                text: "Updated new item",
+                color: "#000000",
+                width: 10,
+                height: 10,
+            })
+            await expect(board.getNote("Updated new item")).toBeVisible()
+        })
+
         await test.step("Get board state", async () => {
             const content = await Api.getBoard(accessToken, id)
             expect(content).toEqual({

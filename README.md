@@ -175,6 +175,20 @@ Payload:
 }
 ```
 
+or
+
+```js
+{
+    "x": "integer",
+    "y": "integer",
+    "type": "note",
+    "text": "text on note",
+    "color": "hexadecimal color code",
+    "width": "integer",
+    "height": "integer",
+}
+```
+
 ### GET /api/v1/board/:boardId
 
 Return board current state as JSON.
