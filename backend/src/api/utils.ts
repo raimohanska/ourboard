@@ -98,12 +98,18 @@ export function addItem(
     color: Color,
     container: string | undefined,
     itemId?: string,
+    partialParams?: Partial<{ x: number; y: number; width: number; height: number }>,
 ) {
     if (type !== "note") throw new InvalidRequest("Expecting type: note")
     if (typeof text !== "string" || text.length === 0) throw new InvalidRequest("Expecting non zero-length text")
 
     let itemAttributes: object = getItemAttributesForContainer(container, board.board)
     if (itemId) itemAttributes = { ...itemAttributes, id: itemId }
+
+    // Merge partial parameters with existing attributes
+    if (partialParams) {
+        itemAttributes = { ...itemAttributes, ...partialParams }
+    }
 
     const item: Note = { ...newNote(text, color || DEFAULT_NOTE_COLOR), ...itemAttributes }
     const appEvent: AppEvent = { action: "item.add", boardId: board.board.id, items: [item], connections: [] }
