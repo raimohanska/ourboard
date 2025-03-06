@@ -46,7 +46,7 @@ export const GoogleAuthProvider = (googleConfig: GoogleConfig): AuthProvider => 
         email: T.string,
         email_verified: T.boolean,
         name: T.string,
-        picture: T.string,
+        picture: optional(T.string),
     })
 
     async function getAccountFromCode(code: string): Promise<OAuthAuthenticatedUser> {
@@ -58,7 +58,7 @@ export const GoogleAuthProvider = (googleConfig: GoogleConfig): AuthProvider => 
         return {
             name: idToken.name,
             email,
-            picture: idToken.picture,
+            picture: idToken.picture ?? undefined,
             domain: idToken.hd ?? null,
         }
     }
