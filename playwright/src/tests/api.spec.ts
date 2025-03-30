@@ -117,7 +117,9 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board as CSV", async () => {
-            expect(await Api.getBoardCsv(accessToken, id)).toEqual("More API notes,Updated item\n")
+            expect(await Api.getBoardCsv(accessToken, id)).toEqual(
+                "More API notes,Updated item\nAPI notes,Updated new item\n"
+            )
         })
 
         await test.step("Set accessPolicy", async () => {
