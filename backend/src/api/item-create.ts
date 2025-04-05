@@ -14,13 +14,28 @@ export const itemCreate = route
     .post("/api/v1/board/:boardId/item")
     .use(
         apiTokenHeader,
-        body(t.type({ type: t.literal("note"), text: t.string, color: t.string, container: t.string })),
+        body(
+            t.intersection([
+                t.type({
+                    type: t.literal("note"),
+                    text: t.string,
+                    color: t.string,
+                    container: t.string,
+                }),
+                t.partial({
+                    x: t.number,
+                    y: t.number,
+                    width: t.number,
+                    height: t.number,
+                }),
+            ]),
+        ),
     )
     .handler((request) =>
         checkBoardAPIAccess(request, async (board) => {
-            const { type, text, color, container } = request.body
+            const { type, text, color, container, ...rest } = request.body
             console.log(`POST item for board ${board.board.id}: ${JSON.stringify(request.req.body)}`)
-            const item = addItem(board, type, text, color, container)
+            const item = addItem(board, type, text, color, container, undefined, rest)
             return ok(item)
         }),
     )
