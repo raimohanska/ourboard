@@ -11,7 +11,7 @@ import { boardContentArea } from "./boardContentArea"
 export type BoardZoom = { zoom: number; quickZoom: number }
 export type ZoomAdjustMode = "preserveCursor" | "preserveCenter"
 
-function nonNull<A>(x: A | null | undefined): x is A {
+export function nonNull<A>(x: A | null | undefined): x is A {
     return !!x
 }
 

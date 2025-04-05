@@ -15,6 +15,7 @@ import { textAlignmentsMenu } from "./textAlignments"
 import { lockMenu } from "./lock"
 import { hideContentsMenu } from "./hideContents"
 import { textFormatsMenu } from "./textFormats"
+import { nonNull } from "../board-scroll-and-zoom"
 
 export type SubmenuProps = {
     focusedItems: L.Property<{ items: Item[]; connections: Connection[] }>
@@ -108,7 +109,7 @@ export const ContextMenuView = ({
         hideContentsMenu(props),
         lockMenu(props),
     ]
-    const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat())
+    const activeWidgets = L.view(L.combineAsArray(widgetCreators), (arrays) => arrays.flat().filter(nonNull))
     const captureEvents = (e: JSX.MouseEvent) => {
         e.stopPropagation()
     }
