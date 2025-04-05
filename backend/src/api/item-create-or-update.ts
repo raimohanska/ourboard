@@ -34,9 +34,9 @@ export const itemCreateOrUpdate = route
                     color: t.string,
                 }),
                 t.partial({
+                    container: t.string,
                     x: t.number,
                     y: t.number,
-                    container: t.string,
                     width: t.number,
                     height: t.number,
                     replaceTextIfExists: t.boolean,
@@ -50,31 +50,28 @@ export const itemCreateOrUpdate = route
         checkBoardAPIAccess(request, async (board) => {
             const { itemId } = request.routeParams
             let {
-                x,
-                y,
                 type,
                 text,
                 color,
                 container,
-                width,
-                height,
                 replaceTextIfExists,
                 replaceColorIfExists,
                 replaceContainerIfExists = true,
+                ...rest
             } = request.body
             console.log(`PUT item for board ${board.board.id} item ${itemId}: ${JSON.stringify(request.req.body)}`)
             const existingItem = board.board.items[itemId]
             if (existingItem) {
                 updateItem(
                     board,
-                    x ?? existingItem.x,
-                    y ?? existingItem.y,
+                    rest.x ?? existingItem.x,
+                    rest.y ?? existingItem.y,
                     type,
                     text,
                     color,
                     container,
-                    width ?? existingItem.width,
-                    height ?? existingItem.height,
+                    rest.width ?? existingItem.width,
+                    rest.height ?? existingItem.height,
                     itemId,
                     replaceTextIfExists,
                     replaceColorIfExists,
@@ -82,12 +79,7 @@ export const itemCreateOrUpdate = route
                 )
             } else {
                 console.log(`Adding new item`)
-                const partialParams = { x, y, width, height }
-                if (x !== undefined || y !== undefined || width !== undefined || height !== undefined) {
-                    addItem(board, type, text, color, container, itemId, partialParams)
-                } else {
-                    addItem(board, type, text, color, container, itemId)
-                }
+                addItem(board, type, text, color, container, itemId, rest)
             }
             return ok({ ok: true })
         }),

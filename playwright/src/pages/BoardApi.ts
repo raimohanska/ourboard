@@ -34,7 +34,7 @@ export function BoardApi(page: Page) {
             })
             return response.text()
         },
-        async createNote(accessToken: string, boardId: string, text: string) {
+        async createNote(accessToken: string, boardId: string, text: string, attributes?: object) {
             return await test.step("Add item " + text, async () => {
                 const response = await page.request.post(`/api/v1/board/${boardId}/item`, {
                     data: {
@@ -42,6 +42,7 @@ export function BoardApi(page: Page) {
                         text,
                         container: "API notes",
                         color: "#000000",
+                        ...attributes,
                     },
                     headers: {
                         API_TOKEN: accessToken,
