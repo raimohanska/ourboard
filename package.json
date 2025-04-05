@@ -9,7 +9,7 @@
     "uuid": "^8.3.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.41.1",
+    "@playwright/test": "^1.51.1",
     "@types/uuid": "^8.3.0",
     "husky": "4",
     "lint-staged": "^10.5.4",
