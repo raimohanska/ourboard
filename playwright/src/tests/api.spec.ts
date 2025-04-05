@@ -51,12 +51,25 @@ test.describe("API endpoints", () => {
             await board.assertItemPosition(board.getNote("Updated item"), 613, 460)
         })
 
-        const itemnew = await Api.createNote(accessToken, id, "API New note")
+        const itemWithCoordinates = await test.step("Create new item with position and size", async () => {
+            const itemWithCoordinates = await Api.createNote(accessToken, id, "API New note", {
+                x: 100,
+                y: 200,
+                width: 15,
+                height: 30,
+            })
 
-        await expect(board.getNote("API New note")).toBeVisible()
+            const noteElement = board.getNote("API New note")
+            await expect(noteElement).toBeVisible()
+            const style = await noteElement.getAttribute("style")
+            expect(style).toContain("transform: translate(100em, 200em)")
+            expect(style).toContain("width: 15em")
+            expect(style).toContain("height: 30em")
+            return itemWithCoordinates
+        })
 
-        await test.step("Update new item", async () => {
-            await Api.updateItem(accessToken, id, itemnew.id, {
+        await test.step("Update item position and size", async () => {
+            await Api.updateItem(accessToken, id, itemWithCoordinates.id, {
                 x: 20,
                 y: 20,
                 type: "note",
@@ -65,7 +78,12 @@ test.describe("API endpoints", () => {
                 width: 10,
                 height: 10,
             })
-            await expect(board.getNote("Updated new item")).toBeVisible()
+            const noteElement = board.getNote("Updated new item")
+            await expect(noteElement).toBeVisible()
+            const style = await noteElement.getAttribute("style")
+            expect(style).toContain("transform: translate(20em, 20em)")
+            expect(style).toContain("width: 10em")
+            expect(style).toContain("height: 10em")
         })
 
         await test.step("Get board state", async () => {
@@ -118,7 +136,7 @@ test.describe("API endpoints", () => {
 
         await test.step("Get board as CSV", async () => {
             expect(await Api.getBoardCsv(accessToken, id)).toEqual(
-                "More API notes,Updated item\nAPI notes,Updated new item\n"
+                "More API notes,Updated item\nAPI notes,Updated new item\n",
             )
         })
 
