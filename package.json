@@ -48,6 +48,7 @@
     "test:integration": "TEST_TARGET=integration vitest --run",
     "test:integration:watch": "TEST_TARGET=integration vitest",
     "test:playwright": "yarn playwright test",
+    "test:playwright:ui": "yarn playwright test --ui&",
     "test:playwright:debug": "PWDEBUG=1 yarn playwright test",
     "prettier:check": "prettier --check .",
     "lint": "yarn prettier:check && yarn --cwd backend lint",
