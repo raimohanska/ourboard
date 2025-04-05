@@ -26,7 +26,7 @@ test.describe("API endpoints", () => {
             await board.assertBoardName("Updated board name")
         })
 
-        const item = await Api.createNote(accessToken, id, "API note")
+        const item = await Api.createNote(accessToken, id, "API note", { container: "API notes" })
 
         await expect(board.getNote("API note")).toBeVisible()
 
@@ -135,9 +135,8 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board as CSV", async () => {
-            expect(await Api.getBoardCsv(accessToken, id)).toEqual(
-                "More API notes,Updated item\nAPI notes,Updated new item\n",
-            )
+            // CSV only includes items that are in containers
+            expect(await Api.getBoardCsv(accessToken, id)).toEqual("More API notes,Updated item\n")
         })
 
         await test.step("Set accessPolicy", async () => {

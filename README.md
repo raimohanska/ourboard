@@ -136,7 +136,7 @@ This endpoint always requires the API_TOKEN header.
 Creates a new item on given board. If you want to add the item onto a specific area/container element on the board, you can
 find the id of the container by inspecting with your browser.
 
-Payload:
+To create a new item inside a container element:
 
 ```js
 {
@@ -144,6 +144,20 @@ Payload:
     "text": "text on note",
     "container": "container element text or id",
     "color": "hexadecimal color code"
+}
+```
+
+To create a new item using coordinates:
+
+```js
+{
+    "type": "note",
+    "text": "text on note",
+    "color": "hexadecimal color code",
+    "x": 100,
+    "y": 100,
+    "width": 100,
+    "height": 100
 }
 ```
 

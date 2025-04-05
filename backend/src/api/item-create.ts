@@ -20,9 +20,9 @@ export const itemCreate = route
                     type: t.literal("note"),
                     text: t.string,
                     color: t.string,
-                    container: t.string,
                 }),
                 t.partial({
+                    container: t.string,
                     x: t.number,
                     y: t.number,
                     width: t.number,

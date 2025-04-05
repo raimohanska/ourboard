@@ -40,7 +40,6 @@ export function BoardApi(page: Page) {
                     data: {
                         type: "note",
                         text,
-                        container: "API notes",
                         color: "#000000",
                         ...attributes,
                     },
