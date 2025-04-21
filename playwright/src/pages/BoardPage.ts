@@ -158,7 +158,9 @@ export function BoardPage(page: Page, browser: Browser) {
         async createNoteWithText(x: number, y: number, text: string) {
             return await test.step("Create note " + text, async () => {
                 await createNew(this.newNoteOnPalette, x, y)
-                await page.keyboard.type(`${text}`)
+                const elt = page.locator(".note.selected .editable")
+                await expect(elt).toBeVisible()
+                await elt.fill(text)
                 await page.keyboard.press("Escape")
                 await expect(this.getNote(text)).toBeVisible()
                 const result = this.getNote(text)
@@ -188,7 +190,7 @@ export function BoardPage(page: Page, browser: Browser) {
             return await test.step("Create area " + text, async () => {
                 await createNew(this.newContainerOnPalette, x, y)
                 await this.getArea("Unnamed area").locator(".text").dblclick()
-                await page.keyboard.type(`${text}`)
+                await page.locator("*:focus").fill(text)
                 await expect(this.getArea(text)).toBeVisible()
                 const result = this.getArea(text)
                 await expect(result).toHaveText(text)

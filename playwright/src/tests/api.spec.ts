@@ -87,19 +87,21 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board state", async () => {
-            const content = await Api.getBoard(accessToken, id)
-            expect(content).toEqual({
-                board: {
-                    id,
-                    name: "Updated board name",
-                    width: 800,
-                    height: 600,
-                    serial: expect.anything(),
-                    connections: [],
-                    items: expect.anything(),
-                },
-            })
+            expect
+                .poll(async () => await Api.getBoard(accessToken, id))
+                .toEqual({
+                    board: {
+                        id,
+                        name: "Updated board name",
+                        width: 800,
+                        height: 600,
+                        serial: expect.anything(),
+                        connections: [],
+                        items: expect.anything(),
+                    },
+                })
 
+            const content = await Api.getBoard(accessToken, id)
             expect(Object.values(content.board.items)).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
@@ -115,18 +117,19 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board state hierarchy", async () => {
-            const content = await Api.getBoardHierarchy(accessToken, id)
-            expect(content).toEqual({
-                board: {
-                    id,
-                    name: "Updated board name",
-                    width: 800,
-                    height: 600,
-                    serial: expect.anything(),
-                    connections: [],
-                    items: expect.anything(),
-                },
-            })
+            expect
+                .poll(async () => await Api.getBoardHierarchy(accessToken, id))
+                .toEqual({
+                    board: {
+                        id,
+                        name: "Updated board name",
+                        width: 800,
+                        height: 600,
+                        serial: expect.anything(),
+                        connections: [],
+                        items: expect.anything(),
+                    },
+                })
         })
 
         await test.step("Get board history", async () => {
