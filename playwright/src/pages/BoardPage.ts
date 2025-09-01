@@ -339,13 +339,20 @@ export function BoardPage(page: Page, browser: Browser) {
         // Connection-related methods
         async selectConnectTool() {
             await page.locator(".tool.connect").click()
+            await waitForThrottle()
+        },
+        async selectDefaultTool() {
+            await page.locator(".tool.select, .tool.pan").first().click()
+            await waitForThrottle()
         },
         async createConnection(fromItem: Locator, toItem: Locator) {
             return await test.step("Create connection", async () => {
                 await this.selectConnectTool()
                 await fromItem.click()
+                await waitForThrottle()
                 await toItem.click()
                 await waitForThrottle()
+                await this.selectDefaultTool() // Reset to default tool
             })
         },
         getConnections() {
@@ -360,6 +367,14 @@ export function BoardPage(page: Page, browser: Browser) {
         getConnectionNode(nth: number = 0) {
             return this.getConnectionNodes().nth(nth)
         },
+        getConnectionFromNode(connectionIndex: number = 0) {
+            // Each connection has 2 nodes: "from" and "to", so "from" is at connectionIndex*2
+            return this.getConnectionNodes().nth(connectionIndex * 2)
+        },
+        getConnectionToNode(connectionIndex: number = 0) {
+            // Each connection has 2 nodes: "from" and "to", so "to" is at connectionIndex*2+1  
+            return this.getConnectionNodes().nth(connectionIndex * 2 + 1)
+        },
         async assertConnectionExists(count: number = 1) {
             await expect(this.getConnections()).toHaveCount(count)
         },
@@ -369,9 +384,11 @@ export function BoardPage(page: Page, browser: Browser) {
         async selectConnection(nth: number = 0) {
             await this.getConnection(nth).click()
         },
-        async dragConnectionEndpoint(connectionNodeNth: number, x: number, y: number) {
-            return await test.step(`Drag connection endpoint to (${x}, ${y})`, async () => {
-                const connectionNode = this.getConnectionNode(connectionNodeNth)
+        async dragConnectionEndpoint(connectionIndex: number, endpoint: "from" | "to", x: number, y: number) {
+            return await test.step(`Drag connection ${endpoint} endpoint to (${x}, ${y})`, async () => {
+                const connectionNode = endpoint === "from" ? 
+                    this.getConnectionFromNode(connectionIndex) : 
+                    this.getConnectionToNode(connectionIndex)
                 await dragElementOnBoard(connectionNode, x, y)
             })
         },

@@ -81,7 +81,7 @@ test.describe("Basic board functionality", () => {
         await test.step("Modify connection by dragging endpoint", async () => {
             const note3 = await board.createNoteWithText(100, 400, "New Target")
             // Drag the connection endpoint to the new note
-            await board.dragConnectionEndpoint(1, 100, 400) // Move the 'to' endpoint
+            await board.dragConnectionEndpoint(0, "to", 100, 400) // Move the 'to' endpoint of first connection
             await board.assertConnectionExists(1)
         })
 
