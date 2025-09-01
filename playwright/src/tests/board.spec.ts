@@ -60,7 +60,64 @@ test.describe("Basic board functionality", () => {
         })
     })
 
-    // TODO: test creating and modifying connections
+    testWithBothBoardTypes("Create and modify connections", async ({ board }) => {
+        // Create two notes to connect
+        const note1 = await board.createNoteWithText(100, 200, "Source")
+        const note2 = await board.createNoteWithText(300, 200, "Target")
+
+        await test.step("Create connection between notes", async () => {
+            await board.createConnection(note1, note2)
+            await board.assertConnectionExists(1)
+            await board.assertConnectionVisible(0)
+        })
+
+        await test.step("Verify connection persists after page reload", async () => {
+            await sleep(1000) // Time for persistence
+            await board.page.reload()
+            await board.assertConnectionExists(1)
+            await board.assertConnectionVisible(0)
+        })
+
+        await test.step("Modify connection by dragging endpoint", async () => {
+            const note3 = await board.createNoteWithText(100, 400, "New Target")
+            // Drag the connection endpoint to the new note
+            await board.dragConnectionEndpoint(0, "to", 100, 400) // Move the 'to' endpoint of first connection
+            await board.assertConnectionExists(1)
+        })
+
+        await test.step("Select and delete connection", async () => {
+            await board.selectConnection(0)
+            await board.deleteSelectedConnection()
+            await expect(board.getConnections()).toHaveCount(0)
+        })
+    })
+
+    testWithBothBoardTypes("Create connections between different item types", async ({ board }) => {
+        const note = await board.createNoteWithText(100, 200, "Note")
+        const area = await board.createArea(300, 200, "Area")
+        const text = await board.createText(200, 350, "Text")
+
+        await test.step("Create connection from note to area", async () => {
+            await board.createConnection(note, area)
+            await board.assertConnectionExists(1)
+        })
+
+        await test.step("Create connection from area to text", async () => {
+            await board.createConnection(area, text)
+            await board.assertConnectionExists(2)
+        })
+
+        await test.step("Create connection from text back to note", async () => {
+            await board.createConnection(text, note)
+            await board.assertConnectionExists(3)
+        })
+
+        await test.step("Verify all connections are visible", async () => {
+            for (let i = 0; i < 3; i++) {
+                await board.assertConnectionVisible(i)
+            }
+        })
+    })
 
     test("Change note color", async ({ page, browser }) => {
         const board = await navigateToNewBoard(page, browser)
