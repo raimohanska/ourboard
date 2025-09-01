@@ -55,7 +55,7 @@
     "typecheck:dev:frontend": "cd frontend && tsc --noEmit --preserveWatchOutput --watch",
     "perf-test:prod": "node perf-tester/dist/perf-tester/src/index.js",
     "format": "prettier --write .",
-    "apidocs": "cd backend && yarn apidocs",
+
     "wait-for-db": "cd backend && tsx src/tools/wait-for-db.ts",
     "psql": "psql postgres://r-board:secret@localhost:13338/r-board"
   }
