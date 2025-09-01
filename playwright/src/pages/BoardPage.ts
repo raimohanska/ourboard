@@ -336,6 +336,48 @@ export function BoardPage(page: Page, browser: Browser) {
                 await expect(page.locator(".offline-status")).not.toBeVisible()
             }
         },
+        // Connection-related methods
+        async selectConnectTool() {
+            await page.locator(".tool.connect").click()
+        },
+        async createConnection(fromItem: Locator, toItem: Locator) {
+            return await test.step("Create connection", async () => {
+                await this.selectConnectTool()
+                await fromItem.click()
+                await toItem.click()
+                await waitForThrottle()
+            })
+        },
+        getConnections() {
+            return page.locator("svg.connections path.connection")
+        },
+        getConnection(nth: number = 0) {
+            return this.getConnections().nth(nth)
+        },
+        getConnectionNodes() {
+            return page.locator(".connection-node-grabber-helper")
+        },
+        getConnectionNode(nth: number = 0) {
+            return this.getConnectionNodes().nth(nth)
+        },
+        async assertConnectionExists(count: number = 1) {
+            await expect(this.getConnections()).toHaveCount(count)
+        },
+        async assertConnectionVisible(nth: number = 0) {
+            await expect(this.getConnection(nth)).toBeVisible()
+        },
+        async selectConnection(nth: number = 0) {
+            await this.getConnection(nth).click()
+        },
+        async dragConnectionEndpoint(connectionNodeNth: number, x: number, y: number) {
+            return await test.step(`Drag connection endpoint to (${x}, ${y})`, async () => {
+                const connectionNode = this.getConnectionNode(connectionNodeNth)
+                await dragElementOnBoard(connectionNode, x, y)
+            })
+        },
+        async deleteSelectedConnection() {
+            await page.keyboard.press("Delete")
+        },
     }
 }
 
