@@ -5,7 +5,7 @@ import fs from "fs"
 import * as Http from "http"
 import * as Https from "https"
 import * as path from "path"
-import * as swaggerUi from "swagger-ui-express"
+
 import apiRoutes from "./api/api-routes"
 import { handleBoardEvent } from "./board-event-handler"
 import { BoardYJSServer } from "./board-yjs-server"
@@ -13,7 +13,7 @@ import { getConfig } from "./config"
 import { connectionHandler } from "./connection-handler"
 import { getEnv } from "./env"
 import { authProvider, setupAuth } from "./oauth"
-import openapiDoc from "./openapi"
+
 import { possiblyRequireAuth } from "./require-auth"
 import { createGetSignedPutUrl } from "./storage"
 import { WsWrapper } from "./ws-wrapper"
@@ -92,8 +92,6 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
     })
 
     app.use(apiRoutes.handler())
-
-    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiDoc))
 
     let stop = () => {}
 
