@@ -1,5 +1,5 @@
 import * as L from "lonna"
-import { BoardCoordinateHelper } from "./board-coordinates"
+import { BoardCoordinateHelper, snapToGrid } from "./board-coordinates"
 import { Board, BOARD_ITEM_BORDER_MARGIN, Connection, isItemEndPoint, Item, Point } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
@@ -20,6 +20,7 @@ export function itemDragToMove(
     onlyWhenSelected: boolean,
 ) {
     const connector = newConnectionCreator(board, focus, latestConnection, dispatch)
+
     return (elem: HTMLElement) =>
         onBoardItemDrag(
             elem,
@@ -28,7 +29,7 @@ export function itemDragToMove(
             focus,
             coordinateHelper,
             onlyWhenSelected,
-            (b, startPos, items, connections, xDiff, yDiff) => {
+            (b, startPos, items, connections, xDiff, yDiff, shiftKey) => {
                 // Cant drag when connect tool is active
                 const t = toolController.tool.get()
 
@@ -45,14 +46,15 @@ export function itemDragToMove(
                 } else {
                     const margin = BOARD_ITEM_BORDER_MARGIN
                     const movedItems = items.map(({ dragStartPosition, current }) => {
-                        const x = Math.min(
-                            Math.max(dragStartPosition.x + xDiff, margin),
-                            b.width - current.width - margin,
+                        const x = snapToGrid(
+                            Math.min(Math.max(dragStartPosition.x + xDiff, margin), b.width - current.width - margin),
+                            !shiftKey,
                         )
-                        const y = Math.min(
-                            Math.max(dragStartPosition.y + yDiff, margin),
-                            b.height - current.height - margin,
+                        const y = snapToGrid(
+                            Math.min(Math.max(dragStartPosition.y + yDiff, margin), b.height - current.height - margin),
+                            !shiftKey,
                         )
+
                         const container = maybeChangeContainerForItem(current, b.items)
                         return { id: current.id, x, y, containerId: container ? container.id : undefined }
                     })

@@ -6,27 +6,36 @@ import { Dispatch } from "../store/board-store"
 import { BoardFocus } from "./board-focus"
 import { findSelectedItemsAndConnections } from "./item-cut-copy-paste"
 import { installKeyboardShortcut } from "./keyboard-shortcuts"
+import { DEFAULT_GRID_SIZE, snapToGrid } from "./board-coordinates"
 
-function updatePosition<T extends Rect>(board: Board, item: T, dx: number, dy: number): T {
+function updatePosition<T extends Rect>(
+    board: Board,
+    item: T,
+    dx: number,
+    dy: number,
+    snapX: boolean,
+    snapY: boolean,
+): T {
     const margin = BOARD_ITEM_BORDER_MARGIN
     return {
         ...item,
-        x: Math.min(Math.max(item.x + dx, margin), board.width - item.width - margin),
-        y: Math.min(Math.max(item.y + dy, margin), board.height - item.height - margin),
+        x: Math.min(snapToGrid(Math.max(item.x + dx, margin), !snapX), board.width - item.width - margin),
+        y: Math.min(snapToGrid(Math.max(item.y + dy, margin), !snapY), board.height - item.height - margin),
     }
 }
 
 function moveItem<T extends Rect>(board: Board, item: T, key: string, shiftKey: boolean, altKey: boolean): T {
-    const stepSize = shiftKey ? 10 : altKey ? 0.1 : 1
+    const stepSize = shiftKey ? DEFAULT_GRID_SIZE * 10 : altKey ? 0.1 : DEFAULT_GRID_SIZE
+    const enableSnap = !altKey
     switch (key) {
         case "ArrowLeft":
-            return updatePosition(board, item, -stepSize, 0)
+            return updatePosition(board, item, -stepSize, 0, enableSnap, false)
         case "ArrowRight":
-            return updatePosition(board, item, stepSize, 0)
+            return updatePosition(board, item, stepSize, 0, enableSnap, false)
         case "ArrowUp":
-            return updatePosition(board, item, 0, -stepSize)
+            return updatePosition(board, item, 0, -stepSize, false, enableSnap)
         case "ArrowDown":
-            return updatePosition(board, item, 0, stepSize)
+            return updatePosition(board, item, 0, stepSize, false, enableSnap)
     }
     return item
 }
