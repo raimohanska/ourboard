@@ -84,8 +84,8 @@ export const SelectionBorder = ({
                             }
                         }
 
-                        xDiff = snapToGrid(xDiff, !shiftKey)
-                        yDiff = snapToGrid(yDiff, !shiftKey)
+                        xDiff = snapToGrid(xDiff, shiftKey)
+                        yDiff = snapToGrid(yDiff, shiftKey)
 
                         const x = horizontal === "left" ? dragStartPosition.x + xDiff : dragStartPosition.x
                         const y = vertical === "top" ? dragStartPosition.y + yDiff : dragStartPosition.y

@@ -48,11 +48,11 @@ export function itemDragToMove(
                     const movedItems = items.map(({ dragStartPosition, current }) => {
                         const x = snapToGrid(
                             Math.min(Math.max(dragStartPosition.x + xDiff, margin), b.width - current.width - margin),
-                            !shiftKey,
+                            shiftKey,
                         )
                         const y = snapToGrid(
                             Math.min(Math.max(dragStartPosition.y + yDiff, margin), b.height - current.height - margin),
-                            !shiftKey,
+                            shiftKey,
                         )
 
                         const container = maybeChangeContainerForItem(current, b.items)
