@@ -15,13 +15,14 @@
     "lint-staged": "^10.5.4",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.2.1",
-    "tsx": "3.13.0",
+    "tsx": "4.23.15",
     "typescript": "^5.3",
     "vitest": "^1.3.1"
   },
   "private": true,
+  "packageManager": "yarn@1.22.22",
   "engines": {
-    "node": ">=18 <21"
+    "node": ">=24"
   },
   "workspaces": [
     "frontend",

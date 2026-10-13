@@ -17,17 +17,14 @@ jobs:
                     --health-interval 10s
                     --health-timeout 5s
                     --health-retries 5
-        strategy:
-            matrix:
-                node-version: [18.x]
         steps:
-            - uses: actions/checkout@v2
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
+            - uses: actions/checkout@v7
+            - name: Use the project Node.js version
+              uses: actions/setup-node@v7
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version-file: .nvmrc
             - name: Install deps
-              run: yarn
+              run: yarn install --frozen-lockfile
             - name: Run unit tests
               run: yarn test:unit
             - name: Wait for DB
@@ -46,22 +43,19 @@ jobs:
               run: yarn test:playwright
             - name: Archive results
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: test-results
                   path: |
                       playwright/results
     lint:
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                node-version: [18.x]
         steps:
-            - uses: actions/checkout@v2
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
+            - uses: actions/checkout@v7
+            - name: Use the project Node.js version
+              uses: actions/setup-node@v7
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version-file: .nvmrc
             - name: Install dependencies
               run: yarn install --frozen-lockfile
             - name: Check code formatting & generated files
@@ -71,7 +65,7 @@ jobs:
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/master'
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v7
             - name: docker login
               env:
                   DOCKER_HUB_USER: ${{secrets.DOCKER_HUB_USER}}

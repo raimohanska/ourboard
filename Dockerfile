@@ -1,4 +1,4 @@
-FROM node:18 as builder
+FROM node:24-bookworm AS builder
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -16,9 +16,9 @@ COPY common ./common
 COPY perf-tester ./perf-tester
 COPY tsconfig.json .
 
-run yarn build
+RUN yarn build
 
-FROM node:18 as runner
+FROM node:24-bookworm AS runner
 
 COPY --from=builder /usr/src/app/backend/dist/index.js /usr/src/app/backend/dist/index.js
 COPY --from=builder /usr/src/app/backend/migrations /usr/src/app/backend/migrations
