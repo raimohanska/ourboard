@@ -23,8 +23,10 @@ jobs:
               uses: actions/setup-node@v7
               with:
                   node-version-file: .nvmrc
+            - name: Enable the project Yarn version
+              run: corepack enable yarn
             - name: Install deps
-              run: yarn install --frozen-lockfile
+              run: yarn install --immutable
             - name: Run unit tests
               run: yarn test:unit
             - name: Wait for DB
@@ -56,8 +58,10 @@ jobs:
               uses: actions/setup-node@v7
               with:
                   node-version-file: .nvmrc
+            - name: Enable the project Yarn version
+              run: corepack enable yarn
             - name: Install dependencies
-              run: yarn install --frozen-lockfile
+              run: yarn install --immutable
             - name: Check code formatting & generated files
               run: yarn lint
     docker-image:

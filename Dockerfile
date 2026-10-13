@@ -3,12 +3,12 @@ FROM node:24-bookworm AS builder
 # Create app directory
 WORKDIR /usr/src/app
 
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock .yarnrc.yml ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 COPY perf-tester/package.json ./perf-tester/
 
-RUN yarn install --frozen-lockfile --non-interactive
+RUN corepack enable yarn && yarn install --immutable
 
 COPY backend ./backend
 COPY frontend ./frontend
