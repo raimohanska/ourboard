@@ -66,6 +66,7 @@ export function startUWebSocketsServer(port: number) {
 
     function mountWs(path: string, f: (req: uws.HttpRequest) => MessageHandler) {
         app.ws<WsUserData>(path, {
+            maxBackpressure: 1024 * 1024,
             upgrade: (res, req, context) => {
                 res.upgrade(
                     {
