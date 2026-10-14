@@ -447,7 +447,7 @@ function updateItems(
                 const to = resolveEndpoint(c.to, resultItems)
                 shouldHide = ((isItem(from) && from.hidden) || (isItem(to) && to.hidden)) ?? false
             }
-            if (shouldHide !== c.hidden ?? false) {
+            if (shouldHide !== c.hidden) {
                 updatedConnections[i] = { ...c, hidden: shouldHide }
             }
         })
