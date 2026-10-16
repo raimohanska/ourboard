@@ -23,8 +23,8 @@ jobs:
               uses: actions/setup-node@v7
               with:
                   node-version-file: .nvmrc
-            - name: Enable the project Yarn version
-              run: corepack enable yarn
+            - name: Set up Yarn
+              uses: yarnpkg/setup-action@c9778d0717d1b46cf29f06ae5ae5ad41c1bb1c1a
             - name: Install deps
               run: yarn install --immutable
             - name: Run unit tests
@@ -58,8 +58,8 @@ jobs:
               uses: actions/setup-node@v7
               with:
                   node-version-file: .nvmrc
-            - name: Enable the project Yarn version
-              run: corepack enable yarn
+            - name: Set up Yarn
+              uses: yarnpkg/setup-action@c9778d0717d1b46cf29f06ae5ae5ad41c1bb1c1a
             - name: Install dependencies
               run: yarn install --immutable
             - name: Check code formatting & generated files

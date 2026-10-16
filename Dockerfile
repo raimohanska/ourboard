@@ -1,5 +1,8 @@
 FROM node:24-bookworm AS builder
 
+RUN curl -fsSL https://repo.yarnpkg.com/install | bash
+ENV PATH="/root/.yarn/switch/bin:$PATH"
+
 # Create app directory
 WORKDIR /usr/src/app
 
@@ -8,7 +11,7 @@ COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 COPY perf-tester/package.json ./perf-tester/
 
-RUN corepack enable yarn && yarn install --immutable
+RUN yarn switch trust --set true "$PWD" && yarn install --immutable
 
 COPY backend ./backend
 COPY frontend ./frontend
