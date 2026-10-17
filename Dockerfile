@@ -1,4 +1,4 @@
-FROM node:24-bookworm AS builder
+FROM node:26-bookworm AS builder
 
 RUN curl -fsSL https://repo.yarnpkg.com/install | bash
 ENV PATH="/root/.yarn/switch/bin:$PATH"
@@ -21,7 +21,7 @@ COPY tsconfig.json .
 
 RUN yarn build
 
-FROM node:24-bookworm AS runner
+FROM node:26-bookworm AS runner
 
 COPY --from=builder /usr/src/app/backend/dist/index.js /usr/src/app/backend/dist/index.js
 COPY --from=builder /usr/src/app/backend/migrations /usr/src/app/backend/migrations

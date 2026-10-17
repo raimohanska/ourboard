@@ -238,9 +238,13 @@ export function BoardPage(page: Page, browser: Browser) {
             await expect(item.locator(".shape")).toHaveCSS("background-color", color)
         },
 
-        async changeItemText(item: Locator, text: string) {
+        async changeItemText(item: Locator, text: string, { readOnly = false } = {}) {
             await item.click()
             await item.locator(".text").dblclick()
+            if (!readOnly) {
+                // The editor gets focus and selects the old text after a timeout.
+                await expect(item.locator(".text [contenteditable=true]:focus")).toHaveCount(1)
+            }
             await page.keyboard.type(text)
         },
         async assertSelected(item: Locator, selected: boolean = true) {

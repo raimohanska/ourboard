@@ -29,7 +29,7 @@
     "io-ts": "^2.2.15",
     "io-ts-types": "^0.5.15",
     "json-diff": "^0.5.4",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.3",
     "lodash": "^4.17.20",
     "lonna": "^0.12.2",
     "monocle-ts": "^2.3.7",
@@ -41,7 +41,7 @@
     "tsx": "catalog:",
     "typera-express": "^2.3.0",
     "typescript": "catalog:",
-    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.52.0",
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.71.0",
     "uuid": "^8.3.0",
     "uuid4": "^2.0.2",
     "y-protocols": "^1.0.6"
@@ -55,11 +55,11 @@
     "lint": "echo 'No linting configured'"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "devDependencies": {
     "@types/express": "^4.17.25",
-    "@types/jsonwebtoken": "^8.5.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node-fetch": "^2.5.9",
     "@types/uuid": "^8.3.0",
     "@vercel/ncc": "^0.38.1",
