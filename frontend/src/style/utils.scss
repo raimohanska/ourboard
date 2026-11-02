@@ -22,9 +22,9 @@
     gap: 1em;
 
     > .icon {
-        background-image: url(img/unchecked-checkbox.png);
+        background-image: url(../img/unchecked-checkbox.png);
         &.checked {
-            background-image: url(img/checked-checkbox.png);
+            background-image: url(../img/checked-checkbox.png);
         }
     }
 }
