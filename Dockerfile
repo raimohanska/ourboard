@@ -26,7 +26,6 @@ FROM node:26-bookworm AS runner
 
 COPY --from=builder /usr/src/app/backend/dist/index.js /usr/src/app/backend/dist/index.js
 COPY --from=builder /usr/src/app/backend/migrations /usr/src/app/backend/migrations
-COPY --from=builder /usr/src/app/frontend/public /usr/src/app/frontend/public
 COPY --from=builder /usr/src/app/frontend/dist /usr/src/app/frontend/dist
 WORKDIR /usr/src/app
 EXPOSE 1337
