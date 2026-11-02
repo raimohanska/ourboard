@@ -235,7 +235,7 @@ Returns the full history of given board as JSON.
 
 ## Development
 
-Running locally requires `docker-compose` which is used for starting the local PostgreSQL database. The script below starts the database, but you must make sure you have a working docker setup on your machine, of course.
+Running locally requires `docker compose` which is used for starting the local PostgreSQL database. The script below starts the database, but you must make sure you have a working docker setup on your machine, of course.
 
 Running locally:
 
@@ -309,7 +309,7 @@ OurBoard is available as a Docker image so you can deploy it with Docker or your
 
 You can run it like this:
 
-1. Start a posgres database. For example, running `docker-compose up` in your local clone of this directory will start one.
+1. Start a posgres database. For example, running `docker compose up` in your local clone of this directory will start one.
 2. Start the Ourboard container. Run the example script `scripts/run_dockerized.sh` to try it out.
 
 With the example script, you'll have a setup which
