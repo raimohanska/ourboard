@@ -8,7 +8,7 @@ import { getConfig } from "./config"
 import * as L from "lonna"
 import { handleCommonEvent } from "./common-event-handler"
 
-export const WsWrapper = (ws: uws.WebSocket) => {
+export const WsWrapper = (ws: uws.WebSocket<WsUserData>) => {
     const errorE = L.bus<void>()
     const closeE = L.bus<void>()
     const msgE = L.bus<object>()
@@ -53,17 +53,20 @@ export function startUWebSocketsServer(port: number) {
     const config = getConfig()
     const app = uws.App()
 
-    const sockets = new Map<uws.WebSocket, WsWrapper>()
+    const sockets = new Map<uws.WebSocket<WsUserData>, WsWrapper>()
     const textDecoder = new TextDecoder()
 
     const signedPutUrl = createGetSignedPutUrl(config.storageBackend)
     mountWs("/socket/lobby", () => handleBoardEvent(null, signedPutUrl))
-    mountWs("/socket/board/:boardId", (req) => handleBoardEvent(req.getParameter(0), signedPutUrl))
+    mountWs("/socket/board/:boardId", (req) => handleBoardEvent(req.getParameter(0) ?? null, signedPutUrl))
 
-    app.get("/", (res) => res.writeStatus("200 OK").end("Sorry, we only serve websocket clients here."))
+    app.get("/", (res) => {
+        res.writeStatus("200 OK").end("Sorry, we only serve websocket clients here.")
+    })
 
     function mountWs(path: string, f: (req: uws.HttpRequest) => MessageHandler) {
-        app.ws(path, {
+        app.ws<WsUserData>(path, {
+            maxBackpressure: 1024 * 1024,
             upgrade: (res, req, context) => {
                 res.upgrade(
                     {
@@ -78,7 +81,7 @@ export function startUWebSocketsServer(port: number) {
             },
             open: (ws) => {
                 const wrapper = WsWrapper(ws)
-                const handler = (ws as WsUserData & uws.WebSocket).handler
+                const handler = ws.getUserData().handler
                 sockets.set(ws, wrapper)
                 connectionHandler(wrapper, handler)
             },

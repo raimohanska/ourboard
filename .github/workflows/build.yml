@@ -3,6 +3,7 @@ on: [push]
 jobs:
     test:
         runs-on: ubuntu-latest
+        timeout-minutes: 60
         services:
             postgres:
                 image: postgres:12
@@ -17,17 +18,16 @@ jobs:
                     --health-interval 10s
                     --health-timeout 5s
                     --health-retries 5
-        strategy:
-            matrix:
-                node-version: [18.x]
         steps:
-            - uses: actions/checkout@v2
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
+            - uses: actions/checkout@v7
+            - name: Use the project Node.js version
+              uses: actions/setup-node@v7
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version-file: .nvmrc
+            - name: Set up Yarn
+              uses: yarnpkg/setup-action@c9778d0717d1b46cf29f06ae5ae5ad41c1bb1c1a
             - name: Install deps
-              run: yarn
+              run: yarn install --immutable
             - name: Run unit tests
               run: yarn test:unit
             - name: Wait for DB
@@ -46,24 +46,23 @@ jobs:
               run: yarn test:playwright
             - name: Archive results
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: test-results
                   path: |
                       playwright/results
     lint:
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                node-version: [18.x]
         steps:
-            - uses: actions/checkout@v2
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
+            - uses: actions/checkout@v7
+            - name: Use the project Node.js version
+              uses: actions/setup-node@v7
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version-file: .nvmrc
+            - name: Set up Yarn
+              uses: yarnpkg/setup-action@c9778d0717d1b46cf29f06ae5ae5ad41c1bb1c1a
             - name: Install dependencies
-              run: yarn install --frozen-lockfile
+              run: yarn install --immutable
             - name: Check code formatting & generated files
               run: yarn lint
     docker-image:
@@ -71,7 +70,7 @@ jobs:
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/master'
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v7
             - name: docker login
               env:
                   DOCKER_HUB_USER: ${{secrets.DOCKER_HUB_USER}}

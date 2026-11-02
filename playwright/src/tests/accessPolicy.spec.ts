@@ -110,8 +110,10 @@ test.describe("Board access policy", () => {
             await expect(board.getNote("Test note")).toBeVisible()
             await expect(board.getArea("Test area with CRDT")).toBeVisible()
 
-            await board.changeItemText(board.getNote("Test note"), "Updated note")
-            await board.changeItemText(board.getArea("Test area with CRDT"), "I should not be able to do this")
+            await board.changeItemText(board.getNote("Test note"), "Updated note", { readOnly: true })
+            await board.changeItemText(board.getArea("Test area with CRDT"), "I should not be able to do this", {
+                readOnly: true,
+            })
 
             await expect(board.getArea("I should not be able to do this")).not.toBeVisible()
         })

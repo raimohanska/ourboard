@@ -13,7 +13,6 @@
     "cookie": "^0.4.1",
     "email-validator": "^2.0.4",
     "harmaja": "^0.24",
-    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "lonna": "^0.12.2",
     "material-design-icons-iconfont": "^6.1.0",
@@ -31,12 +30,13 @@
     "dev": "tsc-watch --onSuccess \"node .\" --preserveWatchOutput"
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "^8.5.0",
+    "@types/node": "catalog:",
     "@types/uuid": "^8.3.0",
     "cssnano": "^4.1.10",
     "nodemon": "^2.0.4",
     "npm-run-all": "^4.1.5",
     "tsc-watch": "^4.2.9",
-    "typescript": "^4.0.2"
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   }
 }
