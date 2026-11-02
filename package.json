@@ -21,6 +21,7 @@
     "vitest": "^1.3.1"
   },
   "resolutions": {
+    "harmaja@^0.24": "patch:harmaja%40%5E0.24#~/.yarn/patches/harmaja-npm-0.24.0-ff8343d46e5e23da4dffd11b5cef50a3.patch",
     "jwa@^2.0.0": "^2.0.1"
   },
   "private": true,

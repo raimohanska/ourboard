@@ -11,6 +11,7 @@
       }
     },
     "dependencyOverrides": {
+      "harmaja@^0.24": "patch:harmaja%40%5E0.24#~/.yarn/patches/harmaja-npm-0.24.0-ff8343d46e5e23da4dffd11b5cef50a3.patch",
       "jwa@^2.0.0": "^2.0.1"
     }
   },
@@ -3959,6 +3960,13 @@
       "checksum": "261fa9bf09d471e17289379e7feb164e082506429bf8053dcf7e4ba11582b6c19c13d2ae9ca358ac90f860cdbc8c10e4d92cd74e69382c334baf64eebca5f522",
       "resolution": {
         "resolution": "harmaja@npm:0.24.0",
+        "version": "0.24.0"
+      }
+    },
+    "harmaja@patch:harmaja%40npm%3A%5E0.24#~/.yarn/patches/harmaja-npm-0.24.0-ff8343d46e5e23da4dffd11b5cef50a3.patch": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "harmaja@patch:harmaja%40npm%3A0.24.0#~/.yarn/patches/harmaja-npm-0.24.0-ff8343d46e5e23da4dffd11b5cef50a3.patch&checksum=af6395d83ccbb4370253b9f202e5bd8d1a45b6cbaa6f7565a5eb1b02f8e1448fa08c1b9d32e974e66ce0ac1742d82836822335f370196e8614f4905d6da86452",
         "version": "0.24.0"
       }
     },

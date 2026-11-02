@@ -7,6 +7,7 @@ ENV PATH="/root/.yarn/switch/bin:$PATH"
 WORKDIR /usr/src/app
 
 COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn/patches ./.yarn/patches
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 COPY perf-tester/package.json ./perf-tester/
