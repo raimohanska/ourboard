@@ -21,6 +21,7 @@
     "vitest": "^1.3.1"
   },
   "resolutions": {
+    "harmaja@^0.24": "patch:harmaja%40%5E0.24#~/.yarn/patches/harmaja-npm-0.24.0-ff8343d46e5e23da4dffd11b5cef50a3.patch",
     "jwa@^2.0.0": "^2.0.1"
   },
   "private": true,
@@ -35,13 +36,13 @@
   ],
   "scripts": {
     "postinstall": "husky",
-    "dev": "husky && npm-run-all --parallel dev:db watch:frontend dev:backend typecheck:dev:frontend",
+    "dev": "husky && npm-run-all --parallel dev:db dev:frontend dev:backend typecheck:dev:frontend",
     "dev-with-keycloak": "npm-run-all --parallel dev:keycloak dev",
-    "dev:no-db": "npm-run-all --parallel watch:frontend dev:backend",
+    "dev:no-db": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:db": "docker compose up db||true",
     "dev:keycloak": "docker compose up keycloak||true",
-    "watch:frontend": "yarn --cwd frontend watch",
-    "dev:backend": "yarn --cwd backend dev",
+    "dev:frontend": "yarn --cwd frontend dev",
+    "dev:backend": "PORT=1338 yarn --cwd backend dev",
     "start": "yarn start:backend",
     "start:backend": "yarn --cwd backend start",
     "benchmark": "tsx benchmark/benchmark.ts",

@@ -38,7 +38,6 @@ import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"
 import { ServerConnection, getWebSocketRootUrl } from "./server-connection"
 import { UserSessionState, isLoginInProgress } from "./user-session-store"
 import { CRDTStore, WebSocketPolyfill } from "./crdt-store"
-import { serve } from "esbuild"
 export type Dispatch = (e: UIEvent) => void
 export type BoardStore = ReturnType<typeof BoardStore>
 export type BoardAccessStatus =

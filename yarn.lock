@@ -11,6 +11,7 @@
       }
     },
     "dependencyOverrides": {
+      "harmaja@^0.24": "patch:harmaja%40%5E0.24#~/.yarn/patches/harmaja-npm-0.24.0-ff8343d46e5e23da4dffd11b5cef50a3.patch",
       "jwa@^2.0.0": "^2.0.1"
     }
   },
@@ -806,6 +807,251 @@
         "version": "1.4.15"
       }
     },
+    "@oxc-project/types@npm:=0.156.0": {
+      "checksum": "afbaa4431c0b7798c14f2d37dccce16934145888541148e346307b6f0623df4e3da05bc4358aea004350cedd3831c2a60b8852c129a4e28dca866e987c87ce29",
+      "resolution": {
+        "resolution": "@oxc-project/types@npm:0.156.0",
+        "version": "0.156.0"
+      }
+    },
+    "@parcel/watcher@npm:^2.4.1": {
+      "checksum": "9b2cdf5fda1a5004064df367cef0b143d1507bc9b1b3da21450e48f57ec177c21bf43043d2b69cb50690366d9527a413a0b29c6dd0661b8b45739cdf28b03059",
+      "resolution": {
+        "resolution": "@parcel/watcher@npm:2.6.0",
+        "version": "2.6.0",
+        "dependencies": {
+          "@parcel/watcher-android-arm64": "2.6.0",
+          "@parcel/watcher-darwin-arm64": "2.6.0",
+          "@parcel/watcher-darwin-x64": "2.6.0",
+          "@parcel/watcher-freebsd-x64": "2.6.0",
+          "@parcel/watcher-linux-arm-glibc": "2.6.0",
+          "@parcel/watcher-linux-arm-musl": "2.6.0",
+          "@parcel/watcher-linux-arm64-glibc": "2.6.0",
+          "@parcel/watcher-linux-arm64-musl": "2.6.0",
+          "@parcel/watcher-linux-x64-glibc": "2.6.0",
+          "@parcel/watcher-linux-x64-musl": "2.6.0",
+          "@parcel/watcher-win32-arm64": "2.6.0",
+          "@parcel/watcher-win32-x64": "2.6.0",
+          "detect-libc": "^2.0.3",
+          "is-glob": "^4.0.3",
+          "node-addon-api": "^7.0.0",
+          "node-gyp": "*",
+          "picomatch": "^4.0.4"
+        },
+        "optionalDependencies": [
+          "@parcel/watcher-android-arm64",
+          "@parcel/watcher-darwin-arm64",
+          "@parcel/watcher-darwin-x64",
+          "@parcel/watcher-freebsd-x64",
+          "@parcel/watcher-linux-arm-glibc",
+          "@parcel/watcher-linux-arm-musl",
+          "@parcel/watcher-linux-arm64-glibc",
+          "@parcel/watcher-linux-arm64-musl",
+          "@parcel/watcher-linux-x64-glibc",
+          "@parcel/watcher-linux-x64-musl",
+          "@parcel/watcher-win32-arm64",
+          "@parcel/watcher-win32-x64"
+        ]
+      }
+    },
+    "@parcel/watcher-android-arm64@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-android-arm64@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "android"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-darwin-arm64@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-darwin-arm64@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "darwin"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-darwin-x64@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-darwin-x64@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "darwin"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-freebsd-x64@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-freebsd-x64@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "freebsd"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-linux-arm-glibc@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-linux-arm-glibc@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "arm"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-linux-arm-musl@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-linux-arm-musl@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "arm"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "musl"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-linux-arm64-glibc@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-linux-arm64-glibc@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-linux-arm64-musl@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-linux-arm64-musl@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "musl"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-linux-x64-glibc@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-linux-x64-glibc@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-linux-x64-musl@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-linux-x64-musl@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "musl"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-win32-arm64@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-win32-arm64@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "win32"
+          ]
+        }
+      }
+    },
+    "@parcel/watcher-win32-x64@npm:2.6.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@parcel/watcher-win32-x64@npm:2.6.0",
+        "version": "2.6.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "win32"
+          ]
+        }
+      }
+    },
     "@playwright/test@npm:^1.64.1": {
       "checksum": "474c59c0c06b5c719a5ca1f2c55c16facaab8d89a258ebc1f235b05e9ede6afa32af0c24445a6385d50d4914cf15d705341acafdfc357ae81606e50539a92ca2",
       "resolution": {
@@ -814,6 +1060,256 @@
         "dependencies": {
           "playwright": "1.64.1"
         }
+      }
+    },
+    "@rolldown/binding-android-arm-eabi@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-android-arm-eabi@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "arm"
+          ],
+          "os": [
+            "android"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-android-arm64@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-android-arm64@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "android"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-darwin-arm64@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-darwin-arm64@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "darwin"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-darwin-x64@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-darwin-x64@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "darwin"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-freebsd-x64@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-freebsd-x64@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "freebsd"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-linux-arm-gnueabihf@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-linux-arm-gnueabihf@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "arm"
+          ],
+          "os": [
+            "linux"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-linux-arm64-gnu@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-linux-arm64-gnu@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-linux-arm64-musl@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-linux-arm64-musl@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "musl"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-linux-ppc64-gnu@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-linux-ppc64-gnu@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "ppc64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-linux-s390x-gnu@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-linux-s390x-gnu@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "s390x"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-linux-x64-gnu@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-linux-x64-gnu@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-linux-x64-musl@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-linux-x64-musl@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "musl"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-openharmony-arm64@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-openharmony-arm64@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "openharmony"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-win32-arm64-msvc@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-win32-arm64-msvc@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "win32"
+          ]
+        }
+      }
+    },
+    "@rolldown/binding-win32-x64-msvc@npm:1.2.16": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@rolldown/binding-win32-x64-msvc@npm:1.2.16",
+        "version": "1.2.16",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "win32"
+          ]
+        }
+      }
+    },
+    "@rolldown/pluginutils@npm:^1.0.0": {
+      "checksum": "79c74d7fc8c371d2fc1d982ae0943bbae7a60f79082d428e77b138beb49202d4a28a72d4a30e07ee580e8e6bd61df94d1bd3a5e7530cc733dac5204b5e1568f3",
+      "resolution": {
+        "resolution": "@rolldown/pluginutils@npm:1.0.1",
+        "version": "1.0.1"
       }
     },
     "@rollup/rollup-android-arm-eabi@npm:4.12.0": {
@@ -2093,7 +2589,7 @@
         }
       }
     },
-    "chokidar@npm:>=2.0.0 <4.0.0, chokidar@npm:^3.2.2, chokidar@npm:^3.5.1": {
+    "chokidar@npm:^3.2.2": {
       "checksum": "6acccf43f17ddf2aaf6824bb0e7e2df4bb7de009603da2b93855666b6cac6fd774ad7f6e4fb9cbe961276ec1850a6cea8b325e4329d75bf275df035375096d93",
       "resolution": {
         "resolution": "chokidar@npm:3.5.1",
@@ -2111,6 +2607,16 @@
         "optionalDependencies": [
           "fsevents"
         ]
+      }
+    },
+    "chokidar@npm:^5.0.0": {
+      "checksum": "6d65f8cd9bb312f415d9303473e08a634e893f5d4fd686c5c9448f5146df11811b4f41b2f8d715677f8b9d480f66643b109e3916ca1d326b3f66a9f76d9b7a0b",
+      "resolution": {
+        "resolution": "chokidar@npm:5.0.0",
+        "version": "5.0.0",
+        "dependencies": {
+          "readdirp": "^5.0.0"
+        }
       }
     },
     "chownr@npm:^3.0.0": {
@@ -2362,13 +2868,6 @@
           "depd": "~2.0.0",
           "keygrip": "~1.1.0"
         }
-      }
-    },
-    "core-js@npm:^3.8.3": {
-      "checksum": "60df8f0c93a12e5a6ddc60f308b3fe82fe603f273e69b16281bc2c2c079b4abba181beea21ccbf7749182748ae1dccd537db6b66431cffb9f0be271e82d27602",
-      "resolution": {
-        "resolution": "core-js@npm:3.9.1",
-        "version": "3.9.1"
       }
     },
     "cosmiconfig@npm:^5.0.0": {
@@ -2822,6 +3321,13 @@
         "version": "1.0.4"
       }
     },
+    "detect-libc@npm:^2.0.3": {
+      "checksum": "821dabefdfa13163d8e25e842d7fa0db1cab255f79c8227383faf8e31b18b17124cf2dbf08e6edc06ac99f076148b149ca4684deeb5e8782dab096b5523fbe55",
+      "resolution": {
+        "resolution": "detect-libc@npm:2.1.2",
+        "version": "2.1.2"
+      }
+    },
     "diff-sequences@npm:^29.6.3": {
       "checksum": "547e80cddacd0f5c36925a9875deb73cdf2af3f467227d4c775b1cfa4c0bed40a2240af12448904b64379bbe23ee492865fc5305b27d07ab4c0999c84edb9d91",
       "resolution": {
@@ -3185,13 +3691,6 @@
           "@esbuild/win32-ia32",
           "@esbuild/win32-x64"
         ]
-      }
-    },
-    "esbuild@npm:^0.8.57": {
-      "checksum": "6bb36ec6e8b5558ace71e7fbf141f59774c04853152c79b4dd8bf069bc39fe08112518722b9b995f047a030d8ee30d8f69fcfd1011f45884c0f0663fff3ba60d",
-      "resolution": {
-        "resolution": "esbuild@npm:0.8.57",
-        "version": "0.8.57"
       }
     },
     "esbuild@npm:~0.28.0": {
@@ -3565,13 +4064,6 @@
         "version": "0.1.7"
       }
     },
-    "fs.realpath@npm:^1.0.0": {
-      "checksum": "57f387e7ea958ffff1a5e1b5537464bdc08f784fce870cc17a0cfe9319c1eeb9962e9081278aff9d4c3ba8af9d87435bbbec2e1e2667e9876d31924b5cafd99d",
-      "resolution": {
-        "resolution": "fs.realpath@npm:1.0.0",
-        "version": "1.0.0"
-      }
-    },
     "fsevents@npm:~2.3.1": {
       "checksum": null,
       "resolution": {
@@ -3770,21 +4262,6 @@
         "version": "8.0.1"
       }
     },
-    "glob@npm:^7.1.3": {
-      "checksum": "1911f1e86575342388b7e799225161a11fc8bb194b5df028d3dcb52f01b4dc44b095aba05167fdc6ffae7c50de03b6e4068814bc8626b4aedc272cb2dd1454c3",
-      "resolution": {
-        "resolution": "glob@npm:7.1.6",
-        "version": "7.1.6",
-        "dependencies": {
-          "fs.realpath": "^1.0.0",
-          "inflight": "^1.0.4",
-          "inherits": "2",
-          "minimatch": "^3.0.4",
-          "once": "^1.3.0",
-          "path-is-absolute": "^1.0.0"
-        }
-      }
-    },
     "glob-parent@npm:~5.1.0": {
       "checksum": "e45487ee4807de1f9906ac887e4628371e04b1c99ce5b86496a46b6aedd4dc32aa2ec3256183449a35155566d0c6cf119114c1924d9e531cd50ba5e39acb524e",
       "resolution": {
@@ -3959,6 +4436,13 @@
       "checksum": "261fa9bf09d471e17289379e7feb164e082506429bf8053dcf7e4ba11582b6c19c13d2ae9ca358ac90f860cdbc8c10e4d92cd74e69382c334baf64eebca5f522",
       "resolution": {
         "resolution": "harmaja@npm:0.24.0",
+        "version": "0.24.0"
+      }
+    },
+    "harmaja@patch:harmaja%40npm%3A%5E0.24#~/.yarn/patches/harmaja-npm-0.24.0-ff8343d46e5e23da4dffd11b5cef50a3.patch": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "harmaja@patch:harmaja%40npm%3A0.24.0#~/.yarn/patches/harmaja-npm-0.24.0-ff8343d46e5e23da4dffd11b5cef50a3.patch&checksum=af6395d83ccbb4370253b9f202e5bd8d1a45b6cbaa6f7565a5eb1b02f8e1448fa08c1b9d32e974e66ce0ac1742d82836822335f370196e8614f4905d6da86452",
         "version": "0.24.0"
       }
     },
@@ -4251,6 +4735,13 @@
         "version": "3.0.6"
       }
     },
+    "immutable@npm:^5.1.5": {
+      "checksum": "5f580007e008633aa615aa16ff512933b9bde393dd1b5c15cdf679ba6126f1f5592c76f378f9f81bff6fb8394c3e1cd7f616f843225c99a2c3e6cc105973d75f",
+      "resolution": {
+        "resolution": "immutable@npm:5.1.9",
+        "version": "5.1.9"
+      }
+    },
     "import-fresh@npm:^2.0.0": {
       "checksum": "804cd214452ebe01e1662bc614f5d2008688b6ce53ed0953f9a648939eda5d9c93f0551c0ade097926a12dba80ae322592daaf6a5a9d6a27d40aeb8a7a0c9e03",
       "resolution": {
@@ -4301,29 +4792,18 @@
         "version": "1.0.1"
       }
     },
-    "inflight@npm:^1.0.4": {
-      "checksum": "deed7105b634e3e4826a99b7dffea580a2114b8f9c7083fd622df283d6104de87737ad801be697a229f5f35623f8c4f5f89d72ab352b61389cb2dcb50a559ce4",
-      "resolution": {
-        "resolution": "inflight@npm:1.0.6",
-        "version": "1.0.6",
-        "dependencies": {
-          "once": "^1.3.0",
-          "wrappy": "1"
-        }
-      }
-    },
-    "inherits@npm:2, inherits@npm:2.0.4, inherits@npm:^2.0.3, inherits@npm:^2.0.4": {
-      "checksum": "552e8afa79fc18dce4813eac3236b1fd46af3e9301b36ba10566713b91be71b0ba681066e9c6f1eb6bee93ace81eea900bc03fd336fd68ac009f7c1219da6a5d",
-      "resolution": {
-        "resolution": "inherits@npm:2.0.4",
-        "version": "2.0.4"
-      }
-    },
     "inherits@npm:2.0.3": {
       "checksum": "b50393d1933fb62683de47b5cb3e3e78af5fcc36ff59a0d3ffac091a63652f7c3d239c58e0507fb8da6ee0f7ce0a56d134fd68c823871f51a0bab862783de665",
       "resolution": {
         "resolution": "inherits@npm:2.0.3",
         "version": "2.0.3"
+      }
+    },
+    "inherits@npm:2.0.4, inherits@npm:^2.0.3, inherits@npm:^2.0.4": {
+      "checksum": "552e8afa79fc18dce4813eac3236b1fd46af3e9301b36ba10566713b91be71b0ba681066e9c6f1eb6bee93ace81eea900bc03fd336fd68ac009f7c1219da6a5d",
+      "resolution": {
+        "resolution": "inherits@npm:2.0.4",
+        "version": "2.0.4"
       }
     },
     "ini@npm:1.3.7": {
@@ -4535,6 +5015,16 @@
       "resolution": {
         "resolution": "is-glob@npm:4.0.1",
         "version": "4.0.1",
+        "dependencies": {
+          "is-extglob": "^2.1.1"
+        }
+      }
+    },
+    "is-glob@npm:^4.0.3": {
+      "checksum": "545304823936a20725a6dbd8a6f7ddbf9d980bca5405673cdd9ee69818e87eeddb2595e6ea7539820e4835bb4e2ca713451555f4416612399a50fdbdc159fa5e",
+      "resolution": {
+        "resolution": "is-glob@npm:4.0.3",
+        "version": "4.0.3",
         "dependencies": {
           "is-extglob": "^2.1.1"
         }
@@ -5080,6 +5570,217 @@
         }
       }
     },
+    "lightningcss@npm:^1.33.0": {
+      "checksum": "48e5d50a3a2328f6de707fa31010d2b48a9f3559e248086ca054178ae8586791822b5501b95d5fa175130e70fcfaf08e5741be9cee1282eaf1e036c3716c6604",
+      "resolution": {
+        "resolution": "lightningcss@npm:1.33.0",
+        "version": "1.33.0",
+        "dependencies": {
+          "detect-libc": "^2.0.3",
+          "lightningcss-android-arm64": "1.33.0",
+          "lightningcss-darwin-arm64": "1.33.0",
+          "lightningcss-darwin-x64": "1.33.0",
+          "lightningcss-freebsd-x64": "1.33.0",
+          "lightningcss-linux-arm-gnueabihf": "1.33.0",
+          "lightningcss-linux-arm64-gnu": "1.33.0",
+          "lightningcss-linux-arm64-musl": "1.33.0",
+          "lightningcss-linux-x64-gnu": "1.33.0",
+          "lightningcss-linux-x64-musl": "1.33.0",
+          "lightningcss-win32-arm64-msvc": "1.33.0",
+          "lightningcss-win32-x64-msvc": "1.33.0"
+        },
+        "optionalDependencies": [
+          "lightningcss-android-arm64",
+          "lightningcss-darwin-arm64",
+          "lightningcss-darwin-x64",
+          "lightningcss-freebsd-x64",
+          "lightningcss-linux-arm-gnueabihf",
+          "lightningcss-linux-arm64-gnu",
+          "lightningcss-linux-arm64-musl",
+          "lightningcss-linux-x64-gnu",
+          "lightningcss-linux-x64-musl",
+          "lightningcss-win32-arm64-msvc",
+          "lightningcss-win32-x64-msvc"
+        ]
+      }
+    },
+    "lightningcss-android-arm64@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-android-arm64@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "android"
+          ]
+        }
+      }
+    },
+    "lightningcss-darwin-arm64@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-darwin-arm64@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "darwin"
+          ]
+        }
+      }
+    },
+    "lightningcss-darwin-x64@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-darwin-x64@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "darwin"
+          ]
+        }
+      }
+    },
+    "lightningcss-freebsd-x64@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-freebsd-x64@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "freebsd"
+          ]
+        }
+      }
+    },
+    "lightningcss-linux-arm-gnueabihf@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-linux-arm-gnueabihf@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "arm"
+          ],
+          "os": [
+            "linux"
+          ]
+        }
+      }
+    },
+    "lightningcss-linux-arm64-gnu@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-linux-arm64-gnu@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "lightningcss-linux-arm64-musl@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-linux-arm64-musl@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "musl"
+          ]
+        }
+      }
+    },
+    "lightningcss-linux-x64-gnu@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-linux-x64-gnu@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "lightningcss-linux-x64-musl@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-linux-x64-musl@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "musl"
+          ]
+        }
+      }
+    },
+    "lightningcss-win32-arm64-msvc@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-win32-arm64-msvc@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "win32"
+          ]
+        }
+      }
+    },
+    "lightningcss-win32-x64-msvc@npm:1.33.0": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "lightningcss-win32-x64-msvc@npm:1.33.0",
+        "version": "1.33.0",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "win32"
+          ]
+        }
+      }
+    },
     "lines-and-columns@npm:^1.1.6": {
       "checksum": "8f75aff47eb2a90364801f713b68740aef5c73d8353fd20d358ac78bdcd6bb87abeb49fc2b7abf448ce55fbc5ad6e5c45c77334a9ad6f31a74eecd565b182c39",
       "resolution": {
@@ -5592,6 +6293,13 @@
         "version": "3.1.22"
       }
     },
+    "nanoid@npm:^3.3.20": {
+      "checksum": "a621892fd6f0dcbc855eaced073415c3a5928945da937211b1ab7b950d40e7070edd21f99756dcf5a4fbae6bdfb9ad4068cacf38bcf13dce079a1c427efadc30",
+      "resolution": {
+        "resolution": "nanoid@npm:3.3.20",
+        "version": "3.3.20"
+      }
+    },
     "nanoid@npm:^3.3.7": {
       "checksum": "6ca2b2bee0ce8afc7d71dc790c2b189d181f0fda833c1df63326824f6f88b775c7a99aea03d607e242d43930c217f8470b90724f074d0f6f872c9c2ab1c2d22e",
       "resolution": {
@@ -5629,6 +6337,16 @@
       "resolution": {
         "resolution": "nice-try@npm:1.0.5",
         "version": "1.0.5"
+      }
+    },
+    "node-addon-api@npm:^7.0.0": {
+      "checksum": "93f02ba5d56e877ba8be9d475c769ac227a2ce7ef9a96606ce254874a25cf7305e411f06b9d7a9ee1a0c507656491c220ec9bf4c5bcaa8abf8fa50559af464a2",
+      "resolution": {
+        "resolution": "node-addon-api@npm:7.1.1",
+        "version": "7.1.1",
+        "dependencies": {
+          "node-gyp": "*"
+        }
       }
     },
     "node-cleanup@npm:^2.1.2": {
@@ -5918,7 +6636,7 @@
         }
       }
     },
-    "once@npm:^1.3.0, once@npm:^1.3.1, once@npm:^1.4.0": {
+    "once@npm:^1.3.1, once@npm:^1.4.0": {
       "checksum": "e8ea9ae0c4dfd7d2fd9ffb19c0bc69bc84b2d30ba7c2c25a515a473919c78937e9f92060c1dcc428ada234c1886f3ca52d0af4690f4483e8296408b4418989e0",
       "resolution": {
         "resolution": "once@npm:1.4.0",
@@ -6062,13 +6780,6 @@
       "resolution": {
         "resolution": "parseurl@npm:1.3.3",
         "version": "1.3.3"
-      }
-    },
-    "path-is-absolute@npm:^1.0.0": {
-      "checksum": "330ce792732d4df952b632f51f86fa693d923962810d9b2084531526782cfc7280a409a5cb3e998c679de090f95bdb47ebbb292b64b1db268b06c0459b98409e",
-      "resolution": {
-        "resolution": "path-is-absolute@npm:1.0.1",
-        "version": "1.0.1"
       }
     },
     "path-key@npm:^2.0.1": {
@@ -6265,6 +6976,13 @@
         "version": "1.0.0"
       }
     },
+    "picocolors@npm:^1.1.1": {
+      "checksum": "a79e5e6df130fbb4aaeabe5b0f297f6a763f04b4bf95ab4298ef2ef9b776f793e87f0475778d6c567497126fc392f14941bcafe56c6ea18141425ce272dc7639",
+      "resolution": {
+        "resolution": "picocolors@npm:1.1.1",
+        "version": "1.1.1"
+      }
+    },
     "picomatch@npm:^2.0.4, picomatch@npm:^2.0.5, picomatch@npm:^2.2.1": {
       "checksum": "3221e594da3feffb743408bee4ff98f750cad383d8de167135c37b329efe1f1f0801f8459035d508c5fb10fbf8237efb3a077b806acae485867af82741f1db99",
       "resolution": {
@@ -6272,7 +6990,7 @@
         "version": "2.2.2"
       }
     },
-    "picomatch@npm:^4.0.4": {
+    "picomatch@npm:^4.0.4, picomatch@npm:^4.0.7": {
       "checksum": "ef1ea20ee22b4128596d4f2ba23cced646546905a44c0d2fa0529ec65174b492cacc9a9be413a640937b161668ef266757db95cc69837b19ab86cb24c0e10c1e",
       "resolution": {
         "resolution": "picomatch@npm:4.0.7",
@@ -6365,6 +7083,18 @@
           "nanoid": "^3.3.7",
           "picocolors": "^1.0.0",
           "source-map-js": "^1.0.2"
+        }
+      }
+    },
+    "postcss@npm:^8.5.30": {
+      "checksum": "4197579176523d602af667ca8b94e94f29de5367ac3158b4e76f6fef95b67eb2ccc859bdb9b9defa1bf1c79532723f561a57e37b31f363acb3cbb450d56454fe",
+      "resolution": {
+        "resolution": "postcss@npm:8.5.32",
+        "version": "8.5.32",
+        "dependencies": {
+          "nanoid": "^3.3.20",
+          "picocolors": "^1.1.1",
+          "source-map-js": "^1.2.2"
         }
       }
     },
@@ -7074,13 +7804,8 @@
           "@types/uuid": "^8.3.0",
           "bezier-js": "^4.0.3",
           "binpackingjs": "^3.0.2",
-          "chokidar": "^3.5.1",
           "cookie": "^0.4.1",
-          "core-js": "^3.8.3",
-          "cssnano": "^4.1.10",
-          "dotenv": "^8.2.0",
           "email-validator": "^2.0.4",
-          "esbuild": "^0.8.57",
           "fp-ts": "^2.9.5",
           "harmaja": "^0.24",
           "harmaja-router": "^0.3.3",
@@ -7091,18 +7816,17 @@
           "lodash": "^4.17.20",
           "lonna": "^0.12.2",
           "md5": "^2.3.0",
-          "nodemon": "^2.0.4",
           "npm-run-all": "^4.1.5",
           "path-to-regexp": "^6.2.0",
           "pretty-ms": "^7.0.1",
           "quill": "^1.3.7",
           "quill-cursors": "^4.0.2",
           "ramda": "^0.27.1",
-          "rimraf": "^3.0.2",
           "sanitize-html": "^2.3.2",
-          "sass": "^1.32.8",
+          "sass": "^1.107.1",
           "typescript": "catalog:",
           "uuid": "^8.3.0",
+          "vite": "^8.3.5",
           "y-indexeddb": "^9.0.12",
           "y-quill": "^0.1.5",
           "y-websocket": "^1.5.3",
@@ -7198,6 +7922,13 @@
           "string_decoder": "^1.1.1",
           "util-deprecate": "^1.0.1"
         }
+      }
+    },
+    "readdirp@npm:^5.0.0": {
+      "checksum": "64db7381648f23ccfa717d8d34cdb0b990396487f060f8566eda0bd28a6702345c9f695f7b1c7f480ad20d992e8b33d0c4a99c26f33a3405cc60c909f35385f2",
+      "resolution": {
+        "resolution": "readdirp@npm:5.1.1",
+        "version": "5.1.1"
       }
     },
     "readdirp@npm:~3.5.0": {
@@ -7320,14 +8051,47 @@
         "version": "1.0.0"
       }
     },
-    "rimraf@npm:^3.0.2": {
-      "checksum": "7975dfd4af8ba1d0e619e407d86780b0b515568c722edce68bf2e067009636a1e7e35dec9e7bc6dd68d92851cba7202fb3520ef2af30770bc253d5d3b2e2b3f8",
+    "rolldown@npm:~1.2.14": {
+      "checksum": "a3284e94f519a94533cae992fc1549b4457d0d8b159adb07d8990c1f293ac1c09557b148e8cada7861b84088dae0e7886122872aea1e0d929cc44c9e1bc10a96",
       "resolution": {
-        "resolution": "rimraf@npm:3.0.2",
-        "version": "3.0.2",
+        "resolution": "rolldown@npm:1.2.16",
+        "version": "1.2.16",
         "dependencies": {
-          "glob": "^7.1.3"
-        }
+          "@oxc-project/types": "=0.156.0",
+          "@rolldown/binding-android-arm-eabi": "1.2.16",
+          "@rolldown/binding-android-arm64": "1.2.16",
+          "@rolldown/binding-darwin-arm64": "1.2.16",
+          "@rolldown/binding-darwin-x64": "1.2.16",
+          "@rolldown/binding-freebsd-x64": "1.2.16",
+          "@rolldown/binding-linux-arm-gnueabihf": "1.2.16",
+          "@rolldown/binding-linux-arm64-gnu": "1.2.16",
+          "@rolldown/binding-linux-arm64-musl": "1.2.16",
+          "@rolldown/binding-linux-ppc64-gnu": "1.2.16",
+          "@rolldown/binding-linux-s390x-gnu": "1.2.16",
+          "@rolldown/binding-linux-x64-gnu": "1.2.16",
+          "@rolldown/binding-linux-x64-musl": "1.2.16",
+          "@rolldown/binding-openharmony-arm64": "1.2.16",
+          "@rolldown/binding-win32-arm64-msvc": "1.2.16",
+          "@rolldown/binding-win32-x64-msvc": "1.2.16",
+          "@rolldown/pluginutils": "^1.0.0"
+        },
+        "optionalDependencies": [
+          "@rolldown/binding-android-arm-eabi",
+          "@rolldown/binding-android-arm64",
+          "@rolldown/binding-darwin-arm64",
+          "@rolldown/binding-darwin-x64",
+          "@rolldown/binding-freebsd-x64",
+          "@rolldown/binding-linux-arm-gnueabihf",
+          "@rolldown/binding-linux-arm64-gnu",
+          "@rolldown/binding-linux-arm64-musl",
+          "@rolldown/binding-linux-ppc64-gnu",
+          "@rolldown/binding-linux-s390x-gnu",
+          "@rolldown/binding-linux-x64-gnu",
+          "@rolldown/binding-linux-x64-musl",
+          "@rolldown/binding-openharmony-arm64",
+          "@rolldown/binding-win32-arm64-msvc",
+          "@rolldown/binding-win32-x64-msvc"
+        ]
       }
     },
     "rollup@npm:^4.2.0": {
@@ -7417,14 +8181,20 @@
         }
       }
     },
-    "sass@npm:^1.32.8": {
-      "checksum": "f731a66ad51318895fb508796b068f59b50b5f145df1d8630b945a7ba26cc40c01e6678381d6719baa18a20d14a0330002e279f657a1337e218a5f9aca04d851",
+    "sass@npm:^1.107.1": {
+      "checksum": "4c71bbf0520aa8a2601ed18088352ed0a1bbdd80bf0816037cf101cabf77277c756accc0bfb027d7c4eede39992c2856eaf4644ffe0431cb6dbd4dc5aaf6a58c",
       "resolution": {
-        "resolution": "sass@npm:1.32.8",
-        "version": "1.32.8",
+        "resolution": "sass@npm:1.107.1",
+        "version": "1.107.1",
         "dependencies": {
-          "chokidar": ">=2.0.0 <4.0.0"
-        }
+          "@parcel/watcher": "^2.4.1",
+          "chokidar": "^5.0.0",
+          "immutable": "^5.1.5",
+          "source-map-js": ">=0.6.2 <2.0.0"
+        },
+        "optionalDependencies": [
+          "@parcel/watcher"
+        ]
       }
     },
     "sax@npm:1.2.1": {
@@ -7646,6 +8416,13 @@
       "resolution": {
         "resolution": "source-map@npm:0.6.1",
         "version": "0.6.1"
+      }
+    },
+    "source-map-js@npm:>=0.6.2 <2.0.0, source-map-js@npm:^1.2.2": {
+      "checksum": "87e03b74effc8118d1c868a558e119a0ff2c5f5b6ec4e682378cebbfece8aff28167a8509cddbf413d6ce9bf50d6ed179e2870cbd963955a9b383087d1fc8e5e",
+      "resolution": {
+        "resolution": "source-map-js@npm:1.2.2",
+        "version": "1.2.2"
       }
     },
     "source-map-js@npm:^1.0.2": {
@@ -8025,7 +8802,7 @@
         "version": "2.6.0"
       }
     },
-    "tinyglobby@npm:^0.2.12": {
+    "tinyglobby@npm:^0.2.12, tinyglobby@npm:^0.2.17": {
       "checksum": "aca0850156edcdebd1d033c07693cd84aa49b2d28db38bf71dbc8a89f15f32e302d13ca450e822e060879e6bf843cf2adfdb43ba3a70694cbc7f023e0dd3cb82",
       "resolution": {
         "resolution": "tinyglobby@npm:0.2.17",
@@ -8473,6 +9250,52 @@
           "stylus",
           "sugarss",
           "terser"
+        ]
+      }
+    },
+    "vite@npm:^8.3.5": {
+      "checksum": "b2bba277c87f3dff68e229abdb57f6bd7ebf324c88141bd62183c841db2a8a2d244b4a383b67b2d44979724bcda9cfe3a0f9d359030b079456bb7a7690eec394",
+      "resolution": {
+        "resolution": "vite@npm:8.3.5",
+        "version": "8.3.5",
+        "dependencies": {
+          "fsevents": "~2.3.3",
+          "lightningcss": "^1.33.0",
+          "picomatch": "^4.0.7",
+          "postcss": "^8.5.30",
+          "rolldown": "~1.2.14",
+          "tinyglobby": "^0.2.17"
+        },
+        "peerDependencies": {
+          "@types/node": "^20.19.0 || >=22.12.0",
+          "@vitejs/devtools": "^0.7.1 || ^0.8.0",
+          "esbuild": "^0.27.0 || ^0.28.0",
+          "jiti": ">=1.21.0",
+          "less": "^4.0.0",
+          "sass": "^1.70.0",
+          "sass-embedded": "^1.70.0",
+          "stylus": ">=0.54.8",
+          "sugarss": "^5.0.0",
+          "terser": "^5.16.0",
+          "tsx": "^4.8.1",
+          "yaml": "^2.4.2"
+        },
+        "optionalDependencies": [
+          "fsevents"
+        ],
+        "optionalPeerDependencies": [
+          "@types/node",
+          "@vitejs/devtools",
+          "esbuild",
+          "jiti",
+          "less",
+          "sass",
+          "sass-embedded",
+          "stylus",
+          "sugarss",
+          "terser",
+          "tsx",
+          "yaml"
         ]
       }
     },

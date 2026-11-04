@@ -45,7 +45,6 @@ export const startExpressServer = (httpPort?: number, httpsPort?: number): (() =
     possiblyRequireAuth(app)
 
     app.use("/", express.static("../frontend/dist"))
-    app.use("/", express.static("../frontend/public"))
 
     if (config.storageBackend.type === "LOCAL") {
         const localDirectory = config.storageBackend.directory
