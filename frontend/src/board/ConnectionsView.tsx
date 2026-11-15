@@ -238,8 +238,7 @@ function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
         return bez
             .getLUT()
             .reduce(
-                (acc: string, p: Point, i: number) =>
-                    i === 0 ? (acc += `M ${p.x} ${p.y}`) : (acc += `L ${p.x} ${p.y}`),
+                (acc: string, p: Point, i: number) => (i === 0 ? acc + `M ${p.x} ${p.y}` : acc + `L ${p.x} ${p.y}`),
                 "",
             )
     }

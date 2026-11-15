@@ -109,11 +109,11 @@ export function boardDragHandler({
                     } else if (da.action === "pan") {
                         const s = start.get()
                         const c = current.get()
-                        s &&
-                            c &&
-                            (el.style.transform = `translate(${coordinateHelper.emToPagePx(
+                        if (s && c) {
+                            el.style.transform = `translate(${coordinateHelper.emToPagePx(
                                 c.x - s.x,
-                            )}px, ${coordinateHelper.emToPagePx(c.y - s.y)}px)`)
+                            )}px, ${coordinateHelper.emToPagePx(c.y - s.y)}px)`
+                        }
                     } else if (da.action === "connect") {
                         connector.whileDragging(da.startPos, coords, "connect")
                     } else if (da.action === "line") {

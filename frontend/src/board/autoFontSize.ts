@@ -153,7 +153,8 @@ export function getTextDimensions(text: string, font: string): Dimensions {
     // if given, use cached canvas for better performance
     // else, create new canvas
     var gtw: any = getTextDimensions
-    var canvas: HTMLCanvasElement = gtw.canvas || (gtw.canvas = document.createElement("canvas"))
+    if (!gtw.canvas) gtw.canvas = document.createElement("canvas")
+    var canvas: HTMLCanvasElement = gtw.canvas
     var context = canvas.getContext("2d")!
     context.font = font
     var metrics = context.measureText(text)

@@ -45,7 +45,6 @@
             },
             "suspicious": {
                 "preset": "recommended",
-                "noAssignInExpressions": "off",
                 "noDoubleEquals": "off",
                 "noExplicitAny": "off",
                 "noNonNullAssertedOptionalChain": "off",
