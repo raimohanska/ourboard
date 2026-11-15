@@ -46,8 +46,7 @@
             "suspicious": {
                 "preset": "recommended",
                 "noDoubleEquals": "off",
-                "noExplicitAny": "off",
-                "useIterableCallbackReturn": "off"
+                "noExplicitAny": "off"
             }
         }
     },
