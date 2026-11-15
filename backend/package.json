@@ -51,8 +51,7 @@
     "dev": "npm-run-all --parallel watch",
     "build": "tsc && ncc build dist/backend/src/server.js -o dist",
     "watch": "tsc-watch --onSuccess \"node --enable-source-maps dist/backend/src/server.js\" --preserveWatchOutput",
-    "watch-ts": "tsc-watch --preserveWatchOutput",
-    "lint": "echo 'No linting configured'"
+    "watch-ts": "tsc-watch --preserveWatchOutput"
   },
   "engines": {
     "node": ">=26"

@@ -17,7 +17,8 @@
     "javascript": {
         "formatter": {
             "semicolons": "asNeeded"
-        }
+        },
+        "jsxRuntime": "reactClassic"
     },
     "html": {
         "formatter": {
@@ -31,7 +32,29 @@
         }
     },
     "linter": {
-        "enabled": false
+        "domains": {
+            "playwright": "recommended"
+        },
+        "rules": {
+            "preset": "none",
+            "correctness": {
+                "preset": "recommended",
+                "noUnusedVariables": "off",
+                "noUnusedFunctionParameters": "off",
+                "useParseIntRadix": "off"
+            },
+            "suspicious": {
+                "preset": "recommended",
+                "noAssignInExpressions": "off",
+                "noDoubleEquals": "off",
+                "noExplicitAny": "off",
+                "noGlobalIsNan": "off",
+                "noImplicitAnyLet": "off",
+                "noNonNullAssertedOptionalChain": "off",
+                "noTsIgnore": "off",
+                "useIterableCallbackReturn": "off"
+            }
+        }
     },
     "assist": {
         "enabled": false
