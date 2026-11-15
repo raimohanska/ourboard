@@ -37,17 +37,23 @@ export function getSelectedConnectionIds(f: BoardFocus): Set<Id> {
     }
 }
 
-export const getSelectedItems = (b: Board) => (f: BoardFocus): Item[] => {
-    return [...getSelectedItemIds(f)].flatMap((id) => findItem(b)(id) || [])
-}
+export const getSelectedItems =
+    (b: Board) =>
+    (f: BoardFocus): Item[] => {
+        return [...getSelectedItemIds(f)].flatMap((id) => findItem(b)(id) || [])
+    }
 
-export const getSelectedConnections = (b: Board) => (f: BoardFocus): Connection[] => {
-    return [...getSelectedConnectionIds(f)].flatMap((id) => findConnection(b)(id) || [])
-}
+export const getSelectedConnections =
+    (b: Board) =>
+    (f: BoardFocus): Connection[] => {
+        return [...getSelectedConnectionIds(f)].flatMap((id) => findConnection(b)(id) || [])
+    }
 
-export const getSelectedItem = (b: Board) => (f: BoardFocus): Item | null => {
-    return getSelectedItems(b)(f)[0] || null
-}
+export const getSelectedItem =
+    (b: Board) =>
+    (f: BoardFocus): Item | null => {
+        return getSelectedItems(b)(f)[0] || null
+    }
 
 export const isAnythingSelected = (f: BoardFocus) =>
     getSelectedConnectionIds(f).size > 0 || getSelectedItemIds(f).size > 0

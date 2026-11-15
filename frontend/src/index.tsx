@@ -27,16 +27,14 @@ const App = () => {
     const title = L.view(boardStore.state, (s) => (s.board && s.board.name ? `${s.board.name} - OurBoard` : "OurBoard"))
     title.forEach((t) => (document.querySelector("title")!.textContent = t))
     const serverConfig = connection.bufferedServerEvents
-        .pipe(
-            L.scan<EventFromServer, ServerConfig | null>(null, (c, e) => (e.action === "server.config" ? e : c)),
-        )
+        .pipe(L.scan<EventFromServer, ServerConfig | null>(null, (c, e) => (e.action === "server.config" ? e : c)))
         .applyScope(H.componentScope())
 
     boardStore.state
         .pipe(
             L.changes,
             L.filter((s: BoardState) => s.status === "online" && !!s.board),
-            L.map((s: BoardState) => ({ id: s.board!.id, name: s.board!.name } as RecentBoardAttributes)),
+            L.map((s: BoardState) => ({ id: s.board!.id, name: s.board!.name }) as RecentBoardAttributes),
             L.skipDuplicates(_.isEqual),
         )
         .forEach(recentBoards.storeRecentBoard)

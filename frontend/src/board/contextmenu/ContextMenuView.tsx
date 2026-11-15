@@ -26,15 +26,17 @@ export type SubmenuProps = {
 
 export type SubMenuCreator = (props: SubmenuProps) => HarmajaOutput
 
-export const connectionPos = (b: Board | Record<string, Item>) => (c: Connection): Rect => {
-    if (c.controlPoints.length === 0) {
-        const start = resolveEndpoint(c.from, b)
-        const end = resolveEndpoint(c.to, b)
-        return { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2, width: 0, height: 0 }
+export const connectionPos =
+    (b: Board | Record<string, Item>) =>
+    (c: Connection): Rect => {
+        if (c.controlPoints.length === 0) {
+            const start = resolveEndpoint(c.from, b)
+            const end = resolveEndpoint(c.to, b)
+            return { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2, width: 0, height: 0 }
+        }
+        const p = c.controlPoints[0]
+        return { ...p, width: 0, height: 0 }
     }
-    const p = c.controlPoints[0]
-    return { ...p, width: 0, height: 0 }
-}
 
 type ItemsAndConnections = { items: Item[]; connections: Connection[] }
 type Bounds = { minX: number; maxX: number; minY: number; maxY: number } | null

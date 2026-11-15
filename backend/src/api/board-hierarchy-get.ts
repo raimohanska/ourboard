@@ -28,7 +28,9 @@ export function getBoardHierarchy(board: Board) {
     const rootItems = allItems.filter((i) => i.containerId === undefined).map(getItemHierarchy(allItems))
     return { ...board, items: rootItems }
 }
-const getItemHierarchy = (items: Item[]) => (item: Item): ItemHierarchy => {
-    const children: ItemHierarchy[] = items.filter((i) => i.containerId === item.id).map(getItemHierarchy(items))
-    return { ...item, children }
-}
+const getItemHierarchy =
+    (items: Item[]) =>
+    (item: Item): ItemHierarchy => {
+        const children: ItemHierarchy[] = items.filter((i) => i.containerId === item.id).map(getItemHierarchy(items))
+        return { ...item, children }
+    }

@@ -36,8 +36,8 @@ const HTTP_PORT = BIND_UWEBSOCKETS_TO_PORT ? null : PORT
 const UWEBSOCKETS_PORT = BIND_UWEBSOCKETS_TO_PORT
     ? PORT
     : process.env.UWEBSOCKETS_PORT
-    ? parseInt(process.env.UWEBSOCKETS_PORT)
-    : null
+      ? parseInt(process.env.UWEBSOCKETS_PORT)
+      : null
 
 initDB()
     .then(async () => {

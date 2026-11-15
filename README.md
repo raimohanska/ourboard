@@ -227,9 +227,9 @@ Returns the full history of given board as JSON.
 
 1. Create a board and an Area named "new issues" (case insensitive) on the board.
 2. Add a webhook to a git repo, namely
-    1. Use URL https://www.ourboard.io/api/v1/webhook/github/{board-id}, with board-id from the URL of you board.
-    2. Use content type to application/json
-    3. Select "Let me select individual events" and pick Issues only.
+   1. Use URL https://www.ourboard.io/api/v1/webhook/github/{board-id}, with board-id from the URL of you board.
+   2. Use content type to application/json
+   3. Select "Let me select individual events" and pick Issues only.
 3. Create a new issue or change labels of an existing issue.
 4. You should see new notes appear on your board
 
@@ -278,9 +278,9 @@ If you need the local state for a given board in localStorage, you can
 2. Copy that string to clipboard
 3. Run the following in your localhost site console:
 
-    localStorage["board_32de1a50-09a6-4453-9b9e-ed10c56afa99"]=JSON.stringify(
-    <paste content here>
-    )
+   localStorage["board_32de1a50-09a6-4453-9b9e-ed10c56afa99"]=JSON.stringify(
+   <paste content here>
+   )
 
 Copy the result string, navigate to your localhost site and paste the same value to the same localStorage key. Refresh and enjoy.
 

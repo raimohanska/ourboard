@@ -392,7 +392,7 @@ function updateItems(
     inplace: boolean,
 ): Record<Id, Item> {
     updateList = filterItemUpdatesByPermissions(updateList, board)
-    const updatedItems: Item[] = updateList.map((update) => ({ ...board.items[update.id], ...update } as Item))
+    const updatedItems: Item[] = updateList.map((update) => ({ ...board.items[update.id], ...update }) as Item)
 
     const resultItems = applyModification(
         board.items,

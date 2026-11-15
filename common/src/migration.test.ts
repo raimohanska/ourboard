@@ -58,8 +58,7 @@ describe("Migration", () => {
 
             const legacyBoard: any = {
                 id: "foo",
-                name:
-                    "board with no size, where containers have items property and items do not have containerId property",
+                name: "board with no size, where containers have items property and items do not have containerId property",
                 items: [
                     containedNoteWithNoType,
                     containedNote2,
@@ -138,84 +137,102 @@ describe("Migration", () => {
         it("connection.add", () => {
             const connection = { from: "a", to: "b", controlPoints: [], id: "c" }
             expect(
-                (migrateEvent({
-                    ...headers,
-                    action: "connection.add",
-                    connection,
-                } as any) as AddConnection).connections,
+                (
+                    migrateEvent({
+                        ...headers,
+                        action: "connection.add",
+                        connection,
+                    } as any) as AddConnection
+                ).connections,
             ).toEqual([connection])
             expect(
-                (migrateEvent({
-                    ...headers,
-                    action: "connection.add",
-                    connection: [connection],
-                } as any) as AddConnection).connections,
+                (
+                    migrateEvent({
+                        ...headers,
+                        action: "connection.add",
+                        connection: [connection],
+                    } as any) as AddConnection
+                ).connections,
             ).toEqual([connection])
         })
 
         it("connection.modify", () => {
             const connection = { from: "a", to: "b", controlPoints: [], id: "c" }
             expect(
-                (migrateEvent({
-                    ...headers,
-                    action: "connection.modify",
-                    connection,
-                } as any) as ModifyConnection).connections,
+                (
+                    migrateEvent({
+                        ...headers,
+                        action: "connection.modify",
+                        connection,
+                    } as any) as ModifyConnection
+                ).connections,
             ).toEqual([connection])
             expect(
-                (migrateEvent({
-                    ...headers,
-                    action: "connection.modify",
-                    connection: [connection],
-                } as any) as ModifyConnection).connections,
+                (
+                    migrateEvent({
+                        ...headers,
+                        action: "connection.modify",
+                        connection: [connection],
+                    } as any) as ModifyConnection
+                ).connections,
             ).toEqual([connection])
         })
 
         it("connection.delete", () => {
             const connectionId = "c"
             expect(
-                (migrateEvent({
-                    ...headers,
-                    action: "connection.delete",
-                    connectionId,
-                } as any) as DeleteConnection).connectionIds,
+                (
+                    migrateEvent({
+                        ...headers,
+                        action: "connection.delete",
+                        connectionId,
+                    } as any) as DeleteConnection
+                ).connectionIds,
             ).toEqual([connectionId])
             expect(
-                (migrateEvent({
-                    ...headers,
-                    action: "connection.delete",
-                    connectionId: [connectionId],
-                } as any) as DeleteConnection).connectionIds,
+                (
+                    migrateEvent({
+                        ...headers,
+                        action: "connection.delete",
+                        connectionId: [connectionId],
+                    } as any) as DeleteConnection
+                ).connectionIds,
             ).toEqual([connectionId])
         })
 
         it("item.move", () => {
             expect(
-                (migrateEvent({
-                    ...headers,
-                    action: "item.move",
-                    items: [],
-                } as any) as MoveItem).connections,
+                (
+                    migrateEvent({
+                        ...headers,
+                        action: "item.move",
+                        items: [],
+                    } as any) as MoveItem
+                ).connections,
             ).toEqual([])
         })
 
         it("item.delete", () => {
             expect(
-                (migrateEvent({
-                    ...headers,
-                    action: "item.delete",
-                    itemIds: [],
-                } as any) as DeleteItem).connectionIds,
+                (
+                    migrateEvent({
+                        ...headers,
+                        action: "item.delete",
+                        itemIds: [],
+                    } as any) as DeleteItem
+                ).connectionIds,
             ).toEqual([])
         })
 
         it("item.add", () => {
             expect(
-                (migrateEvent({
-                    ...headers,
-                    action: "item.add",
-                    items: [],
-                } as any) as AddItem).connections,
+                (
+                    migrateEvent({
+                        ...headers,
+                        action: "item.add",
+                        items: [],
+                    } as any) as AddItem
+                ).connections,
             ).toEqual([])
         })
     })

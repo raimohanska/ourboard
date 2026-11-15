@@ -123,90 +123,90 @@ export function alignmentsSubMenu(axis: Axis, props: SubmenuProps) {
         return !hasItemsToAlign
             ? []
             : axis == "x"
-            ? [
-                  <div className="icon-group align">
-                      {hasItemsToAlign && (
-                          <span
-                              className="icon"
-                              onClick={() => moveFocusedItems("x", getMinCoordinate, props)}
-                              title="Align left"
-                          >
-                              <AlignHorizontalLeftIcon />
-                          </span>
-                      )}
+              ? [
+                    <div className="icon-group align">
+                        {hasItemsToAlign && (
+                            <span
+                                className="icon"
+                                onClick={() => moveFocusedItems("x", getMinCoordinate, props)}
+                                title="Align left"
+                            >
+                                <AlignHorizontalLeftIcon />
+                            </span>
+                        )}
 
-                      {hasItemsToAlign && (
-                          <span
-                              className="icon"
-                              onClick={() => moveFocusedItems("x", getCenterCoordinate, props)}
-                              title="Align center"
-                          >
-                              <AlignHorizontalCenterIcon />
-                          </span>
-                      )}
+                        {hasItemsToAlign && (
+                            <span
+                                className="icon"
+                                onClick={() => moveFocusedItems("x", getCenterCoordinate, props)}
+                                title="Align center"
+                            >
+                                <AlignHorizontalCenterIcon />
+                            </span>
+                        )}
 
-                      {hasItemsToAlign && (
-                          <span
-                              className="icon"
-                              onClick={() => moveFocusedItems("x", getMaxCoordinate, props)}
-                              title="Align right"
-                          >
-                              <AlignHorizontalRightIcon />
-                          </span>
-                      )}
+                        {hasItemsToAlign && (
+                            <span
+                                className="icon"
+                                onClick={() => moveFocusedItems("x", getMaxCoordinate, props)}
+                                title="Align right"
+                            >
+                                <AlignHorizontalRightIcon />
+                            </span>
+                        )}
 
-                      {hasItemsToDistribute && (
-                          <span
-                              className="icon"
-                              title="Distribute evenly"
-                              onClick={() => moveFocusedItems("x", getDistributedCoordinate, props)}
-                          >
-                              <HorizontalDistributeIcon />
-                          </span>
-                      )}
-                  </div>,
-              ]
-            : [
-                  <div className="icon-group align">
-                      {hasItemsToAlign && (
-                          <span
-                              className="icon"
-                              title="Align top"
-                              onClick={() => moveFocusedItems("y", getMinCoordinate, props)}
-                          >
-                              <AlignVerticalTopIcon />
-                          </span>
-                      )}
+                        {hasItemsToDistribute && (
+                            <span
+                                className="icon"
+                                title="Distribute evenly"
+                                onClick={() => moveFocusedItems("x", getDistributedCoordinate, props)}
+                            >
+                                <HorizontalDistributeIcon />
+                            </span>
+                        )}
+                    </div>,
+                ]
+              : [
+                    <div className="icon-group align">
+                        {hasItemsToAlign && (
+                            <span
+                                className="icon"
+                                title="Align top"
+                                onClick={() => moveFocusedItems("y", getMinCoordinate, props)}
+                            >
+                                <AlignVerticalTopIcon />
+                            </span>
+                        )}
 
-                      {hasItemsToAlign && (
-                          <span
-                              className="icon"
-                              title="Align middle"
-                              onClick={() => moveFocusedItems("y", getCenterCoordinate, props)}
-                          >
-                              <AlignVerticalCenterIcon />
-                          </span>
-                      )}
+                        {hasItemsToAlign && (
+                            <span
+                                className="icon"
+                                title="Align middle"
+                                onClick={() => moveFocusedItems("y", getCenterCoordinate, props)}
+                            >
+                                <AlignVerticalCenterIcon />
+                            </span>
+                        )}
 
-                      {hasItemsToAlign && (
-                          <span
-                              className="icon"
-                              title="Align bottom"
-                              onClick={() => moveFocusedItems("y", getMaxCoordinate, props)}
-                          >
-                              <AlignVerticalBottomIcon />
-                          </span>
-                      )}
-                      {hasItemsToDistribute && (
-                          <span
-                              className="icon"
-                              title="Distribute evenly vertically"
-                              onClick={() => moveFocusedItems("y", getDistributedCoordinate, props)}
-                          >
-                              <VerticalDistributeIcon />
-                          </span>
-                      )}
-                  </div>,
-              ]
+                        {hasItemsToAlign && (
+                            <span
+                                className="icon"
+                                title="Align bottom"
+                                onClick={() => moveFocusedItems("y", getMaxCoordinate, props)}
+                            >
+                                <AlignVerticalBottomIcon />
+                            </span>
+                        )}
+                        {hasItemsToDistribute && (
+                            <span
+                                className="icon"
+                                title="Distribute evenly vertically"
+                                onClick={() => moveFocusedItems("y", getDistributedCoordinate, props)}
+                            >
+                                <VerticalDistributeIcon />
+                            </span>
+                        )}
+                    </div>,
+                ]
     })
 }

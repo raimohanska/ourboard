@@ -73,7 +73,7 @@ export const VideoView = ({
                         width: p.width + "em",
                         zIndex: itemZIndex(p),
                         position: "absolute",
-                    } as any),
+                    }) as any,
             )}
         >
             <video id="video" controls={true} preload="none">

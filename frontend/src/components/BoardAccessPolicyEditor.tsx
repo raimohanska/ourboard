@@ -61,8 +61,8 @@ const BoardAccessPolicyDetailsEditor = ({
         return input.includes("@")
             ? { email: input, access: "read-write" }
             : input.includes(".")
-            ? { domain: input, access: "read-write" }
-            : null
+              ? { domain: input, access: "read-write" }
+              : null
     }
 
     inputRef.forEach((t) => {

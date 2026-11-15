@@ -20,10 +20,14 @@ export function installKeyboardShortcut(
     })
 }
 
-export const plainKey = (...k: string[]) => (event: JSX.KeyboardEvent) => {
-    return !(event.shiftKey || event.altKey || event.metaKey || event.ctrlKey) && k.includes(event.key)
-}
+export const plainKey =
+    (...k: string[]) =>
+    (event: JSX.KeyboardEvent) => {
+        return !(event.shiftKey || event.altKey || event.metaKey || event.ctrlKey) && k.includes(event.key)
+    }
 
-export const controlKey = (...k: string[]) => (event: JSX.KeyboardEvent) => {
-    return (event.metaKey || event.ctrlKey) && k.includes(event.key)
-}
+export const controlKey =
+    (...k: string[]) =>
+    (event: JSX.KeyboardEvent) => {
+        return (event.metaKey || event.ctrlKey) && k.includes(event.key)
+    }

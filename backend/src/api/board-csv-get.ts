@@ -48,13 +48,15 @@ export const boardCSVGet = route
 
 type Row = { parents: Container[]; rowContainer: Container; textItems: TextItem[] }
 
-const parentChain = (board: Board) => (item: Item): Container[] => {
-    if (!item.containerId) return []
-    const parent = board.items[item.containerId]
-    if (parent.type !== "container")
-        throw Error(`Parent item ${item.containerId} is of type ${parent.type}, expecting container`)
-    return [parent, ...parentChain(board)(parent)]
-}
+const parentChain =
+    (board: Board) =>
+    (item: Item): Container[] => {
+        if (!item.containerId) return []
+        const parent = board.items[item.containerId]
+        if (parent.type !== "container")
+            throw Error(`Parent item ${item.containerId} is of type ${parent.type}, expecting container`)
+        return [parent, ...parentChain(board)(parent)]
+    }
 
 function csv(board: Board, rows: string[][]) {
     const result = createArrayCsvStringifier({}).stringifyRecords(rows)

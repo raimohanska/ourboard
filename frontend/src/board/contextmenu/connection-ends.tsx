@@ -70,8 +70,8 @@ export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuPro
                                                 board.get(),
                                             )
                                           : connection.pointStyle === "black-dot"
-                                          ? { ...connection, pointStyle: "none" }
-                                          : { ...connection, controlPoints: [] },
+                                            ? { ...connection, pointStyle: "none" }
+                                            : { ...connection, controlPoints: [] },
                                   ],
                               })
                           }
