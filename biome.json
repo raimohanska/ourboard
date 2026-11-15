@@ -41,17 +41,14 @@
                 "preset": "recommended",
                 "noUnusedVariables": "off",
                 "noUnusedFunctionParameters": "off",
-                "useParseIntRadix": "off"
+                "useParseIntRadix": "error"
             },
             "suspicious": {
                 "preset": "recommended",
                 "noAssignInExpressions": "off",
                 "noDoubleEquals": "off",
                 "noExplicitAny": "off",
-                "noGlobalIsNan": "off",
-                "noImplicitAnyLet": "off",
                 "noNonNullAssertedOptionalChain": "off",
-                "noTsIgnore": "off",
                 "useIterableCallbackReturn": "off"
             }
         }

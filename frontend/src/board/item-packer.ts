@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error
 import { BP2D } from "binpackingjs"
 const { Bin, Box, Packer, heuristics } = BP2D
 import { Item, ItemUpdate } from "../../../common/src/domain"

@@ -179,7 +179,7 @@ export const connectionRect =
         const minY = _.min(allPoints.map((p) => p.y))!
         const maxY = _.max(allPoints.map((p) => p.y))!
         const x = minX
-        if (isNaN(x)) {
+        if (x === undefined || Number.isNaN(x)) {
             throw Error("Assertion fail")
         }
         const y = minY

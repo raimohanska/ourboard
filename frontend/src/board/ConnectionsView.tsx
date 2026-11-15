@@ -221,7 +221,7 @@ export const ConnectionsView = ({
     }
 }
 
-// @ts-ignore
+// @ts-expect-error
 import { Bezier } from "bezier-js"
 import { findNearestAttachmentLocationForConnectionNode, resolveEndpoint } from "../../../common/src/connection-utils"
 import { emptySet, toggleInSet } from "../../../common/src/sets"
