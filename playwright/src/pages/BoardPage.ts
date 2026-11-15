@@ -116,7 +116,7 @@ export function BoardPage(page: Page, browser: Browser) {
 
     async function selectAll(el: Locator) {
         const textToSelect = (await el.textContent()) ?? ""
-        selectText(el, textToSelect)
+        await selectText(el, textToSelect)
     }
 
     return {
