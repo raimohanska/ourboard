@@ -139,7 +139,7 @@ export function boardReducer(
         case "item.bootstrap":
             //if (board.items.length > 0) throw Error("Trying to bootstrap non-empty board")
             return [{ ...board, items: event.items, connections: event.connections }, null]
-        case "item.add":
+        case "item.add": {
             if (event.items.some((a) => board.items[a.id])) {
                 throw new Error("Adding duplicate item " + JSON.stringify(event.items))
             }
@@ -193,6 +193,7 @@ export function boardReducer(
                     connectionIds: event.connections.map((c) => c.id),
                 }),
             ]
+        }
         case "item.font.increase":
             return [
                 {
@@ -294,7 +295,7 @@ export function boardReducer(
                 }),
             ]
         }
-        case "item.front":
+        case "item.front": {
             let maxZ = 0
             let maxZCount = 0
             const itemsList = Object.values(board.items)
@@ -340,6 +341,7 @@ export function boardReducer(
                 },
                 null,
             ] // TODO: return item.back
+        }
         default:
             console.warn("Unknown event", event)
             return [board, null]
