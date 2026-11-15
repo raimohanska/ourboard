@@ -1,7 +1,6 @@
 import { Fragment, h } from "harmaja"
 import * as L from "lonna"
 import { TextInput } from "../../components/components"
-import { UserIcon } from "../../components/Icons"
 import { signIn, signOut } from "../../google-auth"
 import { Dispatch } from "../../store/board-store"
 import { canLogin, LoggingInServer, UserSessionState } from "../../store/user-session-store"

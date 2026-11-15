@@ -1,4 +1,4 @@
-import { Page, expect, test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import { Note } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
 import { navigateToBoard, semiUniqueId } from "../pages/BoardPage"

@@ -1,4 +1,4 @@
-import { componentScope, h } from "harmaja"
+import { h } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
 import { Item } from "../../../../common/src/domain"

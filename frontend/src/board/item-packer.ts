@@ -1,7 +1,7 @@
 // @ts-ignore
 import { BP2D } from "binpackingjs"
 const { Bin, Box, Packer, heuristics } = BP2D
-import { Board, Container, Item, ItemUpdate } from "../../../common/src/domain"
+import { Item, ItemUpdate } from "../../../common/src/domain"
 import { Rect } from "../../../common/src/geometry"
 import { ITEM_MARGIN } from "./item-organizer"
 

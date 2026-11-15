@@ -1,6 +1,5 @@
-import * as H from "harmaja"
 import * as L from "lonna"
-import { h, HarmajaOutput } from "harmaja"
+import { h } from "harmaja"
 import { isFirefox } from "./browser"
 
 export type EditableSpanProps = {

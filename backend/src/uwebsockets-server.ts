@@ -1,12 +1,10 @@
 import uws from "uWebSockets.js"
-import { EventFromServer } from "../../common/src/domain"
 import * as uuid from "uuid"
 import { connectionHandler, MessageHandler } from "./connection-handler"
 import { handleBoardEvent } from "./board-event-handler"
 import { createGetSignedPutUrl } from "./storage"
 import { getConfig } from "./config"
 import * as L from "lonna"
-import { handleCommonEvent } from "./common-event-handler"
 
 export const WsWrapper = (ws: uws.WebSocket<WsUserData>) => {
     const errorE = L.bus<void>()

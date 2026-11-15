@@ -3,7 +3,6 @@ import { componentScope, h, ListView } from "harmaja"
 import * as L from "lonna"
 import {
     Board,
-    canWrite,
     findConnection,
     findItem,
     getConnection,

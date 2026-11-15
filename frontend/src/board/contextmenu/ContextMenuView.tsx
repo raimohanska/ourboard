@@ -1,7 +1,7 @@
 import { h, HarmajaOutput, ListView } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
-import { Board, Connection, findItem, Id, Item } from "../../../../common/src/domain"
+import { Board, Connection, Item } from "../../../../common/src/domain"
 import { Dispatch } from "../../store/board-store"
 import { BoardFocus, getSelectedConnections, getSelectedItems } from "../board-focus"
 import { Rect } from "../../../../common/src/geometry"

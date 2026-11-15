@@ -1,7 +1,6 @@
 import dotenv from "dotenv"
 dotenv.config()
 
-import * as Http from "http"
 import { exampleBoard } from "../../common/src/domain"
 import { awaitSavingChanges } from "./board-state"
 import { createBoard, fetchBoard } from "./board-store"

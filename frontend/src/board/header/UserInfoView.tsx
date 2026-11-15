@@ -2,7 +2,7 @@ import { componentScope, h } from "harmaja"
 import * as L from "lonna"
 import { UserSessionInfo } from "../../../../common/src/domain"
 import { UserIcon } from "../../components/Icons"
-import { BoardState, Dispatch } from "../../store/board-store"
+import { Dispatch } from "../../store/board-store"
 import { UserSessionState } from "../../store/user-session-store"
 import { UserInfoModal } from "./UserInfoModal"
 

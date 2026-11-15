@@ -5,7 +5,7 @@ import { BoardCoordinateHelper } from "./board-coordinates"
 import { BoardFocus } from "./board-focus"
 import { Dispatch } from "../store/board-store"
 import { itemDragToMove } from "./item-dragmove"
-import { Tool, ToolController } from "./tool-selection"
+import { ToolController } from "./tool-selection"
 
 type Position = "left" | "right" | "top" | "bottom"
 

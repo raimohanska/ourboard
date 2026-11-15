@@ -1,6 +1,6 @@
 import * as H from "harmaja"
 import * as L from "lonna"
-import { componentScope, h, HarmajaOutput } from "harmaja"
+import { h } from "harmaja"
 
 export const TextInput = (props: { value: L.Atom<string> } & any) => {
     return (

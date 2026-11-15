@@ -1,4 +1,4 @@
-import { Board, Id, newISOTimeStamp, RecentBoard, RecentBoardAttributes } from "../../../common/src/domain"
+import { newISOTimeStamp, RecentBoard, RecentBoardAttributes } from "../../../common/src/domain"
 import * as L from "lonna"
 import { ServerConnection } from "./server-connection"
 import { getAuthenticatedUser, UserSessionStore } from "./user-session-store"

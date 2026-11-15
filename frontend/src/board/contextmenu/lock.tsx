@@ -3,7 +3,6 @@ import * as L from "lonna"
 import { LockIcon, UnlockIcon } from "../../components/Icons"
 import * as P from "../board-permissions"
 import { SubmenuProps } from "./ContextMenuView"
-import { LockState } from "../../../../common/src/domain"
 
 export function lockMenu({ board, focusedItems, dispatch }: SubmenuProps) {
     const canLock = L.view(focusedItems, (items) => items.items.some(P.canLock) || items.connections.some(P.canLock))

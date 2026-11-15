@@ -1,4 +1,3 @@
-import * as H from "harmaja"
 import * as L from "lonna"
 import { componentScope, h } from "harmaja"
 import { isURL, sanitizeHTML, createLinkHTML } from "./sanitizeHTML"

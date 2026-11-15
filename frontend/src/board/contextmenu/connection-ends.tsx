@@ -1,4 +1,4 @@
-import { componentScope, h } from "harmaja"
+import { h } from "harmaja"
 import * as L from "lonna"
 import { rerouteConnection } from "../../../../common/src/connection-utils"
 import { ConnectionEndStyle } from "../../../../common/src/domain"

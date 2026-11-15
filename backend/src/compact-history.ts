@@ -1,5 +1,4 @@
 import { format } from "date-fns"
-import _ from "lodash"
 import { BoardHistoryEntry, Id } from "../../common/src/domain"
 import {
     BoardHistoryBundleMeta,

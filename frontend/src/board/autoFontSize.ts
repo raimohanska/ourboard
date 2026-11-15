@@ -1,6 +1,5 @@
-import { isUndefined } from "lodash"
 import * as L from "lonna"
-import { getItemShape, Item, TextItem } from "../../../common/src/domain"
+import { getItemShape, TextItem } from "../../../common/src/domain"
 import { toPlainText } from "../components/sanitizeHTML"
 import { BoardCoordinateHelper } from "./board-coordinates"
 import { Dimensions } from "../../../common/src/geometry"

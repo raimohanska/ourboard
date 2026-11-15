@@ -1,4 +1,4 @@
-import _, { isEqual } from "lodash"
+import { isEqual } from "lodash"
 import * as L from "lonna"
 import { globalScope } from "lonna"
 import * as uuid from "uuid"

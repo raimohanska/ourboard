@@ -1,4 +1,4 @@
-import { componentScope, h } from "harmaja"
+import { h } from "harmaja"
 import * as L from "lonna"
 import { NOTE_COLORS } from "../../../../common/src/colors"
 import { ColoredItem, isColoredItem } from "../../../../common/src/domain"
