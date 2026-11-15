@@ -1,0 +1,35 @@
+diff --git a/package.json b/package.json
+index 8c524ead9e408e0b46186ae61e287e08d5ff9212..08987de2cf914facccc41b2b3bd5ba4a6703c6c4 100644
+--- a/package.json
++++ b/package.json
+@@ -3,18 +3,18 @@
+   "version": "0.24.0",
+   "main": "lonna/index.js",
+   "exports": {
+-    ".": "lonna/index.js",
+-    "./jsx-runtime": "lonna/jsx-runtime.js",
+-    "./jsx-dev-runtime": "lonna/jsx-dev-runtime.js",
+-    "./lonna": "lonna/index.js",
+-    "./lonna/jsx-runtime": "lonna/jsx-runtime.js",
+-    "./lonna/jsx-dev-runtime": "lonna/jsx-dev-runtime.js",
+-    "./bacon": "bacon/index.js",
+-    "./bacon/jsx-runtime": "bacon/jsx-runtime.js",
+-    "./bacon/jsx-dev-runtime": "bacon/jsx-dev-runtime.js",
+-    "./rxjs": "rxjs/index.js",
+-    "./rxjs/jsx-runtime": "rxjs/jsx-runtime.js",
+-    "./rxjs/jsx-dev-runtime": "rxjs/jsx-dev-runtime.js"
++    ".": "./lonna/index.js",
++    "./jsx-runtime": "./lonna/jsx-runtime.js",
++    "./jsx-dev-runtime": "./lonna/jsx-dev-runtime.js",
++    "./lonna": "./lonna/index.js",
++    "./lonna/jsx-runtime": "./lonna/jsx-runtime.js",
++    "./lonna/jsx-dev-runtime": "./lonna/jsx-dev-runtime.js",
++    "./bacon": "./bacon/index.js",
++    "./bacon/jsx-runtime": "./bacon/jsx-runtime.js",
++    "./bacon/jsx-dev-runtime": "./bacon/jsx-dev-runtime.js",
++    "./rxjs": "./rxjs/index.js",
++    "./rxjs/jsx-runtime": "./rxjs/jsx-runtime.js",
++    "./rxjs/jsx-dev-runtime": "./rxjs/jsx-dev-runtime.js"
+   },
+   "types": "lonna/index.d.ts",
+   "license": "MIT",

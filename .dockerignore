@@ -5,7 +5,8 @@ frontend/.cache
 ignore
 latest.dump*
 node_modules
-.yarn/
+.yarn/*
+!.yarn/patches
 npm-debug.log
 **/node_modules
 **/.env

@@ -257,6 +257,7 @@ Connect to the local PostgreSQL database
 
 -   TypeScript
 -   [Harmaja](https://github.com/raimohanska/harmaja) frontend library
+-   [Vite](https://vite.dev) for the frontend dev server and production build
 -   WebSockets (express-ws / uWebSockets.js both!)
 -   Express server
 -   Typera for HTTP API
