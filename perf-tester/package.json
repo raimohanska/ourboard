@@ -35,7 +35,7 @@
     "cssnano": "^4.1.10",
     "nodemon": "^2.0.4",
     "npm-run-all": "^4.1.5",
-    "tsc-watch": "^4.2.9",
+    "tsc-watch": "^7.2.1",
     "tsx": "catalog:",
     "typescript": "catalog:"
   }
