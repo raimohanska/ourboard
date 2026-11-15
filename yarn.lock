@@ -45,6 +45,199 @@
         }
       }
     },
+    "@biomejs/biome@npm:2.6.7": {
+      "checksum": "2a7de6a16b444b77d96c63a255d83c2c259f5abe1c2f7f84c199a36d91e2a0eafc2e58411f5440fb19d019781321a42fbdf317e7d7ef50981bd7baabda4e1aa4",
+      "resolution": {
+        "resolution": "@biomejs/biome@npm:2.6.7",
+        "version": "2.6.7",
+        "dependencies": {
+          "@biomejs/cli-android-arm64": "2.6.7",
+          "@biomejs/cli-android-x64": "2.6.7",
+          "@biomejs/cli-darwin-arm64": "2.6.7",
+          "@biomejs/cli-darwin-x64": "2.6.7",
+          "@biomejs/cli-linux-arm64": "2.6.7",
+          "@biomejs/cli-linux-arm64-musl": "2.6.7",
+          "@biomejs/cli-linux-x64": "2.6.7",
+          "@biomejs/cli-linux-x64-musl": "2.6.7",
+          "@biomejs/cli-win32-arm64": "2.6.7",
+          "@biomejs/cli-win32-x64": "2.6.7"
+        },
+        "optionalDependencies": [
+          "@biomejs/cli-android-arm64",
+          "@biomejs/cli-android-x64",
+          "@biomejs/cli-darwin-arm64",
+          "@biomejs/cli-darwin-x64",
+          "@biomejs/cli-linux-arm64",
+          "@biomejs/cli-linux-arm64-musl",
+          "@biomejs/cli-linux-x64",
+          "@biomejs/cli-linux-x64-musl",
+          "@biomejs/cli-win32-arm64",
+          "@biomejs/cli-win32-x64"
+        ]
+      }
+    },
+    "@biomejs/cli-android-arm64@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-android-arm64@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "android"
+          ]
+        }
+      }
+    },
+    "@biomejs/cli-android-x64@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-android-x64@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "android"
+          ]
+        }
+      }
+    },
+    "@biomejs/cli-darwin-arm64@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-darwin-arm64@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "darwin"
+          ]
+        }
+      }
+    },
+    "@biomejs/cli-darwin-x64@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-darwin-x64@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "darwin"
+          ]
+        }
+      }
+    },
+    "@biomejs/cli-linux-arm64@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-linux-arm64@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "@biomejs/cli-linux-arm64-musl@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-linux-arm64-musl@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "musl"
+          ]
+        }
+      }
+    },
+    "@biomejs/cli-linux-x64@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-linux-x64@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "glibc"
+          ]
+        }
+      }
+    },
+    "@biomejs/cli-linux-x64-musl@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-linux-x64-musl@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "linux"
+          ],
+          "libc": [
+            "musl"
+          ]
+        }
+      }
+    },
+    "@biomejs/cli-win32-arm64@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-win32-arm64@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "arm64"
+          ],
+          "os": [
+            "win32"
+          ]
+        }
+      }
+    },
+    "@biomejs/cli-win32-x64@npm:2.6.7": {
+      "checksum": null,
+      "resolution": {
+        "resolution": "@biomejs/cli-win32-x64@npm:2.6.7",
+        "version": "2.6.7",
+        "requirements": {
+          "cpu": [
+            "x64"
+          ],
+          "os": [
+            "win32"
+          ]
+        }
+      }
+    },
     "@esbuild/aix-ppc64@npm:0.19.12": {
       "checksum": null,
       "resolution": {
@@ -7815,13 +8008,6 @@
         "version": "2.0.0"
       }
     },
-    "prettier@npm:^2.2.1": {
-      "checksum": "e1bc8aca504f2436ee17952fd38262c4e32312b947d3fbacd476e1a48df1e7f19b31c8e2d36ffb83e258e6234eb2ef63091e7b92ac8bfd4bd67ac119ea7f5bbd",
-      "resolution": {
-        "resolution": "prettier@npm:2.2.1",
-        "version": "2.2.1"
-      }
-    },
     "pretty-format@npm:^29.7.0": {
       "checksum": "1dd0b0602a6c4fc03d7431fe60e588c1a52c63cbe857da69f32811db1f6a9689ad0a31fff7570ab2184a874bdcfed7edf498009da7aa6dcf31d2c2a0eefe4c17",
       "resolution": {
@@ -8024,6 +8210,7 @@
         "resolution": "rboard@workspace:rboard",
         "version": "1.0.0",
         "dependencies": {
+          "@biomejs/biome": "2.6.7",
           "@playwright/test": "^1.64.1",
           "@types/lodash": "^4.14.164",
           "@types/node": "catalog:",
@@ -8032,7 +8219,6 @@
           "lint-staged": "^10.5.4",
           "lodash": "^4.17.20",
           "npm-run-all": "^4.1.5",
-          "prettier": "^2.2.1",
           "tsx": "catalog:",
           "typescript": "catalog:",
           "uuid": "^8.3.0",
