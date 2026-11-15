@@ -47,6 +47,9 @@
                 "preset": "recommended",
                 "noDoubleEquals": "off",
                 "noExplicitAny": "off"
+            },
+            "nursery": {
+                "noFloatingPromises": "error"
             }
         }
     },
