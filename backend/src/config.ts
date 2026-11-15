@@ -2,7 +2,6 @@ import path from "path"
 import fs from "fs"
 import { authProvider } from "./oauth"
 import * as t from "io-ts"
-import { optional } from "../../common/src/domain"
 import { decodeOrThrow } from "./decodeOrThrow"
 
 export type StorageBackend = Readonly<

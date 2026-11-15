@@ -1,7 +1,6 @@
 import dotenv from "dotenv"
 dotenv.config()
 
-import * as Http from "http"
 import { exampleBoard } from "../../common/src/domain"
 import { awaitSavingChanges } from "./board-state"
 import { createBoard, fetchBoard } from "./board-store"
@@ -26,8 +25,8 @@ process.on("SIGTERM", () => {
     shutdown()
 })
 
-const PORT = parseInt(process.env.PORT || "1337")
-const HTTPS_PORT = process.env.HTTPS_PORT ? parseInt(process.env.HTTPS_PORT) : undefined
+const PORT = parseInt(process.env.PORT || "1337", 10)
+const HTTPS_PORT = process.env.HTTPS_PORT ? parseInt(process.env.HTTPS_PORT, 10) : undefined
 const BIND_UWEBSOCKETS_TO_PORT = process.env.BIND_UWEBSOCKETS_TO_PORT === "true"
 if (BIND_UWEBSOCKETS_TO_PORT && process.env.UWEBSOCKETS_PORT) {
     throw Error("Cannot have both UWEBSOCKETS_PORT and BIND_UWEBSOCKETS_TO_PORT envs")
@@ -36,8 +35,8 @@ const HTTP_PORT = BIND_UWEBSOCKETS_TO_PORT ? null : PORT
 const UWEBSOCKETS_PORT = BIND_UWEBSOCKETS_TO_PORT
     ? PORT
     : process.env.UWEBSOCKETS_PORT
-    ? parseInt(process.env.UWEBSOCKETS_PORT)
-    : null
+      ? parseInt(process.env.UWEBSOCKETS_PORT, 10)
+      : null
 
 initDB()
     .then(async () => {

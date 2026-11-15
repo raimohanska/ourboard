@@ -79,7 +79,7 @@ export function boardScrollAndZoomHandler(
         L.throttle(0, componentScope()), // without the throttle/delay the rects below are not set correctly yet
         L.toStatelessProperty(() => {
             const boardRect = boardElement.get()?.getBoundingClientRect()
-            const viewRect = scrollElement.get()?.getBoundingClientRect()!
+            const viewRect = scrollElement.get()?.getBoundingClientRect()
 
             if (!boardRect || !viewRect) return G.ZERO_RECT
 

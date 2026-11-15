@@ -1,4 +1,4 @@
-import { Board, isContainer, Item, Note } from "../../../common/src/domain"
+import { Board, isContainer, Item } from "../../../common/src/domain"
 import { Dispatch } from "../store/board-store"
 import { BoardFocus, getSelectedItems } from "./board-focus"
 import { getIfSame } from "./contextmenu/textAlignments"

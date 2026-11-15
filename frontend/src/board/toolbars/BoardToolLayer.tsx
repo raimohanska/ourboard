@@ -1,7 +1,6 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import { AccessLevel, Board, canWrite, Item, Note } from "../../../../common/src/domain"
-import * as G from "../../../../common/src/geometry"
 import { BoardStore, Dispatch } from "../../store/board-store"
 import { UserSessionState } from "../../store/user-session-store"
 import { BoardCoordinateHelper } from "../board-coordinates"
@@ -14,7 +13,6 @@ import { BackToAllBoardsLink } from "./BackToAllBoardsLink"
 import { MainToolBar } from "./MainToolBar"
 import { MiniMapView } from "./MiniMapView"
 import { UndoRedo } from "./UndoRedo"
-import { ZoomControls } from "./ZoomControls"
 
 export const BoardToolLayer = ({
     boardStore,

@@ -1,7 +1,6 @@
 import { Browser, Page, expect, test } from "@playwright/test"
 import { sleep } from "../../../common/src/sleep"
 import { BoardPage, navigateToNewBoard, semiUniqueId } from "../pages/BoardPage"
-import { BoardApi } from "../pages/BoardApi"
 
 test.describe("Basic board functionality", () => {
     test("Create note by dragging from palette", async ({ page, browser }) => {

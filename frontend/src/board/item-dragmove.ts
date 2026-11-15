@@ -1,12 +1,12 @@
 import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, BOARD_ITEM_BORDER_MARGIN, Connection, isItemEndPoint, Item, Point } from "../../../common/src/domain"
+import { Board, BOARD_ITEM_BORDER_MARGIN, Connection, isItemEndPoint } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { onBoardItemDrag } from "./item-drag"
 import { maybeChangeContainerForItem } from "./item-setcontainer"
 import { Dispatch } from "../store/board-store"
 import { newConnectionCreator, isConnectionAttachmentPoint } from "./item-connect"
-import { Tool, ToolController } from "./tool-selection"
+import { ToolController } from "./tool-selection"
 import { connectionRect } from "../../../common/src/connection-utils"
 
 export function itemDragToMove(

@@ -72,7 +72,7 @@ export const ImageView = ({
                         width: p.width + "em",
                         zIndex: itemZIndex(p),
                         position: "absolute",
-                    } as any),
+                    }) as any,
             )}
         >
             <img loading="lazy" src={L.view(image, (i) => assets.getAsset(i.assetId, i.src))} />

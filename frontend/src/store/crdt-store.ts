@@ -50,7 +50,13 @@ function BoardCRDT(
     })
 
     const disconnected = L.bus()
-    online.pipe(L.changes, L.takeUntil(disconnected)).forEach((c) => (c ? provider.connect() : provider.disconnect()))
+    online.pipe(L.changes, L.takeUntil(disconnected)).forEach((c) => {
+        if (c) {
+            provider.connect()
+        } else {
+            provider.disconnect()
+        }
+    })
 
     localBoardItemEvents
         .pipe(

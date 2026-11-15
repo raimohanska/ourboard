@@ -88,7 +88,7 @@ function migrateItem(item: Item, migratedItems: Item[], boardItems: Record<strin
             delete container.items
             ids.forEach((i) => {
                 const containedItem = migratedItems.find((mi) => mi.id === i) || boardItems[i]
-                containedItem && (containedItem.containerId = container.id)
+                if (containedItem) containedItem.containerId = container.id
             })
         }
     }

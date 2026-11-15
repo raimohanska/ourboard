@@ -1,7 +1,6 @@
 import { inTransaction, withDBClient } from "./db"
 import * as uuid from "uuid"
-import { EventUserInfo, Id, RecentBoard, EventUserInfoAuthenticated, ISOTimeStamp } from "../../common/src/domain"
-import { uniqBy } from "lodash"
+import { Id, RecentBoard, EventUserInfoAuthenticated, ISOTimeStamp } from "../../common/src/domain"
 
 export function getUserIdForEmail(email: string): Promise<string> {
     return inTransaction(async (client) => {

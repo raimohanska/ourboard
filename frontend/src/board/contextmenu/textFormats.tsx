@@ -60,7 +60,6 @@ export function textFormatsMenu({ board, focusedItems, dispatch }: SubmenuProps)
                           <UnderlineIcon />
                       </span>
                   </div>,
-                  ,
               ]
     })
 }

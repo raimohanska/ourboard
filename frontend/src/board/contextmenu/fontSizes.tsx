@@ -1,4 +1,4 @@
-import { HarmajaOutput, componentScope, h } from "harmaja"
+import { HarmajaOutput, h } from "harmaja"
 import * as L from "lonna"
 import { isTextItem } from "../../../../common/src/domain"
 import { DecreaseFontSizeIcon, IncreaseFontSizeIcon } from "../../components/Icons"

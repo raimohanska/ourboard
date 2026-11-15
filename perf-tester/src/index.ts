@@ -20,7 +20,7 @@ import { CRDTStore } from "../../frontend/src/store/crdt-store"
 import { GenericServerConnection } from "../../frontend/src/store/server-connection"
 
 // hack, sue me
-// @ts-ignore
+// @ts-expect-error
 global.localStorage = {}
 
 function add(a: Point, b: Point) {
@@ -115,7 +115,7 @@ function createTester(nickname: string, boardId: string) {
                     if (!target) {
                         throw Error("Target item not found")
                     }
-                    const updated = { ...target, text: "EDIT " + counter, color: _.sample(NOTE_COLORS)?.color! }
+                    const updated = { ...target, text: "EDIT " + counter, color: _.sample(NOTE_COLORS)!.color }
                     connection.send({
                         ackId: "perf",
                         events: [
@@ -141,7 +141,7 @@ function createTester(nickname: string, boardId: string) {
 }
 
 // Environment variables.
-const USER_COUNT = parseInt(process.env.USER_COUNT ?? "10")
+const USER_COUNT = parseInt(process.env.USER_COUNT ?? "10", 10)
 const BOARD_ID = process.env.BOARD_ID
 if (!BOARD_ID) {
     throw Error("BOARD_ID missing. Please specify one more board ids separated by comma (,)")

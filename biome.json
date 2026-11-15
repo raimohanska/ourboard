@@ -1,0 +1,64 @@
+{
+    "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true
+    },
+    "files": {
+        "ignoreUnknown": true,
+        "includes": ["**", "!**/package.json", "!**/*.svg"]
+    },
+    "formatter": {
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineWidth": 120
+    },
+    "javascript": {
+        "formatter": {
+            "semicolons": "asNeeded"
+        },
+        "jsxRuntime": "reactClassic"
+    },
+    "html": {
+        "formatter": {
+            "enabled": true,
+            "selfCloseVoidElements": "always"
+        }
+    },
+    "markdown": {
+        "formatter": {
+            "formatEmbeds": false
+        }
+    },
+    "linter": {
+        "domains": {
+            "playwright": "recommended"
+        },
+        "rules": {
+            "preset": "none",
+            "correctness": {
+                "preset": "recommended",
+                "noUnusedVariables": "off",
+                "noUnusedFunctionParameters": "off",
+                "useParseIntRadix": "error"
+            },
+            "suspicious": {
+                "preset": "recommended",
+                "noDoubleEquals": "off",
+                "noExplicitAny": "off"
+            }
+        }
+    },
+    "assist": {
+        "enabled": false
+    },
+    "overrides": [
+        {
+            "includes": [".github/ISSUE_TEMPLATE/**"],
+            "formatter": {
+                "enabled": false
+            }
+        }
+    ]
+}

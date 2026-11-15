@@ -1,4 +1,4 @@
-import { Board, Id, newISOTimeStamp, RecentBoard, RecentBoardAttributes } from "../../../common/src/domain"
+import { newISOTimeStamp, RecentBoard, RecentBoardAttributes } from "../../../common/src/domain"
 import * as L from "lonna"
 import { ServerConnection } from "./server-connection"
 import { getAuthenticatedUser, UserSessionStore } from "./user-session-store"
@@ -33,9 +33,9 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
             const localBoards = recentBoards.get()
             const boardsOnlyFoundLocally = localBoards.filter((b) => !boardsFromServer.some((bs) => bs.id === b.id))
             const boardsToSend = boardsOnlyFoundLocally.filter((b) => !b.userEmail || b.userEmail === e.email)
-            boardsToSend.forEach((b) =>
-                connection.send({ action: "board.associate", boardId: b.id, lastOpened: b.opened }),
-            )
+            boardsToSend.forEach((b) => {
+                connection.send({ action: "board.associate", boardId: b.id, lastOpened: b.opened })
+            })
             storeRecentBoards(() => [...boardsFromServer, ...boardsOnlyFoundLocally])
         }
     })

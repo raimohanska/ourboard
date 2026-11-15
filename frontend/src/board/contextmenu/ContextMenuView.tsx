@@ -1,7 +1,7 @@
 import { h, HarmajaOutput, ListView } from "harmaja"
 import _ from "lodash"
 import * as L from "lonna"
-import { Board, Connection, findItem, Id, Item } from "../../../../common/src/domain"
+import { Board, Connection, Item } from "../../../../common/src/domain"
 import { Dispatch } from "../../store/board-store"
 import { BoardFocus, getSelectedConnections, getSelectedItems } from "../board-focus"
 import { Rect } from "../../../../common/src/geometry"
@@ -26,15 +26,17 @@ export type SubmenuProps = {
 
 export type SubMenuCreator = (props: SubmenuProps) => HarmajaOutput
 
-export const connectionPos = (b: Board | Record<string, Item>) => (c: Connection): Rect => {
-    if (c.controlPoints.length === 0) {
-        const start = resolveEndpoint(c.from, b)
-        const end = resolveEndpoint(c.to, b)
-        return { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2, width: 0, height: 0 }
+export const connectionPos =
+    (b: Board | Record<string, Item>) =>
+    (c: Connection): Rect => {
+        if (c.controlPoints.length === 0) {
+            const start = resolveEndpoint(c.from, b)
+            const end = resolveEndpoint(c.to, b)
+            return { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2, width: 0, height: 0 }
+        }
+        const p = c.controlPoints[0]
+        return { ...p, width: 0, height: 0 }
     }
-    const p = c.controlPoints[0]
-    return { ...p, width: 0, height: 0 }
-}
 
 type ItemsAndConnections = { items: Item[]; connections: Connection[] }
 type Bounds = { minX: number; maxX: number; minY: number; maxY: number } | null
@@ -94,7 +96,9 @@ export const ContextMenuView = ({
         focusedItems,
         (items) => items.items[0],
         (i) => i?.id,
-    ).forEach(() => submenu.set(null))
+    ).forEach(() => {
+        submenu.set(null)
+    })
 
     const props = { board, focusedItems, dispatch, submenu }
     const widgetCreators = [

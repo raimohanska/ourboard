@@ -43,7 +43,7 @@ const items = Object.values(board.items)
 const started = new Date().getTime()
 for (let i = 0; i < eventCount; i++) {
     const target = assertNotNull(_.sample(items))
-    const updated = { ...target, text: "EDIT " + i, color: _.sample(NOTE_COLORS)?.color! }
+    const updated = { ...target, text: "EDIT " + i, color: _.sample(NOTE_COLORS)!.color }
 
     boardReducer(
         board,

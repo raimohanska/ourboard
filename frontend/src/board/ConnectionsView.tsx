@@ -221,7 +221,7 @@ export const ConnectionsView = ({
     }
 }
 
-// @ts-ignore
+// @ts-expect-error
 import { Bezier } from "bezier-js"
 import { findNearestAttachmentLocationForConnectionNode, resolveEndpoint } from "../../../common/src/connection-utils"
 import { emptySet, toggleInSet } from "../../../common/src/sets"
@@ -238,8 +238,7 @@ function quadraticCurveSVGPath(from: Point, to: Point, controlPoints: Point[]) {
         return bez
             .getLUT()
             .reduce(
-                (acc: string, p: Point, i: number) =>
-                    i === 0 ? (acc += `M ${p.x} ${p.y}`) : (acc += `L ${p.x} ${p.y}`),
+                (acc: string, p: Point, i: number) => (i === 0 ? acc + `M ${p.x} ${p.y}` : acc + `L ${p.x} ${p.y}`),
                 "",
             )
     }

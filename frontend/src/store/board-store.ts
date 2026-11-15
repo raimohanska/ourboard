@@ -14,7 +14,6 @@ import {
     CursorMove,
     EventUserInfo,
     Id,
-    Item,
     ItemLocks,
     JoinBoard,
     LocalUIEvent,
@@ -31,7 +30,6 @@ import {
     isCursorMove,
     isLocalUIEvent,
     isPersistableBoardItemEvent,
-    isTextItem,
     newISOTimeStamp,
 } from "../../../common/src/domain"
 import { BoardLocalStore, LocalStorageBoard } from "./board-local-store"

@@ -62,6 +62,7 @@ export function findSelectedItemsAndConnections(currentFocus: BoardFocus, curren
             if (c.containerId && recursiveItemIds.has(c.containerId)) {
                 return true
             }
+            return false
         })
         .map((c) => ({
             ...c,
@@ -199,7 +200,7 @@ export function cutCopyPasteHandler(
                     if (html) {
                         const sanitized = sanitizeHTML(html)
                         const currentCenter = coordinateHelper.currentBoardCoordinates.get()
-                        let toCreate
+                        let toCreate: Item[]
                         if (sanitized.length > 50) {
                             toCreate = [newText(board.get().crdt, sanitized, currentCenter.x, currentCenter.y)]
                         } else {

@@ -132,7 +132,7 @@ export const ITEM_TYPES = {
     VIDEO: "video",
     CONTAINER: "container",
 } as const
-export type ItemType = typeof ITEM_TYPES[keyof typeof ITEM_TYPES]
+export type ItemType = (typeof ITEM_TYPES)[keyof typeof ITEM_TYPES]
 export type QuillDelta = any // TODO: define this properly
 export type TextItemProperties = ItemProperties & {
     text: string
@@ -589,11 +589,13 @@ export const getConnection = (b: Board) => (id: Id) => {
     return conn
 }
 
-export const findItem = (boardOrItems: Board | Record<string, Item>) => (id: Id): Item | null => {
-    const items = getItems(boardOrItems)
-    const item = items[id]
-    return item || null
-}
+export const findItem =
+    (boardOrItems: Board | Record<string, Item>) =>
+    (id: Id): Item | null => {
+        const items = getItems(boardOrItems)
+        const item = items[id]
+        return item || null
+    }
 
 export const findConnection = (board: Board) => (id: Id) => {
     const conn = board.connections.find((c) => c.id === id)
@@ -604,7 +606,9 @@ export function findItemIdsRecursively(ids: Id[], board: Board): Set<Id> {
     const recursiveIds = new Set<Id>()
     const addIdRecursively = (id: Id) => {
         recursiveIds.add(id)
-        Object.values(board.items).forEach((i) => i.containerId === id && addIdRecursively(i.id))
+        Object.values(board.items).forEach((i) => {
+            if (i.containerId === id) addIdRecursively(i.id)
+        })
     }
     ids.forEach(addIdRecursively)
     return recursiveIds
@@ -615,18 +619,18 @@ export function findItemsRecursively(ids: Id[], board: Board): Item[] {
     return [...recursiveIds].map(getItem(board))
 }
 
-export const isContainedBy = (boardOrItems: Board | Record<string, Item>, parentCandidate: Item) => (
-    i: Item,
-): boolean => {
-    if (!i.containerId) return false
-    if (i.containerId === parentCandidate!.id) return true
-    const itemsOnBoard = getItems(boardOrItems)
-    const parent = findItem(itemsOnBoard)(i.containerId)
-    if (i.containerId === i.id) throw Error("Self-contained")
-    if (parent == i) throw Error("self parent")
-    if (!parent) return false // Don't fail here, because when folding create+move, the action is run in an incomplete board context
-    return isContainedBy(boardOrItems, parentCandidate)(parent)
-}
+export const isContainedBy =
+    (boardOrItems: Board | Record<string, Item>, parentCandidate: Item) =>
+    (i: Item): boolean => {
+        if (!i.containerId) return false
+        if (i.containerId === parentCandidate!.id) return true
+        const itemsOnBoard = getItems(boardOrItems)
+        const parent = findItem(itemsOnBoard)(i.containerId)
+        if (i.containerId === i.id) throw Error("Self-contained")
+        if (parent == i) throw Error("self parent")
+        if (!parent) return false // Don't fail here, because when folding create+move, the action is run in an incomplete board context
+        return isContainedBy(boardOrItems, parentCandidate)(parent)
+    }
 
 const isBoard = (u: unknown): u is Board => typeof u === "object" && !!u && "items" in u
 
@@ -659,8 +663,8 @@ export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, us
     let accessLevel: AccessLevel = accessPolicy.publicWrite
         ? "read-write"
         : accessPolicy.publicRead
-        ? "read-only"
-        : "none"
+          ? "read-only"
+          : "none"
     if (userInfo.userType === "unidentified" || userInfo.userType === "system") {
         return accessLevel
     }
@@ -673,8 +677,8 @@ export function checkBoardAccess(accessPolicy: BoardAccessPolicy | undefined, us
             "email" in entry && entry.email === email
                 ? entry.access || defaultAccess
                 : "domain" in entry && domain === entry.domain
-                ? entry.access || defaultAccess
-                : "none"
+                  ? entry.access || defaultAccess
+                  : "none"
         accessLevel = combineAccessLevels(accessLevel, nextLevel)
     }
     return accessLevel

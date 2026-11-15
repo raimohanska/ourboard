@@ -7,7 +7,6 @@ export interface Persistence {
 
 export function createLevelDbPersistence(persistenceDir: string): Persistence {
     console.info('Persisting documents to "' + persistenceDir + '"')
-    // @ts-ignore
     const LeveldbPersistence = require("y-leveldb").LeveldbPersistence
     const ldb = new LeveldbPersistence(persistenceDir)
     return {

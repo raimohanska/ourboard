@@ -1,4 +1,4 @@
-import { Page, expect, test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import { Note } from "../../../common/src/domain"
 import { sleep } from "../../../common/src/sleep"
 import { navigateToBoard, semiUniqueId } from "../pages/BoardPage"
@@ -87,7 +87,7 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board state", async () => {
-            expect
+            await expect
                 .poll(async () => await Api.getBoard(accessToken, id))
                 .toEqual({
                     board: {
@@ -117,7 +117,7 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board state hierarchy", async () => {
-            expect
+            await expect
                 .poll(async () => await Api.getBoardHierarchy(accessToken, id))
                 .toEqual({
                     board: {

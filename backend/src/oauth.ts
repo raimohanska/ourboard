@@ -56,5 +56,5 @@ export function setupAuth(app: Express, provider: AuthProvider) {
 export const authProvider: AuthProvider | null = googleConfig
     ? GoogleAuthProvider(googleConfig)
     : genericOIDCConfig
-    ? GenericOIDCAuthProvider(genericOIDCConfig)
-    : null
+      ? GenericOIDCAuthProvider(genericOIDCConfig)
+      : null

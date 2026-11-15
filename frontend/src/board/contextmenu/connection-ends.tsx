@@ -1,4 +1,4 @@
-import { componentScope, h } from "harmaja"
+import { h } from "harmaja"
 import * as L from "lonna"
 import { rerouteConnection } from "../../../../common/src/connection-utils"
 import { ConnectionEndStyle } from "../../../../common/src/domain"
@@ -70,8 +70,8 @@ export function connectionEndsMenu({ board, focusedItems, dispatch }: SubmenuPro
                                                 board.get(),
                                             )
                                           : connection.pointStyle === "black-dot"
-                                          ? { ...connection, pointStyle: "none" }
-                                          : { ...connection, controlPoints: [] },
+                                            ? { ...connection, pointStyle: "none" }
+                                            : { ...connection, controlPoints: [] },
                                   ],
                               })
                           }

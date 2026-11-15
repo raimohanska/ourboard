@@ -311,7 +311,7 @@ export function BoardPage(page: Page, browser: Browser) {
                     request.onerror = reject
                 })
             }, this.getBoardId())
-            expect
+            await expect
                 .poll(async () => {
                     try {
                         const databases = await page.evaluate(async (boardId) => {

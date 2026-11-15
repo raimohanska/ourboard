@@ -1,13 +1,13 @@
 import { h } from "harmaja"
 import * as L from "lonna"
 import { BoardCoordinateHelper } from "./board-coordinates"
-import { Board, Connection, Image, Video } from "../../../common/src/domain"
+import { Board, Connection, Video } from "../../../common/src/domain"
 import { BoardFocus } from "./board-focus"
 import { AssetStore } from "../store/asset-store"
 import { itemDragToMove } from "./item-dragmove"
 import { itemSelectionHandler } from "./item-selection"
 import { Dispatch } from "../store/board-store"
-import { Tool, ToolController } from "./tool-selection"
+import { ToolController } from "./tool-selection"
 import { DragBorder } from "./DragBorder"
 import { itemZIndex } from "./zIndices"
 
@@ -73,7 +73,7 @@ export const VideoView = ({
                         width: p.width + "em",
                         zIndex: itemZIndex(p),
                         position: "absolute",
-                    } as any),
+                    }) as any,
             )}
         >
             <video id="video" controls={true} preload="none">
