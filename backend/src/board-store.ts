@@ -139,7 +139,7 @@ export async function createBoard(board: Board): Promise<void> {
         if (!isBoardEmpty(board)) {
             console.log(`Creating non-empty board ${board.id} -> bootstrapping history`)
             const event = mkBootStrapEvent(board.id, board)
-            storeEventHistoryBundle(board.id, [event], event.serial!, null, client)
+            await storeEventHistoryBundle(board.id, [event], event.serial!, null, client)
         }
     })
 }
