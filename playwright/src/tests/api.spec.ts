@@ -87,7 +87,7 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board state", async () => {
-            expect
+            await expect
                 .poll(async () => await Api.getBoard(accessToken, id))
                 .toEqual({
                     board: {
@@ -117,7 +117,7 @@ test.describe("API endpoints", () => {
         })
 
         await test.step("Get board state hierarchy", async () => {
-            expect
+            await expect
                 .poll(async () => await Api.getBoardHierarchy(accessToken, id))
                 .toEqual({
                     board: {
