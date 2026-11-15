@@ -62,6 +62,7 @@ export function findSelectedItemsAndConnections(currentFocus: BoardFocus, curren
             if (c.containerId && recursiveItemIds.has(c.containerId)) {
                 return true
             }
+            return false
         })
         .map((c) => ({
             ...c,

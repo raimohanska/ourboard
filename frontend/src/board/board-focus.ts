@@ -86,6 +86,7 @@ export function removeNonExistingFromSelection(selection: BoardFocus, board: Boa
         [...getSelectedItemIds(selection)].filter((id) => {
             if (!board.items[id]) return true
             if (board.items[id].hidden) return true
+            return false
         }),
     )
     const selectedConnectionIds = getSelectedConnectionIds(selection)
