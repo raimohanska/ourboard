@@ -40,7 +40,7 @@ export function createBoardAndNavigate(
     serverEvents: L.EventStream<EventFromServer>,
 ) {
     dispatch({ action: "board.add", payload: newBoard })
-    serverEvents.forEach(
-        (e) => e.action === "board.add.ack" && navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id }),
-    )
+    serverEvents.forEach((e) => {
+        if (e.action === "board.add.ack") navigator.navigateByParams(BOARD_PATH, { boardId: newBoard.id })
+    })
 }

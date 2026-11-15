@@ -59,7 +59,9 @@ export class WSSharedDoc extends Y.Doc {
             encoding.writeVarUint(encoder, messageSync)
             syncProtocol.writeUpdate(encoder, update)
             const message = encoding.toUint8Array(encoder)
-            doc.conns.forEach((_, conn) => this.send(conn, message))
+            doc.conns.forEach((_, conn) => {
+                this.send(conn, message)
+            })
         }
 
         this.on("update", updateHandler)

@@ -7,7 +7,9 @@ export function AutoExpiringMap<V extends any>(ttlSeconds: number) {
             if (typeof key === "symbol") return false
             target[key] = value
             setExpiryTimer(key)
-            listeners.forEach((l) => l(target))
+            listeners.forEach((l) => {
+                l(target)
+            })
             return true
         },
         deleteProperty(target, key) {
@@ -16,7 +18,9 @@ export function AutoExpiringMap<V extends any>(ttlSeconds: number) {
             if (!didDelete) {
                 return false
             }
-            listeners.forEach((l) => l(target))
+            listeners.forEach((l) => {
+                l(target)
+            })
             return true
         },
     })

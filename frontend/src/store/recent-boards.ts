@@ -33,9 +33,9 @@ export function RecentBoards(connection: ServerConnection, sessionStore: UserSes
             const localBoards = recentBoards.get()
             const boardsOnlyFoundLocally = localBoards.filter((b) => !boardsFromServer.some((bs) => bs.id === b.id))
             const boardsToSend = boardsOnlyFoundLocally.filter((b) => !b.userEmail || b.userEmail === e.email)
-            boardsToSend.forEach((b) =>
-                connection.send({ action: "board.associate", boardId: b.id, lastOpened: b.opened }),
-            )
+            boardsToSend.forEach((b) => {
+                connection.send({ action: "board.associate", boardId: b.id, lastOpened: b.opened })
+            })
             storeRecentBoards(() => [...boardsFromServer, ...boardsOnlyFoundLocally])
         }
     })

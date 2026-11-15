@@ -96,7 +96,9 @@ export const ContextMenuView = ({
         focusedItems,
         (items) => items.items[0],
         (i) => i?.id,
-    ).forEach(() => submenu.set(null))
+    ).forEach(() => {
+        submenu.set(null)
+    })
 
     const props = { board, focusedItems, dispatch, submenu }
     const widgetCreators = [

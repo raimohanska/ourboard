@@ -25,7 +25,9 @@ const App = () => {
     const recentBoards = RecentBoards(connection, sessionStore)
     const assets = assetStore(connection, L.view(boardStore.state, "board"), boardStore.events)
     const title = L.view(boardStore.state, (s) => (s.board && s.board.name ? `${s.board.name} - OurBoard` : "OurBoard"))
-    title.forEach((t) => (document.querySelector("title")!.textContent = t))
+    title.forEach((t) => {
+        document.querySelector("title")!.textContent = t
+    })
     const serverConfig = connection.bufferedServerEvents
         .pipe(L.scan<EventFromServer, ServerConfig | null>(null, (c, e) => (e.action === "server.config" ? e : c)))
         .applyScope(H.componentScope())

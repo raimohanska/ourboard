@@ -106,7 +106,9 @@ export function GenericServerConnection(
             }
         })
 
-        forceOffline.pipe(L.changes, L.take(1)).forEach((f) => f && ws.close())
+        forceOffline.pipe(L.changes, L.take(1)).forEach((f) => {
+            if (f) ws.close()
+        })
         return ws
 
         async function reconnect() {
@@ -130,7 +132,9 @@ export function GenericServerConnection(
         socket = initSocket()
     }
 
-    forceOffline.pipe(L.changes).forEach((f) => !f && newSocket())
+    forceOffline.pipe(L.changes).forEach((f) => {
+        if (!f) newSocket()
+    })
 
     function send(e: UIEvent | EventWrapper) {
         //console.log("Sending", e)

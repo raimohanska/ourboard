@@ -606,7 +606,9 @@ export function findItemIdsRecursively(ids: Id[], board: Board): Set<Id> {
     const recursiveIds = new Set<Id>()
     const addIdRecursively = (id: Id) => {
         recursiveIds.add(id)
-        Object.values(board.items).forEach((i) => i.containerId === id && addIdRecursively(i.id))
+        Object.values(board.items).forEach((i) => {
+            if (i.containerId === id) addIdRecursively(i.id)
+        })
     }
     ids.forEach(addIdRecursively)
     return recursiveIds

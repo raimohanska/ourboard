@@ -251,7 +251,9 @@ export const BoardView = ({
     })
 
     H.onUnmount(() => {
-        doOnUnmount.forEach((fn) => fn())
+        doOnUnmount.forEach((fn) => {
+            fn()
+        })
     })
 
     const boardAccessStatus = L.view(boardState, (s) => s.status)

@@ -60,7 +60,9 @@ const everyoneOnTheBoard = (boardId: string) => {
     return boardState.sessions
 }
 const sendTo = (recipients: UserSession[], message: EventFromServer) => {
-    recipients.forEach((c) => c.sendEvent(message))
+    recipients.forEach((c) => {
+        c.sendEvent(message)
+    })
 }
 const everyoneElseOnTheSameBoard = (boardId: Id, session?: UserSession) =>
     everyoneOnTheBoard(boardId).filter((s) => s !== session)
@@ -130,7 +132,9 @@ export function getSessionById(sessionId: string): UserSession | undefined {
 }
 
 export function terminateSessions() {
-    Object.values(sessions).forEach((session) => session.close())
+    Object.values(sessions).forEach((session) => {
+        session.close()
+    })
 }
 
 export async function addSessionToBoard(
