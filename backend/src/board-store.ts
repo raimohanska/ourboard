@@ -336,7 +336,7 @@ function mkSnapshot(board: Board, serial: Serial) {
 
 export async function saveBoardSnapshot(board: Board, client: PoolClient) {
     console.log(`Save board snapshot ${board.id} at serial ${board.serial}`)
-    client.query(
+    await client.query(
         `
     UPDATE board 
     SET name=$2, content=$3 
