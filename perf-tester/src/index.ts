@@ -115,7 +115,7 @@ function createTester(nickname: string, boardId: string) {
                     if (!target) {
                         throw Error("Target item not found")
                     }
-                    const updated = { ...target, text: "EDIT " + counter, color: _.sample(NOTE_COLORS)?.color! }
+                    const updated = { ...target, text: "EDIT " + counter, color: _.sample(NOTE_COLORS)!.color }
                     connection.send({
                         ackId: "perf",
                         events: [

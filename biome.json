@@ -47,7 +47,6 @@
                 "preset": "recommended",
                 "noDoubleEquals": "off",
                 "noExplicitAny": "off",
-                "noNonNullAssertedOptionalChain": "off",
                 "useIterableCallbackReturn": "off"
             }
         }
