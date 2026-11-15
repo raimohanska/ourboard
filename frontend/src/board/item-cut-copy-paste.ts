@@ -189,7 +189,7 @@ export function cutCopyPasteHandler(
                 if (e.clipboardData) {
                     const imageFile = [...e.clipboardData.files].find((file) => file.type.startsWith("image/"))
                     if (imageFile) {
-                        uploadImageFile(imageFile)
+                        void uploadImageFile(imageFile)
                         return
                     }
                 }

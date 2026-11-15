@@ -113,7 +113,7 @@ export function BoardStore(
     function resetForBoard(boardId: Id) {
         console.log("Reseting and joining board")
         console.log("Sending board.join without initAtSerial")
-        localStore.clearBoardState(boardId).then(() =>
+        void localStore.clearBoardState(boardId).then(() =>
             connection.send({
                 action: "board.join",
                 boardId,
@@ -534,7 +534,7 @@ export function BoardStore(
     )
     ss.onChange(([prev, s]) => {
         if (s === "logged-out" && prev === "logged-in") {
-            localStore.clearAllPrivateBoards()
+            void localStore.clearAllPrivateBoards()
             const board = state.get().board
             if (board && board.accessPolicy) {
                 dispatch({ action: "ui.board.logged.out", boardId: board.id })

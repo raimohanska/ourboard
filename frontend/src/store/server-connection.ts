@@ -82,7 +82,7 @@ export function GenericServerConnection(
         ws.addEventListener("error", (e) => {
             if (ws === socket) {
                 console.error("Web socket error")
-                reconnect()
+                void reconnect()
             }
         })
         ws.addEventListener("open", () => {
@@ -102,7 +102,7 @@ export function GenericServerConnection(
         ws.addEventListener("close", () => {
             if (ws === socket) {
                 console.log("Socket disconnected")
-                reconnect()
+                void reconnect()
             }
         })
 

@@ -1,6 +1,6 @@
 import TcpPortUsed from "tcp-port-used"
 const port = 13338
-;(async function () {
+void (async function () {
     console.log(`Waiting for DB to bind port ${port}...`)
     try {
         await TcpPortUsed.waitUntilUsed(port, 100, 10000)

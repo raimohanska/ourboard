@@ -22,7 +22,7 @@ async function shutdown() {
 
 process.on("SIGTERM", () => {
     console.log("Received SIGTERM. Initiating shutdown.")
-    shutdown()
+    void shutdown()
 })
 
 const PORT = parseInt(process.env.PORT || "1337", 10)
@@ -49,7 +49,7 @@ initDB()
             stopServer = startExpressServer(HTTP_PORT, HTTPS_PORT)
         }
         if (UWEBSOCKETS_PORT) {
-            import("./uwebsockets-server").then((uwebsockets) => {
+            void import("./uwebsockets-server").then((uwebsockets) => {
                 uwebsockets.startUWebSocketsServer(UWEBSOCKETS_PORT)
             })
         }
