@@ -2,6 +2,7 @@
     "extends": "../tsconfig",
     "compilerOptions": {
         "module": "commonjs",
-        "outDir": "dist"
+        "outDir": "dist",
+        "rootDir": ".."
     }
 }
