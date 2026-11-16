@@ -88,7 +88,7 @@ export class WSSharedDoc extends Y.Doc {
             awarenessProtocol.removeAwarenessStates(this.awareness, Array.from(controlledIds), null)
             if (this.conns.size === 0 && this.docs.persistence !== null) {
                 // if persisted, we store state and destroy ydocument
-                this.docs.persistence.writeState(this.name, this).then(() => {
+                void this.docs.persistence.writeState(this.name, this).then(() => {
                     this.destroy()
                 })
                 this.docs.deleteYDoc(this)

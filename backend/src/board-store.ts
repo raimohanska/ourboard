@@ -139,7 +139,7 @@ export async function createBoard(board: Board): Promise<void> {
         if (!isBoardEmpty(board)) {
             console.log(`Creating non-empty board ${board.id} -> bootstrapping history`)
             const event = mkBootStrapEvent(board.id, board)
-            storeEventHistoryBundle(board.id, [event], event.serial!, null, client)
+            await storeEventHistoryBundle(board.id, [event], event.serial!, null, client)
         }
     })
 }
@@ -336,7 +336,7 @@ function mkSnapshot(board: Board, serial: Serial) {
 
 export async function saveBoardSnapshot(board: Board, client: PoolClient) {
     console.log(`Save board snapshot ${board.id} at serial ${board.serial}`)
-    client.query(
+    await client.query(
         `
     UPDATE board 
     SET name=$2, content=$3 

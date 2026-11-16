@@ -19,6 +19,6 @@ async function createBoardAndReturnId(n: number) {
 }
 
 const promises = _.range(1, BOARD_COUNT + 1).map(createBoardAndReturnId)
-Promise.all(promises).then((ids) => {
+void Promise.all(promises).then((ids) => {
     console.log(ids.join(","))
 })
